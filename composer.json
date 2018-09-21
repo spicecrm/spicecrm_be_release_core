@@ -1,0 +1,24 @@
+{
+  "autoload": {
+    "psr-4": {
+      "SpiceCRM\\modules\\": "modules",
+      "SpiceCRM\\custom\\modules\\": "custom/modules"
+    }
+  },
+  "require": {
+    "slim/slim": "3.9.2",
+    "swiftmailer/swiftmailer": "5.4.9",
+    "sendgrid/sendgrid": "^6.2",
+    "symfony/options-resolver": "3.4.3",
+    "mailgun/mailgun-php": "^2.5",
+    "php-http/curl-client": "^1.7",
+    "guzzlehttp/psr7": "^1.4",
+    "guzzlehttp/guzzle": "^6.3",
+    "guzzlehttp/promises": "^1.3",
+    "google/apiclient": "^2.2",
+    "google/auth": "^1.3",
+    "google/apiclient-services": "^0.64.0",
+    "dompdf/dompdf": "^0.8.2",
+    "phenx/php-svg-lib": "^0.3.2"
+  }
+}
