@@ -169,13 +169,15 @@ $dictionary['EmailTemplate'] = array(
             'name' => 'body',
             'vname' => 'LBL_BODY',
             'type' => 'text',
-            'comment' => 'Plain text body to be used in resulting email'
+            'comment' => 'Plain text body to be used in resulting email',
+            'stylesheet_id_field' => 'style',
         ),
         'body_html' => array(
             'name' => 'body_html',
             'vname' => 'LBL_BODY_HTML',
             'type' => 'html',
-            'comment' => 'HTML formatted email body to be used in resulting email'
+            'comment' => 'HTML formatted email body to be used in resulting email',
+            'stylesheet_id_field' => 'style',
         ),
         'style' => array(
             'name' => 'style',

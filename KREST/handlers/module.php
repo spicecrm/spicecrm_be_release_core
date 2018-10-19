@@ -24,7 +24,7 @@ class KRESTModuleHandler
     var $excludeAuthentication = array();
     var $spiceFavoritesClass = null;
 
-    public function __construct($app)
+    public function __construct($app = null)
     {
         $this->app = $app;
 
@@ -150,10 +150,11 @@ class KRESTModuleHandler
             // ["name","global"] <--- valid!
             $setFields = json_decode(html_entity_decode($searchParams['fields']), true);
             foreach($setFields as $setField){
-                if(isset($thisBean->field_name_map[$setField]) && $thisBean->field_name_map[$setField]['source'] != 'non-db'){
+                if(isset($thisBean->field_name_map[$setField]) && ($thisBean->field_name_map[$setField]['source'] != 'non-db' || $thisBean->field_name_map[$setField]['type'] == 'relate' || $thisBean->field_name_map[$setField]['type'] == 'parent')){
                     switch($thisBean->field_name_map[$setField]['type']){
                         case 'relate':
                         case 'parent':
+                            $returnFields[] = $setField;
                             if($thisBean->field_name_map[$setField]['id_name']) {
                                 $returnFields[] = $thisBean->field_name_map[$setField]['id_name'];
                             }
@@ -1134,9 +1135,15 @@ class KRESTModuleHandler
             $thisBean->mapFromRestArray($post_params);
         }
 
+        // check if notification might be applied
+        # if( $thisBean->object_name == "Meeting" || $thisBean->object_name == "Call" || !empty($thisBean->assigned_user_id) && $thisBean->assigned_user_id != $GLOBALS['current_user']->id && empty($GLOBALS['sugar_config']['exclude_notifications'][$thisBean->module_dir])){
+        if ( !empty( $thisBean->assigned_user_id ) && $thisBean->assigned_user_id != $GLOBALS['current_user']->id && empty( @$GLOBALS['sugar_config']['exclude_notifications'][$thisBean->module_dir] )) {
+            $thisBean->notify_on_save = true;
+        }
+        
         // save the bean bbut do not index .. indexing is handled later here since we might save related beans
         $thisBean->update_date_entered = true;
-        $thisBean->save(false, false);
+        $thisBean->save(!empty($thisBean->notify_on_save), false);
 
         // process links if sent
         foreach ($thisBean->field_name_map as $fieldId => $fieldData) {
@@ -1153,20 +1160,20 @@ class KRESTModuleHandler
 
                         //workaround for lookup field: delete relationships
                         $beans = $post_params[$fieldData['name']]['beans_relations_to_delete'];
-                        foreach ($beans as $beanId => $beanData) {
-                            $seed = BeanFactory::getBean($relModule, $beanId);
+                        foreach ($beans as $thisBeanId => $beanData) {
+                            $seed = BeanFactory::getBean($relModule, $thisBeanId);
                             $thisBean->$fieldId->delete($thisBean, $seed);
                         }
                         //
 
                         $beans = $post_params[$fieldData['name']]['beans'];
-                        foreach ($beans as $beanId => $beanData) {
-                            $seed = BeanFactory::getBean($relModule, $beanId);
+                        foreach ($beans as $thisBeanId => $beanData) {
+                            $seed = BeanFactory::getBean($relModule, $thisBeanId);
                             if($beanData['deleted'] == 0) {
                                 // if it does not exist create new bean
                                 if (!$seed) {
                                     $seed = BeanFactory::getBean($relModule);
-                                    $seed->id = $beanId;
+                                    $seed->id = $thisBeanId;
                                     $seed->new_with_id = true;
                                 }
 
@@ -1195,7 +1202,7 @@ class KRESTModuleHandler
         }
 
         if ($post_params['emailaddresses']) {
-            $this->setEmailAddresses($beanModule, $beanId, $post_params['emailaddresses']);
+            $this->setEmailAddresses($beanModule, $thisBean->id, $post_params['emailaddresses']);
         }
 
         // see if we have an attachement
@@ -1219,6 +1226,8 @@ class KRESTModuleHandler
             $spiceFTSHandler = new SpiceFTSHandler();
             $spiceFTSHandler->indexBean($thisBean);
         }
+
+        if ( @$GLOBALS['sugar_config']['krest']['retrieve_after_save'] ) $thisBean->retrieve();
 
         return $this->mapBeanToArray($beanModule, $thisBean);
     }
@@ -1769,4 +1778,81 @@ class KRESTModuleHandler
         }
     }
 
+    public function getLanguage( $modules, $language = null ) {
+
+        // see if we have a language passed in .. if not use the default
+        if ( empty( $language )) $language = $GLOBALS['sugar_config']['default_language'];
+
+        $dynamicDomains = $this->get_dynamic_domains( $modules, $language );
+        $appListStrings = return_app_list_strings_language( $language );
+        $appStrings = array_merge( $appListStrings, $dynamicDomains );
+
+        // BEGIN syslanguages  => check language source
+        if ( isset( $GLOBALS['sugar_config']['syslanguages']['spiceuisource']) and $GLOBALS['sugar_config']['syslanguages']['spiceuisource'] === 'db' ) {
+            // grab labels from syslanguagetranslations
+            // $syslanguages = $this->get_languages(strtolower($language));
+            if(!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
+
+            $syslanguagelabels = LanguageManager::loadDatabaseLanguage($language);
+            // file_put_contents("sugarcrm.log", print_r($syslanguagelabels, true), FILE_APPEND);
+            $syslanguages = array();
+            // var_dump($syslanguagelabels);
+            // explode labels default|short|long
+            if(is_array($syslanguagelabels))
+            {
+                foreach($syslanguagelabels as $syslanguagelbl => $syslanguagelblcfg){
+                    $syslanguages[$syslanguagelbl] = array(
+                        'default' => $syslanguagelblcfg['default'],
+                        'short' => $syslanguagelblcfg['short'],
+                        'long' => $syslanguagelblcfg['long'],
+                    );
+                    /*
+                    $syslanguages[$syslanguagelbl] = $syslanguagelblcfg['default'];
+                    if(!empty($syslanguagelblcfg['short']))
+                        $syslanguages[$syslanguagelbl.'_SHORT'] = $syslanguagelblcfg['short'];
+                    if(!empty($syslanguagelblcfg['long']))
+                        $syslanguages[$syslanguagelbl.'_LONG'] = $syslanguagelblcfg['long'];
+                    */
+                }
+            }
+
+            $responseArray = array(
+                'languages' => LanguageManager::getLanguages(),
+                'applang' => $syslanguages,
+                'applist' => $appStrings
+            );
+
+        } else { //END
+
+            //ORIGINAL
+            $responseArray = array(
+                'languages' => array(
+                    'available' => [],
+                    'default' => $GLOBALS['sugar_config']['default_language']
+                ),
+                'mod' => $this->get_mod_language( $modules, $language ),
+                'applang' => return_application_language( $language ),
+                'applist' => $appStrings
+            );
+
+            foreach($GLOBALS['sugar_config']['languages'] as $language_code => $language_name){
+                $responseArray['languages']['available'][] = [
+                    'language_code' => $language_code,
+                    'language_name' => $language_name,
+                    'system_language' => true,
+                    'communication_language' => true
+                ];
+            }
+        }
+
+        $responseArray['md5'] = md5( json_encode( $responseArray ));
+
+        // if an md5 was sent in and matches the current one .. no change .. do not send the language to save bandwidth
+        if ( $_REQUEST['md5'] === $responseArray['md5'] ) {
+            $responseArray = array( 'md5' => $_REQUEST['md5'] );
+        }
+
+        return $responseArray;
+
+    }
 }

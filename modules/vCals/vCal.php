@@ -207,28 +207,28 @@ class vCal extends SugarBean
 
 	// static function:
         // cache vcals
-        function cache_sugar_vcal(&$user_focus)
-        {
-            self::cache_sugar_vcal_freebusy($user_focus);
-        }
+    public static function cache_sugar_vcal(&$user_focus)
+    {
+        self::cache_sugar_vcal_freebusy($user_focus);
+    }
 
 	// static function:
         // caches vcal for Activities in Sugar database
-        function cache_sugar_vcal_freebusy(&$user_focus)
-        {
-            $focus = new vCal();
-            // set freebusy members and save
-            $arr = array('user_id'=>$user_focus->id,'type'=>'vfb','source'=>'sugar');
-            $focus->retrieve_by_string_fields($arr);
+    public static function cache_sugar_vcal_freebusy(&$user_focus)
+    {
+        $focus = new vCal();
+        // set freebusy members and save
+        $arr = array('user_id'=>$user_focus->id,'type'=>'vfb','source'=>'sugar');
+        $focus->retrieve_by_string_fields($arr);
 
 
-            $focus->content = $focus->get_vcal_freebusy($user_focus,false);
-            $focus->type = 'vfb';
-            $focus->date_modified = null;
-            $focus->source = 'sugar';
-            $focus->user_id = $user_focus->id;
-            $focus->save();
-        }
+        $focus->content = $focus->get_vcal_freebusy($user_focus,false);
+        $focus->type = 'vfb';
+        $focus->date_modified = null;
+        $focus->source = 'sugar';
+        $focus->user_id = $user_focus->id;
+        $focus->save();
+    }
 
     /*
      * Lines of text SHOULD NOT be longer than 75 octets, excluding the line break.

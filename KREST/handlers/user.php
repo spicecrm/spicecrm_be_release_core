@@ -178,9 +178,7 @@ class KRESTUserHandler
 
         if (!empty($user_id)) {
             $token = User::generatePassword();
-            $sql = "INSERT INTO users_password_tokens (id, user_id, date_generated) 
-                    VALUES ('$token', '$user_id', '" . $timedate->asDb(new DateTime('now')) . "');";
-            $db->query($sql);
+            $db->query( sprintf('INSERT INTO users_password_tokens ( id, user_id, date_generated ) VALUES ( "%s", "%s", NOW() )', $db->quote( $token ), $db->quote( $user_id )));
 
             $emailTemp = new EmailTemplate();
             $emailTemp->retrieve($sugar_config['passwordsetting']['tokentmpl']);
@@ -233,11 +231,11 @@ class KRESTUserHandler
         $token_valid = false;
 
         if ($user_id) {
-            $res = $db->query("SELECT * FROM users_password_tokens WHERE user_id = '$user_id' AND id = '$token' AND date_generated < CURRENT_TIMESTAMP - INTERVAl " . $sugar_config['passwordsetting']['linkexpirationtime'] . " MINUTE");
+            $res = $db->query( sprintf('SELECT * FROM users_password_tokens WHERE user_id = "%s" AND id = "%s" AND date_generated >= CURRENT_TIMESTAMP - INTERVAL ' . ( @$sugar_config['passwordsetting']['linkexpirationtime']*1 ) . ' MINUTE', $db->quote($user_id), $db->quote($token) ));
             while ($row = $db->fetchByAssoc($res)) $token_valid = true;
         }
 
-        return array('token_valid' => $token_valid);
+        return $token_valid;
     }
     public function resetPass($data)
     {
@@ -275,7 +273,7 @@ class KRESTUserHandler
     {
         global $db;
         $user_id = "";
-        $res = $db->query("SELECT u.id FROM users u INNER JOIN email_addr_bean_rel rel ON rel.bean_id = u.id AND rel.bean_module = 'Users' AND rel.primary_address = 1 INNER JOIN email_addresses ea ON ea.id = rel.email_address_id AND ea.email_address_caps = '" . strtoupper($email) . "' WHERE u.deleted = 0 AND rel.deleted = 0 AND ea.deleted = 0");
+        $res = $db->query( sprintf( 'SELECT u.id FROM users u INNER JOIN email_addr_bean_rel rel ON rel.bean_id = u.id AND rel.bean_module = "Users" AND rel.primary_address = 1 INNER JOIN email_addresses ea ON ea.id = rel.email_address_id AND ea.email_address_caps = "%s" WHERE u.deleted = 0 AND rel.deleted = 0 AND ea.deleted = 0', $db->quote( strtoupper( $email ))));
         while ($row = $db->fetchByAssoc($res)) $user_id = $row['id'];
         return $user_id;
     }

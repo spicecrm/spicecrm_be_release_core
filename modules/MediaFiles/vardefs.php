@@ -98,6 +98,12 @@ $dictionary['MediaFile'] = array(
             'required' => true,
             'default' => 0
         ),
+        'cdn' => array(
+            'name' => 'cdn',
+            'vname' => 'LBL_CDN',
+            'type' => 'bool',
+            'default' => 0
+        ),
         'hash' => array(
             'name' => 'hash',
             'vname' => 'LBL_HASH',

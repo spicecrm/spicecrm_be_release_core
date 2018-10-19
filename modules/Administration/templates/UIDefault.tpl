@@ -1,4 +1,10 @@
 {*@todo: create labels for text...*}
+<style>
+    input.lookLikeDisabled {
+        opacity:0.6;
+        pointer-events: none;
+    }
+</style>
 <div>
     <h1>UI load default settings</h1>
     <p>&nbsp;</p>
@@ -60,7 +66,7 @@
                                 </div>
                                 <div id="obsoletelist">
                                     {foreach $obsoletepackages as $package}
-                                        <p class="error"><input type="checkbox" class="checkBoxClassO" name="packages[]" value="{$package}" onclick="javascript: return false;" checked="checked" onclick="return false;" onkeydown="return false;"/> {$package} [obsolete - shall be deleted]</p>
+                                        <p class="error"><input type="checkbox" class="checkBoxClassO lookLikeDisabled" name="packages[]" value="{$package}" onclick="javascript: return false;" checked="checked" onclick="return false;" onkeydown="return false;"/> {$package} [obsolete - will be deleted]</p>
                                     {/foreach}
                                 </div>
                             </td>
@@ -69,11 +75,15 @@
                             <td scope="col"><label>Select Version(s)</label><span class="required">*</span></td>
                             <td>
                                 <div id="versionslist">
-                                {*<input name="uidefaultconf_version" value="*" type="text" required>*}
-                                <input type="checkbox" id="selectAllV" checked="checked"/> select / deselect all<br/>
-                                {foreach $possibleversions as $version}
-                                    <input type="checkbox" class="checkBoxClassV" name="versions[]" value="{$version.version}" checked="checked"/> {$version.version}<br/>
-                                {/foreach}
+                                    {if !$release}
+                                        <input type="checkbox" id="selectAllV" checked="checked"/> select / deselect all<br/>
+                                    {/if}
+                                        {*<input name="uidefaultconf_version" value="*" type="text" required>*}
+                                        {foreach $possibleversions as $version}
+                                            <input type="checkbox" class="checkBoxClassV {if $release}lookLikeDisabled{/if}" name="versions[]" value="{$version.version}" checked="checked"/> {$version.version}<br/>
+                                        {/foreach}
+
+
                                 </div>
                             </td>
                         </tr>

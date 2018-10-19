@@ -41,12 +41,12 @@ if ($current_user->is_admin) {
         }
         //collect values for REST call
         //https://packages.spicecrm.io/referenceconfig/*/2018.02.001
-        $route = "referenceconfig";
         $packages = $_POST['packages'];
         $versions = $_POST['versions'];
-        $endpoint = implode("/", array($route, implode(",", $packages), implode(",", $versions)));
+        $routebase = $loader->routebase;
+        $routeparams = implode("/", array( $routebase, implode(",", $packages), implode(",", $versions)));
 
-        $results = $loader->loadDefaultConf($endpoint, array('route' => $route, 'packages' => $packages, 'versions' => $versions));
+        $results = $loader->loadDefaultConf($routeparams, array('packages' => $packages, 'versions' => $versions));
         $loader->cleanDefaultConf();
 
         echo "<br>Modified tables: <br>".implode("<br>", $results['tables']);

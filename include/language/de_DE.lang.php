@@ -56,6 +56,7 @@ $app_list_strings = array(
         'ProjectMilestones' => 'Projekt-Milestones',
         'Campaigns' => 'Kampagnen',
         'CampaignLog' => 'Kampagnenlog',
+        'CampaignTasks' => 'Kampagnen Schritte',
         'Documents' => 'Dokumente',
         'DocumentRevisions' => 'Dokument Versionen',
         'Connectors' => 'Konnektoren',
@@ -114,8 +115,8 @@ $app_list_strings = array(
         'ServiceCalls' => 'Service Calls',
         'ServiceFeedbacks' => 'Service Feedbacks',
         'MediaCategories' => 'Medienkategorien',
-        'SystemDeploymentCRs' => 'SystemDeploymentCRs',
-        'SystemDeploymentReleases' => 'SystemDeploymentReleases'
+        'SystemDeploymentCRs' => 'Change Requests',
+        'SystemDeploymentReleases' => 'Releases'
     ),
 
 
@@ -173,8 +174,8 @@ $app_list_strings = array(
         'ServiceCalls' => 'Service Call',
         'ServiceQueues' => 'Service Queues',
         'MediaCategories' => 'Medienkategorie',
-        'SystemDeploymentCRs' => 'SystemDeploymentCR',
-        'SystemDeploymentReleases' => 'SystemDeploymentRelease'
+        'SystemDeploymentCRs' => 'Change Request',
+        'SystemDeploymentReleases' => 'Release'
     ),
 
     'checkbox_dom' => array(
@@ -516,6 +517,11 @@ $app_list_strings = array(
     'user_status_dom' => array(
         'Active' => 'Aktiv',
         'Inactive' => 'Inaktiv',
+    ),
+    'knowledge_status_dom' => array(
+            'Draft' => 'Draft',
+            'Released' => 'Released',
+            'Retired' => 'Retired',
     ),
     'employee_status_dom' => array(
         'Active' => 'Aktiv',
@@ -1073,6 +1079,11 @@ $app_list_strings = array(
         array(
             '' => '',
             'queued' => 'queued',
+            'sent' => 'gesendet',
+            'opened' => 'geöffnet',
+            'delivered' => 'zugestellt',
+            'deferred' => 'verzögert',
+            'bounced' => 'unzustellbar',
             'targeted' => 'Nachricht gesendet/versucht',
             'send error' => 'Unzustellbar, anderer Grund',
             'invalid email' => 'Unzustellbar,ungültige E-Mail',
@@ -1082,6 +1093,8 @@ $app_list_strings = array(
             'lead' => 'Erstellte Interessenten',
             'contact' => 'Erstellte Kontakte',
             'blocked' => 'Abgelehnt nach Adresse oder Domain',
+            'error' => 'allgemeiner Fehler',
+            'noemail' => 'keine Email Adresse'
         ),
 
     'campainglog_target_type_dom' =>

@@ -76,4 +76,13 @@ $app->group('/user', function () use ($app, $KRESTUserHandler) {
         });
 
     });
+
+    $this->get('/preferencesformats', function ($req, $res, $args) {
+        return $res->withJson([
+            'dateFormats' => @$GLOBALS['sugar_config']['date_formats'],
+            'nameFormats' => array_values( @$GLOBALS['sugar_config']['name_formats'] ),
+            'timeFormats' => @$GLOBALS['sugar_config']['time_formats']
+        ]);
+    });
+
 });

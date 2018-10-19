@@ -69,7 +69,7 @@ class SpiceThemeController {
                 for ($i = 0; $i < $pages[$pageId]['numColumns']; $i++) {
                     $pages[$pageId]['columns'][$i]['width'] = round(100 / $pages[$pageId]['numColumns'], 0) . '%';
                     if (!isset($pages[$pageId]['columns'][$i]['dashlets']))
-                        $pages[$pageId]['columns']['dashlets'][$i] = array();
+                        $pages[$pageId]['columns'][$i]['dashlets'] = array();
                 }
             }
             // if we remove columns
@@ -80,7 +80,7 @@ class SpiceThemeController {
                 }
 
                 // merge any dashlets
-                for ($i = $pages[$pageId]['numColumns']; $i < count($pages[$pageId]['columns']); $i++) {
+                for ($i = $pages[$pageId]['numColumns']; $i <= count($pages[$pageId]['columns']); $i++) {
                     $pages[$pageId]['columns'][0]['dashlets'] = array_merge($pages[$pageId]['columns'][0]['dashlets'], $pages[$pageId]['columns'][$i]['dashlets']);
                     unset($pages[$pageId]['columns'][$i]);
                 }

@@ -43,7 +43,6 @@ if ($current_user->is_admin) {
         }
         //collect values for REST call
         //https://packages.spicecrm.io/referencelanguage/en_us/*/2018.02.001
-        $route = "referencelanguage";
         $packages = $_POST['packages'];
         $version = $_POST['version'];
         $languages = $_POST['languages'];
@@ -53,8 +52,8 @@ if ($current_user->is_admin) {
 
         //load fresh stuff
         //foreach($languages as $language) {
-            $endpoint = implode("/", array($route, implode(",", $languages), implode(",", $packages), '*'));
-            $results = $loader->loadDefaultConf($endpoint, array('route' => $route, 'languages' => implode(',', $languages), 'packages' => $packages, 'version' => implode("','", $version)));
+            $routeparams = implode("/", array($loader->routebase, implode(",", $languages), implode(",", $packages), '*'));
+            $results = $loader->loadDefaultConf($routeparams, array('languages' => implode(',', $languages), 'packages' => $packages, 'version' => implode("','", $version)));
             echo "<br>Loaded language labels for " . implode(", ",$languages);
             echo "<br>Packages: " . implode(", ",$packages);
             echo "<br>Version: " . implode(", ",$version);

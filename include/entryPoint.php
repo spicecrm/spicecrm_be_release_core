@@ -165,7 +165,7 @@ require_once('modules/Trackers/TrackerManager.php');
 
 
 // require_once('modules/ACL/ACLController.php');
-$controllerfile = $sugar_config['acl']['controller'] ?: 'modules/ACL/ACLController.php';
+$controllerfile = isset( $sugar_config['acl']['controller']{0} ) ? $sugar_config['acl']['controller'] : 'modules/ACL/ACLController.php';
 require_once ($controllerfile);
 
 require_once('modules/Administration/Administration.php');

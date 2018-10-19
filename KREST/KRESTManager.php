@@ -76,6 +76,7 @@ class KRESTManager
                 'user_name' => $_SERVER['PHP_AUTH_USER'],
                 'password' => $_SERVER['PHP_AUTH_PW'],
                 'encryption' => 'PLAIN',
+                'loginByDev' => isset( $_GET['byDev']{0} ) ? $_GET['byDev']:null
             ]);
             if ($loginData !== false) {
                 $this->sessionId = $loginData;
@@ -90,7 +91,7 @@ class KRESTManager
             $loginData = $this->login([
                 'user_name' => $auth[0],
                 'password' => $auth[1],
-                'encryption' => 'PLAIN',
+                'encryption' => 'PLAIN'
             ]);
             if ($loginData !== false) {
                 $this->sessionId = $loginData;
@@ -253,7 +254,7 @@ class KRESTManager
         $isLoginSuccess = $authController->login(
             $user_auth['user_name'],
             $user_auth['password'],
-            ['passwordEncrypted' => $passwordEncrypted]
+            ['passwordEncrypted' => $passwordEncrypted, 'loginByDev' => isset( $user_auth['loginByDev']{0} ) ? $user_auth['loginByDev']:null ]
         );
         $usr_id = $user->retrieve_user_id($user_auth['user_name']);
         if ($usr_id)
@@ -326,6 +327,7 @@ class KRESTManager
             'renewPass'    => $current_user->system_generated_password,
             'user_name'    => $current_user->user_name,
             'userid'       => $current_user->id,
+            'portal_only'  => $current_user->portal_only,
         ];
 
         return $loginData;

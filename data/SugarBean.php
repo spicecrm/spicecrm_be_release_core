@@ -15,6 +15,7 @@ if (!defined('sugarEntry') || !sugarEntry)
 
 require_once('modules/DynamicFields/DynamicField.php');
 require_once("data/Relationships/RelationshipFactory.php");
+require_once 'modules/UserPreferences/UserPreference.php';
 
 /**
  * SugarBean is the base class for all business objects in Sugar.  It implements
@@ -1318,7 +1319,7 @@ class SugarBean
      * @param boolean $fts_index_bean Optional, default true, if set to true SpiceFTSHandler will index the bean.
      * @todo Add support for field type validation and encoding of parameters.
      */
-    function save($check_notify = FALSE, $fts_index_bean = TRUE)
+    public function save($check_notify = false, $fts_index_bean = true)
     {
         $this->in_save = true;
         // cn: SECURITY - strip XSS potential vectors
@@ -2158,95 +2159,119 @@ class SugarBean
      * @param string $notify_user user to notify
      * @param string $admin the admin user that sends out the notification
      */
-    function send_assignment_notifications($notify_user, $admin)
-    {
-        global $current_user, $current_language;
-        if (($this->object_name == 'Meeting' || $this->object_name == 'Call') || $notify_user->receive_notifications) {
-            $sendToEmail = $notify_user->emailAddress->getPrimaryAddress($notify_user);
-            $sendEmail = TRUE;
-            if (empty($sendToEmail)) {
-                $GLOBALS['log']->warn("Notifications: no e-mail address set for user {$notify_user->user_name}, cancelling send");
-                $sendEmail = FALSE;
-            }
+    function send_assignment_notifications( $notify_user, $admin ) {
 
+        global $current_user;
+
+        if ( $this->object_name !== 'Meeting' and $this->object_name !== 'Call' and !$notify_user->receive_notifications ) return;
+
+        $sendToEmail = $notify_user->emailAddress->getPrimaryAddress( $notify_user );
+        if ( empty( $sendToEmail )) {
+            $GLOBALS['log']->warn("Notifications: No e-mail address set for user '{$notify_user->user_name}', cancelling send.");
+            return false;
+        }
+
+        //BEGIN introduced SpiceCRM 201809001. Apply email template from database
+        if ( @$GLOBALS['isREST'] ) {
+
+            $destUserPrefs = new UserPreference($notify_user);
+            $destUserPrefs->reloadPreferences();
+            $destLang = $destUserPrefs->getPreference('language');
 
             // load notification email_templates (introduced in spicecrm 2021809001)
-            if(!isset($_SESSION['notification_templates'])) {
+            if ( !isset( $_SESSION['notification_templates'] ) || empty( $_SESSION['notification_templates'] )) {
                 $_SESSION['notification_templates'] = array();
-                $q = "SELECT * FROM email_templates WHERE `type` IN ('notification', 'notification_custom') AND deleted=0 ORDER BY `type` ASC";
-                $restpl = $this->db->query($q);
-                while ($row = $this->db->fetchByAssoc($restpl)) {
+                $restpl = $this->db->query('SELECT * FROM email_templates WHERE (type="notification" OR type="notification_custom") AND deleted=0 ORDER BY type ASC');
+                while ( $row = $this->db->fetchByAssoc( $restpl )) {
                     $_SESSION['notification_templates'][$row['for_bean']][$row['language']] = $row;
                 }
             }
 
+            if ( !isset( $_SESSION['notification_templates'][$this->module_name] )) {
+                $GLOBALS['log']->fatal("Notifications: Not any template available in DB for module '{$this->module_name}', cancelling send.");
+                return false;
+            }
 
-            //BEGIN introduced SpiceCRM 201809001. Apply email template from database
-            if($sendMail && !empty($_SESSION['notification_templates'][$this->module_name][$current_language])){
-                $tpl = BeanFactory::getBean('EmailTemplates', $_SESSION['notification_templates'][$this->module_name][$current_language]['id']);
-                $parsedTpl = $tpl->parse($this);
-                $email = BeanFactory::getBean('Emails');
-                $email->mailbox_id = Mailbox::getDefaultMailbox();
+            if ( isset( $_SESSION['notification_templates'][$this->module_name][$destLang] )) $tplId = $_SESSION['notification_templates'][$this->module_name][$destLang]['id'];
+            else if ( isset( $_SESSION['notification_templates'][$this->module_name]['en_us'] )) $tplId = $_SESSION['notification_templates'][$this->module_name]['en_us']['id'];
+            else {
+                $GLOBALS['log']->fatal("Notifications: No suitable template available in DB (in the langue of the destination user or in english) for module '{$this->module_name}', cancelling send.");
+                return false;
+            }
+
+            $tpl = BeanFactory::getBean( 'EmailTemplates', $tplId );
+            $parsedTpl = $tpl->parse( $this );
+            $defaultMailbox = Mailbox::getDefaultMailbox();
+            if ( $defaultMailbox && !empty( $defaultMailbox->id ) ) {
+                $email = BeanFactory::getBean( 'Emails' );
+                $email->mailbox_id = $defaultMailbox->id;
                 $email->name = $parsedTpl['subject'];
                 $email->body = $parsedTpl['body_html'];
-                $email->addEmailAddress('to', $sendToEmail);
+                $email->addEmailAddress( 'to', $sendToEmail );
                 // add the from address
-                $mailbox = BeanFactory::getBean('Mailboxes', $email->mailbox_id);
-                //$email->addEmailAddress('from', $mailbox->imap_pop3_username);
-                $email->addEmailAddress('from',  $current_user->emailAddress->getPrimaryAddress($current_user));
-                $email->sendEmail();
-
-            }//END
-            else {
-                $notify_mail = $this->create_notification_email($notify_user);
-                $notify_mail->setMailerForSystem();
-
-                if (empty($admin->settings['notify_send_from_assigning_user'])) {
-                    $notify_mail->From = $admin->settings['notify_fromaddress'];
-                    $notify_mail->FromName = (empty($admin->settings['notify_fromname'])) ? "" : $admin->settings['notify_fromname'];
-                } else {
-                    // Send notifications from the current user's e-mail (if set)
-                    $fromAddress = $current_user->emailAddress->getReplyToAddress($current_user);
-                    $fromAddress = !empty($fromAddress) ? $fromAddress : $admin->settings['notify_fromaddress'];
-                    $notify_mail->From = $fromAddress;
-                    //Use the users full name is available otherwise default to system name
-                    $from_name = !empty($admin->settings['notify_fromname']) ? $admin->settings['notify_fromname'] : "";
-                    $from_name = !empty($current_user->full_name) ? $current_user->full_name : $from_name;
-                    $notify_mail->FromName = $from_name;
+                $email->addEmailAddress( 'from', $current_user->emailAddress->getPrimaryAddress( $current_user ) );
+                $sendResults = $email->sendEmail();
+                if ( isset( $sendResults['errors'] ) ) {
+                    $GLOBALS['log']->fatal('Error sending notification email over Mailbox in SugarBean on file '.__FILE__.', line '.__LINE__.'.');
+                    $GLOBALS['log']->fatal( $sendResults );
                 }
+                return true;
+            } else {
+                $GLOBALS['log']->fatal('Notifications: No Notification sent. Please check if default mailbox is set.');
+                return false;
+            }
+            //END
 
-                $oe = new OutboundEmail();
-                $oe = $oe->getUserMailerSettings($current_user);
-                //only send if smtp server is defined
-                if ($sendEmail) {
-                    $smtpVerified = false;
+        } else {
 
-                    //first check the user settings
-                    if (!empty($oe->mail_smtpserver)) {
-                        $smtpVerified = true;
-                    }
+            $notify_mail = $this->create_notification_email($notify_user);
+            $notify_mail->setMailerForSystem();
 
-                    //if still not verified, check against the system settings
-                    if (!$smtpVerified) {
-                        $oe = $oe->getSystemMailerSettings();
-                        if (!empty($oe->mail_smtpserver)) {
-                            $smtpVerified = true;
-                        }
-                    }
-                    //if smtp was not verified against user or system, then do not send out email
-                    if (!$smtpVerified) {
-                        $GLOBALS['log']->fatal("Notifications: error sending e-mail, smtp server was not found ");
-                        //break out
-                        return;
-                    }
+            if (empty($admin->settings['notify_send_from_assigning_user'])) {
+                $notify_mail->From = $admin->settings['notify_fromaddress'];
+                $notify_mail->FromName = (empty($admin->settings['notify_fromname'])) ? "" : $admin->settings['notify_fromname'];
+            } else {
+                // Send notifications from the current user's e-mail (if set)
+                $fromAddress = $current_user->emailAddress->getReplyToAddress($current_user);
+                $fromAddress = !empty($fromAddress) ? $fromAddress : $admin->settings['notify_fromaddress'];
+                $notify_mail->From = $fromAddress;
+                //Use the users full name is available otherwise default to system name
+                $from_name = !empty($admin->settings['notify_fromname']) ? $admin->settings['notify_fromname'] : "";
+                $from_name = !empty($current_user->full_name) ? $current_user->full_name : $from_name;
+                $notify_mail->FromName = $from_name;
+            }
 
-                    if (!$notify_mail->send()) {
-                        $GLOBALS['log']->fatal("Notifications: error sending e-mail (method: {$notify_mail->Mailer}), (error: {$notify_mail->ErrorInfo})");
-                    } else {
-                        $GLOBALS['log']->info("Notifications: e-mail successfully sent");
-                    }
+            $oe = new OutboundEmail();
+            $oe = $oe->getUserMailerSettings($current_user);
+
+            //only send if smtp server is defined
+            $smtpVerified = false;
+
+            //first check the user settings
+            if (!empty($oe->mail_smtpserver)) {
+                $smtpVerified = true;
+            }
+
+            //if still not verified, check against the system settings
+            if (!$smtpVerified) {
+                $oe = $oe->getSystemMailerSettings();
+                if (!empty($oe->mail_smtpserver)) {
+                    $smtpVerified = true;
                 }
             }
+            //if smtp was not verified against user or system, then do not send out email
+            if (!$smtpVerified) {
+                $GLOBALS['log']->fatal("Notifications: error sending e-mail, smtp server was not found ");
+                //break out
+                return;
+            }
+
+            if (!$notify_mail->send()) {
+                $GLOBALS['log']->fatal("Notifications: error sending e-mail (method: {$notify_mail->Mailer}), (error: {$notify_mail->ErrorInfo})");
+            } else {
+                $GLOBALS['log']->info("Notifications: e-mail successfully sent");
+            }
+
         }
     }
 
@@ -2492,8 +2517,9 @@ class SugarBean
      * @param boolean $singleSelect Optional, default false.
      * @return String select query string, optionally an array value will be returned if $return_array= true.
      */
-    function create_new_list_query($order_by, $where, $filter = array(), $params = array(), $show_deleted = 0, $join_type = '', $return_array = false, $parentbean = null, $singleSelect = false, $ifListForExport = false)
-    {
+    public function create_new_list_query($order_by, $where, $filter = [], $params = [], $show_deleted = 0,
+                                          $join_type = '', $return_array = false, $parentbean = null,
+                                          $singleSelect = false, $ifListForExport = false) {
         global $beanFiles, $beanList;
         $selectedFields = array();
         $secondarySelectedFields = array();
@@ -3291,7 +3317,7 @@ class SugarBean
      *
      * Internal function, do not override.
      */
-    function retrieve($id = -1, $encode = false, $deleted = true, $relationships = true)
+    public function retrieve($id = -1, $encode = false, $deleted = true, $relationships = true)
     {
 
         $custom_logic_arguments['id'] = $id;
@@ -3752,7 +3778,7 @@ class SugarBean
                                 // change to use of BeanFactory
                                 $mod = BeanFactory::getBean($related_module, $this->$id_name);
 
-                                if (!empty($field['rname'])) {
+                                if ($mod and !empty(@$field['rname'])) {
                                     $field_rname = $field['rname']; //PHP7 COMPAT
                                     $this->$name = $mod->$field_rname; //PHP7 COMPAT
                                 } else if (isset($mod->name)) {
@@ -5773,4 +5799,14 @@ class SugarBean
             \LoggerManager::formatBackTrace(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4))
         );
     }
+
+    public function getFrontendUrl() {
+        if ( empty( $this->id )) return false;
+        return $GLOBALS['sugar_config']['frontend_url'].'#/module/'.$this->module_name.'/'.$this->id;
+    }
+
+    public function getFrontendUrlEncoded() {
+        return urlencode( $this->getFrontendUrl() );
+    }
+
 }

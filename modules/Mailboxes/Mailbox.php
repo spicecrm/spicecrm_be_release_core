@@ -51,6 +51,9 @@ class Mailbox extends SugarBean {
 
 	public $transport_handler;
 
+    /**
+     * Mailbox constructor.
+     */
 	public function __construct() {
         parent::__construct();
 	}
@@ -210,21 +213,33 @@ class Mailbox extends SugarBean {
      */
     public static function getDefaultMailbox()
     {// todo errors when no default mailbox available
-        global $db;
-        if(is_null($db)){
-            $db = DBManagerFactory::getInstance();
-        }
-        $defaultId = null;
-        $q = "SELECT id FROM mailboxes WHERE is_default=1";
-        $r = $db->query($q);
-        while ($row = $db->fetchByAssoc($r)) {
-            $defaultId = $row['id'];
+
+        if(@$GLOBALS['installing'] === true){
+            return false;
         }
 
-        $defaultMailbox =  \BeanFactory::getBean('Mailboxes', $defaultId);
+//        global $db;
+//        if(is_null($db)){
+//            $db = DBManagerFactory::getInstance();
+//        }
+//        $defaultId = null;
+//        $q = "SELECT id FROM mailboxes WHERE is_default=1 AND deleted=0";
+//        $r = $db->query($q);
+//        while ($row = $db->fetchByAssoc($r)) {
+//            $defaultId = $row['id'];
+//        }
 
-        if ($defaultMailbox == null) {
-            throw new Exception('No default Mailbox found');
+//        $defaultMailbox =  BeanFactory::getBean('Mailboxes', $defaultId);
+
+        $defaultMailbox = BeanFactory::getBean('Mailboxes');
+        $defaultMailbox = $defaultMailbox->retrieve_by_string_fields(array('is_default' => true));
+        //getBean will return Mailboxe object with empty properties if $defaultId is null
+        //Check on property id
+        if (is_null($defaultMailbox) || empty($defaultMailbox->id)) {
+            # logging temporarily turned off to prevent messing sugarcrm.log:
+            # $GLOBALS['log']->fatal('No default Mailbox found');
+            //throw new Exception('No default Mailbox found');
+            return false;
         } else {
             return $defaultMailbox;
         }

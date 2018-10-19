@@ -31,15 +31,15 @@ $mw = function ($request, $response, $next)
     //var_dump($request->getParsedBody(), $request->getParams());
 
     // check if this request has to be logged by some rules...
-    $sql = "SELECT 1 FROM syskrestlogconfig WHERE 
+    $sql = "SELECT COUNT(id) cnt FROM syskrestlogconfig WHERE 
               (route = '{$log->route}' OR route = '*' OR '{$log->route}' LIKE route) AND
               (method = '{$log->method}' OR method = '*') AND
               (user_id = '{$log->user_id}' OR user_id = '*') AND
               (ip = '{$log->ip}' OR ip = '*') AND
-              is_active = 1
-              LIMIT 1";
+              is_active = 1";
     $res = $db->query($sql);
-    if( $res->num_rows > 0 ) {
+    $row = $db->fetchByAssoc($res);
+    if( $row['cnt'] > 0 ) {
         $logging = true;
         // write the log...
         $log->id = null;
@@ -51,7 +51,6 @@ $mw = function ($request, $response, $next)
     else
         $logging = false;
 
-
     // do the magic...
     $response = $next($request, $response);
 
@@ -62,8 +61,9 @@ $mw = function ($request, $response, $next)
         $log->response = $db->quote(ob_get_contents());
         ob_end_flush();
 
+        // if the endpoint didn't use echo... instead the response object ist correctly returned by the endpoint
         if(!$log->response)
-            $log->response = $response->getBody();  // is needed if the endpoint didn't use echo... instead the response object ist correctly returned by the endpoint...
+            $log->response = $response->getBody();
         // update the log...
         $result = $db->updateQuery('syskrestlog', ['id' => $log->id], (array) $log);
         //var_dump($result, $db->last_error);

@@ -69,7 +69,7 @@ $dictionary['ProjectWBS'] = array(
         'parent_name' => array (
             'source' => 'non-db',
             'name' => 'parent_name',
-            'vname' => 'LBL_PARENT_NAME',
+            'vname' => 'LBL_PARENT',
             'type' => 'relate',
             'len' => '255',
             'id_name' => 'parent_id',
@@ -122,6 +122,15 @@ $dictionary['ProjectWBS'] = array(
             'type' => 'link',
             'module' => 'ProjectTasks',
             'relationship' => 'projectwbss_prjecttasks',
+            'source'=>'non-db',
+//            'side' => 'right',
+        ),
+        'systemdeploymentcrs' => array(
+            'name' => 'systemdeploymentcrs',
+            'vname' => 'LBL_SYSTEMDEPLOYMENTCRS',
+            'type' => 'link',
+            'module' => 'SystemDeploymentCRs',
+            'relationship' => 'projectwbs_systemdeploymentcrs',
             'source'=>'non-db',
 //            'side' => 'right',
         )

@@ -1655,18 +1655,20 @@ EOQ;
      * @static
      * @return string password
      */
-    public static function generatePassword() {
-        $res = $GLOBALS['sugar_config']['passwordsetting'];
-        $charBKT = '';
-        //chars to select from
-        $LOWERCASE = "abcdefghijklmnpqrstuvwxyz";
-        $NUMBER = "0123456789";
-        $UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        $SPECIAL = '~!@#$%^&*()_+=-{}|';
+    public function generatePassword() {
+
+        $length =
+            ( isset( $GLOBALS['sugar_config']['passwordsetting']['minpwdlength'] ) and (int)$GLOBALS['sugar_config']['passwordsetting']['minpwdlength'] > 0 )
+                ? (int)$GLOBALS['sugar_config']['passwordsetting']['minpwdlength'] : 6;
+
+        // chars to select from (without specific characters to prevent confusion when reading and retyping the password)
+        $LOWERCASE = 'abcdefghijkmnpqrstuvwxyz'; // without "l"!
+        $NUMBER = '23456789'; // without "0" and "1"!
+        $UPPERCASE = 'ABCDEFGHIJKLMNPQRSTUVWXYZ'; // without "O"!
+        $charBKT = $UPPERCASE . $LOWERCASE . $NUMBER;
+
         $condition = 0;
-        $charBKT .= $UPPERCASE . $LOWERCASE . $NUMBER;
-        $password = "";
-        $length = '6';
+        $password = '';
 
         // Create random characters for the ones that doesnt have requirements
         for ($i = 0; $i < $length - $condition; $i ++) {  // loop and create password
@@ -1674,6 +1676,7 @@ EOQ;
         }
 
         return $password;
+
     }
 
     /**

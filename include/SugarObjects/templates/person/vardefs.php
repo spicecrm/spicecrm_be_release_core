@@ -285,12 +285,26 @@ $vardefs = array(
             'default' => true,
             'audited' => true
         ),
+        'gdpr_data_source' => array(
+            'name' => 'gdpr_data_source',
+            'vname' => 'LBL_GDPR_DATA_SOURCE',
+            'type' => 'varchar',
+            'len' => '100',
+            'audited' => true,
+        ),
         'gdpr_marketing_agreement' => array(
             'name' => 'gdpr_marketing_agreement',
             'vname' => 'LBL_GDPR_MARKETING_AGREEMENT',
             'type' => 'bool',
             'default' => false,
             'audited' => true
+        ),
+        'gdpr_marketing_source' => array(
+            'name' => 'gdpr_marketing_source',
+            'vname' => 'LBL_GDPR_MARKETING_SOURCE',
+            'type' => 'varchar',
+            'len' => '100',
+            'audited' => true,
         ),
         'primary_address_street' =>
             array(

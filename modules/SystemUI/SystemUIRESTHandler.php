@@ -539,11 +539,11 @@ class SystemUIRESTHandler
     function getFieldSets()
     {
         $retArray = array();
-        $fieldsets = $this->db->query("SELECT sysuifieldsetsitems.*, sysuifieldsets.module, sysuifieldsets.name, sysuifieldsets.package fieldsetpackage FROM sysuifieldsetsitems, sysuifieldsets WHERE sysuifieldsetsitems.fieldset_id = sysuifieldsets.id ORDER BY fieldset_id, sequence");
+        $fieldsets = $this->db->query("SELECT sysuifieldsetsitems.*, sysuifieldsets.id fid, sysuifieldsets.module, sysuifieldsets.name, sysuifieldsets.package fieldsetpackage FROM sysuifieldsets LEFT JOIN sysuifieldsetsitems ON sysuifieldsetsitems.fieldset_id = sysuifieldsets.id ORDER BY fieldset_id, sequence");
         while ($fieldset = $this->db->fetchByAssoc($fieldsets)) {
 
-            if (!isset($retArray[$fieldset['fieldset_id']])) {
-                $retArray[$fieldset['fieldset_id']] = array(
+            if (!isset($retArray[$fieldset['fid']])) {
+                $retArray[$fieldset['fid']] = array(
                     'name' => $fieldset['name'],
                     'package' => $fieldset['fieldsetpackage'],
                     'module' => $fieldset['module'] ?: '*',
@@ -553,7 +553,7 @@ class SystemUIRESTHandler
             }
 
             if (!empty($fieldset['field']))
-                $retArray[$fieldset['fieldset_id']]['items'][] = array(
+                $retArray[$fieldset['fid']]['items'][] = array(
                     'id' => $fieldset['id'],
                     'package' => $fieldset['package'],
                     'field' => $fieldset['field'],
@@ -561,7 +561,7 @@ class SystemUIRESTHandler
                     'sequence' => $fieldset['sequence']
                 );
             elseif (!empty($fieldset['fieldset']))
-                $retArray[$fieldset['fieldset_id']]['items'][] = array(
+                $retArray[$fieldset['fid']]['items'][] = array(
                     'id' => $fieldset['id'],
                     'package' => $fieldset['package'],
                     'fieldset' => $fieldset['fieldset'],
@@ -570,11 +570,11 @@ class SystemUIRESTHandler
                 );
         }
 
-        $fieldsets = $this->db->query("SELECT sysuicustomfieldsetsitems.*, sysuicustomfieldsets.module, sysuicustomfieldsets.name, sysuicustomfieldsets.package fieldsetpackage FROM sysuicustomfieldsetsitems, sysuicustomfieldsets WHERE sysuicustomfieldsetsitems.fieldset_id = sysuicustomfieldsets.id ORDER BY fieldset_id, sequence");
+        $fieldsets = $this->db->query("SELECT sysuicustomfieldsetsitems.*, sysuicustomfieldsets.id fid, sysuicustomfieldsets.module, sysuicustomfieldsets.name, sysuicustomfieldsets.package fieldsetpackage FROM sysuicustomfieldsets LEFT JOIN sysuicustomfieldsetsitems ON sysuicustomfieldsetsitems.fieldset_id = sysuicustomfieldsets.id ORDER BY fieldset_id, sequence");
         while ($fieldset = $this->db->fetchByAssoc($fieldsets)) {
 
-            if (!isset($retArray[$fieldset['fieldset_id']])) {
-                $retArray[$fieldset['fieldset_id']] = array(
+            if (!isset($retArray[$fieldset['fid']])) {
+                $retArray[$fieldset['fid']] = array(
                     'name' => $fieldset['name'],
                     'package' => $fieldset['fieldsetpackage'],
                     'module' => $fieldset['module'] ?: '*',
@@ -584,7 +584,7 @@ class SystemUIRESTHandler
             }
 
             if (!empty($fieldset['field']))
-                $retArray[$fieldset['fieldset_id']]['items'][] = array(
+                $retArray[$fieldset['fid']]['items'][] = array(
                     'id' => $fieldset['id'],
                     'package' => $fieldset['package'],
                     'field' => $fieldset['field'],
@@ -592,7 +592,7 @@ class SystemUIRESTHandler
                     'sequence' => $fieldset['sequence']
                 );
             elseif (!empty($fieldset['fieldset']))
-                $retArray[$fieldset['fieldset_id']]['items'][] = array(
+                $retArray[$fieldset['fid']]['items'][] = array(
                     'id' => $fieldset['id'],
                     'package' => $fieldset['package'],
                     'fieldset' => $fieldset['fieldset'],

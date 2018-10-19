@@ -296,9 +296,8 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
             array(
                 'name' => 'opportunity_amount',
                 'vname' => 'LBL_OPPORTUNITY_AMOUNT',
-                'type' => 'varchar',
+                'type' => 'double',
                 'group' => 'opportunity_name',
-                'len' => '50',
                 'comment' => 'Amount of the opportunity'
             ),
         'campaign_id' =>
