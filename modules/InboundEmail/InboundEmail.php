@@ -47,11 +47,18 @@ function this_callback($str) {
 
 /**
  * Stub for certain interactions;
+ *
+ * @deprecated To be replaced by the Mailboxes module
  */
 class temp {
 	var $name;
 }
 
+/**
+ * Class InboundEmail
+ *
+ * @deprecated To be replaced by the Mailboxes module
+ */
 class InboundEmail extends SugarBean {
 	// module specific
 	var $conn;
@@ -175,6 +182,8 @@ class InboundEmail extends SugarBean {
 
 	/**
 	 * Sole constructor
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function __construct() {
 	    //self::logDeprecated();
@@ -201,6 +210,7 @@ class InboundEmail extends SugarBean {
     /**
      * Overrides SugarBean's mark_deleted() to drop the related cache table
      * @param string $id GUID of I-E instance
+     * @deprecated To be replaced by the Mailboxes module
      */
     function mark_deleted($id)
     {
@@ -215,6 +225,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Deletes all rows for a given instance
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function deleteCache()
     {
@@ -228,7 +240,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * Mark cached email answered (replied)
+     *
      * @param string $mailid (uid for imap, message_id for pop3)
+     * @deprecated To be replaced by the Mailboxes module
      */
     function mark_answered($mailid, $type = 'smtp')
     {
@@ -247,7 +261,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * Renames an IMAP mailbox
+     *
      * @param string $newName
+     * @deprecated To be replaced by the Mailboxes module
      */
     function renameFolder($oldName, $newName)
     {
@@ -275,6 +291,7 @@ class InboundEmail extends SugarBean {
      * @param bool test Flag to test connection
      * @param bool force Force reconnect
      * @return string "true" on success, "false" or $errorMessage on failure
+     * @deprecated To be replaced by the Mailboxes module
      */
     function connectMailserver($test = false, $force = false)
     {
@@ -397,6 +414,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Programatically determines best-case settings for imap_open()
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function findOptimumSettings($useSsl = false, $user = '', $pass = '', $server = '', $port = '', $prot = '', $mailbox = '')
     {
@@ -624,6 +643,7 @@ class InboundEmail extends SugarBean {
      * @param  integer $options Bitmask for options parameter to the imap_open function
      *
      * @return resource|boolean  Connection resource on success, FALSE on failure
+     * @deprecated To be replaced by the Mailboxes module
      */
     protected function getImapConnection($mailbox, $username, $password, $options = 0)
     {
@@ -653,7 +673,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * Checks if this is a pop3 type of an account or not
+     *
      * @return boolean
+     * @deprecated To be replaced by the Mailboxes module
      */
     function isPop3Protocol()
     {
@@ -661,6 +683,14 @@ class InboundEmail extends SugarBean {
         return ($this->protocol == 'pop3');
     }
 
+    /**
+     * @param $server_url
+     * @param $email_user
+     * @param $port
+     * @param $protocol
+     * @param $delimiter
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function setSessionInboundDelimiterString($server_url, $email_user, $port, $protocol, $delimiter)
     {
         self::logDeprecated();
@@ -668,6 +698,14 @@ class InboundEmail extends SugarBean {
         $_SESSION[$sessionInboundDelimiterString] = $delimiter;
     }
 
+    /**
+     * @param $server_url
+     * @param $email_user
+     * @param $port
+     * @param $protocol
+     * @param $goodStr
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function setSessionConnectionString($server_url, $email_user, $port, $protocol, $goodStr)
     {
         self::logDeprecated();
@@ -675,6 +713,14 @@ class InboundEmail extends SugarBean {
         $_SESSION[$sessionConnectionString] = $goodStr;
     }
 
+    /**
+     * @param $server_url
+     * @param $email_user
+     * @param $port
+     * @param $protocol
+     * @param $foldersList
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function setSessionInboundFoldersString($server_url, $email_user, $port, $protocol, $foldersList)
     {
         self::logDeprecated();
@@ -684,7 +730,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * parses Sugar's storage method for imap server service strings
+     *
 	 * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getServiceString()
     {
@@ -702,8 +750,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * Constructs the resource connection string that IMAP needs
+     *
      * @param string $service Service string, will generate if not passed
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getConnectString($service = '', $mbox = '', $includeMbox = true)
     {
@@ -719,7 +769,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * wraps SugarBean->save()
+     *
      * @param string ID of saved bean
+     * @deprecated To be replaced by the Mailboxes module
      */
     function save($check_notify = false, $fts_index_bean = true)
     {
@@ -739,6 +791,12 @@ class InboundEmail extends SugarBean {
         return $ret;
     }
 
+    /**
+     * @param $raw
+     * @param $delimiter
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function generateMultiDimArrayFromFlatArray($raw, $delimiter)
     {
         self::logDeprecated();
@@ -753,9 +811,11 @@ class InboundEmail extends SugarBean {
 
     /**
      * sorts the folders in a mailbox in a multi-dimensional array
+     *
      * @param string $MBOX
      * @param array $ret
      * @return array
+     * @deprecated To be replaced by the Mailboxes module
      */
     function sortMailboxes($mbox, $ret, $delimeter = ".")
     {
@@ -777,6 +837,10 @@ class InboundEmail extends SugarBean {
         return $ret;
     }
 
+    /**
+     * @return null|string
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function retrieveDelimiter()
     {
         self::logDeprecated();
@@ -787,6 +851,13 @@ class InboundEmail extends SugarBean {
         return $delimiter;
 	} // fn
 
+    /**
+     * @param $option_name
+     * @param null $default_value
+     * @param null $stored_options
+     * @return null
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function get_stored_options($option_name, $default_value = null, $stored_options = null)
     {
         self::logDeprecated();
@@ -802,6 +873,12 @@ class InboundEmail extends SugarBean {
         return $default_value;
     }
 
+    /**
+     * @param $arraymbox
+     * @param $delimiter
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function generateFlatArrayFromMultiDimArray($arraymbox, $delimiter)
     {
         self::logDeprecated();
@@ -813,6 +890,13 @@ class InboundEmail extends SugarBean {
 
     }
 
+    /**
+     * @param $key
+     * @param $arraymbox
+     * @param $ret
+     * @param $delimiter
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function generateArrayData($key, $arraymbox, &$ret, $delimiter)
     {
         self::logDeprecated();
@@ -825,6 +909,12 @@ class InboundEmail extends SugarBean {
         } // if
     }
 
+    /**
+     * @param $mailboxArray
+     * @param $rawArray
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function filterMailBoxFromRaw($mailboxArray, $rawArray)
     {
         self::logDeprecated();
@@ -833,6 +923,14 @@ class InboundEmail extends SugarBean {
         return $newArray;
     }
 
+    /**
+     * @param $server_url
+     * @param $email_user
+     * @param $port
+     * @param $protocol
+     * @return string
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getSessionInboundFoldersString($server_url, $email_user, $port, $protocol)
     {
         self::logDeprecated();
@@ -842,8 +940,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * constructs a nicely formatted version of raw source
+     *
      * @param int $uid UID of email
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getFormattedRawSource($uid)
     {
@@ -881,6 +981,7 @@ class InboundEmail extends SugarBean {
      *
      * @param string $input text
      * @return string output text
+     * @deprecated To be replaced by the Mailboxes module
      */
     function convertToUtf8($input)
     {
@@ -902,6 +1003,7 @@ class InboundEmail extends SugarBean {
      * @param string text test to be re-encoded
      * @param string charset original character set
      * @return string utf8 re-encoded text
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleCharsetTranslation($text, $charset)
     {
@@ -924,8 +1026,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * This method returns the correct messageno for the pop3 protocol
+     *
      * @param String UIDL
      * @return returnMsgNo
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getCorrectMessageNoForPop3($messageId)
     {
@@ -994,7 +1098,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * Opens a socket connection to the pop3 server
+     *
      * @return bool
+     * @deprecated To be replaced by the Mailboxes module
      */
     function pop3_open()
     {
@@ -1023,10 +1129,12 @@ class InboundEmail extends SugarBean {
 
 	/**
 	 * sends a command down to the POP3 server
+     *
 	 * @param string command
 	 * @param string args
 	 * @param bool return
 	 * @return string
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function pop3_sendCommand($command, $args='', $return=true) {
         self::logDeprecated();
@@ -1046,6 +1154,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Closes connections and runs clean-up routines
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function pop3_cleanUp()
     {
@@ -1058,8 +1168,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * constructs a nicely formatted version of email headers.
+     *
      * @param int $uid
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getFormattedHeaders($uid)
     {
@@ -1101,6 +1213,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Empties Trash folders
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function emptyTrash()
     {
@@ -1129,8 +1243,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * Gets a count of all rows that are flagged seen = 0
+     *
      * @param string $mbox
      * @return int
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getCacheUnreadCount($mbox)
     {
@@ -1142,6 +1258,11 @@ class InboundEmail extends SugarBean {
         return $a['c'];
     }
 
+    /**
+     * @param $mbox
+     * @return mixed
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getCacheUnread($mbox)
     {
         self::logDeprecated();
@@ -1152,6 +1273,10 @@ class InboundEmail extends SugarBean {
         return $a['c'];
     }
 
+    /**
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
 	function getPop3NewMessagesToDownloadForCron() {
         self::logDeprecated();
 		$pop3UIDL = $this->pop3_getUIDL();
@@ -1179,9 +1304,11 @@ class InboundEmail extends SugarBean {
 
     /**
      * merges new info with the saved cached file
+     *
      * @param array $array Array of email Overviews
      * @param string $type 'append' or 'remove'
      * @param string $mailbox Target mailbox if not current assigned
+     * @deprecated To be replaced by the Mailboxes module
      */
     function updateOverviewCacheFile($array, $type = 'append', $mailbox = '')
     {
@@ -1227,7 +1354,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * Retrieves cached headers
+     *
      * @return array
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getCacheValue($mbox, $limit = 20, $page = 1, $sort = '', $direction = '')
     {
@@ -1316,6 +1445,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Sets cache values
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function setCacheValue($mbox, $insert, $update = array(), $remove = array())
     {
@@ -1514,6 +1645,8 @@ class InboundEmail extends SugarBean {
     /**
      * Special handler for POP3 boxes.  Standard IMAP commands are useless.
      * This will fetch only partial emails for POP3 and hence needs to be call again and again based on status it returns
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function pop3_checkPartialEmail($synch = false)
     {
@@ -1623,6 +1756,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Deletes all the pop3 data which has been deleted from server
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function deletePop3Cache()
     {
@@ -1648,8 +1783,10 @@ class InboundEmail extends SugarBean {
 
     /**
 	 * This function is used by cron job for group mailbox without group folder
+     *
 	 * @param string $msgno for pop
 	 * @param string $uid for imap
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function getMessagesInEmailCache($msgno, $uid) {
         self::logDeprecated();
@@ -1667,6 +1804,12 @@ class InboundEmail extends SugarBean {
 
 	}
 
+    /**
+     * @param bool $prefetch
+     * @param bool $synch
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function checkEmailIMAPPartial($prefetch=true, $synch = false) {
         self::logDeprecated();
     	$GLOBALS['log']->info("*****************INBOUNDEMAIL: at IMAP check partial");
@@ -1729,6 +1872,7 @@ class InboundEmail extends SugarBean {
      * )
      * @param bool $justRaw Default false
      * @return array
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getMailboxes($justRaw = false)
     {
@@ -1784,6 +1928,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Clears out cache files for a user
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function cleanOutCache()
     {
@@ -1794,8 +1940,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * Checks email (local caching too) for one mailbox
+     *
      * @param string $mailbox IMAP Mailbox path
      * @param bool $prefetch Flag to prefetch email body on check
+     * @deprecated To be replaced by the Mailboxes module
      */
     function checkEmailOneMailboxPartial($mailbox, $prefetch = true, $synchronize = false, $start = 0, $max = -1)
     {
@@ -1900,7 +2048,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * sets the cache timestamp
+     *
      * @param string mbox
+     * @deprecated To be replaced by the Mailboxes module
      */
     function setCacheTimestamp($mbox)
     {
@@ -1919,6 +2069,11 @@ class InboundEmail extends SugarBean {
         $GLOBALS['log']->info("INBOUNDEMAIL-CACHE: setting timestamp query [ {$q} ]");
     }
 
+    /**
+     * @param $criteria
+     * @return array|mixed
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getCachedIMAPSearch($criteria)
     {
         self::logDeprecated();
@@ -1964,7 +2119,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * Check email prefetches email bodies for quicker display
+     *
      * @param array array of fetched overviews
+     * @deprecated To be replaced by the Mailboxes module
      */
     function fetchCheckedEmails($fetchedOverviews)
     {
@@ -2003,11 +2160,13 @@ class InboundEmail extends SugarBean {
 
     /**
      * fills InboundEmail->email with an email's details
+     *
      * @param int uid Unique ID of email
      * @param bool isMsgNo flag that passed ID is msgNo, default false
      * @param bool setRead Sets the 'seen' flag in cache
      * @param bool forceRefresh Skips cache file
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function setEmailForDisplay($uid, $isMsgNo = false, $setRead = false, $forceRefresh = false)
     {
@@ -2087,9 +2246,11 @@ class InboundEmail extends SugarBean {
 
     /**
      * shiny new importOneEmail() method
+     *
      * @param int msgNo
      * @param bool forDisplay
      * @param clean_email boolean, default true,
+     * @deprecated To be replaced by the Mailboxes module
      */
     function importOneEmail($msgNo, $uid, $forDisplay = false, $clean_email = true)
     {
@@ -2369,6 +2530,7 @@ class InboundEmail extends SugarBean {
      * @param object header object generated by imap_headerinfo()
      * @param string textHeader Headers in normal text format
      * @return bool
+     * @deprecated To be replaced by the Mailboxes module
      */
     function importDupeCheck($message_id, $header, $textHeader)
     {
@@ -2420,6 +2582,8 @@ class InboundEmail extends SugarBean {
      * Outlook/Exchange.
      *
      * We need to derive a reliable one for duplicate import checking.
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getMessageId($header)
     {
@@ -2432,11 +2596,13 @@ class InboundEmail extends SugarBean {
      * Takes the "parts" attribute of the object that imap_fetchbody() method
      * returns, and recursively goes through looking for objects that have a
      * disposition of "attachement" or "inline"
+     *
      * @param int $msgNo The relative message number for the monitored mailbox
      * @param object $parts Array of objects to examine
      * @param string $emailId The GUID of the email saved prior to calling this method
      * @param array $breadcrumb Default 0, build up of the parts mapping
      * @param bool $forDisplay Default false
+     * @deprecated To be replaced by the Mailboxes module
      */
     function saveAttachments($msgNo, $parts, $emailId, $breadcrumb = '0', $forDisplay)
     {
@@ -2542,6 +2708,7 @@ class InboundEmail extends SugarBean {
      *
      * @param string $emailId
      * @return Note
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getNoteBeanForAttachment($emailId)
     {
@@ -2559,6 +2726,7 @@ class InboundEmail extends SugarBean {
      *
      * @param string name Name of attachment
      * @return string decoded name
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleEncodedFilename($name)
     {
@@ -2602,6 +2770,7 @@ class InboundEmail extends SugarBean {
      *
      * @param object $part
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function retrieveAttachmentNameFromStructure($part)
     {
@@ -2628,6 +2797,12 @@ class InboundEmail extends SugarBean {
 
     } // fn
 
+    /**
+     * @param $type
+     * @param $subtype
+     * @return string
+     * @deprecated To be replaced by the Mailboxes module
+     */
     public function getMimeType($type, $subtype)
     {
         self::logDeprecated();
@@ -2644,6 +2819,7 @@ class InboundEmail extends SugarBean {
      *
      * @param bool $nameOnly Whether or not the attachment count should be appended to the filename.
      * @return string The temp file name
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getTempFilename($nameOnly =false)
     {
@@ -2661,11 +2837,13 @@ class InboundEmail extends SugarBean {
 
     /**
      * saves the actual binary file of a given attachment
+     *
      * @param object attach Note object that is attached to the binary file
      * @param string msgNo Message Number on IMAP/POP3 server
      * @param string thisBc Breadcrumb to navigate email structure to find the content
      * @param object part IMAP standard object that contains the "parts" of this section of email
      * @param bool $forDisplay
+     * @deprecated To be replaced by the Mailboxes module
      */
     function saveAttachmentBinaries($attach, $msgNo, $thisBc, $part, $forDisplay)
     {
@@ -2707,8 +2885,10 @@ class InboundEmail extends SugarBean {
     /**
      * decodes a string based on its associated encoding
      * if nothing is passed, we default to no-encoding type
+     *
      * @param    $str    encoded string
      * @param    $enc    detected encoding
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleTranserEncoding($str, $enc = 0)
     {
@@ -2736,8 +2916,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * figures out if a plain text email body has UUEncoded attachments
+     *
      * @param string string The email body
      * @return bool True if UUEncode is detected.
+     * @deprecated To be replaced by the Mailboxes module
      */
     function isUuencode($string)
     {
@@ -2756,9 +2938,11 @@ class InboundEmail extends SugarBean {
 
     /**
      * handles UU Encoded emails - a legacy from pre-RFC 822 which must still be supported (?)
+     *
      * @param string raw The raw email body
      * @param string id Parent email ID
      * @return string The filtered email body, stripped of attachments
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleUUEncodedEmailBody($raw, $id)
     {
@@ -2804,8 +2988,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * wrapper for UUDecode
+     *
      * @param string id Id of the email
      * @param string UUEncode Encode US-ASCII
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleUUDecode($id, $fileName, $UUEncode)
     {
@@ -2858,8 +3044,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * takes the output from imap_mime_hader_decode() and handles multiple types of encoding
+     *
      * @param string subject Raw subject string from email
      * @return string ret properly formatted UTF-8 string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleMimeHeaderDecode($subject)
     {
@@ -2880,7 +3068,9 @@ class InboundEmail extends SugarBean {
     /**
      * Takes a PHP imap_* object's to/from/cc/bcc address field and converts it
      * to a standard string that SugarCRM expects
+     *
      * @param    $arr    an array of email address objects
+     * @deprecated To be replaced by the Mailboxes module
      */
     function convertImapToSugarEmailAddress($arr)
     {
@@ -2902,6 +3092,7 @@ class InboundEmail extends SugarBean {
      * @param int msgNo the relative message number for the monitored mailbox
      * @param string $type the type of text processed, either 'PLAIN' or 'HTML'
      * @return string UTF-8 encoded version of the requested message text
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getMessageText($msgNo, $type, $structure, $fullHeader, $clean_email = true, $bcOffset = "")
     {
@@ -2986,9 +3177,11 @@ class InboundEmail extends SugarBean {
     /**
      * Builds up the "breadcrumb" trail that imap_fetchbody() uses to return
      * parts of an email message, including attachments and inline images
+     *
      * @param    $parts    array of objects
      * @param    $subtype    what type of trail to return? HTML? Plain? binaries?
      * @param    $breadcrumb    text trail to build up
+     * @deprecated To be replaced by the Mailboxes module
      */
     function buildBreadCrumbs($parts, $subtype, $breadcrumb = '0')
     {
@@ -3024,6 +3217,7 @@ class InboundEmail extends SugarBean {
      * @param string $bc
      * @param string $offset
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function addBreadCrumbOffset($bc, $offset)
     {
@@ -3053,6 +3247,7 @@ class InboundEmail extends SugarBean {
      * @param string $section
      * @param stdObject $structure
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getMessageTextFromSingleMimePart($msgNo, $section, $structure)
     {
@@ -3066,9 +3261,11 @@ class InboundEmail extends SugarBean {
 
     /**
      * takes a breadcrumb and returns the encoding at that level
+     *
      * @param    string bc the breadcrumb string in format (1.1.1)
      * @param    array parts the root level parts array
      * @return    int retInt Int key to transfer encoding (see handleTranserEncoding())
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getEncodingFromBreadCrumb($bc, $parts)
     {
@@ -3097,6 +3294,7 @@ class InboundEmail extends SugarBean {
      * @param string bc target part of the message in format (1.1.1)
      * @param array parts 1 level above ROOT array of Objects representing a multipart body
      * @return string charset name
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getCharsetFromBreadCrumb($bc, $parts)
     {
@@ -3117,8 +3315,10 @@ class InboundEmail extends SugarBean {
 
 	/**
 	 * Gets part by following breadcrumb path
+     *
 	 * @param string $bc the breadcrumb string in format (1.1.1)
 	 * @param array parts the root level parts array
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	protected function getPartByPath($bc, $parts)
 	{
@@ -3144,10 +3344,12 @@ class InboundEmail extends SugarBean {
     /**
      * Similar to buildBreadCrumbs() but returns an ordered array containing all parts of the message that would be
      * considered "HTML" or Richtext (embedded images, formatting, etc.).
+     *
      * @param array parts Array of parts of a message
      * @param int breadcrumb Passed integer value to start breadcrumb trail
      * @param array stackedBreadcrumbs Persistent trail of breadcrumbs
      * @return array Ordered array of parts to retrieve via imap_fetchbody()
+     * @deprecated To be replaced by the Mailboxes module
      */
     function buildBreadCrumbsHTML($parts, $breadcrumb = '0', $stackedBreadcrumbs = array()) {
         self::logDeprecated();
@@ -3184,8 +3386,10 @@ class InboundEmail extends SugarBean {
     /**
      * decodes raw header information and passes back an associative array with
      * the important elements key'd by name
+     *
      * @param header string the raw header
      * @return decodedHeader array the associative array
+     * @deprecated To be replaced by the Mailboxes module
      */
     function decodeHeader($fullHeader)
     {
@@ -3242,6 +3446,7 @@ class InboundEmail extends SugarBean {
 	 *
      * @param string $msgPart
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function customGetMessageText($msgPart)
     {
@@ -3262,8 +3467,10 @@ class InboundEmail extends SugarBean {
 
     /**
      * Checks for $user's autoImport setting and returns the current value
+     *
      * @param object $user User in focus, defaults to $current_user
      * @return bool
+     * @deprecated To be replaced by the Mailboxes module
      */
     function isAutoImport($user = null)
     {
@@ -3288,6 +3495,7 @@ class InboundEmail extends SugarBean {
      *
      * @param object email Email object passed as a reference
      * @param object header Header object generated by imap_headerinfo();
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleMailboxType(&$email, &$header)
     {
@@ -3320,6 +3528,11 @@ class InboundEmail extends SugarBean {
         }
     }
 
+    /**
+     * @param $email
+     * @return bool
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function handleCaseAssignment($email)
     {
         self::logDeprecated();
@@ -3346,6 +3559,7 @@ class InboundEmail extends SugarBean {
      * @param aCase $aCase A Case object
      *
      * @return string|boolean   Case ID or FALSE if not found
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getCaseIdFromCaseNumber($emailName, $aCase)
     {
@@ -3379,6 +3593,10 @@ class InboundEmail extends SugarBean {
         return false;
     }
 
+    /**
+     * @return bool
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function isMailBoxTypeCreateCase()
     {
         self::logDeprecated();
@@ -3389,6 +3607,7 @@ class InboundEmail extends SugarBean {
      * handles auto-responses to inbound emails
      *
 	 * @param object email Email passed as reference
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleAutoresponse(&$email, &$contactAddr)
     {
@@ -3491,6 +3710,7 @@ class InboundEmail extends SugarBean {
      *
      * @param string from target address for auto-reply
      * @return bool true if target is valid/under limit
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getAutoreplyStatus($from)
     {
@@ -3521,6 +3741,7 @@ class InboundEmail extends SugarBean {
      *
      * @param string subject Subject line of email in question
      * @return bool returns false if OOTO found
+     * @deprecated To be replaced by the Mailboxes module
      */
     function checkOutOfOffice($subject)
     {
@@ -3553,6 +3774,7 @@ class InboundEmail extends SugarBean {
      *
      * @param object email Email object in question
      * @return bool true if not filtered, false if filtered
+     * @deprecated To be replaced by the Mailboxes module
      */
     function checkFilterDomain($email)
     {
@@ -3580,6 +3802,7 @@ class InboundEmail extends SugarBean {
      * sets a timestamp for an autoreply to a single email addy
      *
      * @param string addr Address of auto-replied target
+     * @deprecated To be replaced by the Mailboxes module
      */
     function setAutoreplyStatus($addr)
     {
@@ -3596,6 +3819,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Sets status for a particular attribute on the mailserver and the local cache file
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
 	function setStatuses($uid, $field, $value)
     {
@@ -3639,7 +3864,9 @@ class InboundEmail extends SugarBean {
 
     /**
      * Retrieves cached headers
+     *
      * @return array
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getCacheValueForUIDs($mbox, $UIDs)
     {
@@ -3729,6 +3956,8 @@ class InboundEmail extends SugarBean {
 
     /**
      * Fetches a timestamp
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getCacheTimestamp($mbox)
     {
@@ -3746,9 +3975,11 @@ class InboundEmail extends SugarBean {
 
     /**
      * Shows one email.
+     *
      * @param int uid UID of email to display
      * @param string mbox Mailbox to look in for the message
      * @param bool isMsgNo Flag to assume $uid is a MessageNo, not UniqueID, default false
+     * @deprecated To be replaced by the Mailboxes module
      */
     function displayOneEmail($uid, $mbox, $isMsgNo = false)
     {
@@ -3907,8 +4138,10 @@ eoq;
 
     /**
      * Takes a long list of email addresses from a To or CC field and shows the first 3, the rest hidden
+     *
      * @param string emails
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function collapseLongMailingList($emails)
     {
@@ -3954,10 +4187,12 @@ eoq;
     /**
      * similar to imap_fetch_overview, but it gets overviews from a local cache
      * file.
+     *
      * @param string $uids UIDs in comma-delimited format
      * @param string $mailbox The mailbox in focus, will default to $this->mailbox
      * @param bool $remove Default false
      * @return array
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getOverviewsFromCacheFile($uids, $mailbox = '', $remove = false)
     {
@@ -3995,6 +4230,10 @@ eoq;
         return $ret;
     }
 
+    /**
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function checkEmail2_meta()
     {
         self::logDeprecated();
@@ -4021,6 +4260,11 @@ eoq;
         return $ret;
     }
 
+    /**
+     * @param $mailbox
+     * @return int
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getMailboxProcessCount($mailbox)
     {
         self::logDeprecated();
@@ -4064,6 +4308,8 @@ eoq;
 
     /**
      * update INBOX
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function checkEmail($prefetch = true, $synch = false)
     {
@@ -4087,6 +4333,8 @@ eoq;
 
     /**
      * Special handler for POP3 boxes.  Standard IMAP commands are useless.
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function pop3_checkEmail()
     {
@@ -4155,8 +4403,10 @@ eoq;
 
     /**
      * Checks email (local caching too) for one mailbox
+     *
      * @param string $mailbox IMAP Mailbox path
      * @param bool $prefetch Flag to prefetch email body on check
+     * @deprecated To be replaced by the Mailboxes module
      */
     function checkEmailOneMailbox($mailbox, $prefetch = true, $synchronize = false)
     {
@@ -4245,6 +4495,8 @@ eoq;
 
     /**
      * full synchronization
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function syncEmail() {
         self::logDeprecated();
@@ -4311,9 +4563,11 @@ eoq;
 
     /**
      * retrieves an array of I-E beans based on the group_id
+     *
      * @param    string $groupId GUID of the group user or Individual
      * @return    array    $beans        array of beans
      * @return    boolean false if none returned
+     * @deprecated To be replaced by the Mailboxes module
      */
     function retrieveByGroupId($groupId)
     {
@@ -4332,8 +4586,10 @@ eoq;
 
     /**
      * retrieves I-E bean
+     *
      * @param string id
      * @return object Bean
+     * @deprecated To be replaced by the Mailboxes module
      */
     function retrieve($id, $encode = true, $deleted = true)
     {
@@ -4347,6 +4603,9 @@ eoq;
         return $ret;
     }
 
+    /**
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function retrieveMailBoxFolders()
     {
         self::logDeprecated();
@@ -4361,6 +4620,8 @@ eoq;
 
     /**
      * Retrieves an array of I-E beans that the user has team access to
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function retrieveAllByGroupId($id, $includePersonal = true)
     {
@@ -4400,8 +4661,10 @@ eoq;
     /**
      * Sets flags on emails.  Assumes that connection is live, correct folder is
      * set.
+     *
      * @param string $uids Sequence of UIDs, comma separated
      * @param string $type Flag to mark
+     * @deprecated To be replaced by the Mailboxes module
      */
     function markEmails($uids, $type)
     {
@@ -4427,8 +4690,10 @@ eoq;
 
     /**
      * Deletes the specified folder
+     *
      * @param string $mbox "::" delimited IMAP mailbox path, ie, INBOX.saved.stuff
      * @return bool
+     * @deprecated To be replaced by the Mailboxes module
      */
     function deleteFolder($mbox)
     {
@@ -4470,8 +4735,10 @@ eoq;
 
     /**
      * Returns total number of emails for a mailbox
+     *
      * @param string mbox
      * @return int
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getCacheCount($mbox)
     {
@@ -4485,9 +4752,11 @@ eoq;
 
     /**
      * Saves new folders
+     *
      * @param string $name Name of new IMAP mailbox
      * @param string $mbox "::" delimited IMAP mailbox path, ie, INBOX.saved.stuff
      * @return bool True on success
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function saveNewFolder($name, $mbox)
     {
@@ -4528,8 +4797,10 @@ eoq;
 
     /**
      * Constructs an IMAP c-client compatible folder path from Sugar proprietary
+     *
      * @param string $mbox "::" delimited IMAP mailbox path, ie, INBOX.saved.stuff
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getImapMboxFromSugarProprietary($mbox)
     {
@@ -4550,6 +4821,8 @@ eoq;
 
     /**
      * Searches IMAP (and POP3?) accounts/folders for emails with qualifying criteria
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function search($ieId, $subject = '', $from = '', $to = '', $body = '', $dateFrom = '', $dateTo = '')
     {
@@ -4669,7 +4942,9 @@ eoq;
 
     /**
      * repairs the encrypted password for a given I-E account
+     *
      * @return bool True on success
+     * @deprecated To be replaced by the Mailboxes module
      */
     function repairAccount()
     {
@@ -4691,9 +4966,11 @@ eoq;
 
     /**
      * soft deletes a User's personal inbox
+     *
      * @param string id I-E id
      * @param string user_name User name of User in focus, NOT current_user
      * @return bool True on success
+     * @deprecated To be replaced by the Mailboxes module
      */
     function deletePersonalEmailAccount($id, $user_name)
     {
@@ -4712,6 +4989,11 @@ eoq;
         return false;
     }
 
+    /**
+     * @param $teamIds
+     * @return mixed
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getTeamSetIdForTeams($teamIds)
     {
         self::logDeprecated();
@@ -4725,10 +5007,12 @@ eoq;
 
     /**
      * Saves Personal Inbox settings for Users
+     *
      * @param string userId ID of user to assign all emails for this account
      * @param strings userName Name of account, for Sugar purposes
      * @param bool forceSave Default true.  Flag to save errored settings.
      * @return boolean true on success, false on fail
+     * @deprecated To be replaced by the Mailboxes module
      */
     function savePersonalEmailAccount($userId = '', $userName = '', $forceSave = true)
     {
@@ -4831,6 +5115,14 @@ eoq;
         }
     }
 
+    /**
+     * @param $server_url
+     * @param $email_user
+     * @param $port
+     * @param $protocol
+     * @return string
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getSessionConnectionString($server_url, $email_user, $port, $protocol)
     {
         self::logDeprecated();
@@ -4838,6 +5130,14 @@ eoq;
         return (isset($_SESSION[$sessionConnectionString]) ? $_SESSION[$sessionConnectionString] : "");
     }
 
+    /**
+     * @param $server_url
+     * @param $email_user
+     * @param $port
+     * @param $protocol
+     * @return string
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getSessionInboundDelimiterString($server_url, $email_user, $port, $protocol)
     {
         self::logDeprecated();
@@ -4849,6 +5149,7 @@ eoq;
      * Retrieves the current count of personal accounts for the user specified.
      *
      * @param unknown_type $user
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getUserPersonalAccountCount($user = null)
     {
@@ -4867,6 +5168,7 @@ eoq;
      * Get the users default IE account id
      *
      * @param User $user
+     * @deprecated To be replaced by the Mailboxes module
      */
     function setUsersDefaultOutboundServerId($user, $oe_id)
     {
@@ -4876,6 +5178,8 @@ eoq;
 
     /**
      * Determines if this instance of I-E is for a Group Inbox or Personal Inbox
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleIsPersonal()
     {
@@ -4893,6 +5197,10 @@ eoq;
         }
     }
 
+    /**
+     * @return string
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getUserNameFromGroupId()
     {
         self::logDeprecated();
@@ -4903,6 +5211,10 @@ eoq;
         return '';
     }
 
+    /**
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getFoldersListForMailBox()
     {
         self::logDeprecated();
@@ -4930,9 +5242,10 @@ eoq;
 
     /**
      * Checks for duplicate Group User names when creating a new one at save()
-     * @return    GUID        returns GUID of Group User if user_name match is
-     * found
+     *
+     * @return    GUID        returns GUID of Group User if user_name match is found
      * @return    boolean        false if NO DUPE IS FOUND
+     * @deprecated To be replaced by the Mailboxes module
      */
     function groupUserDupeCheck()
     {
@@ -4953,8 +5266,10 @@ eoq;
 
     /**
      * Returns <option> markup with the contents of Group users
+     *
      * @param array $groups default empty array
      * @return string HTML options
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getGroupsWithSelectOptions($groups = array())
     {
@@ -4970,6 +5285,11 @@ eoq;
         return $selectOptions;
     }
 
+    /**
+     * @param $email
+     * @param $userId
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function handleCreateCase($email, $userId)
     {
         self::logDeprecated();
@@ -5121,8 +5441,10 @@ eoq;
 
     /**
      * This function returns a contact or user ID if a matching email is found
+     *
      * @param    $email        the email address to match
      * @param    $table        which table to query
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getRelatedId($email, $module)
     {
@@ -5165,6 +5487,7 @@ eoq;
      *
      * @param object Email bean to be linked against
      * @return string contactAddr is the email address of the sender
+     * @deprecated To be replaced by the Mailboxes module
      */
     function handleLinking(&$email)
     {
@@ -5239,8 +5562,10 @@ eoq;
 
     /**
      * Calculates the appropriate display date/time sent for an email.
+     *
      * @param string headerDate The date sent of email in MIME header format
      * @return string GMT-0 Unix timestamp
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getUnixHeaderDate($headerDate)
     {
@@ -5305,6 +5630,8 @@ eoq;
 
     /**
      * If the importOneEmail returns false, then findout if the duplicate email
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getDuplicateEmailId($msgNo, $uid) {
         self::logDeprecated();
@@ -5344,8 +5671,10 @@ eoq;
 
     /**
      * returns exactly 1 id match. if more than one, than returns false
+     *
      * @param    $emailName        the subject of the email to match
      * @param	$tableName        the table of the matching bean type
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getSingularRelatedId($emailName, $tableName)
     {
@@ -5386,8 +5715,10 @@ eoq;
 
     /**
      * saves InboundEmail parse macros to config.php
+     *
      * @param string type Bean to link
      * @param string macro The new macro
+     * @deprecated To be replaced by the Mailboxes module
      */
     function saveInboundEmailSystemSettings($type, $macro)
     {
@@ -5411,7 +5742,9 @@ eoq;
 
     /**
      * returns the HTML for InboundEmail system settings
+     *
      * @return string HTML
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getSystemSettingsForm()
     {
@@ -5470,6 +5803,9 @@ eoq;
         return $ret;
     }
 
+    /**
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function disconnectMailserver()
     {
         self::logDeprecated();
@@ -5478,6 +5814,9 @@ eoq;
         }
     }
 
+    /**
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function checkImap()
     {
         self::logDeprecated();
@@ -5505,9 +5844,11 @@ eoq;
 
     /**
      * retrieves an array of I-E beans based on the group folder id
+     *
      * @param    string $groupFolderId GUID of the group folder
      * @return    array    $beans        array of beans
      * @return    boolean false if none returned
+     * @deprecated To be replaced by the Mailboxes module
      */
     function retrieveByGroupFolderId($groupFolderId)
     {
@@ -5526,6 +5867,8 @@ eoq;
 
     /**
      * Retrieves an array of I-E beans that the user has team access to including group
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function retrieveAllByGroupIdWithGroupAccounts($id, $includePersonal = true)
     {
@@ -5561,6 +5904,8 @@ eoq;
 
     /**
 	 * returns the bean name - overrides SugarBean's
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function get_summary_text()
     {
@@ -5570,6 +5915,8 @@ eoq;
 
     /**
      * Override's SugarBean's
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function create_export_query($order_by, $where, $show_deleted = 0)
     {
@@ -5579,6 +5926,8 @@ eoq;
 
     /**
      * Override's SugarBean's
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function get_list_view_data()
     {
@@ -5595,6 +5944,8 @@ eoq;
 
     /**
      * Override's SugarBean's
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function fill_in_additional_list_fields() {
         self::logDeprecated();
@@ -5603,6 +5954,8 @@ eoq;
 
     /**
      * Override's SugarBean's
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function fill_in_additional_detail_fields()
     {
@@ -5621,12 +5974,13 @@ eoq;
 
     /**
      * moves emails from folder to folder
+     *
      * @param string $fromIe I-E id
      * @param string $fromFolder IMAP path to folder in which the email lives
      * @param string $toIe I-E id
      * @param string $toFolder
-     * @param string $uids UIDs of emails to move, either Sugar GUIDS or IMAP
-     * UIDs
+     * @param string $uids UIDs of emails to move, either Sugar GUIDS or IMAP UIDs
+     * @deprecated To be replaced by the Mailboxes module
      */
     function copyEmails($fromIe, $fromFolder, $toIe, $toFolder, $uids)
     {
@@ -5636,14 +5990,15 @@ eoq;
 
     /**
      * moves emails from folder to folder
+     *
      * @param string $fromIe I-E id
      * @param string $fromFolder IMAP path to folder in which the email lives
      * @param string $toIe I-E id
      * @param string $toFolder
-     * @param string $uids UIDs of emails to move, either Sugar GUIDS or IMAP
-     * UIDs
+     * @param string $uids UIDs of emails to move, either Sugar GUIDS or IMAP UIDs
      * @param bool $copy Default false
      * @return bool True on successful execution
+     * @deprecated To be replaced by the Mailboxes module
      */
     function moveEmails($fromIe, $fromFolder, $toIe, $toFolder, $uids, $copy = false)
     {
@@ -5847,9 +6202,11 @@ eoq;
 
     /**
      * Deletes cached messages when moving from folder to folder
+     *
      * @param string $uids
      * @param string $fromFolder
      * @param string $toFolder
+     * @deprecated To be replaced by the Mailboxes module
      */
     function deleteCachedMessages($uids, $fromFolder)
     {
@@ -5876,8 +6233,10 @@ eoq;
 
     /**
      * deletes and expunges emails on server
+     *
      * @param string $uid UID(s), comma delimited, of email(s) on server
      * @return bool true on success
+     * @deprecated To be replaced by the Mailboxes module
      */
     function deleteMessageOnMailServer($uid)
     {
@@ -5928,7 +6287,9 @@ eoq;
 
 	/**
 	 * Removes an email from the cache file, deletes the message from the cache too
+     *
 	 * @param string String of uids, comma delimited
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function deleteMessageFromCache($uids) {
         self::logDeprecated();
@@ -5960,7 +6321,9 @@ eoq;
 
     /**
      * Hard deletes an I-E account
+     *
      * @param string id GUID
+     * @deprecated To be replaced by the Mailboxes module
      */
     function hardDelete($id)
     {
@@ -5971,7 +6334,9 @@ eoq;
 
     /**
      * deletes and expunges emails on server
+     *
      * @param string $uid UID(s), comma delimited, of email(s) on server
+     * @deprecated To be replaced by the Mailboxes module
      */
     function deleteMessageOnMailServerForPop3($uid)
     {
@@ -5991,6 +6356,7 @@ eoq;
      *
      * @param User $user
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getUsersDefaultOutboundServerId($user)
     {
@@ -6008,8 +6374,10 @@ eoq;
 
     /**
      * Gets the UIDL from database for the corresponding msgno
+     *
      * @param int messageNo of a message
      * @return UIDL for the message
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getMsgnoForMessageID($messageid)
     {
@@ -6022,10 +6390,12 @@ eoq;
 
 	/**
 	 * Sorts IMAP's imap_fetch_overview() results
+     *
 	 * @param array $arr Array of standard objects
 	 * @param string $sort Column to sort by
 	 * @param string direction Direction to sort by (asc/desc)
 	 * @return array Sorted array of obj.
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function sortFetchedOverview($arr, $sort=4, $direction='DESC', $forceSeen=false) {
         self::logDeprecated();
@@ -6105,6 +6475,11 @@ eoq;
         return $finalReturn;
     }
 
+    /**
+     * @param $mbox
+     * @param $uid
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function setReadFlagOnFolderCache($mbox, $uid) {
         self::logDeprecated();
         global $sugar_config;
@@ -6129,6 +6504,11 @@ eoq;
         }
     }
 
+    /**
+     * @param $mbox
+     * @return bool
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function validCacheExists($mbox)
     {
         self::logDeprecated();
@@ -6146,8 +6526,10 @@ eoq;
 
     /**
      * Returns a list of emails in a mailbox.
+     *
      * @param string mbox Name of mailbox using dot notation paths to display
      * @param string $forceRefresh Flag to use cache or not
+     * @deprecated To be replaced by the Mailboxes module
      */
     function displayFolderContents($mbox, $forceRefresh = 'false', $page)
     {
@@ -6209,6 +6591,12 @@ eoq;
 		return $metadata;
 	}
 
+    /**
+     * @param $ret
+     * @param $mbox
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
 	function displayFetchedSortedListXML($ret, $mbox) {
         self::logDeprecated();
 
@@ -6261,6 +6649,7 @@ eoq;
      * For a group email account, create subscriptions for all users associated with the
      * team assigned to the account.
      *
+     * @deprecated To be replaced by the Mailboxes module
      */
     function createUserSubscriptionsForGroupAccount()
     {
@@ -6286,6 +6675,7 @@ eoq;
      * if the Enable Auto Import option is selected
      *
      * @return String Id of the sugar folder created.
+     * @deprecated To be replaced by the Mailboxes module
      */
     function createAutoImportSugarFolder()
     {
@@ -6310,6 +6700,10 @@ eoq;
         return $guid;
     } // fn
 
+    /**
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getMailBoxesForGroupAccount() {
         self::logDeprecated();
 		$mailboxes = $this->generateMultiDimArrayFromFlatArray(explode(",", $this->mailbox), $this->retrieveDelimiter());
@@ -6330,6 +6724,10 @@ eoq;
 		return $mailboxes;
 	}
 
+    /**
+     * @param $value
+     * @deprecated To be replaced by the Mailboxes module
+     */
 	function saveMailBoxFolders($value) {
         self::logDeprecated();
 		if (is_array($value)) {
@@ -6341,6 +6739,10 @@ eoq;
 		$this->db->query($query);
 	}
 
+    /**
+     * @param $value
+     * @deprecated To be replaced by the Mailboxes module
+     */
 	function insertMailBoxFolders($value) {
         self::logDeprecated();
 		$query = "select value from config where category='InboundEmail' and name='{$this->id}'";
@@ -6358,6 +6760,9 @@ eoq;
         } // if
 	}
 
+    /**
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function saveMailBoxValueOfInboundEmail() {
         self::logDeprecated();
 		$query = "update Inbound_email set mailbox = '{$this->email_user}'";
@@ -6366,7 +6771,9 @@ eoq;
 
     /**
      * Get Email messages IDs from server which aren't in database
+     *
      * @return array Ids of messages, which aren't still in database
+     * @deprecated To be replaced by the Mailboxes module
      */
     public function getNewEmailsForSyncedMailbox()
     {
@@ -6469,6 +6876,8 @@ eoq;
 
     /**
      * Import new messages from given account.
+     *
+     * @deprecated To be replaced by the Mailboxes module
      */
     public function importMessages()
     {
@@ -6494,6 +6903,7 @@ eoq;
      *
      * @param string $protocol Mailing protocol
      * @param string|null $mailbox Mailbox (if applied to protocol)
+     * @deprecated To be replaced by the Mailboxes module
      */
     protected function importMailboxMessages($protocol, $mailbox = null)
     {
@@ -6522,6 +6932,10 @@ eoq;
         }
     } // fn
 
+    /**
+     * @return array
+     * @deprecated To be replaced by the Mailboxes module
+     */
     function getPop3NewMessagesToDownload()
     {
         self::logDeprecated();
@@ -6537,7 +6951,9 @@ eoq;
 
     /**
      * This method returns all the UIDL for this account. This should be called if the protocol is pop3
+     *
      * @return array od messageno to UIDL array
+     * @deprecated To be replaced by the Mailboxes module
      */
     function pop3_getUIDL()
     {
@@ -6578,7 +6994,9 @@ eoq;
     /**
      * retrieves cached uidl values.
      * When dealing with POP3 accounts, the message_id column in email_cache will contain the UIDL.
+     *
      * @return array
+     * @deprecated To be replaced by the Mailboxes module
      */
     function pop3_getCacheUidls()
     {
@@ -6596,7 +7014,9 @@ eoq;
 
     /**
      * Iterates through msgno and message_id to remove dirty cache entries
+     *
      * @param array diff
+     * @deprecated To be replaced by the Mailboxes module
      */
     function pop3_shiftCache($diff, $cacheUIDLs)
     {
@@ -6642,6 +7062,7 @@ eoq;
      * option is set
      *
      * @return array Array of messageNumbers (mail server's internal keys)
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getNewMessageIds()
     {
@@ -6678,6 +7099,7 @@ eoq;
      * @param int     $msgNumber Number of the message in current sequence
      * @param string  $protocol  Mailing protocol
      * @return string
+     * @deprecated To be replaced by the Mailboxes module
      */
     protected function getMessageUID($msgNumber, $protocol)
     {
@@ -6699,8 +7121,10 @@ eoq;
 
     /**
      * Gets the UIDL from database for the corresponding msgno
+     *
      * @param int messageNo of a message
      * @return UIDL for the message
+     * @deprecated To be replaced by the Mailboxes module
      */
     function getUIDLForMessage($msgNo)
     {
@@ -6715,6 +7139,8 @@ eoq;
 
 /**
  * Simple class to mirror the passed object from an imap_fetch_overview() call
+ *
+ * @deprecated To be replaced by the Mailboxes module
  */
 class Overview {
 	var $subject;
@@ -6853,7 +7279,12 @@ class Overview {
 			),
 		);
 	*/
-	function Overview() {
+    /**
+     * Overview constructor.
+     * 
+     * @deprecated To be replaced by the Mailboxes module
+     */
+	function __construct() {
 		global $dictionary;
 
 		if(!isset($dictionary['email_cache']) || empty($dictionary['email_cache'])) {

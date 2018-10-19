@@ -514,23 +514,23 @@ $mod_strings = array (
     'LBL_BACKWARD_COMPATIBILITY_ON' => 'Php Rückwärts Kompatibilitätsmodus ist eingeschaltet. Setzen Sie den zend.ze1_compatibility_mode auf Off um fortzufahren.',
 
     'advanced_password_new_account_email' => array(
-        'subject' => 'Neues Benutzerkonto',
-        'description' => 'This template is used when the System Administrator sends a new password to a user.',
-        'body' => '<div><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width="550" align=\"\&quot;\&quot;center\&quot;\&quot;\"><tbody><tr><td colspan=\"2\"><p>Here is your account username and temporary password:</p><p>Username : $contact_user_user_name </p><p>Password : $contact_user_user_hash </p><br><p>$config_site_url</p><br><p>After you log in using the above password, you may be required to reset the password to one of your own choice.</p>   </td>         </tr><tr><td colspan=\"2\"></td>         </tr> </tbody></table> </div>',
-        'txt_body' =>
-            '
-Hier sind Ihr Benutzername und Ihr temporäres Kennwort:
-Benutzername : $contact_user_user_name
-Kennwort : $contact_user_user_hash
-
-$config_site_url
-
-Möglicherweise müssen Sie Ihr Kennwort bei der ersten Anmeldung ändern.',
-        'name' => 'System-generated password email',
+        'subject' =>        'Ihre Zugangsdaten für das CRM',
+        'description' =>    'This template is used when the System Administrator sends a new password to a user.',
+        'body' =>           '<p>Hier sind Ihr Benutzername und Ihr temporäres Passwort für das CRM:</p>'.
+                            '<p>Benutzername: <b>$contact_user_user_name</b><br>Passwort: <b>$contact_user_user_hash</b></p>'.
+                            '<p>Bei der erstmaligen Anmeldung müssen Sie Ihr temporäres Kennwort ändern.</p>'.
+                            '<p>Das CRM finden Sie hier: {config.frontend_url}</p>',
+        'txt_body' =>       "Hier sind Ihr Benutzername und Ihr temporäres Passwort für das CRM:\n\n".
+                            'Benutzername: $contact_user_user_name'."\n".
+                            'Passwort: $contact_user_user_hash'."\n\n".
+                            "Bei der erstmaligen Anmeldung müssen Sie Ihr temporäres Kennwort ändern.\n\n".
+                            'Das CRM finden Sie hier: {config.frontend_url}',
+        'name' =>           'System-generated password email',
     ),
+
     'advanced_password_forgot_password_email' => array(
-        'subject' => 'Ihr Kennwort zurücksetzen',
-        'description' => "This template is used to send a user a link to click to reset the user's account password.",
+        'subject' =>        'Ihr Kennwort zurücksetzen',
+        'description' =>    "This template is used to send a user a link to click to reset the user's account password.",
         'body' => '<div><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width="550" align=\"\&quot;\&quot;center\&quot;\&quot;\"><tbody><tr><td colspan=\"2\"><p>You recently requested on $contact_user_pwd_last_changed to be able to reset your account password. </p><p>Click on the link below to reset your password:</p><p> $contact_user_link_guid </p>  </td>         </tr><tr><td colspan=\"2\"></td>         </tr> </tbody></table> </div>',
         'txt_body' =>
             '
@@ -541,18 +541,19 @@ Klicken Sie bitte folgenden Link, um Ihr Kennwort zurückzusetzen:
 $contact_user_link_guid',
         'name' => 'Passwort vergessen',
     ),
+
     'advanced_password_forgot_password_token_email' => array(
-        'subject' => 'Reset your account password',
-        'description' => "This template is used to send a user a token to reset the user's account password.",
-        'body' => '<div><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width="550" align=\"\&quot;\&quot;center\&quot;\&quot;\"><tbody><tr><td colspan=\"2\"><p>You recently requested to be able to reset your account password. </p><p>Return to $config_site_url and enter the Token: </p><p> $token </p>  </td>         </tr><tr><td colspan=\"2\"></td>         </tr> </tbody></table> </div>',
-        'txt_body' =>
-            '
-You recently requested to be able to reset your account password.
-
-Return to $config_site_url and enter the Token: 
-
-$token',
-        'name' => 'Forgot Password Token email',
+        'subject' =>        'Neues Passwort für Ihr CRM-Konto?',
+        'description' =>    'This template is used to send a user a token to reset the user´s account password.',
+        'body' =>           '<p>Sie haben kürzlich veranlasst, Ihr CRM-Passwort zurückzusetzen.</p>'.
+                            '<p>Um dies jetzt zu tun, geben sie diesen Token ein: <b>$token</b></p>'.
+                            '<p>Beachten Sie, dass der Token zeitlich begrenzt ist.</p>'.
+                            '<p>Wenn nicht Sie diese E-Mail angefordert haben, betrachten Sie diese als gegenstandslos. Melden Sie sich weiterhin mit Ihrem bestehendem Passwort an und löschen Sie diese E-Mail einfach.</p>',
+        'txt_body' => 	    "Sie haben kürzlich veranlasst, Ihr CRM-Passwort zurückzusetzen.\n\n".
+                            'Um dies jetzt zu tun, geben sie diesen Token ein: $token'."\n\n".
+                            "Beachten Sie, dass der Token zeitlich begrenzt ist.\n\n".
+                            "Wenn nicht Sie diese E-Mail angefordert haben, betrachten Sie diese als gegenstandslos. Melden Sie sich weiterhin mit Ihrem bestehendem Passwort an und löschen Sie diese E-Mail einfach.",
+        'name' =>           'Forgot Password Token email',
     ),
 
 );

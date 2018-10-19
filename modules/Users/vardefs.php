@@ -196,6 +196,12 @@ $dictionary['User'] = array(
             'default' => '0',
             'studio' => array('listview' => false, 'searchview' => false, 'related' => false),
         ),
+        'is_dev' => array(
+            'name' => 'is_dev',
+            'vname' => 'LBL_IS_DEVELOPER',
+            'type' => 'bool',
+            'default' => '0'
+        ),
         'external_auth_only' => array(
             'name' => 'external_auth_only',
             'vname' => 'LBL_EXT_AUTHENTICATE',

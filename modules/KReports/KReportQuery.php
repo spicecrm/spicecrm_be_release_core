@@ -1202,7 +1202,7 @@ class KReportQuery
                 $this->fieldArray[$thisAlias . 'path'] = $thisAlias . 'path';
             }
         } else {
-            // standard processing ... we simply loop throgh the joinsegments
+            // standard processing ... we simply loop through the joinsegments
             foreach ($this->joinSegments as $joinpath => $joinsegment) {
                 // 2012-02-3 cant take this out sinceit breaks the links!!!!
                 // 2011-12-29 check if Jointype is set
@@ -1339,11 +1339,16 @@ class KReportQuery
                 // 2017-06-20 handle currencies in union if value is set in vardefs: see $atLeast1CurrencyInSelect
                 if (isset($this->joinSegments[$pathName]) && ($this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['type'] == 'currency' || (isset($this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['kreporttype']) && $this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['kreporttype'] == 'currency')) || $this->rootfieldNameMap[$thisListEntry['fieldid']]['type'] == 'currency' || $atLeast1CurrencyInSelect) {
                     // if we have a currency id and no SQL function select the currency .. if we have an SQL fnction select -99 for the system currency
-                    if (isset($this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['currency_id']) && ($thisListEntry['sqlfunction'] == '-' || strtoupper($thisListEntry['sqlfunction']) == 'SUM'))
-                        $this->selectString .= ", " . $this->joinSegments[$pathName]['alias'] . "." . $this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['currency_id'] . " as '" . $thisListEntry['fieldid'] . "_curid'";
-                    else
+                    if (isset($this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['currency_id']) && ($thisListEntry['sqlfunction'] == '-' || strtoupper($thisListEntry['sqlfunction']) == 'SUM')){
+                        $this->selectString .= ", " . $this->joinSegments[$pathName]['alias'] . "." . $this->joinSegments[$pathName]['object']->field_name_map['currency_id'] . " as '" . $thisListEntry['fieldid'] . "_curid'";
+                    }
+                    // BEGIN CR1000035 currency field might not be linked to amount field.
+                    elseif (isset($this->joinSegments[$pathName]['object']->field_name_map['currency_id']) ) {
+                        $this->selectString .= ", " . $this->joinSegments[$pathName]['alias'] . ".currency_id as '" . $thisListEntry['fieldid'] . "_curid'";
+                    }// END
+                    else {
                         $this->selectString .= ", '-99' as '" . $thisListEntry['fieldid'] . "_curid'";
-
+                    }
                     $this->unionSelectString .= ', ' . $thisListEntry['fieldid'] . "_curid";
 
                     $this->fieldArray[$thisListEntry['fieldid'] . "_curid"] = $thisListEntry['fieldid'] . "_curid";

@@ -70,7 +70,7 @@ class MergeRecord extends SugarBean {
     //store a copy of the merge bean related strings
     var $merge_bean_strings = Array ();
 
-    function MergeRecord($merge_module = '', $merge_id = '') {
+    public function __construct($merge_module = '', $merge_id = '') {
         global $sugar_config;
        //parent :: SugarBean();
 
@@ -78,11 +78,11 @@ class MergeRecord extends SugarBean {
             $this->load_merge_bean($merge_module, $merge_id);
     }
 
-    function retrieve($id) {
+    public function retrieve($id = -1, $encode = false, $deleted = true, $relationships = true) {
         if (isset ($_REQUEST['action']) && $_REQUEST['action'] == 'Step2')
             $this->load_merge_bean($this->merge_bean, false, $id);
         else
-            parent::retrieve($id);
+            parent::retrieve($id, $encode, $deleted, $relationships);
     }
 
     function load_merge_bean($merge_module, $load_module_strings = false, $merge_id = '') {
@@ -190,9 +190,9 @@ class MergeRecord extends SugarBean {
     
 
     //keep save function to handle anything special on merges
-    function save($check_notify = FALSE) {
-            //something here
-    return parent::save($check_notify);
+    public function save($check_notify = false, $fts_index_bean = true) {
+        //something here
+        return parent::save($check_notify, $fts_index_bean);
     }
 
     function populate_search_params($search_params) {

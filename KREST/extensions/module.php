@@ -22,89 +22,15 @@ $KRESTManager->registerExtension('module', '2.0');
 
 $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler) {
 
-    $app->get('/language', function () use ($app, $KRESTModuleHandler) {
-        $getParams = $_GET;
-        //var_dump($getParams);
-        // see if we have a language passed in .. if not use the default
-        $language = $getParams['lang'];
-        if (empty($language))
-            $language = $GLOBALS['sugar_config']['default_language'];
-
-        $modules = json_decode($getParams['modules']);
-        //var_dump($modules);
-        $dynamicDomains = $KRESTModuleHandler->get_dynamic_domains($modules, $language);
-        $appListStrings = return_app_list_strings_language($language);
-        $appStrings = array_merge($appListStrings, $dynamicDomains);
-
-        // BEGIN syslanguages  => check language source
-        if(isset($GLOBALS['sugar_config']['syslanguages']['spiceuisource']) && $GLOBALS['sugar_config']['syslanguages']['spiceuisource'] == 'db'){
-            //grab labels from syslanguagetransations
-//            $syslanguages = $KRESTModuleHandler->get_languages(strtolower($language));
-            if(!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
-
-            $syslanguagelabels = LanguageManager::loadDatabaseLanguage($language);
-//            file_put_contents("sugarcrm.log", print_r($syslanguagelabels, true), FILE_APPEND);
-            $syslanguages = array();
-            //var_dump($syslanguagelabels);
-            //explode labels default|short|long
-            if(is_array($syslanguagelabels))
-            {
-                foreach($syslanguagelabels as $syslanguagelbl => $syslanguagelblcfg){
-                    $syslanguages[$syslanguagelbl] = array(
-                        'default' => $syslanguagelblcfg['default'],
-                        'short' => $syslanguagelblcfg['short'],
-                        'long' => $syslanguagelblcfg['long'],
-                    );
-                    /*
-                    $syslanguages[$syslanguagelbl] = $syslanguagelblcfg['default'];
-                    if(!empty($syslanguagelblcfg['short']))
-                        $syslanguages[$syslanguagelbl.'_SHORT'] = $syslanguagelblcfg['short'];
-                    if(!empty($syslanguagelblcfg['long']))
-                        $syslanguages[$syslanguagelbl.'_LONG'] = $syslanguagelblcfg['long'];
-                    */
-                }
-            }
-
-
-
-            $responseArray = array(
-                'languages' => LanguageManager::getLanguages(),
-                'applang' => $syslanguages,
-                'applist' => $appStrings
-            );
-        }
-        else{ //END
-            //ORIGINAL
-            $responseArray = array(
-                'languages' => array(
-                    'available' => [],
-                    'default' => $GLOBALS['sugar_config']['default_language']
-                ),
-                'mod' => $KRESTModuleHandler->get_mod_language($modules, $language),
-                'applang' => return_application_language($language),
-                'applist' => $appStrings
-            );
-
-            foreach($GLOBALS['sugar_config']['languages'] as $language_code => $language_name){
-                $responseArray['languages']['available'][] = [
-                    'language_code' => $language_code,
-                    'language_name' => $language_name,
-                    'system_language' => true,
-                    'communication_language' => true
-                ];
-            }
-        }
-
-        $responseArray['md5'] = md5(json_encode($responseArray));
-
-        // if an md5 was sent in and matches the current one .. no change .. do not send the language to save bandwidth
-        if ($_REQUEST['md5'] == $responseArray['md5']) {
-            $responseArray = array('md5' => $_REQUEST['md5']);
-        }
-
-        echo json_encode($responseArray);
+    $app->get('/language', function ($req, $res, $args) use ($app, $KRESTModuleHandler) {
+        return $res->withJson( $KRESTModuleHandler->getLanguage( json_decode( $req->getQueryParam('modules')), $req->getQueryParam('lang') ));
     });
 
+    $app->post('/language', function ($req, $res, $args) use ($app, $KRESTModuleHandler) {
+        $KRESTUserHandler = new KRESTUserHandler();
+        $KRESTUserHandler->set_user_preferences('global', [ 'language' => $req->getQueryParam('lang') ]);
+        return $res->withJson( $KRESTModuleHandler->getLanguage( json_decode( $req->getQueryParam('modules')), $req->getQueryParam('lang') ));
+    });
 
     $app->get('/{beanName}', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
         $searchParams = $_GET;

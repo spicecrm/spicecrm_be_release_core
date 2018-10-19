@@ -385,9 +385,13 @@ class M2MRelationship extends SugarRelationship
         }
 
         $relFieldsSelect = '';
-        if(count(@$params['relationship_fields']) > 0){
-            foreach($params['relationship_fields'] as $fieldName => $fieldData)
-                $relFieldsSelect .= ', '. $rel_table . '.' . $fieldName;
+        if ( isset( $params['relationship_fields'] )) {
+            if ( is_array( $params['relationship_fields'] ) || $params['relationship_fields'] instanceof Countable ) {
+                if ( count( @$params['relationship_fields'] ) > 0 ) {
+                    foreach ( $params['relationship_fields'] as $fieldName => $fieldData )
+                        $relFieldsSelect .= ', ' . $rel_table . '.' . $fieldName;
+                }
+            }
         }
 
         if (empty($params['return_as_array'])) {

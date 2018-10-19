@@ -1506,4 +1506,35 @@ class MysqlManager extends DBManager
     {
       	return 'UUID()';
     }
+
+    /**
+     * Starts a database transaction.
+     * From now on all changes to the database won´t be established and can be discarded.
+     * @return result set of the query
+     */
+    public function transactionStart()
+    {
+        return $this->query('START TRANSACTION');
+    }
+
+    /**
+     * Rolls back a database transaction.
+     * All changes of the database since transactionStart() are discarded.
+     * @return result set of the query
+     */
+    public function transactionRollback()
+    {
+        return $this->query('ROLLBACK');
+    }
+
+    /**
+     * Commits a database transaction.
+     * All changes of the database since transactionStart() are commited.
+     * @return result set of the query
+     */
+    public function transactionCommit()
+    {
+        return $this->query('COMMIT');
+    }
+
 }

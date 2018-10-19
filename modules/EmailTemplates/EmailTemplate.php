@@ -760,84 +760,8 @@ class EmailTemplate extends SugarBean {
 
     public function parseField($field, $parentbean = null)
     {
-        global $current_user, $app_list_strings;
-        $body = $this->$field;
-
-        if(preg_match_all("#\{([a-zA-Z\.\_0-9]+)\}#", $body,$matches))
-        {
-            //var_dump($matches); exit;
-            for($i = 0; $i < count($matches[1]); $i++)
-            {
-                $m = $matches[1][$i];
-                $parts = explode('.', $m);
-                $part = $parts[0];
-                //var_dump($parts, $part);
-                switch($part)
-                {
-                    case 'bean':
-                        $bean = $parentbean;
-                        break;
-                    case 'current_user':
-                        $bean = $current_user;
-                        break;
-                    default:
-                        //echo "$part is unknowen...";
-                        continue(2);
-                }
-
-                /**
-                 * loop recursively through the parts to load relations and return the last part of it
-                 * {bean.product.publisher.name}
-                 *  bean ->
-                 *      product = link -> load product ->
-                 *          publisher = link -> load publisher ->
-                 *              name = attribute -> return value;
-                 */
-                $loopThroughParts = function(SugarBean $current_bean, $level = 0) use(&$parts, &$loopThroughParts)
-                {
-                    global $app_list_strings;
-                    if(method_exists($current_bean, $parts[$level])){
-                        $value = $current_bean->{$parts[$level]}();
-                    } else {
-                        $field = $current_bean->field_defs[$parts[$level]];
-                        switch ($field['type']) {
-                            case 'link':
-                                $next_bean = $current_bean->get_linked_beans($field['name'], $field['bean_name'])[0];
-                                if($next_bean) {
-                                    $level++;
-                                    return $loopThroughParts($next_bean, $level);
-                                }
-                                else $value = '';
-                                break;
-                            case 'enum':
-                                $value = $app_list_strings[$current_bean->field_defs[$parts[$level]]['options']][$current_bean->{$parts[$level]}];
-                                break;
-                            case 'multienum':
-                                $values = explode(',', $current_bean->{$parts[$level]});
-                                foreach($values as &$value){
-                                    $value = trim($value, '^');
-                                    $value = $app_list_strings[$current_bean->field_defs[$parts[$level]]['options']][$value];
-                                }
-                                $value = implode(', ', $values);
-                                break;
-                            default:
-                                $value = $current_bean->{$parts[$level]};
-                                break;
-                        }
-                    }
-                    return $value;
-                };
-
-                $value = $loopThroughParts($bean, 1);
-                //var_dump($matches[0][$i],$value);
-                $body = str_replace($matches[0][$i], $value, $body);
-            }
-        }
-        //var_dump($body); exit;
-        // remove unresolved placeholders...
-        //$body = preg_replace("#\{([a-z\.\_0-9]+)\}#", "", $body);
-
-        return html_entity_decode($body);
+        $html = SpiceCRM\includes\SpiceTemplateCompiler\Compiler::compile($this->$field, $parentbean, $this->language);
+        return html_entity_decode($html);
     }
 
 

@@ -77,6 +77,7 @@ $app_list_strings = array(
             'ProjectMilestones' => 'Project Milestones',
             'Campaigns' => 'Campaigns',
             'CampaignLog' => 'Campaign Log',
+            'CampaignTasks' => 'Campaign Tasks',
             'Documents' => 'Documents',
             'DocumentRevisions' => 'Document Revisions',
             'Connectors' => 'Connectors',
@@ -139,7 +140,8 @@ $app_list_strings = array(
             'ServiceQueues' => 'Service Queues',
             'ServiceFeedbacks' => 'Service Feedbacks',
             'MediaCategories' => 'Media Categories',
-            'SystemDeploymentCRs' => 'SystemDeploymentCRs'
+            'SystemDeploymentCRs' => 'Change Requests',
+            'SystemDeploymentReleases' => 'Releases',
         ),
 
     'moduleListSingular' =>
@@ -200,8 +202,9 @@ $app_list_strings = array(
             'ServiceTickets' => 'Service Ticket',
             'ServiceCalls' => 'Service Call',
             'MediaCategories' => 'Media Category',
-            'SystemDeploymentCRs' => 'SystemDeploymentCR'
-        ),
+            'SystemDeploymentCRs' => 'Change Request',
+            'SystemDeploymentReleases' => 'Release',
+    ),
 
     'checkbox_dom' => array(
         '' => '',
@@ -590,6 +593,12 @@ $app_list_strings = array(
         array(
             'Active' => 'Active',
             'Inactive' => 'Inactive',
+        ),
+    'knowledge_status_dom' =>
+        array(
+            'Draft' => 'Draft',
+            'Released' => 'Released',
+            'Retired' => 'Retired',
         ),
     'employee_status_dom' =>
         array(
@@ -1168,6 +1177,11 @@ $app_list_strings = array(
         array(
             '' => '',
             'queued' => 'queued',
+            'sent' => 'sent',
+            'delivered' => 'delivered',
+            'opened' => 'opened',
+            'deferred' => 'deferred',
+            'bounced' => 'bounced',
             'targeted' => 'Message Sent/Attempted',
             'send error' => 'Bounced Messages,Other',
             'invalid email' => 'Bounced Messages,Invalid Email',
@@ -1177,6 +1191,8 @@ $app_list_strings = array(
             'lead' => 'Leads Created',
             'contact' => 'Contacts Created',
             'blocked' => 'Suppressed by address or domain',
+            'error' => 'generic error',
+            'noemail' => 'no email address'
         ),
 
     'campainglog_target_type_dom' =>

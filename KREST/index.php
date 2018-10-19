@@ -57,6 +57,9 @@ require 'KREST/KRESTManager.php';
 $GLOBALS['transactionID'] = create_guid();
 $KRESTManager = new KRESTManager($app, $_GET);
 
+if ( isset( $GLOBALS['sugar_config']['sessionMaxLifetime'] ))
+    ini_set('session.gc_maxlifetime', $GLOBALS['sugar_config']['sessionMaxLifetime'] );
+
 if(isset($GLOBALS['sugar_config']['krest']['error_reporting']))
     error_reporting($GLOBALS['sugar_config']['krest']['error_reporting']);
 

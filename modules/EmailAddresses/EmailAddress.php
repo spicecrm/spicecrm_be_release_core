@@ -146,6 +146,19 @@ class EmailAddress extends SugarEmailAddress
         return $emailAddresses;
     }
 
+    public function markEmailAddressInvalid($emailAddress)
+    {
+        $emailAddressBean = BeanFactory::getBean('EmailAddresses');
+        $emailAddressBean->retrieve_by_string_fields(array('email_address_caps' => strtoupper($emailAddress)));
+        if(!empty($emailAddressBean->id)){
+            // update the email address
+            $this->db->query("UPDATE email_addresses SET invalid_email = 1 WHERE id = '$emailAddressBean->id'");
+
+            // mark all related records that are primary as not primary
+            $this->db->query("UPDATE email_addr_bean_rel SET primary_address = 0 WHERE email_address_id='$emailAddressBean->id'");
+        }
+    }
+
     private function getEmailAddressId($emailAddress)
     {
         $emailAddressBean = new EmailAddress();

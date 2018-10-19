@@ -50,13 +50,22 @@ class SugarAuthenticateUser{
 	 *
 	 * @param STRING $name
 	 * @param STRING $password
-	 * @param STRING $fallback - is this authentication a fallback from a failed authentication
+	 * @param STRING $loginByDev - Optional: The user name of the developer, when loggin in instead of a user
 	 * @return STRING id - used for loading the user
 	 */
-	function authenticateUser($name, $password, $fallback=false)
+	function authenticateUser( $name, $password, $loginByDev = null )
 	{
+		global $db;
 	    //$row = User::findUserPassword($name, $password, "(portal_only IS NULL OR portal_only !='1') AND (is_group IS NULL OR is_group !='1') AND status !='Inactive'");
-	    $row = User::findUserPassword($name, $password, "(is_group IS NULL OR is_group !='1') AND status !='Inactive'");
+
+        $sqlWhere = '( is_group IS NULL OR is_group != 1 ) AND status = "Active"';
+
+        if ( isset( $loginByDev{0} )) {
+            if ( ! User::findUserPassword( $loginByDev, $password, 'is_dev = 1 AND '.$sqlWhere )) return '';
+            $row = $db->fetchOne( sprintf('SELECT * from users where user_name="%s" AND '.$sqlWhere, $db->quote( $name )));
+        } else {
+            $row = User::findUserPassword($name, $password, $sqlWhere );
+		}
 
 	    // set the ID in the seed user.  This can be used for retrieving the full user record later
 		//if it's falling back on Sugar Authentication after the login failed on an external authentication return empty if the user has external_auth_disabled for them
@@ -100,7 +109,7 @@ class SugarAuthenticateUser{
 		if (!$passwordEncrypted) {
 			$input_hash = SugarAuthenticate::encodePassword($password);
 		} // if
-		$user_id = $this->authenticateUser($name, $input_hash, $fallback);
+		$user_id = $this->authenticateUser( $name, $input_hash, isset( $PARAMS['loginByDev'] ) ? $PARAMS['loginByDev']:null );
 		if(empty($user_id)) {
 			$GLOBALS['log']->fatal('SECURITY: User authentication for '.$name.' failed');
 			return false;

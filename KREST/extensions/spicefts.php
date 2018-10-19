@@ -29,19 +29,19 @@ $app->group('/fts', function () use ($app, $ftsManager)
     });
     $app->get('/globalsearch/{module}/{searchterm}', function ($req, $res, $args) use ($app, $ftsManager) {
         $getParams = $_GET;
-        echo json_encode($ftsManager->getGlobalSearchResults($args['module'], $args['searchterm'], $getParams));
+        echo json_encode($ftsManager->getGlobalSearchResults( $args['module'], urlencode( $args['searchterm'] ), $getParams));
     });
     $app->post('/globalsearch/{module}/{searchterm}', function ($req, $res, $args) use ($app, $ftsManager) {
         $getParams = $_GET;
         $postBody = $req->getParsedBody();
-        echo json_encode($ftsManager->getGlobalSearchResults($args['module'], $args['searchterm'], $getParams, $postBody['aggregates'], $postBody['sort']));
+        echo json_encode($ftsManager->getGlobalSearchResults( $args['module'], urlencode( $args['searchterm'] ), $getParams, $postBody['aggregates'], $postBody['sort'] ));
     });
     $app->get('/searchmodules', function () use ($app, $ftsManager) {
         echo json_encode($ftsManager->getGlobalSearchModules());
     });
     $app->get('/searchterm/{searchterm}', function ($req, $res, $args) use ($app, $ftsManager) {
         $getParams = $_GET;
-        echo json_encode($ftsManager->searchTerm($args['searchterm'], array(), $getParams['size'] ?: 10, $getParams['from'] ?: 0));
+        echo json_encode($ftsManager->searchTerm( urlencode( $args['searchterm'] ), array(), $getParams['size'] ?: 10, $getParams['from'] ?: 0 ));
     });
     $app->get('/stats', function () use ($app, $ftsManager) {
         echo json_encode($ftsManager->getStats());

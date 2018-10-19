@@ -3236,7 +3236,7 @@ SUGAR.util = function () {
 			});
 
 			if(show_buttons) {
-				$(".ui-dialog").find('.ui-dialog-titlebar-close').css("display","none");
+				$(".ui-dialog").find('.ui-dialog-titlebar-close').css("display","inline");
 				$(".ui-dialog").find('.ui-dialog-title').css("width","100%");
 			}
 

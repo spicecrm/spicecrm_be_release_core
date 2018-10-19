@@ -106,10 +106,11 @@ $app->group('/configurator', function () use ($app) {
 
         $setArray = [];
         foreach ($postBody as $field => $value) {
-            if ($field !== 'id')
+            if ($field !== 'id' && $value !== "")
                 $setArray[] = sprintf('`%s` = "%s"', $field, $db->quote( $value ));
         }
 
+        // no error handling, fire and forget :)
         if (count($setArray) > 0) {
             $exists = $db->fetchByAssoc($db->query("SELECT id FROM {$args['table']} WHERE id='{$args['id']}'"));
             if ($exists) {
@@ -162,7 +163,7 @@ $app->group('/configurator', function () use ($app) {
         if(!class_exists('SpiceUIConfLoader', false))
             require_once 'modules/SystemUI/SpiceUIConfLoader.php';
         $loader = new SpiceUIConfLoader();
-        $route = "referenceconfig";
+        $route = $loader->routebase;
         $packages = explode(",", $params['packages']);
         $versions = (!empty($params['versions']) ? $params['versions'] : "*");
         $endpoint = implode("/", array($route, implode(",", $packages), $versions));

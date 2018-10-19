@@ -70,7 +70,7 @@ $job_strings = [
     16 => 'trimSugarFeeds',
 	20 => 'fullTextIndex',
 	21 => 'kdeploymentmwnotification',
-    22 => 'runCampaignEmailsNew',
+    22 => 'sendCampaignTaskEmails',
     23 => 'fetchEmails',
     24 => 'processEmails',
     25 => 'processSpiceImports',
@@ -593,101 +593,9 @@ function cleanJobQueue($job)
     return true;
 }
 
-function runCampaignEmailsNew(){
-    require_once 'include/SpiceMailRelais/SpiceMailRelais.php';
-    require_once 'modules/CampaignLog/CampaignLog.php';
-    if(!isset($GLOBALS['log']))
-    {
-        $GLOBALS['log'] = LoggerManager::getLogger('SugarCRM');
-    }
-    $admin = new Administration();
-    $admin->retrieveSettings();
-    if (isset($admin->settings['massemailer_campaign_emails_per_run'])) {
-        $max_emails_per_run=$admin->settings['massemailer_campaign_emails_per_run'];
-    }
-    if (empty($max_emails_per_run)) {
-        $max_emails_per_run=500;//default
-    }
-
-    $db = DBManagerFactory::getInstance();
-    $timedate = TimeDate::getInstance();
-
-    $select_query =" SELECT *";
-    $select_query.=" FROM campaign_log";
-    $select_query.=" WHERE activity_date <= ". $db->now();
-    $select_query.=" AND activity_type ='queued' AND deleted = 0";
-
-    $select_query.=" ORDER BY activity_date ASC, list_id";
-
-    DBManager::setQueryLimit(0);
-
-    $result = $db->limitQuery($select_query,0,$max_emails_per_run);
-    global $current_user;
-
-    $current_user = new User();
-    require_once('modules/Campaigns/Campaign.php');
-    $campaign = new Campaign();
-
-    $template_status = array();
-    while(($row = $db->fetchByAssoc($result))!= null){
-
-        //verify the queue item before further processing.
-        //we have found cases where users have taken away access to email templates while them message is in queue.
-        if (empty($row['campaign_id'])) {
-            $GLOBALS['log']->fatal('Skipping campaign_log entry with empty campaign id' . print_r($row,true));
-            continue;
-        }
-
-        //fetch user that scheduled the campaign.
-        if(empty($current_user->id)){
-            $current_user->retrieve('1');
-        }
-
-        //fetch the campaign.
-        if(empty($campaign->id) || $campaign->id !== $row['campaign_id']){
-            $campaign->retrieve($row['campaign_id']);
-            $mailrelais = new SpiceMailRelais($campaign->mailrelais);
-        }
-
-        //verify the email template too..
-        //find the template associated with marketing message. make sure that template has a subject and
-        //a non-empty body
-        if (!isset($template_status[$campaign->email_template_id])) {
-            if (!class_exists('EmailTemplate')) {
-                include('modules/EmailTemplates/EmailTemplate.php');
-            }
-            $current_emailtemplate= new EmailTemplate();
-            $current_emailtemplate->retrieve($campaign->email_template_id);
-            if(!empty($current_emailtemplate->subject) && (!empty($current_emailtemplate->body) || !empty($current_emailtemplate->body_html))){
-                $template_status[$campaign->email_template_id] = 'ok';
-            }else{
-                $template_status[$campaign->email_template_id] = 'nok';
-            }
-        }
-
-        if($current_emailtemplate->id !== $campaign->email_template_id){
-            $current_emailtemplate= new EmailTemplate();
-            $current_emailtemplate->retrieve($campaign->email_template_id);
-        }
-
-        if($template_status[$campaign->email_template_id] == 'ok'){
-
-        }
-        $bean = BeanFactory::getBean($row['target_type'], $row['target_id']);
-        if($bean->hasEmails()) {
-            $parsedTpl = $current_emailtemplate->parse($bean);
-
-            if(!empty($parsedTpl['body'])) $mailrelais->addContent($parsedTpl['body']);
-            if(!empty($parsedTpl['body_html'])) $mailrelais->addContent(from_html(wordwrap($parsedTpl['body_html'], true)), 'text/html');
-            $mailrelais->setSubject($parsedTpl['subject']);
-            $mailrelais->addAddress($bean->emailAddress->getPrimaryAddress($bean), $bean->get_summary_text());
-            $mailrelais->send();
-
-            CampaignLog::setStatus($row['id'], 'sent');
-        }
-    }
-
-
+function sendCampaignTaskEmails(){
+    $campaignTask = BeanFactory::getBean('CampaignTasks');
+    return $campaignTask->sendQueuedEmails();
 }
 
 /**
@@ -733,6 +641,17 @@ function processEmails() {
             }
         }
     }
+}
+
+$scheduledtaskhandle = opendir('./modules/Schedulers/ScheduledTasks');
+while (false !== ($scheduledtaskfile = readdir($scheduledtaskhandle))) {
+    if (preg_match('/\.php$/', $scheduledtaskfile)) {
+        include('modules/Schedulers/ScheduledTasks/' . $scheduledtaskfile);
+    }
+}
+
+if (file_exists('modules/Schedulers/ScheduledTasks/scheduledtasks.php')) {
+    require('modules/Schedulers/ScheduledTasks/scheduledtasks.php');
 }
 
 if (file_exists('custom/modules/Schedulers/_AddJobsHere.php')) {

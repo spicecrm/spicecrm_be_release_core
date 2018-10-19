@@ -20,7 +20,7 @@ class SpiceUILoader
         if (!$this->db->connect($sugar_config['dbconfig']))
             die('database connection failed');
 
-        if(isset($sugar_config['spiceconfigreference']['endpoint'])) {
+        if (isset($sugar_config['spiceconfigreference']['endpoint']) && !empty($sugar_config['spiceconfigreference']['endpoint'])) {
             $this->endpoint = $sugar_config['spiceconfigreference']['endpoint'];
             if (substr($this->endpoint, -1) != "/") {
                 $this->endpoint .= "/";
@@ -30,6 +30,21 @@ class SpiceUILoader
         $this->curl = curl_init();
     }
 
+    public function getRouteBase(){
+        global $sugar_config;
+        $routebase ="release";
+        if (isset($sugar_config['spiceconfigreference']['routebase']) && !empty($sugar_config['spiceconfigreference']['routebase'])) {
+            $routebase = $sugar_config['spiceconfigreference']['routebase'];
+            if (substr($routebase, 0, 1) == "/") {
+                $routebase = substr($routebase, 1);
+            }
+            if (substr($this->routebase, -1) == "/") {
+                $routebase = substr($routebase, 0, strlen($routebase) - 1);
+            }
+        }
+
+        return $routebase;
+    }
 
     public function callMethod($method, $route, $getParams = null, $postParams = array())
     {
@@ -62,8 +77,12 @@ class SpiceUILoader
         $response = curl_exec($this->curl);
         if (!$response)
             $GLOBALS['log']->fatal("ERROR curl in " . __CLASS__ . curl_error($this->curl));
-//        echo '<pre>'. print_r($response, true);die();
 
+        //catch empty response
+        if($response == "[]")
+            return array('nodata' => 'No data found');
+
+        //decode reponse
         if (!$data = json_decode($response, true))
             $GLOBALS['log']->fatal( 'json_decode error on REST response from reference server. Response: ' . print_r($response, true) . '. URL: '. $url . '. Please check call parameters!' );
 
@@ -79,6 +98,10 @@ class SpiceUILoader
      * if found abort.
      */
     public function hasOpenChangeRequest(){
+        //if release_core only: no SystemDeploymentCR class available
+        if(!class_exists('SystemDeploymentCR'))
+            return false;
+
         $cr = new SystemDeploymentCR();
         $list = $cr->getList(array(), 'active');
 

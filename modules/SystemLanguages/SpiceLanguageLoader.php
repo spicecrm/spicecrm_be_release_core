@@ -38,10 +38,28 @@ require_once 'modules/SystemUI/SpiceUILoader.php';
 class SpiceLanguageLoader{
 
     public $loader;
+    public $routebase = "";
+    public $release = true;
 
     public function __construct(){
         $this->loader = new SpiceUILoader();
+        $this->routebase = $this->getRouteBase();
+
+        if(!preg_match('/release/', $this->routebase))
+            $this->release = false;
     }
+
+
+    public function getRouteBase(){
+        $routebase = $this->loader->getRouteBase();
+        return $routebase."language";
+    }
+    public function getRouteBaseConfig(){
+        $routebase = $this->loader->getRouteBase();
+        return $routebase."config";
+    }
+
+
     /**
      * Display load language form in SpiceCRM Backend Administration
      */
@@ -57,6 +75,9 @@ class SpiceLanguageLoader{
         if(!empty($possibleparams['packages'])) $sm->assign('possiblepackages', $possibleparams['packages']);
         if(!empty($possibleparams['versions'])) $sm->assign('possibleversions', $possibleparams['versions']);
         if(!empty($obsoleteprams)) $sm->assign('obsoletepackages', $obsoleteprams);
+
+        //check on release
+        $sm->assign("release", $this->release);
 
         //check on running change request
         $sm->assign("hasOpenChangeRequest", $this->loader->hasOpenChangeRequest());
@@ -111,10 +132,10 @@ class SpiceLanguageLoader{
 
     /**
      * load language labels and translations from reference database
-     * @param $endpoint
+     * @param $route
      * @param $params
      */
-    public function loadDefaultConf($endpoint, $params){
+    public function loadDefaultConf($route, $params){
         global $sugar_config;
         $truncates = array();
         $inserts = array();
@@ -122,7 +143,7 @@ class SpiceLanguageLoader{
 
         if($this->loader->hasOpenChangeRequest())
             throw new Exception("Open Change Requests found! They would be erased...");
-        if(!$response = $this->loader->callMethod("GET", $endpoint)){
+        if(!$response = $this->loader->callMethod("GET", $route)){
             //die("REST Call error somewhere... Action aborted");
             throw new Exception("REST Call error somewhere... Action aborted");
         }
@@ -208,10 +229,16 @@ class SpiceLanguageLoader{
 
     public function getPossibleConf(){
         //get data
-        $endpoint = "referenceconfig";
-        if(!$response = $this->loader->callMethod("GET", $endpoint)) {
+        $route = $this->getRouteBaseConfig();
+        if(!$response = $this->loader->callMethod("GET", $route)) {
             throw new Exception("REST Call error somewhere... Action aborted");
         }
+
+        //check if release and force unique version number
+        if($this->release === true){
+            $response['versions'][0]['version'] = $GLOBALS['sugar_version'];
+        }
+
         return $response;
     }
 

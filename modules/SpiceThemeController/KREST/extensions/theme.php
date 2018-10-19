@@ -24,16 +24,14 @@ $app->group('/theme', function () use ($app) {
             $app->post('', function($req, $res, $args) use ($app) {
                 require_once('modules/SpiceThemeController/SpiceThemeController.php');
                 $postBody = $req->getParsedBody();
-                $postParams = $_GET;
-                $data = array_merge($postBody, $postParams);
+                $data = array_merge($postBody, $args);
                 $SpiceThemeController = new SpiceThemeController();
                 echo $SpiceThemeController->setPage($args['pageId'],$data);
             });
             $app->delete('', function($req, $res, $args) use ($app) {
                 require_once('modules/SpiceThemeController/SpiceThemeController.php');
                 $postBody = $req->getParsedBody();
-                $postParams = $_GET;
-                $data = array_merge($postBody, $postParams);
+                $data = array_merge($postBody, $args);
                 $SpiceThemeController = new SpiceThemeController();
                 echo json_encode($SpiceThemeController->deletePage($args['pageId'],$data));
             });

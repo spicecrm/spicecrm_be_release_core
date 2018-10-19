@@ -185,7 +185,9 @@ class SpiceFTSHandler
 
             // check if we had success
             $indexResponse = json_decode($indexResponse);
-            if (!$indexResponse->error) {
+            // SPICEUI-100
+            // if (!$indexResponse->error) {
+            if (!property_exists($indexResponse, 'error') ) {
                 // update the date
                 $bean->db->query("UPDATE " . $bean->table_name . " SET date_indexed = '" . $timedate->nowDb() . "' WHERE id = '" . $bean->id . "'");
             }
@@ -535,7 +537,7 @@ class SpiceFTSHandler
     {
         global $current_user;
 
-        $searchterm = strtolower($searchterm);
+        $searchterm = strtolower( trim( (string)$searchterm ));
 
         if (empty($modules)) {
             $modulesArray = $this->getGlobalSearchModules();
@@ -577,7 +579,7 @@ class SpiceFTSHandler
 
             if ($searchresultsraw['error']) {
                 // no error handling accepted... just trash it into some logs...
-                $GLOBALS['log']->fatal(json_encode($searchresultsraw['error']['root_cause']));
+                // $GLOBALS['log']->fatal(json_encode($searchresultsraw['error']['root_cause']));
                 //throw new Exception(json_encode($searchresultsraw['error']['root_cause']));
             }
 

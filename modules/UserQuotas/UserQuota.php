@@ -50,13 +50,13 @@ class UserQuota extends SugarBean
         $this->tracker_visibility = false;
     }
 
-    public function save()
+    public function save($check_notify = false, $fts_index_bean = true)
     {
-
-        $periodDate = DateTime::createFromFormat('Y-m-d', $this->year . '-' . ($this->period < 10 ? '0' . $this->period : $this->period) . '-01');
+        $periodDate = DateTime::createFromFormat('Y-m-d', $this->year . '-' .
+                        ($this->period < 10 ? '0' . $this->period : $this->period) . '-01');
         $this->period_date = $periodDate->format("Y-m-t");
         $this->name = $this->year . '-' . ($this->period < 10 ? '0' . $this->period : $this->period);
-        parent::save();
+        parent::save($check_notify, $fts_index_bean);
 
     }
 

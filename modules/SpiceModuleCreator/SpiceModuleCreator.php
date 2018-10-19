@@ -41,7 +41,7 @@ class SpiceModuleCreator extends SugarBean{
      * fake SugarBean::isOwner()
      * @return bool
      */
-    public function isOwner(){
+    public function isOwner($user_id = ''){
         return $this->ACLAccess();
     }
 
@@ -57,7 +57,7 @@ class SpiceModuleCreator extends SugarBean{
      * fake SugarBean::ACLAccess()
      * @return bool
      */
-    public function ACLAccess(){
+    public function ACLAccess($view = '', $is_owner = 'not_set') {
         if($GLOBALS['current_user']->is_admin){
             return true;
         }
@@ -83,7 +83,7 @@ class SpiceModuleCreator extends SugarBean{
      * fake SugarBean::retrieve()
      * @return string
      */
-    public function retrieve(){
+    public function retrieve($id = -1, $encode = false, $deleted = true, $relationships = true){
         return '';
     }
 
@@ -102,7 +102,7 @@ class SpiceModuleCreator extends SugarBean{
         return $path;
     }
 
-    public function save(){
+    public function save($check_notify = false, $fts_index_bean = true){
         //populate
         $this->modulepath = $_POST['modulepath'];
         if(substr($this->modulepath, -1) != DIRECTORY_SEPARATOR && substr($this->modulepath, -1) != "/")

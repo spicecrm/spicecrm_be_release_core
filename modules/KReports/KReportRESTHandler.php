@@ -1507,6 +1507,14 @@ class KReporterRESTHandler
         $start = $params['start'];
         $limit = $params['limit'];
 
+        //remoteFiter
+        if(isset($params['filter'])){
+            $filter = json_decode($params['filter'], true);
+        }
+        //remoteSort
+        if(isset($params['sort'])){
+            $sort = json_decode($params['sort'], true);
+        }
 
         if (empty($module) || empty($fieldname))
             return array();
@@ -1533,6 +1541,27 @@ class KReporterRESTHandler
                     $useArray = $app_list_strings[$dom];
                 } elseif (isset($app_strings[$dom])) {
                     $useArray = $app_strings[$dom];
+                }
+
+                //filter array if filter used
+                if(!empty($filter[0]['value'])) {
+                    foreach ($useArray as $item => $value) {
+                        if (!preg_match("/".str_replace("/", "\/", $filter[0]['value'])."/i", $value)) {
+                            unset($useArray[$item]);
+                        }
+                    }
+                }
+
+                //sort
+                if(!empty($sort[0]['direction'])){
+                    switch($sort[0]['direction']){
+                        case 'DESC':
+                            arsort($useArray);
+                            break;
+                        case 'ASC':
+                            asort($useArray);
+                            break;
+                    }
                 }
 
                 //splice array according to start and limit

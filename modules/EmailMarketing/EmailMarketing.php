@@ -68,13 +68,10 @@ class EmailMarketing extends SugarBean
 	function __construct()
 	{
 		parent::__construct();
-
-
-
 	}
 
-	function retrieve($id, $encode=true, $deleted=true) {
-	    parent::retrieve($id,$encode,$deleted);
+	public function retrieve($id, $encode = true, $deleted = true, $relationships = true) {
+	    parent::retrieve($id, $encode, $deleted, $relationships);
 
         global $timedate;
         $date_start_array=explode(" ",trim($this->date_start));

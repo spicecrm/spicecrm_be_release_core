@@ -49,7 +49,7 @@ $app->group('/forgotPassword', function () use ($app, $KRESTManager, $KRESTUserH
         echo json_encode($KRESTUserHandler->sendTokenToUser($args['email']));
     });
     $app->post('/{email}/{token}', function($req, $res, $args) use ($app, $KRESTManager, $KRESTUserHandler) {
-        echo json_encode($KRESTUserHandler->checkToken($args['email'],$args['token']));
+        return $res->withJson([ 'token_valid' => $KRESTUserHandler->checkToken( $args['email'], $args['token'] )]);
     });
     $app->post('/resetPass', function ($req) use ($app, $KRESTManager, $KRESTUserHandler) {
         $postBody = $req->getParsedBody();
