@@ -34,6 +34,7 @@
 require_once 'include/SpiceBeanGuide/SpiceBeanGuideCreator.php';
 $guide = new SpiceBeanGuideCreator();
 $displayForm = true;
+
 if($_POST['spicebeanguidedefault_process'] > 0){
     $displayForm = false;
     if($_POST['spicebeanguideclearonly'] > 0){

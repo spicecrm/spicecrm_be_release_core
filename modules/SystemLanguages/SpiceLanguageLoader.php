@@ -220,8 +220,44 @@ class SpiceLanguageLoader{
         }
         else {
             $success = true;
+            //check if language is available
+            $queriessyslang = array();
+            $syslangstatus = $GLOBALS['db']->query("SELECT id,language_code from syslangs 
+                  WHERE language_code IN ('".implode("','", $languages)."') 
+                  ORDER BY sort_sequence ASC");
+            while($syslangrow = $GLOBALS['db']->fetchByAssoc($syslangstatus)){
+                $syslangs[$syslangrow['language_code']] = $syslangrow;
+            }
+            for($i = 0; $i < count($languages); $i++){
+
+
+                if(in_array($languages[$i], array_keys($syslangs))){
+                    $queriessyslang[] = "UPDATE syslangs SET system_language = 1 WHERE language_code='".$languages[$i]."'";
+                } else{
+                    //try to find a language name
+                    $appForLang = return_app_list_strings_language($languages[$i]);
+                    $lang = array("id" => create_guid(),
+                        "language_code" => $languages[$i],
+                        "language_name" => (!empty($appForLang['language_pack_name']) ? $appForLang['language_pack_name'] : $languages[$i]),
+                        "sort_sequence" => $i+1,
+                        "is_default" => 0,
+                        "system_language" => 1,
+                        "communication_language" => 1
+                    );
+                    $values = "'".$lang['id']."','".$lang['language_code']."', '".$lang['language_name']."', ".$lang['sort_sequence'].", ".$lang['is_default'].", ".$lang['system_language'].", ".$lang['communication_language'];
+                    $queriessyslang[] = "INSERT INTO syslangs (".implode(",", array_keys($lang)).") VALUES(".$values.")";
+
+                }
+            }
+
             // update syslanguages
-            $GLOBALS['db']->query("UPDATE syslangs SET system_language = 1 WHERE language_code IN ('".implode("','", $languages)."')");
+            foreach($queriessyslang as $q) {
+                if (!$GLOBALS['db']->query($q)) {
+                    $success = false;
+                    if(!_is_array($errors)) $errors = array();
+                    $errors[] = 'Error with query: '.$GLOBALS['db']->last_error;
+                }
+            }
         }
 
         return array("success" => $success, "queries" => count($queries), "errors" => $errors);

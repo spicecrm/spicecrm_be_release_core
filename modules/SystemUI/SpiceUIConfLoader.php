@@ -97,14 +97,16 @@ class SpiceUIConfLoader{
     public function getPossibleConf(){
         //get data
         if(!$response = $this->loader->callMethod("GET", $this->routebase)) {
-
             die('<pre>'.print_r($response, true));
             throw new Exception("REST Call error somewhere... Action aborted");
         }
         //check if release and force unique version number
         if($this->release === true){
+            $response['versions'] = array();
             $response['versions'][0]['version'] = $GLOBALS['sugar_version'];
         }
+
+        array_multisort($response['versions'], SORT_DESC, SORT_STRING);
 
         return $response;
     }

@@ -469,7 +469,7 @@ class ImapHandler extends TransportHandler
     /**
      * checkConfiguration
      *
-     * Checks the existance of all necessary configuration settings.
+     * Checks the existence of all necessary configuration settings.
      *
      * @param $settings
      * @return array

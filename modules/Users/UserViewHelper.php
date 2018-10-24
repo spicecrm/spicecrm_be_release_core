@@ -707,15 +707,7 @@ class UserViewHelper {
         if( !($this->usertype=='GROUP' || $this->usertype=='PORTAL_ONLY') ) {
             // email smtp
             $systemOutboundEmail = new OutboundEmail();
-            //BEGIN CR1000049 maretval $systemOutboundEmail->getSystemMailerSettings() now returns an array!
-            //next line will trigger php error
-            //$systemOutboundEmail = $systemOutboundEmail->getSystemMailerSettings();
-            $mailboxOutboundSettings = $systemOutboundEmail->getSystemMailerSettings();
-            $systemOutboundEmail->mail_smtpserver = $mailboxOutboundSettings['mail_smtpserver'];
-            $systemOutboundEmail->mail_smtptype = $mailboxOutboundSettings['mail_smtptype'];
-            $systemOutboundEmail->mail_smtpport = $mailboxOutboundSettings['mail_smtpport'];
-            $systemOutboundEmail->mail_smtpssl = $mailboxOutboundSettings['mail_smtpssl'];
-            //END
+            $systemOutboundEmail = $systemOutboundEmail->getSystemMailerSettings();
             $mail_smtpserver = $systemOutboundEmail->mail_smtpserver;
             $mail_smtptype = $systemOutboundEmail->mail_smtptype;
             $mail_smtpport = $systemOutboundEmail->mail_smtpport;

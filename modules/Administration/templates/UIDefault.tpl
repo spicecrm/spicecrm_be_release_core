@@ -75,13 +75,20 @@
                             <td scope="col"><label>Select Version(s)</label><span class="required">*</span></td>
                             <td>
                                 <div id="versionslist">
-                                    {if !$release}
-                                        <input type="checkbox" id="selectAllV" checked="checked"/> select / deselect all<br/>
-                                    {/if}
-                                        {*<input name="uidefaultconf_version" value="*" type="text" required>*}
+                                    {*{if !$release}*}
+                                        {*<input type="checkbox" id="selectAllV" checked="checked"/> select / deselect all<br/>*}
+                                        <select name="versions[]">
                                         {foreach $possibleversions as $version}
-                                            <input type="checkbox" class="checkBoxClassV {if $release}lookLikeDisabled{/if}" name="versions[]" value="{$version.version}" checked="checked"/> {$version.version}<br/>
+                                            <option name="versions[]" value="{$version.version}"> {$version.version}</option>
                                         {/foreach}
+                                        </select>
+
+                                    {*{else}*}
+                                        {*{foreach $possibleversions as $version}*}
+                                            {*<input type="checkbox" class="checkBoxClassV " name="versions[]" value="{$version.version}" checked="checked"/> {$version.version}<br/>*}
+                                        {*{/foreach}*}
+                                    {*{/if}*}
+
 
 
                                 </div>
@@ -106,20 +113,20 @@
             $("#selectAllP").click(function () {
                 $(".checkBoxClassP").prop('checked', $(this).prop('checked'));
             });
-            $("#selectAllV").click(function () {
-                $(".checkBoxClassV").prop('checked', $(this).prop('checked'));
-            });
+            // $("#selectAllV").click(function () {
+            //     $(".checkBoxClassV").prop('checked', $(this).prop('checked'));
+            // });
             $("#uidefaultconf_btn").click(function(){
                 if($("#packageslist").find("input[type=checkbox]:checked").length == 0)
                 {
                     alert("Please select at least one package");
                     return false;
                 }
-                if($("#versionslist").find("input[type=checkbox]:checked").length == 0)
-                {
-                    alert("Please select at least one version");
-                    return false;
-                }
+                // if($("#versionslist").find("input[type=checkbox]:checked").length == 0)
+                // {
+                //     alert("Please select at least one version");
+                //     return false;
+                // }
             });
 
 

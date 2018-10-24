@@ -10,6 +10,7 @@ $app->group('/reference', function()
         $loader = new SpiceUIConfLoader();
         if($loader->release === true){
             $content = json_decode($getJSONcontent);
+            $content->versions = array();
             $content->versions[0]->version = $GLOBALS['sugar_version'];
             $getJSONcontent = json_encode($content);
         }
