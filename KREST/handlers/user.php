@@ -93,11 +93,11 @@ class KRESTUserHandler
         if ($data['SystemGeneratedPassword']) {
             $generatedPass = $newUser->generatePassword();
             $emailTemp_id = $sugar_config['passwordsetting']['generatepasswordtmpl'];
-            $res = $newUser->sendEmailForPassword($emailTemp_id, array('password' => $generatedPass));
-            return array('status' => $res['status'], 'message' => $res['message']);
+            $res = $newUser->sendPasswordToUser($emailTemp_id, ['password' => $generatedPass]);
+            return ['status' => $res['status'], 'message' => $res['message']];
         } else {
             $newUser->setNewPassword($data['newpwd'], '1');
-            return array('status' => true);
+            return ['status' => true];
         }
     }
 
@@ -194,8 +194,6 @@ class KRESTUserHandler
             $emailTemp->body = $body;
 
             $emailObj = new Email();
-            $defaults = $emailObj->getSystemDefaultEmail();
-
 
             $emailObj->name       = from_html($emailTemp->subject);
             $emailObj->body       = from_html($emailTemp->body_html);
@@ -205,6 +203,7 @@ class KRESTUserHandler
 
 
             if ($result['status'] == true) {
+                $emailObj->to_be_sent = false;
                 $emailObj->team_id = 1;
                 $emailObj->to_addrs = '';
                 $emailObj->type = 'archived';

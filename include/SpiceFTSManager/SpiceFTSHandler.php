@@ -587,7 +587,7 @@ class SpiceFTSHandler
                 $seed = BeanFactory::getBean($module, $hit['_id']);
                 foreach ($seed->field_name_map as $field => $fieldData) {
                     //if (!isset($hit['_source']{$field}))
-                        $hit['_source'][$field] = html_entity_decode($seed->$field);
+                        $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
                 }
                 $hit['acl'] = $this->get_acl_actions($seed);
                 $hit['acl_fieldcontrol'] = $this->get_acl_fieldaccess($seed);

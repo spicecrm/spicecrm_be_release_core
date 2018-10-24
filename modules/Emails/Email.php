@@ -1148,6 +1148,8 @@ class Email extends SugarBean
                 $this->new_with_id = false;
                 parent::save($check_notify, $fts_index_bean);
             } // todo handle errors
+
+            return $result;
         }
     }
 
@@ -3465,6 +3467,13 @@ eoq;
         return $testEmail;
     }
 
+    /**
+     * to
+     *
+     * Extracts and returns a list of to recipients.
+     *
+     * @return array
+     */
     public function to()
     {
         if (!empty($this->recipient_addresses)) {
@@ -3484,6 +3493,14 @@ eoq;
         }
     }
 
+    /**
+     * from
+     *
+     * Extracts and returns a list of from recipients.
+     * Although realistically there should only be one.
+     *
+     * @return array
+     */
     public function from()
     {
         $emailAddresses = [];
@@ -3504,6 +3521,13 @@ eoq;
         return $emailAddresses;
     }
 
+    /**
+     * cc
+     *
+     * Extracts and returns a list of cc recipients.
+     *
+     * @return array
+     */
     public function cc()
     {
         if (!empty($this->recipient_addresses)) {
@@ -3523,6 +3547,14 @@ eoq;
         }
     }
 
+    /**
+     * bcc
+     *
+     * Extracts and returns a list of bcc recipients.
+     * Only useful for outgoing emails.
+     *
+     * @return array
+     */
     public function bcc()
     {
         if (!empty($this->recipient_addresses)) {
@@ -3545,7 +3577,8 @@ eoq;
     /**
      * extractEmailAddress
      *
-     * Extracts the email address and name from email header data
+     * Extracts the email address and name from email header data.
+     * Addresses in the email header form can also be stored in from_addr, to_addrs, cc_addrs and bcc_addrs.
      *
      * @param $items
      * @return array

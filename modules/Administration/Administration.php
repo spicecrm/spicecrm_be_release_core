@@ -111,11 +111,19 @@ class Administration extends SugarBean {
         $this->settings[$category] = true;
 
         // outbound email settings
-        $outboundEmailSettings = \Mailbox::getSystemMailerSettings();
+        $oe = new OutboundEmail();
+        $oe->getSystemMailerSettings();
+
+        foreach($oe->field_defs as $def) {
+            if (strpos($def, "mail_") !== false)
+                $this->settings[$def] = $oe->$def;
+        }
+
+        /*$outboundEmailSettings = \Mailbox::getSystemMailerSettings();
 
         foreach($outboundEmailSettings as $field => $value) {
                 $this->settings[$field] = $value;
-        }
+        }*/
 
         // At this point, we have built a new array that should be cached.
         sugar_cache_put('admin_settings_cache',$this->settings);

@@ -87,7 +87,7 @@ $dictionary['MediaFile'] = array(
         'filesize' => array(
             'name' => 'filesize',
             'vname' => 'LBL_FILESIZE',
-            'type' => 'uint',
+            'type' => 'ulong',
             'comment' => 'Filesize in KiloBytes'
         ),
         'upload_completed' => array(

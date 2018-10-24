@@ -382,10 +382,10 @@ class OutboundEmail
      *
      * @deprecated To be replaced by the Mailboxes module
 	 */
-	function getSystemMailerSettings() {
-	    return \Mailbox::getSystemMailerSettings();
+	public function getSystemMailerSettings() {
+	    //return \Mailbox::getSystemMailerSettings();
 
-        /*self::logDeprecated();
+        self::logDeprecated();
 		$q = "SELECT id FROM outbound_email WHERE type = 'system'";
 		$r = $this->db->query($q);
 		$a = $this->db->fetchByAssoc($r);
@@ -410,7 +410,7 @@ class OutboundEmail
 			$ret = $this->retrieve($a['id']);
 		}
 
-		return $ret;*/
+		return $ret;
 	}
 
 	/**

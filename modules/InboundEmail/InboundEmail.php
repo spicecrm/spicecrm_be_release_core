@@ -7281,7 +7281,7 @@ class Overview {
 	*/
     /**
      * Overview constructor.
-     * 
+     *
      * @deprecated To be replaced by the Mailboxes module
      */
 	function __construct() {

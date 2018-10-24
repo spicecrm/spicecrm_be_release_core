@@ -34,7 +34,15 @@
  */
 
 class SpiceBeanGuideCreator {
-    public $spicebeanguidemodules = array('Opportunities' => 'Opportunities');
+    public $spicebeanguidemodules = array(
+        'Cases' => 'Cases',
+        'Opportunities' => 'Opportunities',
+        'Tasks' => 'Tasks',
+        'Leads' => 'Leads',
+        'ServiceTickets' => 'ServiceTickets (for SpiceCRM full version only)',
+        'SystemDeploymentCRs' => 'SystemDeploymentCRs (for SpiceCRM full version only)'
+    );
+
 
     public function displayDefaultConfForm($displayForm, $displayResults = ""){
         $sm = new Sugar_Smarty();
@@ -67,7 +75,7 @@ class SpiceBeanGuideCreator {
             // insert
             foreach($queries as $q){
                 if(!$GLOBALS['db']->query($q)) {
-                    echo 'Query error ' . $q . '. Please check sugarcrm.log for details<br>';
+                   die('Query error ' . $q . '. Please check sugarcrm.log for details<br>');
                     return false;
                 }
             }
@@ -86,7 +94,7 @@ class SpiceBeanGuideCreator {
             foreach($sqls as $sqlPart){
                 if(substr($sqlPart, 0, 2) == '--') continue;
                 if(substr($sqlPart, 0, 2) == '/*') continue;
-                if(substr($sqlPart, 0, 2) == 'RE') {
+                if(preg_match("/^REPLACE/", $sqlPart) || preg_match("/^INSERT/", $sqlPart)) {
                     if(strlen($sql) > 1) {
                         $sqlBuilds[] = $sql;
                     }
@@ -96,7 +104,7 @@ class SpiceBeanGuideCreator {
             }
         }
         else{
-            die('No default File foudn for module '.$module.'. Action was aborted.');
+            die('No default File found for module '.$module.'. Action was aborted.');
         }
 
         return $sqlBuilds;
