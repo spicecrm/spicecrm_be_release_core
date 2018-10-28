@@ -2,6 +2,9 @@
 
 require_once('include/google/googleAPIRestHandler.php');
 
+global $sugar_config;
+$KRESTManager->registerExtension('google_api', '1.0', ['key' => $sugar_config['googleapikey']? 'xxx' : '']);
+
 $googleAPIRestHandler = new googleAPIRestHandler();
 
 $app->group('/googleapi', function () use ($app, $googleAPIRestHandler) {
