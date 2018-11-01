@@ -21,7 +21,7 @@ you will need a LAMP stack or similar Web server to run SpiceCRM Backend
 2. copy them or extract in your htdocs directory. ensure that .htaccess override is enabled to support rewrite rules
 3. navigate with your webbrowser to the webserver and follow the installation procedure. 
 
-Having trouble getting these steps to work on your machine? Follow the [troubleshooting](#troubleshooting) guide below.
+You can also find a more detailed installation guide for the frontend and the backend [here](https://www.spicecrm.io/download/spicecrm-installation-guide)
 
 ## Support
 
