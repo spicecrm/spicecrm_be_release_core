@@ -77,7 +77,7 @@ class AuthenticationController
             $type = 'LDAPAuthenticate';
         }
 
-        // check in custom dir first, in case someone want's to override an auth controller
+        // check in custom dir first, in case someone wants to override an auth controller
         $file_path  = 'modules/Users/authentication/'.$type.'/' . $type . '.php';
         $class_path = 'SpiceCRM\\modules\\Users\\authentication\\OAuthAuthenticate\\' . $type;
         $custom_class_path = 'SpiceCRM\\custom\\modules\\Users\\authentication\\OAuthAuthenticate\\' . $type;

@@ -37,13 +37,20 @@ class SpiceUIConfLoader{
     public $sysuitables = array();
 
     public $loader;
-
+    public $routebase = "";
+    public $release = true;
 
     public function __construct(){
         $this->loader = new SpiceUILoader();
+        $this->routebase = $this->getRouteBase();
+        if(!preg_match('/release/', $this->routebase))
+            $this->release = false;
     }
 
-
+    public function getRouteBase(){
+        $routebase = $this->loader->getRouteBase();
+        return $routebase."config";
+    }
 
     /**
      * Display load language form
@@ -59,6 +66,9 @@ class SpiceUIConfLoader{
         if(!empty($possibleparams['packages'])) $sm->assign('possiblepackages', $possibleparams['packages']);
         if(!empty($possibleparams['versions'])) $sm->assign('possibleversions', $possibleparams['versions']);
         if(!empty($obsoleteparams)) $sm->assign('obsoletepackages', $obsoleteparams);
+
+        //check on release
+        $sm->assign("release", $this->release);
 
         //check on running change request
         $sm->assign("hasOpenChangeRequest", $this->loader->hasOpenChangeRequest());
@@ -80,12 +90,24 @@ class SpiceUIConfLoader{
         return $cols;
     }
 
+    /**
+     * @return array|mixed
+     * @throws Exception
+     */
     public function getPossibleConf(){
         //get data
-        $endpoint = "referenceconfig";
-        if(!$response = $this->loader->callMethod("GET", $endpoint)) {
+        if(!$response = $this->loader->callMethod("GET", $this->routebase)) {
+            die('<pre>'.print_r($response, true));
             throw new Exception("REST Call error somewhere... Action aborted");
         }
+        //check if release and force unique version number
+        if($this->release === true){
+            $response['versions'] = array();
+            $response['versions'][0]['version'] = $GLOBALS['sugar_version'];
+        }
+
+        array_multisort($response['versions'], SORT_DESC, SORT_STRING);
+
         return $response;
     }
 
@@ -97,22 +119,28 @@ class SpiceUIConfLoader{
      * @param $route
      * @param $params
      */
-    public function loadDefaultConf($endpoint, $params){
+    public function loadDefaultConf($routeparams, $params){
 //        echo '<pre>'. print_r($params, true);die();
         global $sugar_config;
         $tables = array();
         $truncates = array();
         $inserts = array();
 
-        if($this->loader->hasOpenChangeRequest())
-            throw new Exception("Open Change Requests found! They would be erased...");
-
+        if($this->loader->hasOpenChangeRequest()) {
+            $errormsg = "Open Change Requests found! They would be erased...";
+            throw new Exception($errormsg);
+        }
         //get data
-        if(!$response = $this->loader->callMethod("GET", $endpoint)){
-            throw new Exception("REST Call error somewhere... Action aborted");
+        if(!$response = $this->loader->callMethod("GET", $routeparams)){
+            $errormsg = "REST Call error somewhere... Action aborted";
+            throw new Exception($errormsg);
         }
 
         $this->sysuitables = array_keys($response);
+
+        if(!empty($response['nodata'])){
+            die($response['nodata']);
+        }
 
         foreach($response as $tb => $content) {
             //truncate command
@@ -240,7 +268,6 @@ class SpiceUIConfLoader{
         (SELECT package, version FROM sysuilibs WHERE version is not null AND version <> '') UNION 
         (SELECT package, version FROM sysuimodulerepository WHERE version is not null AND version <> '') UNION 
         (SELECT package, version FROM sysuiobjectrepository WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuimodulerepository WHERE version is not null AND version <> '') UNION 
         (SELECT package, version FROM sysuirolemodules WHERE version is not null AND version <> '') UNION 
         (SELECT package, version FROM sysuiroles WHERE version is not null AND version <> '') UNION 
         (SELECT package, version FROM sysuiroutes WHERE version is not null AND version <> '') 
@@ -270,13 +297,13 @@ class SpiceUIConfLoader{
     public function getObsoleteConf($currentconf, $possibleconf){
         $currentpackages = $currentconf['packages'];
         $possiblepackages = array();
-        $obsoltepackages = array();
+        $obsoletepackages = array();
         foreach($possibleconf['packages'] as $package){
             $possiblepackages[] = $package['package'];
         }
         foreach($currentpackages as $package)
             if(!in_array($package,$possiblepackages))
-                $obsoltepackages[] = $package;
-        return $obsoltepackages;
+                $obsoletepackages[] = $package;
+        return $obsoletepackages;
     }
 }

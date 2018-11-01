@@ -577,20 +577,20 @@ $mod_strings = array(
 	'LBL_BACKWARD_COMPATIBILITY_ON' => 'Php Backward Compatibility mode is turned on. Set zend.ze1_compatibility_mode to Off for proceeding further',
 
     'advanced_password_new_account_email' => array(
-        'subject' => 'New account information',
-        'description' => 'This template is used when the System Administrator sends a new password to a user.',
-        'body' => '<div><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width="550" align=\"\&quot;\&quot;center\&quot;\&quot;\"><tbody><tr><td colspan=\"2\"><p>Here is your account username and temporary password:</p><p>Username : $contact_user_user_name </p><p>Password : $contact_user_user_hash </p><br><p>$config_site_url</p><br><p>After you log in using the above password, you may be required to reset the password to one of your own choice.</p>   </td>         </tr><tr><td colspan=\"2\"></td>         </tr> </tbody></table> </div>',
-        'txt_body' =>
-'
-Here is your account username and temporary password:
-Username : $contact_user_user_name
-Password : $contact_user_user_hash
+        'subject' =>		'Your login credentials for the CRM',
+        'description' =>	'This template is used when the System Administrator sends a new password to a user.',
+        'body' => 			'<p>Here is your account username and your temporary password for the CRM:</p>'.
+							'<p>Username: <b>$contact_user_user_name</b><br>Password: <b>$contact_user_user_hash</b></p>'.
+							'<p>During the first login you have to change the temporary password.</p>'.
+        					'<p>You find the CRM here: {config.frontend_url}</p>',
+        'txt_body' =>		"Here is your account username and your temporary password for the CRM:\n\n".
+							'Username: $contact_user_user_name'."\n".
+							'Password: $contact_user_user_hash'."\n\n".
+							"During the first login you have to change the temporary password.\n\n",
+							'You find the CRM here: {config.frontend_url}'.
+        'name' =>			'System-generated password email',
+	),
 
-$config_site_url
-
-After you log in using the above password, you may be required to reset the password to one of your own choice.',
-        'name' => 'System-generated password email',
-        ),
     'advanced_password_forgot_password_email' => array(
         'subject' => 'Reset your account password',
         'description' => "This template is used to send a user a link to click to reset the user's account password.",
@@ -604,19 +604,21 @@ Click on the link below to reset your password:
 $contact_user_link_guid',
         'name' => 'Forgot Password email',
         ),
+
     'advanced_password_forgot_password_token_email' => array(
-        'subject' => 'Reset your account password',
-        'description' => "This template is used to send a user a token to reset the user's account password.",
-        'body' => '<div><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width="550" align=\"\&quot;\&quot;center\&quot;\&quot;\"><tbody><tr><td colspan=\"2\"><p>You recently requested to be able to reset your account password. </p><p>Return to $config_site_url and enter the Token: </p><p> $token </p>  </td>         </tr><tr><td colspan=\"2\"></td>         </tr> </tbody></table> </div>',
-        'txt_body' =>
-            '
-You recently requested to be able to reset your account password.
+        'subject' => 		'New password for your CRM account?',
+        'description' => 	'This template is used to send a user a token to reset the user´s account password.',
+        'body' => 			'<p>You recently requested to be able to reset your CRM password.</p>'.
+            				'<p>To do so, this is the token you have to enter: <b>$token</b></p>'.
+							'<p>Note that the token is time-limited.</p>'.
+							'<p>If it was not you who requested this email, then consider this email to be irrelevant. Continue to log in with your existing password and simply delete this email.</p>',
+        'txt_body' => 		"You recently requested to be able to reset your CRM password.\n\n".
+            				'To do so, this is the token you have to enter: $token'."\n\n".
+							'Note that the token is time-limited.'."\n\n".
+            				"If it was not you who requested this email, then consider this email to be irrelevant. Continue to log in with your existing password and simply delete this email.",
+        'name' => 			'Forgot Password Token Email',
+    )
 
-Return to $config_site_url and enter the Token: 
-
-$token',
-        'name' => 'Forgot Password Token email',
-    ),
 );
 
 ?>

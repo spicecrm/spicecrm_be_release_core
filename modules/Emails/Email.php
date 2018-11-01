@@ -156,6 +156,13 @@ class Email extends SugarBean
     public $processors = [];
 
     /**
+     * Openness Statuses
+     */
+    const OPENNESS_OPEN          = 'open';
+    const OPENNESS_USER_CLOSED   = 'user_closed';
+    const OPENNESS_SYSTEM_CLOSED = 'system_closed';
+
+    /**
      * sole constructor
      */
     function __construct()
@@ -1141,6 +1148,8 @@ class Email extends SugarBean
                 $this->new_with_id = false;
                 parent::save($check_notify, $fts_index_bean);
             } // todo handle errors
+
+            return $result;
         }
     }
 
@@ -3440,7 +3449,7 @@ eoq;
      *
      * @return Email
      */
-    public static function getTestEmail(Mailbox $mailbox)
+    public static function getTestEmail(Mailbox $mailbox, $testEmailAddress)
     {
         $testEmail = new Email();
 
@@ -3451,17 +3460,20 @@ eoq;
             $testEmail->from_addr = $mailbox->imap_pop3_display_name . ' <' . $testEmail->from_addr . '>';
         }
 
-        if ($mailbox->test_email != "") {
-            $testEmail->to_addrs = $mailbox->test_email;
-        } else {
-            $testEmail->to_addrs = "Test McTestface <test@example.com>";
-        }
+        $testEmail->to_addrs = $testEmailAddress;
         $testEmail->name = "Test Email";
         $testEmail->body = "<h1>Lorem ipsum</h1><p>Dolor sit amet</p>";
 
         return $testEmail;
     }
 
+    /**
+     * to
+     *
+     * Extracts and returns a list of to recipients.
+     *
+     * @return array
+     */
     public function to()
     {
         if (!empty($this->recipient_addresses)) {
@@ -3481,6 +3493,14 @@ eoq;
         }
     }
 
+    /**
+     * from
+     *
+     * Extracts and returns a list of from recipients.
+     * Although realistically there should only be one.
+     *
+     * @return array
+     */
     public function from()
     {
         $emailAddresses = [];
@@ -3502,9 +3522,63 @@ eoq;
     }
 
     /**
+     * cc
+     *
+     * Extracts and returns a list of cc recipients.
+     *
+     * @return array
+     */
+    public function cc()
+    {
+        if (!empty($this->recipient_addresses)) {
+            $emailAddresses = [];
+
+            if (is_array($this->recipient_addresses)) {
+                foreach ($this->recipient_addresses as $address) {
+                    if ($address['address_type'] == 'cc') {
+                        $emailAddresses[] = ['email' => $address['email_address']];
+                    };
+                };
+            }
+            return $emailAddresses;
+        } else {
+            $items = explode(', ', $this->cc_addrs);
+            return $this->extractEmailAddress($items);
+        }
+    }
+
+    /**
+     * bcc
+     *
+     * Extracts and returns a list of bcc recipients.
+     * Only useful for outgoing emails.
+     *
+     * @return array
+     */
+    public function bcc()
+    {
+        if (!empty($this->recipient_addresses)) {
+            $emailAddresses = [];
+
+            if (is_array($this->recipient_addresses)) {
+                foreach ($this->recipient_addresses as $address) {
+                    if ($address['address_type'] == 'bcc') {
+                        $emailAddresses[] = ['email' => $address['email_address']];
+                    };
+                };
+            }
+            return $emailAddresses;
+        } else {
+            $items = explode(', ', $this->bcc_addrs);
+            return $this->extractEmailAddress($items);
+        }
+    }
+
+    /**
      * extractEmailAddress
      *
-     * Extracts the email address and name from email header data
+     * Extracts the email address and name from email header data.
+     * Addresses in the email header form can also be stored in from_addr, to_addrs, cc_addrs and bcc_addrs.
      *
      * @param $items
      * @return array
@@ -3514,6 +3588,10 @@ eoq;
         $email_array = [];
 
         foreach ($items as $item) {
+            if (empty($item)) {
+                return null;
+            }
+
             $pos = strpos($item, ' <');
             if ($pos > 0) { // name and email
                 $emailAddress['name'] = substr($item, 0, $pos);

@@ -60,6 +60,9 @@ $mod_strings = array(
     'LBL_OOTB_FTS_INDEX' => 'FullTextSearch index',
     'LBL_OOTB_SYSLOGSCLEANUP_INDEX' => 'Clean up SysLogs',
 
+    //KReporter
+    'LBL_RUNSCHEDULEDKREPORTS' => 'Process scheduled KReports',
+
     // List Labels
     'LBL_LIST_JOB_INTERVAL' => 'Interval:',
     'LBL_LIST_LIST_ORDER' => 'Schedulers:',
@@ -169,6 +172,7 @@ $mod_strings = array(
     'LBL_KDEPLOYMENTMWNOTIFICATION' => 'Maintenance Window notify Users',
 
     'LBL_RUNCAMPAIGNEMAILSNEW' => 'Send Campaign Emails (new)',
+    'LBL_SENDCAMPAIGNTASKEMAILS' => 'Send CampaignTask Emails',
 
     'LBL_FETCHEMAILS' => 'Fetch Emails',
     'LBL_PROCESSEMAILS' => 'Process Emails',

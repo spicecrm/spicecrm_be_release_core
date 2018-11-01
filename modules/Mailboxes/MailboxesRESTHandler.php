@@ -35,12 +35,24 @@ class MailboxesRESTHandler
                 'errors' => 'No mailbox selected',
             ];
         }
+        if ($params['test_email'] == null) {
+            return [
+                'result' => false,
+                'errors' => 'No test email selected',
+            ];
+        }
+        if (!filter_var($params['test_email'], FILTER_VALIDATE_EMAIL)) {
+            return [
+                'result' => false,
+                'errors' => $params['test_email'] . ' is not a valid email address.',
+            ];
+        }
         $result = false;
 
         $mailbox = \BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
 
         if ($mailbox->initTransportHandler()) {
-            $result = $mailbox->transport_handler->testConnection();
+            $result = $mailbox->transport_handler->testConnection($params['test_email']);
         }
 
         return $result;

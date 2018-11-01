@@ -38,10 +38,28 @@ require_once 'modules/SystemUI/SpiceUILoader.php';
 class SpiceLanguageLoader{
 
     public $loader;
+    public $routebase = "";
+    public $release = true;
 
     public function __construct(){
         $this->loader = new SpiceUILoader();
+        $this->routebase = $this->getRouteBase();
+
+        if(!preg_match('/release/', $this->routebase))
+            $this->release = false;
     }
+
+
+    public function getRouteBase(){
+        $routebase = $this->loader->getRouteBase();
+        return $routebase."language";
+    }
+    public function getRouteBaseConfig(){
+        $routebase = $this->loader->getRouteBase();
+        return $routebase."config";
+    }
+
+
     /**
      * Display load language form in SpiceCRM Backend Administration
      */
@@ -57,6 +75,9 @@ class SpiceLanguageLoader{
         if(!empty($possibleparams['packages'])) $sm->assign('possiblepackages', $possibleparams['packages']);
         if(!empty($possibleparams['versions'])) $sm->assign('possibleversions', $possibleparams['versions']);
         if(!empty($obsoleteprams)) $sm->assign('obsoletepackages', $obsoleteprams);
+
+        //check on release
+        $sm->assign("release", $this->release);
 
         //check on running change request
         $sm->assign("hasOpenChangeRequest", $this->loader->hasOpenChangeRequest());
@@ -111,10 +132,10 @@ class SpiceLanguageLoader{
 
     /**
      * load language labels and translations from reference database
-     * @param $endpoint
+     * @param $route
      * @param $params
      */
-    public function loadDefaultConf($endpoint, $params){
+    public function loadDefaultConf($route, $params){
         global $sugar_config;
         $truncates = array();
         $inserts = array();
@@ -122,7 +143,7 @@ class SpiceLanguageLoader{
 
         if($this->loader->hasOpenChangeRequest())
             throw new Exception("Open Change Requests found! They would be erased...");
-        if(!$response = $this->loader->callMethod("GET", $endpoint)){
+        if(!$response = $this->loader->callMethod("GET", $route)){
             //die("REST Call error somewhere... Action aborted");
             throw new Exception("REST Call error somewhere... Action aborted");
         }
@@ -199,8 +220,44 @@ class SpiceLanguageLoader{
         }
         else {
             $success = true;
+            //check if language is available
+            $queriessyslang = array();
+            $syslangstatus = $GLOBALS['db']->query("SELECT id,language_code from syslangs 
+                  WHERE language_code IN ('".implode("','", $languages)."') 
+                  ORDER BY sort_sequence ASC");
+            while($syslangrow = $GLOBALS['db']->fetchByAssoc($syslangstatus)){
+                $syslangs[$syslangrow['language_code']] = $syslangrow;
+            }
+            for($i = 0; $i < count($languages); $i++){
+
+
+                if(in_array($languages[$i], array_keys($syslangs))){
+                    $queriessyslang[] = "UPDATE syslangs SET system_language = 1 WHERE language_code='".$languages[$i]."'";
+                } else{
+                    //try to find a language name
+                    $appForLang = return_app_list_strings_language($languages[$i]);
+                    $lang = array("id" => create_guid(),
+                        "language_code" => $languages[$i],
+                        "language_name" => (!empty($appForLang['language_pack_name']) ? $appForLang['language_pack_name'] : $languages[$i]),
+                        "sort_sequence" => $i+1,
+                        "is_default" => 0,
+                        "system_language" => 1,
+                        "communication_language" => 1
+                    );
+                    $values = "'".$lang['id']."','".$lang['language_code']."', '".$lang['language_name']."', ".$lang['sort_sequence'].", ".$lang['is_default'].", ".$lang['system_language'].", ".$lang['communication_language'];
+                    $queriessyslang[] = "INSERT INTO syslangs (".implode(",", array_keys($lang)).") VALUES(".$values.")";
+
+                }
+            }
+
             // update syslanguages
-            $GLOBALS['db']->query("UPDATE syslangs SET system_language = 1 WHERE language_code IN ('".implode("','", $languages)."')");
+            foreach($queriessyslang as $q) {
+                if (!$GLOBALS['db']->query($q)) {
+                    $success = false;
+                    if(!_is_array($errors)) $errors = array();
+                    $errors[] = 'Error with query: '.$GLOBALS['db']->last_error;
+                }
+            }
         }
 
         return array("success" => $success, "queries" => count($queries), "errors" => $errors);
@@ -208,10 +265,16 @@ class SpiceLanguageLoader{
 
     public function getPossibleConf(){
         //get data
-        $endpoint = "referenceconfig";
-        if(!$response = $this->loader->callMethod("GET", $endpoint)) {
+        $route = $this->getRouteBaseConfig();
+        if(!$response = $this->loader->callMethod("GET", $route)) {
             throw new Exception("REST Call error somewhere... Action aborted");
         }
+
+        //check if release and force unique version number
+        if($this->release === true){
+            $response['versions'][0]['version'] = $GLOBALS['sugar_version'];
+        }
+
         return $response;
     }
 

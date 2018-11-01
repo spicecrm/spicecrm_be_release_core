@@ -447,6 +447,16 @@ class KReport extends SugarBean
                 $this->listFieldArrayById [$listFieldData ['fieldid']] = $listFieldData;
         }
 
+        //get kreportcategory
+//        if(!empty($this->category_id) && file_exists('modules/KReports/views/view.categories.php')){
+//            $q = "SELECT name FROM kreportcategories WHERE id='".$this->category_id."' AND deleted=0";
+//            if($res = $this->db->query($q)){
+//                while($row = $this->db->fetchByAssoc($res)){
+//                    $this->category_name = $row['name'];
+//                }
+//            }
+//        }
+
         return $this;
     }
 
@@ -483,6 +493,17 @@ class KReport extends SugarBean
     {
         $ld = $this->get_list_view_array();
         $ld['DESCRIPTION'] = html_entity_decode($this->description);
+
+        //get kreportcategory
+        if(!empty($ld['ID']) && file_exists('modules/KReports/views/view.categories.php')){
+            $q = "SELECT kreportcategories.name FROM kreportcategories 
+          INNER JOIN kreports ON kreports.category_id = kreportcategories.id WHERE kreports.id='".$ld['ID']."'";
+            if($res = $this->db->query($q)){
+                while($row = $this->db->fetchByAssoc($res)){
+                    $ld['CATEGORY_NAME'] = $row['name'];
+                }
+            }
+        }
         return $ld;
     }
 

@@ -33,6 +33,31 @@ class MediaFile extends SugarBean {
         return $this->name;
     }
 
+    public function save($check_notify = false, $fts_index_bean = true)
+    {
+        global $sugar_config;
+
+        $bean = parent::save($check_notify, $fts_index_bean);
+
+        if($bean && $this->upload_completed && $sugar_config['mediafiles']['cdnurl']){
+            $chf = curl_init();
+            curl_setopt($chf, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($chf, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($chf, CURLOPT_POSTFIELDS, $this->getBase64());
+            curl_setopt($chf, CURLOPT_URL, "{$sugar_config['mediafiles']['cdnurl']}/{$this->id}");
+            curl_setopt($chf, CURLOPT_USERPWD, $sugar_config['mediafiles']['cdnuser'] . ":" . $sugar_config['mediafiles']['cdnsecret']);
+            curl_setopt($chf, CURLOPT_POST, 1);
+            $result = curl_exec($chf);
+            curl_close($chf);
+        }
+
+        return $bean;
+    }
+
+    private function getBase64(){
+        return base64_encode(file_get_contents(self::getMediaPath( $this->id )));
+    }
+
     // Use thumbnailSizeAllowed() to check if generating a thumbnail in a specific size is allowed, before calling this method.
     public function generateThumb( $destSize ) {
         $supportedImageTypes = ['jpeg', 'png', 'gif', 'bmp'];

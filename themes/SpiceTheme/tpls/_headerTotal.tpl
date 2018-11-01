@@ -168,17 +168,20 @@
                     {/foreach}
                 </ul>
                 <div id="pageEdit">
-                    <div class="pageEditLabel">Title:</div>
+                    <div class="pageEditLabel">{sugar_translate label='LBL_NAME'}:</div>
                     <input type="text" id="pageTitle">
-                    <div class="pageEditLabel">Columns:</div>
+                    <div class="pageEditLabel">{sugar_translate label='LBL_DISPLAY_COLUMNS'}:</div>
                     <select id="pageColumns" style="width:100%">
                         <option value="1">1</option>
                         <option value="2">2</option>
                     </select>
                     <div class="pageEditButtons">
-                        <div class="pageEditButton button" onclick="spicetheme.commitPageEdit()">OK</div>
-                        <div class="pageEditButton button" onclick="spicetheme.cancelPageEdit()">Cancel</div>
-                        <div id="pageEditDeleteButton" class="pageEditButton button" onclick="spicetheme.deletePage()">Delete</div>
+                        <img onclick="spicetheme.commitPageEdit()" src="{sugar_getimagepath file="ok.png"}" title="{sugar_translate label='LBL_OK'}" alt="OK" width="16" height="16" style="cursor: pointer;"/>&nbsp;
+                        <img onclick="spicetheme.cancelPageEdit()" src="{sugar_getimagepath file="cancel.png"}" title="{sugar_translate label='LBL_CANCEL'}" alt="cancel" width="16" height="16" style="cursor: pointer;"/>&nbsp;
+                        <img onclick="spicetheme.deletePage()" src="{sugar_getimagepath file="Trash.png"}" title="{sugar_translate label='LBL_DELETE'}" alt="delete" id="pageEditDeleteButton" width="16" height="16" style="cursor: pointer;"/>
+                        {*<div class="pageEditButton button" onclick="spicetheme.commitPageEdit()">OK</div>*}
+                        {*<div class="pageEditButton button" onclick="spicetheme.cancelPageEdit()">Cancel</div>*}
+                        {*<div id="pageEditDeleteButton" class="pageEditButton button" onclick="spicetheme.deletePage()">Delete</div>*}
                     </div>
                 </div>
             {/if}

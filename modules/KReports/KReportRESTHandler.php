@@ -315,9 +315,9 @@ class KReporterRESTHandler
         return $returnArray;
     }
 
-    function getAllWhereOperators($path, $grouping, $designer)
+    function getAllWhereOperators()
     {
-        global $app_list_strings, $beanFiles, $beanList, $db, $current_language;
+        global $app_list_strings, $current_language;
 
         $app_list_strings = return_app_list_strings_language($current_language);
 
@@ -1044,7 +1044,7 @@ class KReporterRESTHandler
             $thisReport->whereOverride = json_decode(html_entity_decode($filter['selectedfilters']), true);
         }
 
-        //get parent bean 
+        //get parent bean
         if (isset($requestParams['parentbeanId']) && isset($requestParams['parentbeanModule'])) {
             $parentbean = BeanFactory::getBean($requestParams['parentbeanModule'], $requestParams['parentbeanId']);
             if ($parentbean->id)
@@ -1113,9 +1113,9 @@ class KReporterRESTHandler
                     $thisFieldArray['type'] = 'number';
                     break;
 //type date will modified date format in store and check on timezone on user's machine!
-//2016-06-25 will become Sat Jun 24 2016 20:00:00 GMT-0400 (Zentalbrasilianische Normalzeit)                
+//2016-06-25 will become Sat Jun 24 2016 20:00:00 GMT-0400 (Zentalbrasilianische Normalzeit)
 //                case 'date':
-//                    $thisFieldArray['type'] = 'date'; 
+//                    $thisFieldArray['type'] = 'date';
 //                    break;
                 default:
                     $thisFieldArray['type'] = 'string';
@@ -1244,7 +1244,7 @@ class KReporterRESTHandler
             $thisReport->whereOverride = json_decode(html_entity_decode($filter['selectedfilters']), true);
         }
 
-        //get parent bean 
+        //get parent bean
         if (isset($requestParams['parentbeanId']) && isset($requestParams['parentbeanModule'])) {
             $parentbean = BeanFactory::getBean($requestParams['parentbeanModule'], $requestParams['parentbeanId']);
             if ($parentbean->id)
@@ -1341,7 +1341,7 @@ class KReporterRESTHandler
         $thisReport->save();
     }
 
-###################### BEGIN SavedFilters ksavedfilters ######################    
+###################### BEGIN SavedFilters ksavedfilters ######################
     public function getSavedFilters($params = array())
     {
         global $db, $current_user;
@@ -1390,7 +1390,7 @@ class KReporterRESTHandler
             }
 
             //loop selectedfilters over whereconditions and set status
-            //if one of the filters IDs does not correspond to whereconditions, the whole savedfilter is status =0 
+            //if one of the filters IDs does not correspond to whereconditions, the whole savedfilter is status =0
             $status = 1;
             foreach ($selectedfilters as $idxfi => $filter) {
                 if (!in_array($filter['fieldid'], $whereconditionsFieldids)) {
@@ -1416,10 +1416,10 @@ class KReporterRESTHandler
     }
 
 
-###################### END SavedFilters ksavedfilters ######################    
+###################### END SavedFilters ksavedfilters ######################
 
 
-###################### BEGIN BucketManager ######################    
+###################### BEGIN BucketManager ######################
 
     /**
      * Handler for Bucketmanager
@@ -1507,6 +1507,14 @@ class KReporterRESTHandler
         $start = $params['start'];
         $limit = $params['limit'];
 
+        //remoteFiter
+        if(isset($params['filter'])){
+            $filter = json_decode($params['filter'], true);
+        }
+        //remoteSort
+        if(isset($params['sort'])){
+            $sort = json_decode($params['sort'], true);
+        }
 
         if (empty($module) || empty($fieldname))
             return array();
@@ -1535,6 +1543,27 @@ class KReporterRESTHandler
                     $useArray = $app_strings[$dom];
                 }
 
+                //filter array if filter used
+                if(!empty($filter[0]['value'])) {
+                    foreach ($useArray as $item => $value) {
+                        if (!preg_match("/".str_replace("/", "\/", $filter[0]['value'])."/i", $value)) {
+                            unset($useArray[$item]);
+                        }
+                    }
+                }
+
+                //sort
+                if(!empty($sort[0]['direction'])){
+                    switch($sort[0]['direction']){
+                        case 'DESC':
+                            arsort($useArray);
+                            break;
+                        case 'ASC':
+                            asort($useArray);
+                            break;
+                    }
+                }
+
                 //splice array according to start and limit
                 $totalCount = count($useArray);
                 if (isset($limit)) {
@@ -1544,7 +1573,7 @@ class KReporterRESTHandler
             case 'db':
                 //query on table
                 $bean = BeanFactory::getBean($module);
-                //Get table_name from $module                
+                //Get table_name from $module
                 $q = "SELECT DISTINCT(" . $fieldname . ") colvalue "
                     . " FROM " . $bean->table_name . " "
                     . " WHERE " . $fieldname . " LIKE '" . $fieldvalue . "%' AND deleted = 0 "
@@ -1630,12 +1659,12 @@ class KReporterRESTHandler
 //        }
 //        else
 //           $return = array('success' => 0, 'msg' => 'Could not save mapping into DB.kreportgroupings');
-//        
+//
 //        echo json_encode($return);
 //    }
-###################### END BucketManager ######################    
+###################### END BucketManager ######################
 
-###################### BEGIN DListManager ######################    
+###################### BEGIN DListManager ######################
 
     /**
      * Handler for DListManager

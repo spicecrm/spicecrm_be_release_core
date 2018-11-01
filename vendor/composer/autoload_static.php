@@ -34,7 +34,9 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             'Symfony\\Component\\OptionsResolver\\' => 34,
             'SpiceCRM\\modules\\' => 17,
+            'SpiceCRM\\includes\\' => 18,
             'SpiceCRM\\custom\\modules\\' => 24,
+            'SpiceCRM\\custom\\includes\\' => 25,
             'Slim\\' => 5,
             'SendGrid\\' => 9,
         ),
@@ -72,7 +74,6 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         ),
         'F' => 
         array (
-            'FontLib\\' => 8,
             'Firebase\\JWT\\' => 13,
             'FastRoute\\' => 10,
         ),
@@ -103,9 +104,17 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/../..' . '/modules',
         ),
+        'SpiceCRM\\includes\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/include',
+        ),
         'SpiceCRM\\custom\\modules\\' => 
         array (
             0 => __DIR__ . '/../..' . '/custom/modules',
+        ),
+        'SpiceCRM\\custom\\includes\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/custom/include',
         ),
         'Slim\\' => 
         array (
@@ -184,10 +193,6 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/..' . '/google/auth/src',
         ),
-        'FontLib\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib',
-        ),
         'Firebase\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
@@ -207,17 +212,6 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
     );
 
     public static $prefixesPsr0 = array (
-        'S' => 
-        array (
-            'Svg\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src',
-            ),
-            'Sabberworm\\CSS' => 
-            array (
-                0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/lib',
-            ),
-        ),
         'P' => 
         array (
             'Pimple' => 

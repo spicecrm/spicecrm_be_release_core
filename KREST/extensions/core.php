@@ -20,7 +20,7 @@ $KRESTManager->excludeFromAuthentication('/');
 $KRESTManager->excludeFromAuthentication('/sysinfo');
 $KRESTManager->excludeFromAuthentication('/test');
 
-$KRESTManager->registerExtension('core', '2.0', ['edit_mode' => $sugar_config['edit_mode'] ?: 'custom']);
+$KRESTManager->registerExtension('core', '2.0', ['edit_mode' => $sugar_config['workbench_edit_mode']['mode'] ?: 'custom']);
 
 $app->get('/', function () use ($KRESTManager) {
     echo json_encode(array(
@@ -61,9 +61,10 @@ $app->get('/sysinfo', function () use ($KRESTManager) {
         'extensions' => $KRESTManager->extensions,
         'languages' => $languages,
         'loginSidebarUrl' => isset ( $sugar_config['uiLoginSidebarUrl']{0} ) ? $sugar_config['uiLoginSidebarUrl'] : false,
-        'ChangeRequestRequired' => $GLOBALS['sugar_config']['change_request_required'] ? $GLOBALS['sugar_config']['change_request_required'] : false
+        'ChangeRequestRequired' => isset( $GLOBALS['sugar_config']['change_request_required'] ) ? (boolean)$GLOBALS['sugar_config']['change_request_required'] : false,
+        'sessionMaxLifetime' => (int)ini_get('session.gc_maxlifetime')
     ));
-}); #
+});
 
 
 $app->group('/system', function () use ($app, $KRESTManager) {

@@ -20,7 +20,7 @@ abstract class TransportHandler
 
     abstract protected function initTransportHandler();
 
-    abstract public function testConnection();
+    abstract public function testConnection($testEmail);
 
     public function sendMail(\Email $email)
     {

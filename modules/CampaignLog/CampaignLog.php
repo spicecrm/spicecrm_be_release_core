@@ -64,6 +64,15 @@ class CampaignLog extends SugarBean {
 
     }
 
+    function fill_in_additional_detail_fields()
+    {
+        parent::fill_in_additional_detail_fields();
+
+        // fill in target_name
+        $target = BeanFactory::getBean($this->target_type, $this->target_id);
+        $this->target_name = $target->get_summary_text();
+    }
+
     function get_list_view_data(){
         global $locale;
         $temp_array = $this->get_list_view_array();

@@ -87,7 +87,7 @@ $dictionary['MediaFile'] = array(
         'filesize' => array(
             'name' => 'filesize',
             'vname' => 'LBL_FILESIZE',
-            'type' => 'uint',
+            'type' => 'ulong',
             'comment' => 'Filesize in KiloBytes'
         ),
         'upload_completed' => array(
@@ -96,6 +96,12 @@ $dictionary['MediaFile'] = array(
             'type' => 'bool',
             'isnull' => false,
             'required' => true,
+            'default' => 0
+        ),
+        'cdn' => array(
+            'name' => 'cdn',
+            'vname' => 'LBL_CDN',
+            'type' => 'bool',
             'default' => 0
         ),
         'hash' => array(

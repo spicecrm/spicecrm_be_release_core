@@ -78,10 +78,15 @@ class ImapHandler extends TransportHandler
      *
      * @return mixed
      */
-    public function testConnection()
+    public function testConnection($testEmail)
     {
-        $response['imap'] = $this->testImapConnection();
-        $response['smtp'] = $this->testSmtpConnection();
+        if ($this->mailbox->inbound_comm == 1) {
+            $response['imap'] = $this->testImapConnection();
+        }
+
+        if ($this->mailbox->outbound_comm == 'single' || $this->mailbox->outbound_comm = 'mass') {
+            $response['smtp'] = $this->testSmtpConnection($testEmail);
+        }
 
         return $response;
     }
@@ -142,6 +147,7 @@ class ImapHandler extends TransportHandler
                 }
                 $email->type = 'inbound';
                 $email->status = 'unread';
+                $email->openness = \Email::OPENNESS_OPEN;
 
                 $structure = new ImapStructure($stream, $item);
                 $structure->parseStructure();
@@ -351,7 +357,7 @@ class ImapHandler extends TransportHandler
      *
      * @return mixed
      */
-    private function testSmtpConnection()
+    private function testSmtpConnection($testEmail)
     {
         $smtp_status = $this->checkConfiguration($this->outgoing_settings);
         if (!$smtp_status['result']) {
@@ -366,7 +372,7 @@ class ImapHandler extends TransportHandler
         try {
             $this->transport_handler->getTransport()->start();
 
-            $this->sendMail(\Email::getTestEmail($this->mailbox));
+            $this->sendMail(\Email::getTestEmail($this->mailbox, $testEmail));
             $response['result'] = true;
         } catch (\Swift_TransportException $e) {
             $response['errors'] = $e->getMessage();
@@ -458,5 +464,38 @@ class ImapHandler extends TransportHandler
         }
 
         return $result;
+    }
+
+    /**
+     * checkConfiguration
+     *
+     * Checks the existence of all necessary configuration settings.
+     *
+     * @param $settings
+     * @return array
+     */
+    protected function checkConfiguration($settings)
+    {
+        $response = parent::checkConfiguration($settings);
+
+
+        // If there is no incoming communication and SMTP authentication is disabled the password is allowed to be empty
+        foreach ($response['missing'] as $index => $missingSetting) {
+            if ($missingSetting == 'imap_pop3_password' && $this->mailbox->inbound_comm == 0
+                && ($this->mailbox->smtp_auth == 0 || !isset($this->mailbox->smtp_auth))) {
+                unset($response['missing'][$index]);
+            }
+        }
+
+        /**
+         * If after removing the password from the missing fields array in the case above, the missing fields array
+         * is empty, then the response result should be reset to true.
+         */
+
+        if (empty($response['missing']) && $response['result'] == false) {
+            $response['result'] = true;
+        }
+
+        return $response;
     }
 }

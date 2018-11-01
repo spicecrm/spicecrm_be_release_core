@@ -256,7 +256,7 @@ class LoggerManager
      *
      */
     public static function getLevelCategories(){
-        if(empty(self::$_levelCategories) && $GLOBALS['sugar_config']['logger']['default'] == 'SpiceLogger'){
+        if(empty(self::$_levelCategories) && isset( $GLOBALS['sugar_config']['logger']['default'] ) && $GLOBALS['sugar_config']['logger']['default'] === 'SpiceLogger'){
             $levelCategories = array();
             self::getDbManager();
             if(self::$db) {
@@ -340,7 +340,7 @@ class LoggerManager
  	    $traces = "";
  	    foreach ($backTrace as $entry) {
  	        $traces .= "\n  " . $entry['file'] . '(' . $entry['line'] . '): ' .
-                $entry['class'] . '->' . $entry['function'];
+                @$entry['class'] . '->' . $entry['function'];
         }
 
         return $traces;

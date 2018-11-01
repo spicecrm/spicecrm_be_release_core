@@ -117,12 +117,13 @@ class SystemUIRESTHandler
     function getComponentSets()
     {
         $retArray = array();
-        $componentsets = $this->db->query("SELECT sysuicomponentsets.name, sysuicomponentsets.package componentsetpackage, sysuicomponentsets.module, sysuicomponentsetscomponents.* FROM sysuicomponentsets LEFT JOIN sysuicomponentsetscomponents ON sysuicomponentsets.id = sysuicomponentsetscomponents.componentset_id  ORDER BY componentset_id, sequence");
+        $componentsets = $this->db->query("SELECT sysuicomponentsetscomponents.*, sysuicomponentsets.id cid, sysuicomponentsets.name, sysuicomponentsets.module, sysuicomponentsets.package componentsetpackage FROM sysuicomponentsets LEFT JOIN sysuicomponentsetscomponents ON sysuicomponentsetscomponents.componentset_id = sysuicomponentsets.id ORDER BY componentset_id, sequence");
+
         while ($componentset = $this->db->fetchByAssoc($componentsets)) {
 
-            if (!isset($retArray[$componentset['componentset_id']])) {
-                $retArray[$componentset['componentset_id']] = array(
-                    'id' => $componentset['componentset_id'],
+            if (!isset($retArray[$componentset['cid']])) {
+                $retArray[$componentset['cid']] = array(
+                    'id' => $componentset['cid'],
                     'name' => $componentset['name'],
                     'package' => $componentset['componentsetpackage'],
                     'module' => $componentset['module'] ?: '*',
@@ -141,12 +142,13 @@ class SystemUIRESTHandler
             );
         }
 
-        $componentsets = $this->db->query("SELECT sysuicustomcomponentsets.name, sysuicustomcomponentsets.package componentsetpackage, sysuicustomcomponentsets.module, sysuicustomcomponentsetscomponents.* FROM sysuicustomcomponentsetscomponents, sysuicustomcomponentsets WHERE sysuicustomcomponentsets.id = sysuicustomcomponentsetscomponents.componentset_id  ORDER BY componentset_id, sequence");
+        $componentsets = $this->db->query("SELECT sysuicustomcomponentsetscomponents.*, sysuicustomcomponentsets.id cid, sysuicustomcomponentsets.name, sysuicustomcomponentsets.module, sysuicustomcomponentsets.package componentsetpackage FROM sysuicustomcomponentsets LEFT JOIN sysuicustomcomponentsetscomponents ON sysuicustomcomponentsetscomponents.componentset_id = sysuicustomcomponentsets.id ORDER BY componentset_id, sequence");
+
         while ($componentset = $this->db->fetchByAssoc($componentsets)) {
 
-            if (!isset($retArray[$componentset['componentset_id']])) {
-                $retArray[$componentset['componentset_id']] = array(
-                    'id' => $componentset['componentset_id'],
+            if (!isset($retArray[$componentset['cid']])) {
+                $retArray[$componentset['cid']] = array(
+                    'id' => $componentset['cid'],
                     'name' => $componentset['name'],
                     'package' => $componentset['componentsetpackage'],
                     'module' => $componentset['module'] ?: '*',
@@ -155,7 +157,7 @@ class SystemUIRESTHandler
                 );
             }
 
-            $retArray[$componentset['componentset_id']]['items'][] = array(
+            $retArray[$componentset['cid']]['items'][] = array(
                 'id' => $componentset['id'],
                 'sequence' => $componentset['sequence'],
                 'component' => $componentset['component'],
@@ -163,7 +165,6 @@ class SystemUIRESTHandler
                 'componentconfig' => json_decode(str_replace(array("\r", "\n", "&#039;", "'"), array('', '', '"', '"'), $componentset['componentconfig']), true) ?: new stdClass()
             );
         }
-
         return $retArray;
     }
 
@@ -539,11 +540,11 @@ class SystemUIRESTHandler
     function getFieldSets()
     {
         $retArray = array();
-        $fieldsets = $this->db->query("SELECT sysuifieldsetsitems.*, sysuifieldsets.module, sysuifieldsets.name, sysuifieldsets.package fieldsetpackage FROM sysuifieldsetsitems, sysuifieldsets WHERE sysuifieldsetsitems.fieldset_id = sysuifieldsets.id ORDER BY fieldset_id, sequence");
+        $fieldsets = $this->db->query("SELECT sysuifieldsetsitems.*, sysuifieldsets.id fid, sysuifieldsets.module, sysuifieldsets.name, sysuifieldsets.package fieldsetpackage FROM sysuifieldsets LEFT JOIN sysuifieldsetsitems ON sysuifieldsetsitems.fieldset_id = sysuifieldsets.id ORDER BY fieldset_id, sequence");
         while ($fieldset = $this->db->fetchByAssoc($fieldsets)) {
 
-            if (!isset($retArray[$fieldset['fieldset_id']])) {
-                $retArray[$fieldset['fieldset_id']] = array(
+            if (!isset($retArray[$fieldset['fid']])) {
+                $retArray[$fieldset['fid']] = array(
                     'name' => $fieldset['name'],
                     'package' => $fieldset['fieldsetpackage'],
                     'module' => $fieldset['module'] ?: '*',
@@ -553,7 +554,7 @@ class SystemUIRESTHandler
             }
 
             if (!empty($fieldset['field']))
-                $retArray[$fieldset['fieldset_id']]['items'][] = array(
+                $retArray[$fieldset['fid']]['items'][] = array(
                     'id' => $fieldset['id'],
                     'package' => $fieldset['package'],
                     'field' => $fieldset['field'],
@@ -561,7 +562,7 @@ class SystemUIRESTHandler
                     'sequence' => $fieldset['sequence']
                 );
             elseif (!empty($fieldset['fieldset']))
-                $retArray[$fieldset['fieldset_id']]['items'][] = array(
+                $retArray[$fieldset['fid']]['items'][] = array(
                     'id' => $fieldset['id'],
                     'package' => $fieldset['package'],
                     'fieldset' => $fieldset['fieldset'],
@@ -570,11 +571,11 @@ class SystemUIRESTHandler
                 );
         }
 
-        $fieldsets = $this->db->query("SELECT sysuicustomfieldsetsitems.*, sysuicustomfieldsets.module, sysuicustomfieldsets.name, sysuicustomfieldsets.package fieldsetpackage FROM sysuicustomfieldsetsitems, sysuicustomfieldsets WHERE sysuicustomfieldsetsitems.fieldset_id = sysuicustomfieldsets.id ORDER BY fieldset_id, sequence");
+        $fieldsets = $this->db->query("SELECT sysuicustomfieldsetsitems.*, sysuicustomfieldsets.id fid, sysuicustomfieldsets.module, sysuicustomfieldsets.name, sysuicustomfieldsets.package fieldsetpackage FROM sysuicustomfieldsets LEFT JOIN sysuicustomfieldsetsitems ON sysuicustomfieldsetsitems.fieldset_id = sysuicustomfieldsets.id ORDER BY fieldset_id, sequence");
         while ($fieldset = $this->db->fetchByAssoc($fieldsets)) {
 
-            if (!isset($retArray[$fieldset['fieldset_id']])) {
-                $retArray[$fieldset['fieldset_id']] = array(
+            if (!isset($retArray[$fieldset['fid']])) {
+                $retArray[$fieldset['fid']] = array(
                     'name' => $fieldset['name'],
                     'package' => $fieldset['fieldsetpackage'],
                     'module' => $fieldset['module'] ?: '*',
@@ -584,7 +585,7 @@ class SystemUIRESTHandler
             }
 
             if (!empty($fieldset['field']))
-                $retArray[$fieldset['fieldset_id']]['items'][] = array(
+                $retArray[$fieldset['fid']]['items'][] = array(
                     'id' => $fieldset['id'],
                     'package' => $fieldset['package'],
                     'field' => $fieldset['field'],
@@ -592,7 +593,7 @@ class SystemUIRESTHandler
                     'sequence' => $fieldset['sequence']
                 );
             elseif (!empty($fieldset['fieldset']))
-                $retArray[$fieldset['fieldset_id']]['items'][] = array(
+                $retArray[$fieldset['fid']]['items'][] = array(
                     'id' => $fieldset['id'],
                     'package' => $fieldset['package'],
                     'fieldset' => $fieldset['fieldset'],
@@ -891,7 +892,7 @@ class SystemUIRESTHandler
     public function getLibraries()
     {
         $return = [];
-        $sql = "SELECT * FROM sysuilibs UNION(SELECT * FROM sysuicustomlibs) ORDER BY rank ASC";
+        $sql = "SELECT * FROM (SELECT * FROM sysuilibs UNION SELECT * FROM sysuicustomlibs) libs ORDER BY libs.rank ASC";
         $res = $this->db->query($sql);
         while($row = $this->db->fetchByAssoc($res, false))
         {

@@ -188,7 +188,7 @@ $dictionary['spiceattachments'] = array(
 		),
 		array(
 			'name' => 'filesize',
-			'type' => 'float'
+			'type' => 'ulong'
 		),
 		array(
 			'name' => 'filemd5',

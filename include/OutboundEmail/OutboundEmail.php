@@ -38,6 +38,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /**
  * Outbuound email management
  * @api
+ * @deprecated To be replaced by the Mailboxes module
  */
 class OutboundEmail
 {
@@ -80,6 +81,8 @@ class OutboundEmail
 
 	/**
 	 * Sole constructor
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	public function __construct()
     {
@@ -92,6 +95,7 @@ class OutboundEmail
 	 * and password for the default system account.
 	 *
 	 * @param String $user_id
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function getUsersMailerForSystemOverride($user_id)
 	{
@@ -115,6 +119,7 @@ class OutboundEmail
 	 * @param string $user_id
 	 * @param string $user_name
 	 * @param string $user_pass
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function createUserSystemOverrideAccount($user_id,$user_name = "",$user_pass = "")
 	{
@@ -137,6 +142,7 @@ class OutboundEmail
 	 *
 	 * @param unknown_type $user_id
 	 * @return unknown
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function doesUserOverrideAccountRequireCredentials($user_id)
 	{
@@ -159,6 +165,8 @@ class OutboundEmail
 
 	/**
 	 * Retrieves name value pairs for opts lists
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function getUserMailers($user) {
         self::logDeprecated();
@@ -234,6 +242,7 @@ class OutboundEmail
 	 * @param object user
 	 * @param string mailer_id
 	 * @return object
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function getUserMailerSettings(&$user, $mailer_id='', $ieId='') {
         self::logDeprecated();
@@ -274,6 +283,7 @@ class OutboundEmail
 	 * @param SugarBean $user
 	 * @param string $outbound_id
 	 * @return array
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function getAssociatedInboundAccounts($user)
 	{
@@ -298,6 +308,7 @@ class OutboundEmail
 	 * @param object user
 	 * @param string mailer_id
 	 * @return object
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function getInboundMailerSettings($user, $mailer_id='', $ieId='') {
         self::logDeprecated();
@@ -342,6 +353,8 @@ class OutboundEmail
 
 	/**
 	 *  Determine if the user is allowed to use the current system outbound connection.
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function isAllowUserAccessToSystemDefaultOutbound()
 	{
@@ -366,8 +379,10 @@ class OutboundEmail
 
 	/**
 	 * Retrieves the system's Outbound options
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
-	function getSystemMailerSettings() {
+	public function getSystemMailerSettings() {
 	    //return \Mailbox::getSystemMailerSettings();
 
         self::logDeprecated();
@@ -402,6 +417,7 @@ class OutboundEmail
 	 * Populates this instance
 	 * @param string $id
 	 * @return object $this
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function retrieve($id) {
         self::logDeprecated();
@@ -427,6 +443,9 @@ class OutboundEmail
 		return $this;
 	}
 
+    /**
+     * @deprecated To be replaced by the Mailboxes module
+     */
 	function populateFromPost() {
         self::logDeprecated();
 		foreach($this->field_defs as $def) {
@@ -442,6 +461,7 @@ class OutboundEmail
 	 * Generate values for saving into outbound_emails table
 	 * @param array $keys
 	 * @return array
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	protected function getValues(&$keys)
 	{
@@ -470,6 +490,8 @@ class OutboundEmail
 
 	/**
 	 * saves an instance
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function save() {
         self::logDeprecated();
@@ -498,6 +520,8 @@ class OutboundEmail
 
 	/**
 	 * Saves system mailer.  Presumes all values are filled.
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function saveSystem() {
         self::logDeprecated();
@@ -522,6 +546,7 @@ class OutboundEmail
 	/**
 	 * Update the user system override accounts with the system information if anything has changed.
 	 *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function updateUserSystemOverrideAccounts()
 	{
@@ -547,6 +572,7 @@ class OutboundEmail
 	/**
 	 * Remove all of the user override accounts.
 	 *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function removeUserOverrideAccounts()
 	{
@@ -556,6 +582,8 @@ class OutboundEmail
 	}
 	/**
 	 * Deletes an instance
+     *
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	function delete() {
         self::logDeprecated();
@@ -567,6 +595,12 @@ class OutboundEmail
 		return $this->db->query($q);
 	}
 
+    /**
+     * @param $smtptype
+     * @param $smtpserver
+     * @return string
+     * @deprecated To be replaced by the Mailboxes module
+     */
 	private function _getOutboundServerDisplay(
 	    $smtptype,
 	    $smtpserver
@@ -592,6 +626,7 @@ class OutboundEmail
 	 * @param User $user
 	 * @param string $name
 	 * @return OutboundEmail|false
+     * @deprecated To be replaced by the Mailboxes module
 	 */
 	public function getMailerByName($user, $name)
 	{
