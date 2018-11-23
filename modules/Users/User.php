@@ -117,7 +117,7 @@ class User extends Person
      */
     public function getSystemUser() {
         if (null === $this->retrieve('1'))
-        // handle cases where someone deleted user with id "1"
+            // handle cases where someone deleted user with id "1"
             $this->retrieve_by_string_fields(array(
                 'status' => 'Active',
                 'is_admin' => '1',
@@ -166,7 +166,7 @@ class User extends Person
      * retrieves any signatures that the User may have created as <select>
      */
     public function getSignatures(
-    $live = false, $defaultSig = '', $forSettings = false
+        $live = false, $defaultSig = '', $forSettings = false
     ) {
         $sig = $this->getSignaturesArray();
         $sigs = array();
@@ -258,7 +258,7 @@ class User extends Person
      * @param string $category Name of the category to retrieve
      */
     public function setPreference(
-    $name, $value, $nosession = 0, $category = 'global'
+        $name, $value, $nosession = 0, $category = 'global'
     ) {
         // for BC
         if (func_num_args() > 4) {
@@ -278,7 +278,7 @@ class User extends Person
      * @param string $category category to reset
      */
     public function resetPreferences(
-    $category = null
+        $category = null
     ) {
         // for BC
         if (func_num_args() > 1) {
@@ -342,7 +342,7 @@ class User extends Person
      * @return bool successful?
      */
     public function loadPreferences(
-    $category = 'global'
+        $category = 'global'
     ) {
         // for BC
         if (func_num_args() > 1) {
@@ -364,7 +364,7 @@ class User extends Person
      * @return mixed the value of the preference (string, array, int etc)
      */
     public function getPreference(
-    $name, $category = 'global'
+        $name, $category = 'global'
     ) {
         // for BC
         if (func_num_args() > 2) {
@@ -478,9 +478,10 @@ class User extends Person
         // set some default preferences when creating a new user
         $setNewUserPreferences = empty($this->id) || !empty($this->new_with_id);
 
-
         parent::save($check_notify, $fts_index_bean);
 
+        // populate the name field
+        $this->_create_proper_name_field();
 
         // set some default preferences when creating a new user
         if ($setNewUserPreferences) {
@@ -592,6 +593,9 @@ class User extends Person
      */
     function retrieve($id = -1, $encode = true, $deleted = true, $relationships = true) {
         $ret = parent::retrieve($id, $encode, $deleted, $relationships);
+
+        $this->summary_text = $this->get_summary_text();
+
         if ($ret) {
             if (isset($_SESSION)) {
                 $this->loadPreferences();
@@ -842,7 +846,7 @@ EOQ;
     }
 
     public function retrieve_user_id(
-    $user_name
+        $user_name
     ) {
         $userFocus = new User;
         $userFocus->retrieve_by_string_fields(array('user_name' => $user_name));
@@ -1248,16 +1252,16 @@ EOQ;
             }
 
             $emailLinkUrl = 'contact_id=' . $contact_id .
-                    '&parent_type=' . $focus->module_dir .
-                    '&parent_id=' . $focus->id .
-                    '&parent_name=' . urlencode($fullName) .
-                    '&to_addrs_ids=' . $to_addrs_ids .
-                    '&to_addrs_names=' . urlencode($to_addrs_names) .
-                    '&to_addrs_emails=' . urlencode($to_addrs_emails) .
-                    '&to_email_addrs=' . urlencode($fullName . '&nbsp;&lt;' . $emailAddress . '&gt;') .
-                    '&return_module=' . $ret_module .
-                    '&return_action=' . $ret_action .
-                    '&return_id=' . $ret_id;
+                '&parent_type=' . $focus->module_dir .
+                '&parent_id=' . $focus->id .
+                '&parent_name=' . urlencode($fullName) .
+                '&to_addrs_ids=' . $to_addrs_ids .
+                '&to_addrs_names=' . urlencode($to_addrs_names) .
+                '&to_addrs_emails=' . urlencode($to_addrs_emails) .
+                '&to_email_addrs=' . urlencode($fullName . '&nbsp;&lt;' . $emailAddress . '&gt;') .
+                '&return_module=' . $ret_module .
+                '&return_action=' . $ret_action .
+                '&return_id=' . $ret_id;
 
             //Generate the compose package for the quick create options.
             //$json = getJSONobj();
@@ -1331,16 +1335,16 @@ EOQ;
             }
 
             $emailLinkUrl = 'contact_id=' . $contact_id .
-                    '&parent_type=' . $focus->module_dir .
-                    '&parent_id=' . $focus->id .
-                    '&parent_name=' . urlencode($fullName) .
-                    '&to_addrs_ids=' . $to_addrs_ids .
-                    '&to_addrs_names=' . urlencode($to_addrs_names) .
-                    '&to_addrs_emails=' . urlencode($to_addrs_emails) .
-                    '&to_email_addrs=' . urlencode($fullName . '&nbsp;&lt;' . $email . '&gt;') .
-                    '&return_module=' . $ret_module .
-                    '&return_action=' . $ret_action .
-                    '&return_id=' . $ret_id;
+                '&parent_type=' . $focus->module_dir .
+                '&parent_id=' . $focus->id .
+                '&parent_name=' . urlencode($fullName) .
+                '&to_addrs_ids=' . $to_addrs_ids .
+                '&to_addrs_names=' . urlencode($to_addrs_names) .
+                '&to_addrs_emails=' . urlencode($to_addrs_emails) .
+                '&to_email_addrs=' . urlencode($fullName . '&nbsp;&lt;' . $email . '&gt;') .
+                '&return_module=' . $ret_module .
+                '&return_action=' . $ret_action .
+                '&return_id=' . $ret_id;
 
             //Generate the compose package for the quick create options.
             require_once('modules/Emails/EmailUI.php');
@@ -1781,10 +1785,7 @@ EOQ;
      * @return array
      */
     public function sendPasswordToUser($templateId, $additionalData = []) {
-        $result = [
-            'status'  => false,
-            'message' => ''
-        ];
+        $result = [ 'status'  => false ];
 
         try {
             $emailTemp = $this->getNewPasswordEmailTemplate($templateId, $additionalData);
@@ -1801,7 +1802,12 @@ EOQ;
         $emailObj->to_addrs         = $itemail;
         $emailObj->to_be_sent       = true;
 
-        $response = $emailObj->save();
+        try {
+            $response = $emailObj->save();
+        } catch (Exception $e) {
+            $result['message'] = $e->getMessage();
+            return $result;
+        }
 
         if ($response['result'] == true) {
             $result['status']           = true;
@@ -1817,6 +1823,8 @@ EOQ;
             if (!isset($additionalData['link']) || $additionalData['link'] == false) {
                 $this->setNewPassword($additionalData['password'], '1');
             }
+        } else {
+            $result['message'] = 'The Email was not sent. Check Mailbox settings.';
         }
 
         return $result;
@@ -1838,35 +1846,46 @@ EOQ;
 
         $emailTemp = new EmailTemplate();
         $emailTemp->disable_row_level_security = true;
-        if ($emailTemp->retrieve($templateId) == '') {
+        if ( $emailTemp->retrieve( $templateId ) == '' ) {
             $result['message'] = $mod_strings['LBL_EMAIL_TEMPLATE_MISSING'];
             return $result;
         }
 
-        //replace instance variables in email templates
-        $htmlBody = $emailTemp->body_html;
-        $body = $emailTemp->body;
-        if (isset($additionalData['link']) && $additionalData['link'] == true) {
-            $htmlBody = str_replace('$contact_user_link_guid', $additionalData['url'], $htmlBody);
-            $body = str_replace('$contact_user_link_guid', $additionalData['url'], $body);
+        if ( @$GLOBALS['isREST'] ) {
+
+            $memmy = $emailTemp->parse( $this, [ 'password' => $additionalData['password'] ] );
+            $emailTemp->body_html = $memmy['body_html'];
+            $emailTemp->body = $memmy['body'];
+            $emailTemp->subject = $memmy['subject'];
+
         } else {
-            $htmlBody = str_replace('$contact_user_user_hash', $additionalData['password'], $htmlBody);
-            $body = str_replace('$contact_user_user_hash', $additionalData['password'], $body);
-        }
-        // Bug 36833 - Add replacing of special value $instance_url
-        $htmlBody = str_replace('$config_site_url', $sugar_config['site_url'], $htmlBody);
-        $body = str_replace('$config_site_url', $sugar_config['site_url'], $body);
 
-        $htmlBody = str_replace('$contact_user_user_name', $this->user_name, $htmlBody);
-        $htmlBody = str_replace('$contact_user_pwd_last_changed', TimeDate::getInstance()->nowDb(), $htmlBody);
-        $body = str_replace('$contact_user_user_name', $this->user_name, $body);
-        $body = str_replace('$contact_user_pwd_last_changed', TimeDate::getInstance()->nowDb(), $body);
-        $emailTemp->body_html = $htmlBody;
-        $emailTemp->body = $body;
+            //replace instance variables in email templates
+            $htmlBody = $emailTemp->body_html;
+            $body = $emailTemp->body;
+            if ( isset( $additionalData['link'] ) && $additionalData['link'] == true ) {
+                $htmlBody = str_replace( '$contact_user_link_guid', $additionalData['url'], $htmlBody );
+                $body = str_replace( '$contact_user_link_guid', $additionalData['url'], $body );
+            } else {
+                $htmlBody = str_replace( '$contact_user_user_hash', $additionalData['password'], $htmlBody );
+                $body = str_replace( '$contact_user_user_hash', $additionalData['password'], $body );
+            }
+            // Bug 36833 - Add replacing of special value $instance_url
+            $htmlBody = str_replace( '$config_site_url', $sugar_config['site_url'], $htmlBody );
+            $body = str_replace( '$config_site_url', $sugar_config['site_url'], $body );
 
-        if (from_html($emailTemp->body_html) == '' && $current_user->is_admin) {
-            global $app_strings;
-            throw new Exception($result['message'] = $app_strings['LBL_EMAIL_TEMPLATE_EDIT_PLAIN_TEXT']);
+            $htmlBody = str_replace( '$contact_user_user_name', $this->user_name, $htmlBody );
+            $htmlBody = str_replace( '$contact_user_pwd_last_changed', TimeDate::getInstance()->nowDb(), $htmlBody );
+            $body = str_replace( '$contact_user_user_name', $this->user_name, $body );
+            $body = str_replace( '$contact_user_pwd_last_changed', TimeDate::getInstance()->nowDb(), $body );
+            $emailTemp->body_html = $htmlBody;
+            $emailTemp->body = $body;
+
+            if ( from_html( $emailTemp->body_html ) == '' && $current_user->is_admin ) {
+                global $app_strings;
+                throw new Exception( $result['message'] = $app_strings['LBL_EMAIL_TEMPLATE_EDIT_PLAIN_TEXT'] );
+            }
+
         }
 
         return $emailTemp;
@@ -1875,7 +1894,7 @@ EOQ;
     // Bug #48014 Must to send password to imported user if this action is required
     function afterImportSave() {
         if (
-                $this->user_hash == false && !$this->is_group && !$this->portal_only && isset($GLOBALS['sugar_config']['passwordsetting']['SystemGeneratedPasswordON']) && $GLOBALS['sugar_config']['passwordsetting']['SystemGeneratedPasswordON']
+            $this->user_hash == false && !$this->is_group && !$this->portal_only && isset($GLOBALS['sugar_config']['passwordsetting']['SystemGeneratedPasswordON']) && $GLOBALS['sugar_config']['passwordsetting']['SystemGeneratedPasswordON']
         ) {
             $backUpPost = $_POST;
             $_POST = array(
@@ -1891,7 +1910,7 @@ EOQ;
 
     /**
      * Checks if the passed email is primary.
-     * 
+     *
      * @param string $email
      * @return bool Returns TRUE if the passed email is primary.
      */

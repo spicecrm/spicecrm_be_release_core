@@ -1,5 +1,7 @@
 <?php
 
+$KRESTManager->registerExtension('portal', '1.0');
+
 $app->get('/portal/{id}/portalaccess', function($req, $res, $args) use ( $app ) {
     global $db;
 

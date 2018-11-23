@@ -106,20 +106,19 @@ class KRESTModuleHandler
     }
 
 
-
     public function get_bean_list($beanModule, $searchParams)
     {
         global $db, $current_user, $sugar_config, $dictionary;
 
         // shift in term
-        if(isset($searchParams['searchmyitems']))
+        if (isset($searchParams['searchmyitems']))
             $searchParams['owner'] = $searchParams['searchmyitems'];
 
         // handle true and false
-        if($searchParams['owner'] === '0') $searchParams['owner'] = false;
-        if($searchParams['owner'] === '1') $searchParams['owner'] = true;
-        if($searchParams['creator'] === '0') $searchParams['creator'] = false;
-        if($searchParams['creator'] === '1') $searchParams['creator'] = true;
+        if ($searchParams['owner'] === '0') $searchParams['owner'] = false;
+        if ($searchParams['owner'] === '1') $searchParams['owner'] = true;
+        if ($searchParams['creator'] === '0') $searchParams['creator'] = false;
+        if ($searchParams['creator'] === '1') $searchParams['creator'] = true;
 
         // whitelist currencies modules
         $aclWhitelist = array(
@@ -128,34 +127,30 @@ class KRESTModuleHandler
 
         // acl check if user can list
         if (!ACLController::checkAccess($beanModule, 'list', true) && !in_array($beanModule, $aclWhitelist))
-            throw ( new KREST\ForbiddenException("Forbidden to list in module $beanModule."))->setErrorCode('noModuleList');
+            throw (new KREST\ForbiddenException("Forbidden to list in module $beanModule."))->setErrorCode('noModuleList');
 
         $thisBean = BeanFactory::getBean($beanModule);
-        if(!$thisBean)
+        if (!$thisBean)
             throw new KREST\NotFoundException("No Bean found for $beanModule!");
 
         //var_dump($searchParams['fields'], html_entity_decode($searchParams['fields']));
-        if($searchParams['fields'] == '*')
-        {
+        if ($searchParams['fields'] == '*') {
             // get all fields...
             $returnFields = array();
-            foreach($thisBean->field_name_map as $field)
-            {
+            foreach ($thisBean->field_name_map as $field) {
                 $returnFields[] = $field['name'];
             }
-        }
-        elseif(is_array(json_decode(html_entity_decode($searchParams['fields']), true)))
-        {
+        } elseif (is_array(json_decode(html_entity_decode($searchParams['fields']), true))) {
             // {"name","global"} <--- no valid json!
             // ["name","global"] <--- valid!
             $setFields = json_decode(html_entity_decode($searchParams['fields']), true);
-            foreach($setFields as $setField){
-                if(isset($thisBean->field_name_map[$setField]) && ($thisBean->field_name_map[$setField]['source'] != 'non-db' || $thisBean->field_name_map[$setField]['type'] == 'relate' || $thisBean->field_name_map[$setField]['type'] == 'parent')){
-                    switch($thisBean->field_name_map[$setField]['type']){
+            foreach ($setFields as $setField) {
+                if (isset($thisBean->field_name_map[$setField]) && ($thisBean->field_name_map[$setField]['source'] != 'non-db' || $thisBean->field_name_map[$setField]['type'] == 'relate' || $thisBean->field_name_map[$setField]['type'] == 'parent')) {
+                    switch ($thisBean->field_name_map[$setField]['type']) {
                         case 'relate':
                         case 'parent':
                             $returnFields[] = $setField;
-                            if($thisBean->field_name_map[$setField]['id_name']) {
+                            if ($thisBean->field_name_map[$setField]['id_name']) {
                                 $returnFields[] = $thisBean->field_name_map[$setField]['id_name'];
                             }
                             break;
@@ -165,8 +160,7 @@ class KRESTModuleHandler
                     }
                 }
             }
-        }
-        else {
+        } else {
             $returnFields = array();
             $listFields = $this->getModuleListdefs($beanModule, $thisBean, ($searchParams['client'] == 'mobile' ? true : false));
             foreach ($listFields as $thisField)
@@ -185,9 +179,9 @@ class KRESTModuleHandler
                 $searchTermFields = $searchParams['searchtermfields'] ? json_decode(html_entity_decode($searchParams['searchtermfields']), true) : [];
 
                 // if no serachterm field has been sent .. use the unified search fields
-                if(count($searchTermFields) == 0){
-                    foreach($thisBean->field_name_map as $fieldname => $fielddata){
-                        if($fielddata['unified_search']){
+                if (count($searchTermFields) == 0) {
+                    foreach ($thisBean->field_name_map as $fieldname => $fielddata) {
+                        if ($fielddata['unified_search']) {
                             $searchTermFields[] = $fieldname;
                         }
                     }
@@ -271,28 +265,28 @@ class KRESTModuleHandler
 
             $ownerclause = '';
 
-            if($searchParams['owner'] && $searchParams['creator']) {
+            if ($searchParams['owner'] && $searchParams['creator']) {
                 $ownerclause .= "($thisBean->table_name.assigned_user_id='$current_user->id' OR $thisBean->table_name.created_by='$current_user->id')";
-            } else if ($searchParams['owner']){
+            } else if ($searchParams['owner']) {
                 $ownerclause .= "$thisBean->table_name.assigned_user_id='$current_user->id'";
-            } else if ($searchParams['creator']){
+            } else if ($searchParams['creator']) {
                 $ownerclause .= "$thisBean->table_name.created_by='$current_user->id'";
             }
 
             // if owner is explicitly set to false
-            if($searchParams['owner'] === false){
-                if($ownerclause != '')
+            if ($searchParams['owner'] === false) {
+                if ($ownerclause != '')
                     $ownerclause .= ' AND ';
                 $ownerclause .= "$thisBean->table_name.assigned_user_id <> '$current_user->id'";
             }
             // if creator is explicitly set to false
-            if($searchParams['creator'] === false){
-                if($ownerclause != '')
+            if ($searchParams['creator'] === false) {
+                if ($ownerclause != '')
                     $ownerclause .= ' AND ';
                 $ownerclause .= "$thisBean->table_name.created_by <> '$current_user->id'";
             }
 
-            if($ownerclause){
+            if ($ownerclause) {
                 if ($searchParams['whereclause'] != '')
                     $searchParams['whereclause'] .= ' AND ';
 
@@ -315,11 +309,11 @@ class KRESTModuleHandler
                 # It can´t be used in the db request, so "sort_on" (and optional "sort_on2") should have been defined in vardefs.
                 # The field name(s) in "sort_on" (and "sort_on2") are used instead. They are real/existing db fields.
                 # Better would be an array ( "sort_fields"=>array("nameOfField1","nameOfField2",...) ), but "sort_on"/"sort_on2" is already implemented and used elsewhere, so I use it here.
-                if ( isset( $dictionary[$thisBean->object_name]['fields'][$searchParams['sortfield']]['sort_on']{0} ))
+                if (isset($dictionary[$thisBean->object_name]['fields'][$searchParams['sortfield']]['sort_on']{0}))
                     $sortfield = $dictionary[$thisBean->object_name]['fields'][$searchParams['sortfield']]['sort_on'];
-                if ( isset( $dictionary[$thisBean->object_name]['fields'][$searchParams['sortfield']]['sort_on2']{0} ))
-                    $sortfield .= ', '.$dictionary[$thisBean->object_name]['fields'][$searchParams['sortfield']]['sort_on2'];
-                if ( !isset( $sortfield{0} )) $sortfield = $searchParams['sortfield'];
+                if (isset($dictionary[$thisBean->object_name]['fields'][$searchParams['sortfield']]['sort_on2']{0}))
+                    $sortfield .= ', ' . $dictionary[$thisBean->object_name]['fields'][$searchParams['sortfield']]['sort_on2'];
+                if (!isset($sortfield{0})) $sortfield = $searchParams['sortfield'];
 
                 $searchParams['orderby'] = $sortfield . ' ' . ($searchParams['sortdirection'] ? strtoupper($searchParams['sortdirection']) : 'ASC');
 
@@ -365,13 +359,13 @@ class KRESTModuleHandler
         // foreach ($beanList['list'] as $thisBean) {
 
         // check re mapped fields
-        if(is_array(json_decode(html_entity_decode($searchParams['fields'])))){
+        if (is_array(json_decode(html_entity_decode($searchParams['fields'])))) {
             $returnFields = json_decode(html_entity_decode($searchParams['fields']));
         }
 
         # If a relate field (ex. "account_name") is requested, we also want do deliver it´s id field (ex. "account_id")
-        foreach( $returnFields as $fieldname )
-            if ( @$thisBean->field_name_map[$fieldname]['type'] === 'relate' )
+        foreach ($returnFields as $fieldname)
+            if (@$thisBean->field_name_map[$fieldname]['type'] === 'relate')
                 $returnFields[] = $thisBean->field_name_map[$fieldname]['id_name'];
 
         foreach ($beanList['list'] as $thisBean) {
@@ -425,14 +419,14 @@ class KRESTModuleHandler
         global $db, $current_user, $sugar_config, $dictionary;
 
         // shift in term
-        if(isset($searchParams['searchmyitems']))
+        if (isset($searchParams['searchmyitems']))
             $searchParams['owner'] = $searchParams['searchmyitems'];
 
         // handle true and false
-        if($searchParams['owner'] === '0') $searchParams['owner'] = false;
-        if($searchParams['owner'] === '1') $searchParams['owner'] = true;
-        if($searchParams['creator'] === '0') $searchParams['creator'] = false;
-        if($searchParams['creator'] === '1') $searchParams['creator'] = true;
+        if ($searchParams['owner'] === '0') $searchParams['owner'] = false;
+        if ($searchParams['owner'] === '1') $searchParams['owner'] = true;
+        if ($searchParams['creator'] === '0') $searchParams['creator'] = false;
+        if ($searchParams['creator'] === '1') $searchParams['creator'] = true;
 
         // whitelist currencies modules
         $aclWhitelist = array(
@@ -441,27 +435,22 @@ class KRESTModuleHandler
 
         // acl check if user can list
         if (!ACLController::checkAccess($beanModule, 'export', true) && !in_array($beanModule, $aclWhitelist))
-            throw ( new KREST\ForbiddenException("Forbidden to export module $beanModule."))->setErrorCode('noModuleList');
+            throw (new KREST\ForbiddenException("Forbidden to export module $beanModule."))->setErrorCode('noModuleList');
 
         $thisBean = BeanFactory::getBean($beanModule);
 
         //var_dump($searchParams['fields'], html_entity_decode($searchParams['fields']));
-        if($searchParams['fields'] == '*')
-        {
+        if ($searchParams['fields'] == '*') {
             // get all fields...
             $returnFields = array();
-            foreach($thisBean->field_name_map as $field)
-            {
+            foreach ($thisBean->field_name_map as $field) {
                 $returnFields[] = $field['name'];
             }
-        }
-        elseif(is_array(json_decode(html_entity_decode($searchParams['fields']), true)))
-        {
+        } elseif (is_array(json_decode(html_entity_decode($searchParams['fields']), true))) {
             // {"name","global"} <--- no valid json!
             // ["name","global"] <--- valid!
             $returnFields = json_decode(html_entity_decode($searchParams['fields']), true);
-        }
-        else {
+        } else {
             $returnFields = array();
             $listFields = $this->getModuleListdefs($beanModule, $thisBean, ($searchParams['client'] == 'mobile' ? true : false));
             foreach ($listFields as $thisField)
@@ -490,28 +479,28 @@ class KRESTModuleHandler
         if (isset($searchParams['owner']) || isset($searchParams['creator'])) {
             $ownerclause = '';
 
-            if($searchParams['owner'] && $searchParams['creator']) {
+            if ($searchParams['owner'] && $searchParams['creator']) {
                 $ownerclause .= "($thisBean->table_name.assigned_user_id='$current_user->id' OR $thisBean->table_name.created_by='$current_user->id')";
-            } else if ($searchParams['owner']){
+            } else if ($searchParams['owner']) {
                 $ownerclause .= "$thisBean->table_name.assigned_user_id='$current_user->id'";
-            } else if ($searchParams['creator']){
+            } else if ($searchParams['creator']) {
                 $ownerclause .= "$thisBean->table_name.created_by='$current_user->id'";
             }
 
             // if owner is explicitly set to false
-            if($searchParams['owner'] === false){
-                if($ownerclause != '')
+            if ($searchParams['owner'] === false) {
+                if ($ownerclause != '')
                     $ownerclause .= ' AND ';
                 $ownerclause .= "$thisBean->table_name.assigned_user_id <> '$current_user->id'";
             }
             // if creator is explicitly set to false
-            if($searchParams['creator'] === false){
-                if($ownerclause != '')
+            if ($searchParams['creator'] === false) {
+                if ($ownerclause != '')
                     $ownerclause .= ' AND ';
                 $ownerclause .= "$thisBean->table_name.created_by <> '$current_user->id'";
             }
 
-            if($ownerclause){
+            if ($ownerclause) {
                 if ($searchParams['whereclause'] != '')
                     $searchParams['whereclause'] .= ' AND ';
 
@@ -549,7 +538,7 @@ class KRESTModuleHandler
 
         $beanList = $thisBean->process_list_query($query, 0, 1000, 1000);
 
-        $fh = @fopen( 'php://output', 'w' );
+        $fh = @fopen('php://output', 'w');
         fputcsv($fh, $returnFields, ';');
         foreach ($beanList['list'] as $thisBean) {
             $entryArray = [];
@@ -611,7 +600,7 @@ class KRESTModuleHandler
                     break;
                 case 'today':
                     $date = new DateTime();
-                    $condition = $fieldName . " >= '" . $date->format('Y-m-d') . " 00:00:00' AND " .$fieldName . " <= '" . $date->format('Y-m-d') . " 23:59:59'";
+                    $condition = $fieldName . " >= '" . $date->format('Y-m-d') . " 00:00:00' AND " . $fieldName . " <= '" . $date->format('Y-m-d') . " 23:59:59'";
                     break;
                 case 'future':
                     $condition = $fieldName . " > '" . $timedate->nowDb() . "'";
@@ -621,25 +610,25 @@ class KRESTModuleHandler
                     break;
                 case 'thisyear':
                     $date = new DateTime();
-                    $condition = $fieldName . " >= '" . $date->format('Y') . "-01-01 00:00:00' AND " .$fieldName . " <= '" . $date->format('Y') . "-12-31 23:59:59'";
+                    $condition = $fieldName . " >= '" . $date->format('Y') . "-01-01 00:00:00' AND " . $fieldName . " <= '" . $date->format('Y') . "-12-31 23:59:59'";
                     break;
                 case 'nextyear':
                     $date = new DateTime();
                     $date->add(new DateInterval('P1Y'));
-                    $condition = $fieldName . " >= '" . $date->format('Y') . "-01-01 00:00:00' AND " .$fieldName . " <= '" . $date->format('Y') . "-12-31 23:59:59'";
+                    $condition = $fieldName . " >= '" . $date->format('Y') . "-01-01 00:00:00' AND " . $fieldName . " <= '" . $date->format('Y') . "-12-31 23:59:59'";
                     break;
                 case 'thismonth':
                     $datestart = new DateTime();
                     $dateend = new DateTime();
                     $dateend->add(new DateInterval('P1M'));
-                    $condition = $fieldName . " >= '" . $datestart->format('Y-m-01 00:00:00') . "-01-01 00:00:00' AND " .$fieldName . " < '" . $dateend->format('Y-m-01 00:00:00') . "'";
+                    $condition = $fieldName . " >= '" . $datestart->format('Y-m-01 00:00:00') . "-01-01 00:00:00' AND " . $fieldName . " < '" . $dateend->format('Y-m-01 00:00:00') . "'";
                     break;
                 case 'nextmonth':
                     $datestart = new DateTime();
                     $datestart->add(new DateInterval('P1M'));
                     $dateend = new DateTime();
                     $dateend->add(new DateInterval('P2M'));
-                    $condition = $fieldName . " >= '" . $datestart->format('Y-m-01 00:00:00') . "-01-01 00:00:00' AND " .$fieldName . " < '" . $dateend->format('Y-m-01 00:00:00') . "'";
+                    $condition = $fieldName . " >= '" . $datestart->format('Y-m-01 00:00:00') . "-01-01 00:00:00' AND " . $fieldName . " < '" . $dateend->format('Y-m-01 00:00:00') . "'";
                     break;
             }
 
@@ -652,8 +641,8 @@ class KRESTModuleHandler
     private function buildConditionsWhereClause($bean, $conditions, &$addJoins)
     {
         $condWhereClause = '';
-        if(is_array($conditions) && (isset($conditions['conditions']) || is_array($conditions[0]))){
-            if(!isset($conditions['conditions'])){
+        if (is_array($conditions) && (isset($conditions['conditions']) || is_array($conditions[0]))) {
+            if (!isset($conditions['conditions'])) {
                 foreach ($conditions as $condition) {
                     if ($condWhereClause != '')
                         $condWhereClause .= ' AND ';
@@ -735,7 +724,7 @@ class KRESTModuleHandler
         global $current_language;
         // acl check if user can get the detail
         if (!ACLController::checkAccess($beanModule, 'delete', true))
-            throw ( new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
+            throw (new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
         $thisBean->merge($requestParams);
@@ -748,10 +737,10 @@ class KRESTModuleHandler
 
         // acl check if user can get the detail
         if (!ACLController::checkAccess($beanModule, 'view', true))
-            throw ( new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId, array('encode' => false)); //set encode to false to avoid things like ' being translated to &#039;
-        if ( !$thisBean ) throw ( new KREST\NotFoundException('Record not found.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
+        if (!$thisBean) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $app_list_strings = return_app_list_strings_language($current_language);
 
@@ -777,21 +766,30 @@ class KRESTModuleHandler
          */
     }
 
-    public function get_bean_auditlog($beanModule, $beanId)
+    public function get_bean_auditlog($beanModule, $beanId, $params)
     {
         global $db;
 
         // acl check if user can get the detail
         if (!ACLController::checkAccess($beanModule, 'view', true))
-            throw ( new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw ( new KREST\NotFoundException('Record not found.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
-        if (!$thisBean->is_AuditEnabled()) throw ( new KREST\NotFoundException('Record not audit enabled.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule])->setErrorCode('moduleNotAudited');
+        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!$thisBean->is_AuditEnabled()) throw (new KREST\NotFoundException('Record not audit enabled.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule])->setErrorCode('moduleNotAudited');
 
         $auditLog = Array();
 
-        $auditRecords = $db->query("SELECT al.*, au.user_name FROM " . $thisBean->get_audit_table_name() . " al LEFT JOIN users au ON al.created_by = au.id WHERE parent_id = '$beanId' ORDER BY date_created DESC");
+        $query = "SELECT al.*, au.user_name FROM " . $thisBean->get_audit_table_name() . " al LEFT JOIN users au ON al.created_by = au.id WHERE parent_id = '$beanId'";
+        if ($params['user']) {
+            $query .= " AND au.user_name like '%{$params['user']}%'";
+        }
+        if ($params['field']) {
+            $query .= " AND al.field_name = '{$params['field']}'";
+        }
+        $query .= " ORDER BY date_created DESC";
+
+        $auditRecords = $db->query($query);
         while ($auditRecord = $db->fetchByAssoc($auditRecords))
             $auditLog[] = $auditRecord;
 
@@ -808,7 +806,7 @@ class KRESTModuleHandler
     {
         // acl check if user can get the detail
         if (!ACLController::checkAccess($beanModule, 'view', true))
-            throw ( new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         // load the bean and populate from row
         $seed = BeanFactory::getBean($beanModule);
@@ -828,10 +826,10 @@ class KRESTModuleHandler
 
         // acl check if user can get the detail
         if (!ACLController::checkAccess($beanModule, 'view', true))
-            throw ( new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw ( new KREST\NotFoundException('Record not found.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
+        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $duplicates = $thisBean->checkForDuplicates();
 
@@ -848,11 +846,11 @@ class KRESTModuleHandler
     {
         // acl check if user can get the detail
         if (!ACLController::checkAccess($beanModule, 'view', true))
-            throw ( new KREST\ForbiddenException("Forbidden to view in for module $beanModule."))->setErrorCode('noModuleView');
+            throw (new KREST\ForbiddenException("Forbidden to view in for module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule);
         $thisBean->retrieve($beanId);
-        if (!isset($thisBean->id)) throw ( new KREST\NotFoundException('Record not found.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
+        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         if ($thisBean->filename) {
             require_once('modules/Notes/NoteSoap.php');
@@ -867,7 +865,7 @@ class KRESTModuleHandler
         }
 
         // if we did not return before we did not find the file
-        throw ( new KREST\NotFoundException('Attachment/File not found.'));
+        throw (new KREST\NotFoundException('Attachment/File not found.'));
     }
 
     public function set_bean_attachment($beanModule, $beanId)
@@ -911,7 +909,7 @@ class KRESTModuleHandler
         $aclActions = ['list', 'detail', 'edit', 'delete', 'export', 'import'];
         foreach ($aclActions as $aclAction) {
             $aclArray[$aclAction] = false;
-            if($bean)
+            if ($bean)
                 $aclArray[$aclAction] = $bean->ACLAccess($aclAction);
         }
         return $aclArray;
@@ -922,17 +920,17 @@ class KRESTModuleHandler
 
         // acl check if user can get the detail
         if (!ACLController::checkAccess($beanModule, 'view', true))
-            throw ( new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         // get the bean
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean)) throw ( new KREST\NotFoundException('Record not found.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
+        if (!isset($thisBean)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
         if (!ACLController::checkAccess($relModule, 'list', true))
-            throw ( new KREST\ForbiddenException('Forbidden to list in module '.$relModule.'.'))->setErrorCode('noModuleList');
+            throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         // get related beans and related module
         // get_linked_beans($field_name, $bean_name, $sort_array = array(), $begin_index = 0, $end_index = -1, $deleted = 0, $optional_where = "")
@@ -945,7 +943,7 @@ class KRESTModuleHandler
             $retArray[$relBean->relid] = $this->mapBeanToArray($relModule, $relBean);
 
             // add relationship fields
-            if(is_array($relBean->relationhshipfields)) {
+            if (is_array($relBean->relationhshipfields)) {
                 $retArray[$relBean->relid]['relationhshipfields'] = $relBean->relationhshipfields;
             }
 
@@ -969,24 +967,23 @@ class KRESTModuleHandler
     {
 
         if (!ACLController::checkAccess($beanModule, 'edit', true))
-            throw ( new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
+            throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean)) throw ( new KREST\NotFoundException('Record not found.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
+        if (!isset($thisBean)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
         if (!ACLController::checkAccess($relModule, 'list', true))
-            throw ( new KREST\ForbiddenException('Forbidden to list in module '.$relModule.'.'))->setErrorCode('noModuleList');
-
+            throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
 
         foreach ($relatedIds as $relatedId) {
             $result = $thisBean->{$linkName}->add($relatedId);
-            if(!$result)
+            if (!$result)
                 throw new Exception("Something went wrong by adding $relatedId to $linkName");
             $retArray[$relatedId] = $thisBean->{$linkName}->relationship->relid;
         }
@@ -998,29 +995,29 @@ class KRESTModuleHandler
     {
 
         if (!ACLController::checkAccess($beanModule, 'edit', true))
-            throw ( new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
+            throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw ( new KREST\NotFoundException('Record not found.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
+        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
         if (!ACLController::checkAccess($relModule, 'list', true))
-            throw ( new KREST\ForbiddenException('Forbidden to list in module '.$relModule.'.'))->setErrorCode('noModuleList');
+            throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         // set the relate module
         $relBean = BeanFactory::getBean($relModule, $postparams['id']);
-        if (!isset($relBean->id)) throw ( new KREST\NotFoundException('Related record not found.'))->setLookedFor(['id'=>$postparams['id'],'module'=>$relModule]);
+        if (!isset($relBean->id)) throw (new KREST\NotFoundException('Related record not found.'))->setLookedFor(['id' => $postparams['id'], 'module' => $relModule]);
 
         $beanResponse = $this->add_bean($relModule, $postparams['id'], $postparams);
 
         $relFields = $thisBean->field_defs[$linkName]['rel_fields'];
-        if(is_array($relFields) && count($relFields)>0) {
+        if (is_array($relFields) && count($relFields) > 0) {
             $thisBean->load_relationship($linkName);
-            switch($thisBean->{$linkName}->getSide()){
+            switch ($thisBean->{$linkName}->getSide()) {
                 case 'RHS':
                     $relid = $thisBean->{$linkName}->relationship->relationship_exists($relBean, $thisBean);
                     break;
@@ -1029,11 +1026,11 @@ class KRESTModuleHandler
                     break;
             }
 
-            if($relid) {
+            if ($relid) {
                 $valArray = Array();
-                foreach($relFields as $relfield => $relmapdata) {
+                foreach ($relFields as $relfield => $relmapdata) {
                     $fieldArray[] = $relfield;
-                    $valArray[] = $relfield . " = '" . ( is_bool( $postparams[$relmapdata['map']] ) ? (int)$postparams[$relmapdata['map']] : $postparams[$relmapdata['map']] ) . "'";
+                    $valArray[] = $relfield . " = '" . (is_bool($postparams[$relmapdata['map']]) ? (int)$postparams[$relmapdata['map']] : $postparams[$relmapdata['map']]) . "'";
                 }
 
                 $thisBean->db->query("UPDATE " . $thisBean->{$linkName}->relationship->getRelationshipTable() . " SET " . implode(', ', $valArray) . " WHERE id ='$relid'");
@@ -1048,18 +1045,18 @@ class KRESTModuleHandler
     {
 
         if (!ACLController::checkAccess($beanModule, 'edit', true))
-            throw ( new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
+            throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw ( new KREST\NotFoundException('Record not found.') )->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
+        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
         if (!ACLController::checkAccess($relModule, 'list', true))
-            throw ( new KREST\ForbiddenException('Forbidden to list in module '.$relModule.'.'))->setErrorCode('noModuleList');
+            throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         $thisBean->load_relationship($linkName);
 
@@ -1075,24 +1072,22 @@ class KRESTModuleHandler
         return $retArray;
     }
 
-    public
-    function add_mudltiple_related($beanModule, $linkName)
+    public function add_mudltiple_related($beanModule, $linkName)
     {
 
     }
 
-    public
-    function add_bean($beanModule, $beanId, $post_params)
+    public function add_bean($beanModule, $beanId, $post_params)
     {
-        global $current_user;
+        global $current_user, $timedate;
 
         if (!ACLController::checkAccess($beanModule, 'edit', true))
-            throw ( new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
+            throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         if ($post_params['deleted']) {
 
             if (!ACLController::checkAccess($beanModule, 'delete', true))
-                throw ( new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
+                throw (new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
             $this->delete_bean($beanModule, $beanId);
             return $beanId;
@@ -1101,12 +1096,28 @@ class KRESTModuleHandler
         $thisBean = BeanFactory::getBean($beanModule);
         $thisBean->retrieve($beanId);
 
-        if(!$thisBean->ACLAccess('edit'))
-            throw ( new KREST\ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
+        if (!$thisBean->ACLAccess('edit'))
+            throw (new KREST\ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
 
         if (empty($thisBean->id) && !empty($beanId)) {
             $thisBean->new_with_id = true;
             $thisBean->id = $beanId;
+        } else if ($thisBean->optimistic_lock && !empty($post_params['date_modified'])) {
+            // do an optimistic locking check
+            $curDate = date_create_from_format($timedate->get_db_date_format() . ' H:i:s', $thisBean->date_modified);
+            $inDate = date_create_from_format($timedate->get_db_date_format() . ' H:i:s', $post_params['date_modified']);
+            if ($curDate > $inDate) {
+                $fields = [];
+                foreach ($post_params as $fieldname => $fieldValue) {
+                    if ($fieldValue != $thisBean->$fieldname) {
+                        $fields[] = $fieldname;
+                    }
+                }
+                $changedFields = $thisBean->getAuditChangesAfterDate($post_params['date_modified'], $fields);
+                if (count($changedFields) > 0) {
+                    throw (new KREST\ConflictException('Optimistic locking conflicts detected'))->setConflicts($changedFields);
+                }
+            }
         }
 
         foreach ($thisBean->field_name_map as $fieldId => $fieldData) {
@@ -1131,16 +1142,16 @@ class KRESTModuleHandler
 
 
         // map from the bean
-        if(method_exists($thisBean, 'mapFromRestArray')){
+        if (method_exists($thisBean, 'mapFromRestArray')) {
             $thisBean->mapFromRestArray($post_params);
         }
 
         // check if notification might be applied
         # if( $thisBean->object_name == "Meeting" || $thisBean->object_name == "Call" || !empty($thisBean->assigned_user_id) && $thisBean->assigned_user_id != $GLOBALS['current_user']->id && empty($GLOBALS['sugar_config']['exclude_notifications'][$thisBean->module_dir])){
-        if ( !empty( $thisBean->assigned_user_id ) && $thisBean->assigned_user_id != $GLOBALS['current_user']->id && empty( @$GLOBALS['sugar_config']['exclude_notifications'][$thisBean->module_dir] )) {
+        if (!empty($thisBean->assigned_user_id) && $thisBean->assigned_user_id != $GLOBALS['current_user']->id && empty(@$GLOBALS['sugar_config']['exclude_notifications'][$thisBean->module_dir])) {
             $thisBean->notify_on_save = true;
         }
-        
+
         // save the bean bbut do not index .. indexing is handled later here since we might save related beans
         $thisBean->update_date_entered = true;
         $thisBean->save(!empty($thisBean->notify_on_save), false);
@@ -1152,7 +1163,7 @@ class KRESTModuleHandler
                     if ($fieldData['module'] && isset($post_params[$fieldData['name']])) {
                         $thisBean->load_relationship($fieldId);
 
-                        if(!$thisBean->{$fieldId}){
+                        if (!$thisBean->{$fieldId}) {
                             break;
                         }
 
@@ -1169,7 +1180,7 @@ class KRESTModuleHandler
                         $beans = $post_params[$fieldData['name']]['beans'];
                         foreach ($beans as $thisBeanId => $beanData) {
                             $seed = BeanFactory::getBean($relModule, $thisBeanId);
-                            if($beanData['deleted'] == 0) {
+                            if ($beanData['deleted'] == 0) {
                                 // if it does not exist create new bean
                                 if (!$seed) {
                                     $seed = BeanFactory::getBean($relModule);
@@ -1191,7 +1202,7 @@ class KRESTModuleHandler
 
                                 $thisBean->$fieldId->add($seed);
                             } else {
-                                if($seed) {
+                                if ($seed) {
                                     $seed->mark_deleted($seed->id);
                                 }
                             }
@@ -1222,12 +1233,12 @@ class KRESTModuleHandler
         }
 
         // index the bean now
-        if(class_exists('SpiceFTSHandler', false)) {
+        if (class_exists('SpiceFTSHandler', false)) {
             $spiceFTSHandler = new SpiceFTSHandler();
             $spiceFTSHandler->indexBean($thisBean);
         }
 
-        if ( @$GLOBALS['sugar_config']['krest']['retrieve_after_save'] ) $thisBean->retrieve();
+        if (@$GLOBALS['sugar_config']['krest']['retrieve_after_save']) $thisBean->retrieve();
 
         return $this->mapBeanToArray($beanModule, $thisBean);
     }
@@ -1236,14 +1247,14 @@ class KRESTModuleHandler
     function delete_bean($beanModule, $beanId)
     {
         if (!ACLController::checkAccess($beanModule, 'delete', true))
-            throw ( new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
+            throw (new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
         $thisBean = BeanFactory::getBean($beanModule);
         $thisBean->retrieve($beanId);
-        if (!isset($thisBean->id)) throw ( new KREST\NotFoundException('Record not found.'))->setLookedFor(['id'=>$beanId,'module'=>$beanModule]);
+        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         if (!$thisBean->ACLAccess('delete'))
-            throw ( new KREST\ForbiddenException('Forbidden to delete record.'))->setErrorCode('noRecordDelete');
+            throw (new KREST\ForbiddenException('Forbidden to delete record.'))->setErrorCode('noRecordDelete');
 
         $thisBean->mark_deleted($beanId);
         return true;
@@ -1480,7 +1491,7 @@ class KRESTModuleHandler
                 case 'parent':
                     if (count($returnFields) == 0 || (count($returnFields) > 0 && in_array($fieldId, $returnFields))) {
                         $beanDataArray[$fieldId] = $thisBean->$fieldId;
-                        if($fieldData['id_name']){
+                        if ($fieldData['id_name']) {
                             $beanDataArray[$fieldData['id_name']] = $thisBean->{$fieldData['id_name']};
                         }
                     }
@@ -1489,7 +1500,7 @@ class KRESTModuleHandler
                     if ($resolvelinks && $fieldData['default'] === true && $fieldData['module']) {
                         $beanDataArray[$fieldId]['beans'] = new stdClass();
                         $thisBean->load_relationship($fieldId);
-                        if($thisBean->{$fieldId}) {
+                        if ($thisBean->{$fieldId}) {
                             $relModule = $thisBean->{$fieldId}->getRelatedModuleName();
                             $relatedBeans = $thisBean->get_linked_beans($fieldId, $relModule);
                             foreach ($relatedBeans as $relatedBean) {
@@ -1510,7 +1521,7 @@ class KRESTModuleHandler
         }
 
         // call the bean mapper if that one exists
-        if(method_exists($thisBean, 'mapToRestArray')) {
+        if (method_exists($thisBean, 'mapToRestArray')) {
             $beanDataArray = $thisBean->mapToRestArray($beanDataArray);
         };
 
@@ -1555,10 +1566,10 @@ class KRESTModuleHandler
             }
 
             $beanDataArray['acl_fieldcontrol'] = $controlArray;
-        }else{
+        } else {
             //workaround to unset edit icon when bean edit is prohibited until we have our ACLController
             //build fake $beanDataArray['acl_fieldcontrol']['edit']
-            if(!$beanDataArray['acl']['edit']) {
+            if (!$beanDataArray['acl']['edit']) {
                 foreach ($thisBean->field_defs as $field => $def) {
                     $beanDataArray['acl_fieldcontrol'][$def['name']] = 1;
                 }
@@ -1778,29 +1789,29 @@ class KRESTModuleHandler
         }
     }
 
-    public function getLanguage( $modules, $language = null ) {
+    public function getLanguage($modules, $language = null)
+    {
 
         // see if we have a language passed in .. if not use the default
-        if ( empty( $language )) $language = $GLOBALS['sugar_config']['default_language'];
+        if (empty($language)) $language = $GLOBALS['sugar_config']['default_language'];
 
-        $dynamicDomains = $this->get_dynamic_domains( $modules, $language );
-        $appListStrings = return_app_list_strings_language( $language );
-        $appStrings = array_merge( $appListStrings, $dynamicDomains );
+        $dynamicDomains = $this->get_dynamic_domains($modules, $language);
+        $appListStrings = return_app_list_strings_language($language);
+        $appStrings = array_merge($appListStrings, $dynamicDomains);
 
         // BEGIN syslanguages  => check language source
-        if ( isset( $GLOBALS['sugar_config']['syslanguages']['spiceuisource']) and $GLOBALS['sugar_config']['syslanguages']['spiceuisource'] === 'db' ) {
+        if (isset($GLOBALS['sugar_config']['syslanguages']['spiceuisource']) and $GLOBALS['sugar_config']['syslanguages']['spiceuisource'] === 'db') {
             // grab labels from syslanguagetranslations
             // $syslanguages = $this->get_languages(strtolower($language));
-            if(!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
+            if (!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
 
             $syslanguagelabels = LanguageManager::loadDatabaseLanguage($language);
             // file_put_contents("sugarcrm.log", print_r($syslanguagelabels, true), FILE_APPEND);
             $syslanguages = array();
             // var_dump($syslanguagelabels);
             // explode labels default|short|long
-            if(is_array($syslanguagelabels))
-            {
-                foreach($syslanguagelabels as $syslanguagelbl => $syslanguagelblcfg){
+            if (is_array($syslanguagelabels)) {
+                foreach ($syslanguagelabels as $syslanguagelbl => $syslanguagelblcfg) {
                     $syslanguages[$syslanguagelbl] = array(
                         'default' => $syslanguagelblcfg['default'],
                         'short' => $syslanguagelblcfg['short'],
@@ -1830,12 +1841,12 @@ class KRESTModuleHandler
                     'available' => [],
                     'default' => $GLOBALS['sugar_config']['default_language']
                 ),
-                'mod' => $this->get_mod_language( $modules, $language ),
-                'applang' => return_application_language( $language ),
+                'mod' => $this->get_mod_language($modules, $language),
+                'applang' => return_application_language($language),
                 'applist' => $appStrings
             );
 
-            foreach($GLOBALS['sugar_config']['languages'] as $language_code => $language_name){
+            foreach ($GLOBALS['sugar_config']['languages'] as $language_code => $language_name) {
                 $responseArray['languages']['available'][] = [
                     'language_code' => $language_code,
                     'language_name' => $language_name,
@@ -1845,11 +1856,11 @@ class KRESTModuleHandler
             }
         }
 
-        $responseArray['md5'] = md5( json_encode( $responseArray ));
+        $responseArray['md5'] = md5(json_encode($responseArray));
 
         // if an md5 was sent in and matches the current one .. no change .. do not send the language to save bandwidth
-        if ( $_REQUEST['md5'] === $responseArray['md5'] ) {
-            $responseArray = array( 'md5' => $_REQUEST['md5'] );
+        if ($_REQUEST['md5'] === $responseArray['md5']) {
+            $responseArray = array('md5' => $_REQUEST['md5']);
         }
 
         return $responseArray;

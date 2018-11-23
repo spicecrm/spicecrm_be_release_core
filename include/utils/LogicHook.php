@@ -161,7 +161,7 @@ class LogicHook
 		    $db = DBManagerFactory::getInstance();
         }
         if( empty( $GLOBALS['installing'] )) {
-            $hooks = $db->query("SELECT event, hook_index, hook_include, hook_class, hook_method FROM syshooks WHERE module='$module_dir' OR module = '' OR module IS NULL AND hook_active = 1");
+            $hooks = $db->query("SELECT event, hook_index, hook_include, hook_class, hook_method FROM syshooks WHERE module='$module_dir' OR module = '' OR module IS NULL AND hook_active = 1 UNION SELECT event, hook_index, hook_include, hook_class, hook_method FROM syscustomhooks WHERE module='$module_dir' OR module = '' OR module IS NULL AND hook_active = 1");
             while ($hook = $db->fetchByAssoc($hooks)) {
                 $hook_array[$hook['event']][] = array($hook['hook_index'], '', $hook['hook_include'], $hook['hook_class'], $hook['hook_method']);
             }

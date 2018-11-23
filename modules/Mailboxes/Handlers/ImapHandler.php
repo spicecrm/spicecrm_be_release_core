@@ -40,6 +40,7 @@ class ImapHandler extends TransportHandler
         'smtp_encryption',
         'imap_pop3_username',
         'imap_pop3_password',
+        'reply_to',
     ];
 
     /**
@@ -399,16 +400,33 @@ class ImapHandler extends TransportHandler
     {
         $message = (new \Swift_Message($email->name))
             ->setFrom([$this->mailbox->imap_pop3_username => $this->mailbox->imap_pop3_display_name])
-            ->setTo([$email->to()[0]['email']]) // todo make it work for multiple addresses
             ->setBody($email->body, 'text/html')
         ;
 
+        $toAddressess = [];
+        foreach ($email->to() as $address) {
+            array_push($toAddressess, $address['email']);
+        }
+        $message->setTo($toAddressess);
+
         if (!empty($email->cc_addrs)) {
-            $message->setCc([$email->cc_addrs]);
+            $ccAddressess = [];
+            foreach ($email->cc() as $address) {
+                array_push($ccAddressess, $address['email']);
+            }
+            $message->setCc($ccAddressess);
         }
 
         if (!empty($email->bcc_addrs)) {
-            $message->setBcc([$email->bcc_addrs]);
+            $bccAddressess = [];
+            foreach ($email->bcc() as $address) {
+                array_push($bccAddressess, $address['email']);
+            }
+            $message->setBcc($bccAddressess);
+        }
+
+        if ($this->mailbox->reply_to != '') {
+            $message->setReplyTo($this->mailbox->reply_to);
         }
 
         foreach (json_decode(\SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {

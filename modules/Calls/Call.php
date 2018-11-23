@@ -220,16 +220,6 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
             $this->reminder_time = $current_user->getPreference('reminder_time');
         }*/
 
-        /*
-         * Saving the Call as a Google Calendar Event
-         */
-        if (isset($_SESSION['google_oauth'])) {
-            $calendar = new SpiceCRM\modules\GoogleCalendar\GoogleCalendar();
-            $event    = $calendar->createEvent($this, $this->external_id);
-
-            $this->external_id = $event->id;
-        }
-
         $return_id = parent::save($check_notify, $fts_index_bean);
         global $current_user;
 
@@ -258,15 +248,20 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
         $startDate = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_start);
         $endDate   = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_end);
 
-        $event = new Google_Service_Calendar_Event([
+        $eventParams = [
+            'id'      => $this->external_id,
             'summary' => $this->name,
-            'start' => [
+            'start'   => [
                 'dateTime' => $startDate->format(DateTime::RFC3339),
             ],
-            'end' => [
+            'end'     => [
                 'dateTime' => $endDate->format(DateTime::RFC3339),
             ],
-        ]);
+            'description' => $this->description,
+            'location'    => $this->getEventLocation(),
+        ];
+
+        $event = new \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent($eventParams);
 
         return $event;
     }
@@ -274,11 +269,11 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
     /**
      * fromEvent
      *
-     * Converts a Google Calendar Event into the Bean
+     * Converts a Google Calendar Event into the Beans
      *
-     * @param Google_Service_Calendar_Event $event
+     * @param \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event
      */
-    public function fromEvent(\Google_Service_Calendar_Event $event) {
+    public function fromEvent(\SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event) {
         $startDate = new \DateTime($event->start->dateTime);
         $endDate   = new \DateTime($event->end->dateTime);
 
@@ -294,6 +289,18 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
      */
     public function justSave() {
         parent::save();
+    }
+
+    /**
+     * getEventLocation
+     *
+     * Assembles the location string for the Google Calendar Event
+     *
+     * @return string
+     */
+    private function getEventLocation() {
+        $contact = BeanFactory::getBean('Contacts', $this->contact_id);
+        return $contact->full_name . ', ' . $contact->phone_work . ', ' . $contact->phone_mobile;
     }
 
     /** Returns a list of the associated contacts
@@ -904,21 +911,13 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
         require_once("modules/Calendar/CalendarUtils.php");
         CalendarUtils::correctRecurrences($this, $id);
 
-        // Remove the GCal event
-        if (isset($_SESSION['google_oauth'])) {
-            $calendar = new SpiceCRM\modules\GoogleCalendar\GoogleCalendar();
-            $calendar->removeEvent($this->gcal_id);
-
-            $this->removeGcalId();
-        }
-
         parent::mark_deleted($id);
     }
 
     public function removeGcalId() {
         global $db;
 
-        $query = "UPDATE calls SET gcal_id = NULL WHERE id = '" . $this->id . "'";
+        $query = "UPDATE calls SET external_id = NULL WHERE id = '" . $this->id . "'";
         $result = $db->query($query);
 
         return $result;

@@ -483,10 +483,17 @@ class SpiceFTSHandler
         if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFTSQuery')) {
             $aclFilters = $GLOBALS['ACLController']->getFTSQuery($module);
             if (count($aclFilters) > 0) {
-                $queryParam['query']['bool']['filter']['bool']['should'] = $aclFilters;
-                $queryParam['query']['bool']['filter']['bool']['minimum_should_match'] = 1;
-            } else {
-                return false;
+                // do not write empty entries
+                if(isset($aclFilters['should']) && count($aclFilters['should']) > 1){
+                    $queryParam['query']['bool']['filter']['bool']['should'] = $aclFilters['should'];
+                    $queryParam['query']['bool']['filter']['bool']['minimum_should_match'] = 1;
+                }
+                if(isset($aclFilters['should']) && count($aclFilters['must_not']) > 1) {
+                    $queryParam['query']['bool']['filter']['bool']['must_not'] = $aclFilters['must_not'];
+                }
+                if(isset($aclFilters['should']) && count($aclFilters['must']) > 1) {
+                    $queryParam['query']['bool']['filter']['bool']['must'] = $aclFilters['must'];
+                }
             }
         }
 

@@ -105,12 +105,15 @@ class UserPreference extends SugarBean
             return $_SESSION[$user->user_name.'_PREFERENCES'][$category][$name];
         }
 
-        // check to see if a default preference ( i.e. $sugar_config setting ) exists for this value )
-        // if so, return it
-        $value = $this->getDefaultPreference($name,$category);
-        if ( !is_null($value) ) {
-            return $value;
+        if ( !@$GLOBALS['isREST'] ) {
+            // check to see if a default preference ( i.e. $sugar_config setting ) exists for this value )
+            // if so, return it
+            $value = $this->getDefaultPreference( $name, $category );
+            if ( !is_null( $value ) ) {
+                return $value;
+            }
         }
+
         return null;
     }
 
@@ -180,6 +183,34 @@ class UserPreference extends SugarBean
         }
 
         $_SESSION[$user->user_name.'_PREFERENCES'][$category][$name] = $value;
+    }
+
+    /**
+     * Delete preference by name and category. Saving will be done in utils.php -> sugar_cleanup
+     *
+     * @param string $name name of the preference to retreive
+     * @param string $category name of the category to retreive, defaults to global scope
+     */
+    public function deletePreference( $name, $category = 'global' ) {
+        $user = $this->_userFocus;
+
+        if ( empty($user->user_name) )
+            return;
+
+        if(!isset($_SESSION[$user->user_name.'_PREFERENCES'][$category])) {
+            if(!$user->loadPreferences($category))
+                $_SESSION[$user->user_name.'_PREFERENCES'][$category] = array();
+        }
+
+        // when preference is set, mark to save to DB
+        if( isset( $_SESSION[$user->user_name.'_PREFERENCES'][$category][$name] )) {
+            $GLOBALS['savePreferencesToDB'] = true;
+            if(!isset($GLOBALS['savePreferencesToDBCats'])) $GLOBALS['savePreferencesToDBCats'] = array();
+            $GLOBALS['savePreferencesToDBCats'][$category] = true;
+        }
+
+        unset( $_SESSION[$user->user_name.'_PREFERENCES'][$category][$name] );
+
     }
 
     /**
@@ -323,7 +354,7 @@ class UserPreference extends SugarBean
                 $catsToSave = $_SESSION[$user->user_name. '_PREFERENCES'];
             }
 
-            foreach ($catsToSave as $category => $contents) {
+            foreach ($catsToSave as $category => $contents) { #print_r($contents);
                 $focus = new UserPreference($this->_userFocus);
                 $result = $focus->retrieve_by_string_fields(array(
                     'assigned_user_id' => $user->id,

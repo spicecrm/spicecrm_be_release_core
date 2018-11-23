@@ -204,6 +204,11 @@ $app_list_strings = array(
         'se' => 'Betreuer Supportr',
         'es' => 'Executive Sponsor'
     ),
+    'user_absences_type_dom' =>        array(
+        '' => '',
+        'Krankenstand' => 'Krankenstand',
+        'Urlaub' => 'Urlaub',
+    ),
     //e.g. en espaï¿½ol 'Apparel'=>'Ropa',
     'industry_dom' => array(
         '' => '',

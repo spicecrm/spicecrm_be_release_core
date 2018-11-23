@@ -232,6 +232,11 @@ $app_list_strings = array(
         'se' => 'Support Engineer',
         'es' => 'Executive Sponsor'
     ),
+    'user_absences_type_dom' =>        array(
+        '' => '',
+        'Sick leave' => 'Sick leave',
+        'Vacation' => 'Vacation',
+    ),
     //e.g. en espaï¿½ol 'Apparel'=>'Ropa',
     'industry_dom' =>
         array(

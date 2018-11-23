@@ -130,19 +130,45 @@ class SpiceLanguageLoader{
 
     }
 
+    public function loadLanguage($language){
+
+        global $db;
+
+        // $route = "referencelanguage";
+        $package = '*';
+
+        $endpoint = implode("/", array($this->routebase, $language, $package, '*'));
+        $results = $this->loadDefaultConf($endpoint, array('route' => $this->routebase, 'languages' => $language, 'package' => '*', 'version' => '*'), false);
+        return $results;
+    }
+
+    public function deleteLanguage($language){
+
+        global $db;
+
+        // remove Translations
+        $db->query("DELETE FROM syslanguagetranslations WHERE syslanguage='$language'");
+
+        // set as non system language
+        $db->query("UPDATE syslangs SET system_language = 0, is_default = 0 WHERE language_code = '$language'");
+
+        return true;
+    }
+
     /**
      * load language labels and translations from reference database
      * @param $route
      * @param $params
      */
-    public function loadDefaultConf($route, $params){
+    public function loadDefaultConf($route, $params, $checkopen = true){
         global $sugar_config;
         $truncates = array();
         $inserts = array();
         $success = false;
 
-        if($this->loader->hasOpenChangeRequest())
+        if($checkopen && $this->loader->hasOpenChangeRequest())
             throw new Exception("Open Change Requests found! They would be erased...");
+
         if(!$response = $this->loader->callMethod("GET", $route)){
             //die("REST Call error somewhere... Action aborted");
             throw new Exception("REST Call error somewhere... Action aborted");
@@ -222,7 +248,7 @@ class SpiceLanguageLoader{
             $success = true;
             //check if language is available
             $queriessyslang = array();
-            $syslangstatus = $GLOBALS['db']->query("SELECT id,language_code from syslangs 
+            $syslangstatus = $GLOBALS['db']->query("SELECT * from syslangs 
                   WHERE language_code IN ('".implode("','", $languages)."') 
                   ORDER BY sort_sequence ASC");
             while($syslangrow = $GLOBALS['db']->fetchByAssoc($syslangstatus)){
@@ -233,6 +259,7 @@ class SpiceLanguageLoader{
 
                 if(in_array($languages[$i], array_keys($syslangs))){
                     $queriessyslang[] = "UPDATE syslangs SET system_language = 1 WHERE language_code='".$languages[$i]."'";
+                    $syslangs[$languages[$i]]['system_language'] = 1;
                 } else{
                     //try to find a language name
                     $appForLang = return_app_list_strings_language($languages[$i]);
@@ -247,6 +274,8 @@ class SpiceLanguageLoader{
                     $values = "'".$lang['id']."','".$lang['language_code']."', '".$lang['language_name']."', ".$lang['sort_sequence'].", ".$lang['is_default'].", ".$lang['system_language'].", ".$lang['communication_language'];
                     $queriessyslang[] = "INSERT INTO syslangs (".implode(",", array_keys($lang)).") VALUES(".$values.")";
 
+                    // add to syslangs array to return fromt he call
+                    $syslangs[$languages[$i]] = $lang;
                 }
             }
 
@@ -260,7 +289,7 @@ class SpiceLanguageLoader{
             }
         }
 
-        return array("success" => $success, "queries" => count($queries), "errors" => $errors);
+        return array("success" => $success, "queries" => count($queries), "languages" => $syslangs,  "errors" => $errors);
     }
 
     public function getPossibleConf(){

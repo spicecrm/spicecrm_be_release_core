@@ -16,8 +16,7 @@
 
 require('include/entryPoint.php');
 
-class KRESTManager
-{
+class KRESTManager {
 
     var $app = null;
     var $sessionId = null;
@@ -26,8 +25,7 @@ class KRESTManager
     var $noAuthentication = false;
     var $extensions = array();
 
-    public function __construct($theApp, $requestParams = array())
-    {
+    public function __construct($theApp, $requestParams = array()) {
         // link the app and the request paramas
         $this->app = $theApp;
         $this->requestParams = $requestParams;
@@ -39,19 +37,17 @@ class KRESTManager
         $disable_fixup_format = true;
     }
 
-    public function registerExtension($extension, $version, $config = [])
-    {
+    public function registerExtension($extension, $version, $config = []) {
         $this->extensions[$extension] = array(
             'version' => $version,
             'config' => $config
         );
     }
 
-    public function excludeFromAuthentication($path)
-    {
+    public function excludeFromAuthentication($path) {
         // support for IIS
         $currentPath = $this->app->getContainer()['environment']->get("REDIRECT_URL") ?: $this->app->getContainer()['environment']->get("REQUEST_URI");
-        $currentPath = explode('/KREST',$currentPath, 2)[1];
+        $currentPath = explode('/KREST', $currentPath, 2)[1];
         //var_dump($currentPath);
         //$this->noAuthentication = true;
         if (substr($path, -1) === '*' && strpos($currentPath, substr($path, 0, -1)) === 0)
@@ -60,8 +56,7 @@ class KRESTManager
             $this->noAuthentication = true;
     }
 
-    public function authenticate()
-    {
+    public function authenticate() {
         //$environment = $this->app->getContainer()['environment'];
         if ($this->noAuthentication)
             return;
@@ -76,7 +71,7 @@ class KRESTManager
                 'user_name' => $_SERVER['PHP_AUTH_USER'],
                 'password' => $_SERVER['PHP_AUTH_PW'],
                 'encryption' => 'PLAIN',
-                'loginByDev' => isset( $_GET['byDev']{0} ) ? $_GET['byDev']:null
+                'loginByDev' => isset($_GET['byDev']{0}) ? $_GET['byDev'] : null
             ]);
             if ($loginData !== false) {
                 $this->sessionId = $loginData;
@@ -85,13 +80,14 @@ class KRESTManager
                 $accessLog->addRecord();
             } else
                 $this->authenticationError();
-        } elseif(!empty($_GET['PHP_AUTH_DIGEST_RAW'])){
+        } elseif (!empty($_GET['PHP_AUTH_DIGEST_RAW'])) {
             // handling for CLI
             $auth = explode(':', base64_decode($_GET['PHP_AUTH_DIGEST_RAW']));
             $loginData = $this->login([
                 'user_name' => $auth[0],
                 'password' => $auth[1],
-                'encryption' => 'PLAIN'
+                'encryption' => 'PLAIN',
+                'loginByDev' => isset($_GET['byDev']{0}) ? $_GET['byDev'] : null
             ]);
             if ($loginData !== false) {
                 $this->sessionId = $loginData;
@@ -100,7 +96,7 @@ class KRESTManager
                 $accessLog->addRecord();
             } else
                 $this->authenticationError();
-        }elseif (!empty($this->requestParams['user_name']) && !empty($this->requestParams['password'])) {
+        } elseif (!empty($this->requestParams['user_name']) && !empty($this->requestParams['password'])) {
             $loginData = $this->login([
                 'user_name' => $this->requestParams['user_name'],
                 'password' => $this->requestParams['password'],
@@ -120,11 +116,11 @@ class KRESTManager
             else
                 $this->authenticationError('session invalid');
         } elseif (!empty($this->requestParams['session_id']) ||
-                    !empty($this->requestParams['sessionid']) ||
-                    !empty($_COOKIE[session_name()])) { //PHPSESSID
+            !empty($this->requestParams['sessionid']) ||
+            !empty($_COOKIE[session_name()])) { //PHPSESSID
 
             $sessionId = $this->requestParams['session_id'] ?:
-                ( $this->requestParams['sessionid'] ?: $_COOKIE[session_name()]); //PHPSESSID
+                ($this->requestParams['sessionid'] ?: $_COOKIE[session_name()]); //PHPSESSID
             $startedSession = $this->startSession($sessionId);
 
             if ($startedSession !== false)
@@ -136,27 +132,24 @@ class KRESTManager
         }
     }
 
-    public function cleanup()
-    {
+    public function cleanup() {
         // delete the session if it was created without login
         if (!empty($this->tmpSessionId)) {
             session_destroy();
         }
     }
 
-    public function authenticationError($message = '')
-    {
+    public function authenticationError($message = '') {
         $accessLog = BeanFactory::getBean('UserAccessLogs');
         $accessLog->addRecord('loginfail');
 
         // set for cors
         // header("Access-Control-Allow-Origin: *");
-        throw new KREST\UnauthorizedException( 'Authentication failed'. ( isset( $message{0} ) ? ': '.$message : '.' ));
+        throw new KREST\UnauthorizedException('Authentication failed' . (isset($message{0}) ? ': ' . $message : '.'));
     }
 
     // BEGMOD KORGOBJECTS change private to public..
-    public function startSession($session_id = '')
-    {
+    public function startSession($session_id = '') {
         if (empty($session_id)) {
             $requestparams = $_GET;
             if (isset($requestparams['session_id']))
@@ -198,8 +191,7 @@ class KRESTManager
         return false;
     }
 
-    public function validate_session($session_id)
-    {
+    public function validate_session($session_id) {
         if (!empty($session_id)) {
 
             // only initialize session once in case this method is called multiple times
@@ -224,8 +216,7 @@ class KRESTManager
         return false;
     }
 
-    private function login($user_auth)
-    {
+    private function login($user_auth) {
         global $sugar_config, $system_config;
 
         $user = BeanFactory::getBean('Users');
@@ -254,7 +245,10 @@ class KRESTManager
         $isLoginSuccess = $authController->login(
             $user_auth['user_name'],
             $user_auth['password'],
-            ['passwordEncrypted' => $passwordEncrypted, 'loginByDev' => isset( $user_auth['loginByDev']{0} ) ? $user_auth['loginByDev']:null ]
+            [
+                'passwordEncrypted' => $passwordEncrypted,
+                'loginByDev' => (isset($user_auth['loginByDev']{0}) and @$GLOBALS['sugar_config']['masqueraded_developers_allowed'] === true) ? $user_auth['loginByDev'] : null
+            ]
         );
         $usr_id = $user->retrieve_user_id($user_auth['user_name']);
         if ($usr_id)
@@ -310,31 +304,30 @@ class KRESTManager
         }
     }
 
-    public function getLoginData()
-    {
+    public function getLoginData() {
         global $current_user;
 
         // clear the tem session ... seemingly we came via login so the session shoudl be kept
         $this->tmpSessionId = null;
 
         $loginData = [
+            'access_token' => $_SESSION['google_oauth']['access_token'],
             'admin'        => $current_user->is_admin,
             'display_name' => $current_user->get_summary_text(),
             'email'        => $current_user->email1,
             'first_name'   => $current_user->first_name,
             'id'           => session_id(),
             'last_name'    => $current_user->last_name,
+            'portal_only'  => $current_user->portal_only,
             'renewPass'    => $current_user->system_generated_password,
             'user_name'    => $current_user->user_name,
             'userid'       => $current_user->id,
-            'portal_only'  => $current_user->portal_only,
         ];
 
         return $loginData;
     }
 
-    public function getProxyFiles()
-    {
+    public function getProxyFiles() {
         $headers = getallheaders();
 
         if ($headers['proxyfiles']) {

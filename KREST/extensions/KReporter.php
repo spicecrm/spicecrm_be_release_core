@@ -6,6 +6,8 @@ require_once('modules/KReports/KReportVisualizationManager.php');
 require_once('modules/KReports/KReportPresentationManager.php');
 require_once('modules/KReports/KReportRESTHandler.php');
 
+$KRESTManager->registerExtension('reporting', '1.0');
+
 $KReportRestHandler = new KReporterRESTHandler();
 
 $app->group('/KReporter', function () use ($app, $KRESTManager, $KReportRestHandler) {

@@ -102,6 +102,14 @@ class MailboxesRESTHandler
     public function fetchEmails($id)
     {
         $mailbox = \BeanFactory::getBean('Mailboxes', $id);
+
+        if ($mailbox->active == false) {
+            return [
+                'result'  => 'true',
+                'message' => 'Emails were not fetched. Mailbox inactive.',
+            ];
+        }
+
         $mailbox->initTransportHandler();
 
         $result = $mailbox->transport_handler->fetchEmails();
@@ -199,5 +207,38 @@ class MailboxesRESTHandler
             return $e;
         }
 
+    }
+
+    /**
+     * getMailboxesForDashlet
+     *
+     * Returns and array of Mailboxes with the number of read, unread and closed emails
+     * to be used in the Mailboxes Dashlet in the UI.
+     *
+     * @return array
+     */
+    public function getMailboxesForDashlet() {
+        $mailboxes = [];
+
+        $sql  = "SELECT ";
+        $sql .= "mailboxes.id, ";
+        $sql .= "mailboxes.name, ";
+        $sql .= "sum(if(emails.status ='unread', 1, 0)) emailsunread, ";
+        $sql .= "sum(if(emails.status ='read', 1, 0)) emailsread, ";
+        $sql .= "sum(if(emails.status ='closed', 1, 0)) emailsclosed ";
+        $sql .= "FROM mailboxes LEFT JOIN emails ON mailboxes.id=emails.mailbox_id ";
+        $sql .= "WHERE mailboxes.deleted = 0 ";
+        $sql .= "AND mailboxes.inbound_comm = 1 ";
+        $sql .= "AND mailboxes.active = 1 ";
+        $sql .= "GROUP BY mailboxes.id ";
+        $sql .= "ORDER BY emailsunread DESC ";
+
+        $res = $this->db->query($sql);
+
+        while ($row = $this->db->fetchByAssoc($res)) {
+            $mailboxes[] = $row;
+        }
+
+        return $mailboxes;
     }
 }

@@ -745,22 +745,22 @@ class EmailTemplate extends SugarBean {
         return $this->storedVariables[$text[0]];
     }
 
-    function parse($bean){
+    function parse( $bean, $additionalValues = null ){
         global $app_list_strings, $current_language, $current_user, $sugar_config;
         $app_list_strings = return_app_list_strings_language($this->language);
 
         $retArray = array(
-            'subject' => $this->parseField('subject', $bean),
-            'body' => $this->parseField('body', $bean),
-            'body_html' => '<style>'.$this->getStyle().'</style>'.$this->parseField('body_html', $bean),
+            'subject' => $this->parseField('subject', $bean, $additionalValues ),
+            'body' => $this->parseField('body', $bean, $additionalValues ),
+            'body_html' => '<style>'.$this->getStyle().'</style>'.$this->parseField('body_html', $bean, $additionalValues ),
         );
 
         return $retArray;
     }
 
-    public function parseField($field, $parentbean = null)
+    public function parseField($field, $parentbean = null, $additionalValues = null )
     {
-        $html = SpiceCRM\includes\SpiceTemplateCompiler\Compiler::compile($this->$field, $parentbean, $this->language);
+        $html = SpiceCRM\includes\SpiceTemplateCompiler\Compiler::compile($this->$field, $parentbean, $this->language, $additionalValues );
         return html_entity_decode($html);
     }
 

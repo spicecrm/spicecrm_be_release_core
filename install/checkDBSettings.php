@@ -197,9 +197,7 @@ function checkDBSettings($silent=false) {
     $sugar_config['fts']['schedulerpackagesize'] = 25000;
 
     $sugar_config['media_files_dir'] = 'media/';
-    $sugar_config['media_files_thumbs_dir'] = 'media/.thumbs/';
-    $sugar_config['media_files_sizes_dir'] = 'media/.sizes/';
-    $sugar_config['media_files_trash_dir'] = 'media/.trash/';
+    $sugar_config['media_files_no_trash'] = false;
     $sugar_config['media_files_thumb_sizes'] = array(
         0 => 30,
         1 => 48,

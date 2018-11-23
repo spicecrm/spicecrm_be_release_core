@@ -77,7 +77,7 @@ $layout_defs['Projects'] = array(
             'top_buttons' => array(
                 array('widget_class' => 'SubPanelTopCreateButton', ),
             ),
-            'title_key' => 'LBL_PROJECTACTIVITIES_SUBPANEL_TITLE',
+            'title_key' => 'LBL_PROJECTACTIVITIES',
         ),
         'projectmilestones' => array(
             'order' => 20,

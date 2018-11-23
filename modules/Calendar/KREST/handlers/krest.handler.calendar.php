@@ -10,14 +10,14 @@ class CalendarRestHandler
 
         $retArray = [];
 
-        $start = $params['start'];
-        $end = $params['end'];
+        $start = $db->quote($params['start']);
+        $end = $db->quote($params['end']);
 
         $krestModuleHandler = new KRESTModuleHandler();
 
         if(ACLController::checkAccess('Meetings', 'list', $current_user->id)) {
             $seedMeeting = BeanFactory::getBean('Meetings');
-            $meetings = $db->query("SELECT id FROM meetings WHERE deleted = 0 and date_start >='$start' AND date_end <='$end' AND assigned_user_id = '$userid'");
+            $meetings = $db->query("SELECT id FROM meetings WHERE deleted = 0 and date_start < '$end' AND date_end > '$start' AND assigned_user_id = '$userid'");
             while($meeting = $db->fetchByAssoc($meetings)){
                 if($seedMeeting->retrieve($meeting['id'])){
                     $retArray[] = array(
@@ -34,7 +34,7 @@ class CalendarRestHandler
 
         if(ACLController::checkAccess('Calls', 'list', $current_user->id)) {
             $seedCall = BeanFactory::getBean('Calls');
-            $calls = $db->query("SELECT id FROM calls WHERE deleted = 0 and date_start >='$start' AND date_end <='$end' AND assigned_user_id = '$userid'");
+            $calls = $db->query("SELECT id FROM calls WHERE deleted = 0 and date_start < '$end' AND date_end > '$start' AND assigned_user_id = '$userid'");
             while($call = $db->fetchByAssoc($calls)){
                 if($seedCall->retrieve($call['id'])){
                     $retArray[] = array(
@@ -46,6 +46,21 @@ class CalendarRestHandler
                         'data' => $krestModuleHandler->mapBeanToArray('Calls', $seedCall)
                     );
                 }
+            }
+        }
+
+        $seedAbsence = BeanFactory::getBean('UserAbsences');
+        $user_absences = $db->query("SELECT id FROM user_absences WHERE deleted = 0 and date_start < '$end' AND date_end > '$start' AND user_id = '$userid'");
+        while($absence = $db->fetchByAssoc($user_absences)){
+            if($seedAbsence->retrieve($absence['id'])){
+                $retArray[] = array(
+                    'id' => $seedAbsence->id,
+                    'module' => 'UserAbsences',
+                    'type' => 'absence',
+                    'start' => $seedAbsence->date_start,
+                    'end' => $seedAbsence->date_end,
+                    'data' => $krestModuleHandler->mapBeanToArray('UserAbsences', $seedAbsence)
+                );
             }
         }
 

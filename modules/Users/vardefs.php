@@ -215,7 +215,6 @@ $dictionary['User'] = array(
             'name' => 'receive_notifications',
             'vname' => 'LBL_RECEIVE_NOTIFICATIONS',
             'type' => 'bool',
-            'default' => '1',
             'massupdate' => false,
             'studio' => false,
         ),
@@ -690,6 +689,13 @@ $dictionary['User'] = array(
             'link_type' => 'one',
             'source' => 'non-db'
         ],
+        'user_absences' => array(
+            'name' => 'user_absences',
+            'type' => 'link',
+            'relationship' => 'users_userabsences',
+            'source' => 'non-db',
+            'module' => 'UserAbsences'
+        )
     ),
     'indices' => array(
         array(
@@ -740,6 +746,16 @@ $dictionary['User'] = array(
                 'join_table' => 'email_addr_bean_rel', 'join_key_lhs' => 'bean_id', 'join_key_rhs' => 'email_address_id',
                 'relationship_role_column' => 'primary_address',
                 'relationship_role_column_value' => '1'
+            ),
+        'users_userabsences' =>
+            array(
+                'lhs_module' => 'Users',
+                'lhs_table' => 'users',
+                'lhs_key' => 'id',
+                'rhs_module' => 'UserAbsences',
+                'rhs_table' => 'user_absences',
+                'rhs_key' => 'user_id',
+                'relationship_type' => 'one-to-many'
             ),
     ),
 

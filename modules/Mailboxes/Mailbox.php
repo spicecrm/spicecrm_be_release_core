@@ -135,7 +135,6 @@ class Mailbox extends SugarBean {
         }
         $ref .= '}';
 
-
         return $ref;
     }
 
@@ -148,7 +147,7 @@ class Mailbox extends SugarBean {
      * @param bool $fts_index_bean
      * @return string|void
      */
-    public function save($check_notify = FALSE, $fts_index_bean = TRUE) {
+    public function save($check_notify = false, $fts_index_bean = true) {
 
         parent::save($check_notify, $fts_index_bean);
     }
@@ -238,8 +237,11 @@ class Mailbox extends SugarBean {
         if (is_null($defaultMailbox) || empty($defaultMailbox->id)) {
             # logging temporarily turned off to prevent messing sugarcrm.log:
             # $GLOBALS['log']->fatal('No default Mailbox found');
-            //throw new Exception('No default Mailbox found');
-            return false;
+            if ( @$GLOBALS['isREST'] ) {
+                throw new Exception('No default Mailbox found');
+            } else {
+                return false;
+            }
         } else {
             return $defaultMailbox;
         }

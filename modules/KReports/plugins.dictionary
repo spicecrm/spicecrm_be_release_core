@@ -33,6 +33,6 @@ $plugins['ktargetlistexport'] = array(
     'type' => 'integration', 
     'directory' => 'ktargetlistexport_basic'
 );
-
-include('modules/KReports/plugins.dictionary.extended');
+if(file_exists('modules/KReports/plugins.dictionary.extended'))
+    include('modules/KReports/plugins.dictionary.extended');
 

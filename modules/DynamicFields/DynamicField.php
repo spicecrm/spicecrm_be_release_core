@@ -852,6 +852,61 @@ class DynamicField
     }
 
     /**
+     * CR1000085 Repair Audit Fields.Introduced in SpiceCRM 2018.11.001
+     * @param $data
+     * @param bool $execute
+     * @return string
+     */
+    public function add_existing_audit_field($data, $execute = true)
+    {
+
+        $field = get_widget ( $data ['type'] );
+        $field->populateFromRow($data);
+        $query = "/*MISSING IN DATABASE - {$data['name']} -  ROW*/\n"
+            . $field->get_db_add_alter_table($this->bean->table_name . '_audit');
+        $out = $query . "\n";
+        if ($execute)
+            $GLOBALS['db']->query($query);
+
+        return $out;
+    }
+
+    /**
+     * CR1000085 Repair Audit Fields.Introduced in SpiceCRM 2018.11.001
+     * @param bool $execute
+     * @return string
+     */
+    public function repairAuditFields($execute = true)
+    {
+        $out = "";
+        if(!$this->bean->db->tableExists($this->bean->get_audit_table_name())){
+            $this->bean->create_audit_table();
+        }
+        else{
+            global $dictionary;
+
+            require('metadata/audit_templateMetaData.php');
+            // Bug: 52583 Need ability to customize template for audit tables
+            $custom = 'custom/metadata/audit_templateMetaData_' . $this->bean->getTableName() . '.php';
+            if (file_exists($custom)) {
+                require($custom);
+            }
+            $fieldDefs = $dictionary['audit']['fields'];
+            $indices = $dictionary['audit']['indices'];
+
+            // Renaming template indexes to fit the particular audit table (removed the brittle hard coding)
+            foreach ($indices as $nr => $properties) {
+                $indices[$nr]['name'] = 'idx_' . strtolower($this->bean->getTableName()) . '_audit_' . $properties['name'];
+            }
+            $out.= $this->bean->db->repairAuditTable($this->bean->get_audit_table_name(), $fieldDefs, $indices, $execute);
+        }
+        if (!empty($out))
+            $out = "/*Checking Audit Fields for module : {$this->module} */\n$out";
+
+        return $out;
+    }
+
+    /**
      * Adds a label to the module's mod_strings for the current language
      * Note that the system label name
      *

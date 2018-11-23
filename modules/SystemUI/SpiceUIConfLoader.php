@@ -33,23 +33,52 @@
  */
 require_once 'modules/SystemUI/SpiceUILoader.php';
 
-class SpiceUIConfLoader{
+class SpiceUIConfLoader
+{
     public $sysuitables = array();
 
     public $loader;
     public $routebase = "";
     public $release = true;
 
-    public function __construct(){
+
+    private $conftables = array(
+        'sysmodules',
+        'sysuiactionsetitems',
+        'sysuiactionsets',
+        'sysuiadmincomponents',
+        'sysuicomponentdefaultconf',
+        'sysuicomponentmoduleconf',
+        'sysuicomponentsets',
+        'sysuicomponentsetscomponents',
+        'sysuicopyrules',
+        'sysuidashboarddashlets',
+        'sysuifieldsets',
+        'sysuifieldsetsitems',
+        'sysuifieldtypemapping',
+        'sysuilibs',
+        'sysuimodulerepository',
+        'sysuiobjectrepository',
+        'sysuirolemodules',
+        'sysuiroles',
+        'sysuiroutes',
+        'syshooks'
+    );
+
+    public function __construct()
+    {
+        global $current_user;
+
         $this->loader = new SpiceUILoader();
         $this->routebase = $this->getRouteBase();
-        if(!preg_match('/release/', $this->routebase))
+        if (!preg_match('/release/', $this->routebase))
             $this->release = false;
     }
 
-    public function getRouteBase(){
+    public function getRouteBase()
+    {
         $routebase = $this->loader->getRouteBase();
-        return $routebase."config";
+        return $routebase . "config";
     }
 
     /**
@@ -57,15 +86,16 @@ class SpiceUIConfLoader{
      * in SpiceCRM Backend Administration
      * @return string
      */
-    public function displayDefaultConfForm($params, $possibleparams, $obsoleteparams){
+    public function displayDefaultConfForm($params, $possibleparams, $obsoleteparams)
+    {
         $sm = new Sugar_Smarty();
 
-        if(!empty($params['packages'])) $sm->assign('currentpackages', $params['packages']);
-        if(!empty($params['versions'])) $sm->assign('currentversions', array_unique($params['versions']));
+        if (!empty($params['packages'])) $sm->assign('currentpackages', $params['packages']);
+        if (!empty($params['versions'])) $sm->assign('currentversions', array_unique($params['versions']));
 
-        if(!empty($possibleparams['packages'])) $sm->assign('possiblepackages', $possibleparams['packages']);
-        if(!empty($possibleparams['versions'])) $sm->assign('possibleversions', $possibleparams['versions']);
-        if(!empty($obsoleteparams)) $sm->assign('obsoletepackages', $obsoleteparams);
+        if (!empty($possibleparams['packages'])) $sm->assign('possiblepackages', $possibleparams['packages']);
+        if (!empty($possibleparams['versions'])) $sm->assign('possibleversions', $possibleparams['versions']);
+        if (!empty($obsoleteparams)) $sm->assign('obsoletepackages', $obsoleteparams);
 
         //check on release
         $sm->assign("release", $this->release);
@@ -81,10 +111,11 @@ class SpiceUIConfLoader{
      * @param $tb
      * @return array
      */
-    public function getTableColumns($tb){
+    public function getTableColumns($tb)
+    {
         $columns = $GLOBALS['db']->get_columns($tb);
         $cols = array();
-        foreach($columns as $c => $col){
+        foreach ($columns as $c => $col) {
             $cols[] = $col['name'];
         }
         return $cols;
@@ -94,14 +125,15 @@ class SpiceUIConfLoader{
      * @return array|mixed
      * @throws Exception
      */
-    public function getPossibleConf(){
+    public function getPossibleConf()
+    {
         //get data
-        if(!$response = $this->loader->callMethod("GET", $this->routebase)) {
-            die('<pre>'.print_r($response, true));
+        if (!$response = $this->loader->callMethod("GET", $this->routebase)) {
+            die('<pre>' . print_r($response, true));
             throw new Exception("REST Call error somewhere... Action aborted");
         }
         //check if release and force unique version number
-        if($this->release === true){
+        if ($this->release === true) {
             $response['versions'] = array();
             $response['versions'][0]['version'] = $GLOBALS['sugar_version'];
         }
@@ -109,6 +141,20 @@ class SpiceUIConfLoader{
         array_multisort($response['versions'], SORT_DESC, SORT_STRING);
 
         return $response;
+    }
+
+    public function loadPackage($package, $version = '*')
+    {
+        $endpoint = implode("/", array($this->routebase, $package, $version));
+        return $this->loadDefaultConf($endpoint, array('route' => $this->routebase, 'packages' => [$package], 'version' => $version), false);
+    }
+
+    public function deletePackage($package)
+    {
+        global $db;
+        foreach ($this->conftables as $conftable){
+            $db->query("DELETE FROM $conftable WHERE package = '$package'");
+        }
     }
 
     /**
@@ -119,56 +165,56 @@ class SpiceUIConfLoader{
      * @param $route
      * @param $params
      */
-    public function loadDefaultConf($routeparams, $params){
+    public function loadDefaultConf($routeparams, $params, $checkopen = true)
+    {
 //        echo '<pre>'. print_r($params, true);die();
         global $sugar_config;
         $tables = array();
         $truncates = array();
         $inserts = array();
 
-        if($this->loader->hasOpenChangeRequest()) {
+        if ($checkopen && $this->loader->hasOpenChangeRequest()) {
             $errormsg = "Open Change Requests found! They would be erased...";
             throw new Exception($errormsg);
         }
         //get data
-        if(!$response = $this->loader->callMethod("GET", $routeparams)){
+        if (!$response = $this->loader->callMethod("GET", $routeparams)) {
             $errormsg = "REST Call error somewhere... Action aborted";
             throw new Exception($errormsg);
         }
 
         $this->sysuitables = array_keys($response);
 
-        if(!empty($response['nodata'])){
+        if (!empty($response['nodata'])) {
             die($response['nodata']);
         }
 
-        foreach($response as $tb => $content) {
+        foreach ($response as $tb => $content) {
             //truncate command
             $tables[] = $tb;
-            switch($tb){
+            switch ($tb) {
                 case 'syslangs':
                     $delQ = "DELETE FROM $tb WHERE 1=1";//$GLOBALS['db']->truncateTableSQL($tb);
                     break;
                 default:
-                    $delQ = "DELETE FROM $tb WHERE package IN('".implode("','", $params['packages'])."') ";
-                    if(in_array('core', $params['packages']))
-                        $delQ.= "OR package IS NULL OR package=''";
+                    $delQ = "DELETE FROM $tb WHERE package IN('" . implode("','", $params['packages']) . "') ";
+                    if (in_array('core', $params['packages']))
+                        $delQ .= "OR package IS NULL OR package=''";
             }
 
             $truncates[] = $delQ;
             $tbColCheck = false;
 
             foreach ($content as $id => $encoded) {
-                if(!$decodeData = json_decode(base64_decode($encoded), true))
-                    die("Error decoding data: ".json_last_error_msg().
-                            "<br/>Reference table = $tb".
-                            "<br/>Action aborted");
+                if (!$decodeData = json_decode(base64_decode($encoded), true))
+                    die("Error decoding data: " . json_last_error_msg() .
+                        "<br/>Reference table = $tb" .
+                        "<br/>Action aborted");
 
                 //prcess only selected packages and empty package values
-                if(empty($decodeData['package']) && !in_array('core', $params['packages'])){
+                if (empty($decodeData['package']) && !in_array('core', $params['packages'])) {
                     continue;
-                }
-                elseif(!empty($decodeData['package']) && !in_array($decodeData['package'], $params['packages'])){
+                } elseif (!empty($decodeData['package']) && !in_array($decodeData['package'], $params['packages'])) {
                     continue;
                 }
 
@@ -177,26 +223,26 @@ class SpiceUIConfLoader{
                     $referenceCols = array_keys($decodeData);
                     $thisCols = $this->getTableColumns($tb);
                     if (!empty(array_diff($referenceCols, $thisCols))) {
-                        die("Table structure for $tb is not up-to-date.".
-                            "<br/>Reference table = ".implode(", ", $referenceCols).
-                            "<br/>Client table = ".implode(", ", $thisCols).
+                        die("Table structure for $tb is not up-to-date." .
+                            "<br/>Reference table = " . implode(", ", $referenceCols) .
+                            "<br/>Client table = " . implode(", ", $thisCols) .
                             "<br/>Action aborted");
                     }
                     $tbColCheck = true;
                 }
 
                 //prepare values for DB query
-                foreach($decodeData as $key => $value){
-                    $decodeData[$key] = (is_null($value) || $value==="" ? "NULL" : "'".$GLOBALS['db']->quote($value)."'");
+                foreach ($decodeData as $key => $value) {
+                    $decodeData[$key] = (is_null($value) || $value === "" ? "NULL" : "'" . $GLOBALS['db']->quote($value) . "'");
                 }
                 //insert command
-                $inserts[] = "INSERT INTO $tb (" . implode(",", $referenceCols) . ") ".
+                $inserts[] = "INSERT INTO $tb (" . implode(",", $referenceCols) . ") " .
                     "VALUES(" . implode(",", array_values($decodeData)) . ")";
             }
         }
 
         //if no inserts where created => abort
-        if(count($inserts) < 1){
+        if (count($inserts) < 1) {
             throw new Exception("No inserts found. Action aborted.");
         }
 
@@ -204,15 +250,15 @@ class SpiceUIConfLoader{
 //        echo '<pre>'. print_r(implode(";\n", $queries), true);die();
 
         //process queries
-        if(count($queries) > 2) {
+        if (count($queries) > 2) {
             $errors = array();
             foreach ($queries as $q) {
-                if(!$GLOBALS['db']->query($q))
-                    $errors[] = "Error: ".$GLOBALS['db']->last_error;
+                if (!$GLOBALS['db']->query($q))
+                    $errors[] = "Error: " . $GLOBALS['db']->last_error;
             }
         }
 
-        if(count($errors) <= 0) $success = true;
+        if (count($errors) <= 0) $success = true;
 
         return array("success" => $success, "queries" => count($queries), "errors" => $errors, "tables" => $tables);
 
@@ -223,7 +269,8 @@ class SpiceUIConfLoader{
      * Remove sysmodules entries for modules that are not present in backend
      * @return bool
      */
-    public function cleanDefaultConf(){
+    public function cleanDefaultConf()
+    {
         // load moduleList
         global $current_user, $db;
 
@@ -236,7 +283,7 @@ class SpiceUIConfLoader{
         };
 
         // process
-        if(isset($GLOBALS['beanList']) && !empty($GLOBALS['beanList'])) {
+        if (isset($GLOBALS['beanList']) && !empty($GLOBALS['beanList'])) {
             foreach ($sysmodules as $sysmodule) {
                 if (!isset($GLOBALS['beanList'][$sysmodule])) {
                     $db->query("DELETE FROM sysmodules WHERE module='" . $sysmodule . "'");
@@ -250,39 +297,23 @@ class SpiceUIConfLoader{
      * Get main information about current config loaded in client
      * package, version....
      */
-    public function getCurrentConf(){
+    public function getCurrentConf()
+    {
         global $db;
-        $q = "(SELECT package, version FROM sysmodules WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuiactionsetitems WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuiactionsets WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuiadmincomponents WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuicomponentdefaultconf WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuicomponentmoduleconf WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuicomponentsets WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuicomponentsetscomponents WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuicopyrules WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuidashboarddashlets WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuifieldsets WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuifieldsetsitems WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuifieldtypemapping WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuilibs WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuimodulerepository WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuiobjectrepository WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuirolemodules WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuiroles WHERE version is not null AND version <> '') UNION 
-        (SELECT package, version FROM sysuiroutes WHERE version is not null AND version <> '') 
-        ORDER BY package, version";
+        $qArray = [];
+        foreach($this->conftables as $conftable) $qArray[] = "(SELECT package, version FROM $conftable WHERE version is not null AND version <> '')";
+        $q = implode(" UNION ", $qArray) . " ORDER BY package, version";
         $res = $db->query($q);
         $packages = array();
         $versions = array();
 
-        while($row = $db->fetchByAssoc($res)){
-            if(!empty($row['package'])) {
+        while ($row = $db->fetchByAssoc($res)) {
+            if (!empty($row['package']) && !in_array($row['package'], $packages)) {
                 $packages[] = $row['package'];
-            }elseif (!in_array('core', $packages)){
+            } elseif (!in_array('core', $packages) && !in_array($row['package'], $packages)) {
                 $packages[] = 'core';
             }
-            if(!empty($row['version']) && !in_array($row['version'], $versions))
+            if (!empty($row['version']) && !in_array($row['version'], $versions))
                 $versions[] = $row['version'];
         }
         return array('packages' => $packages, 'versions' => $versions);
@@ -294,15 +325,16 @@ class SpiceUIConfLoader{
      * @param $possibleconf
      * @return array
      */
-    public function getObsoleteConf($currentconf, $possibleconf){
+    public function getObsoleteConf($currentconf, $possibleconf)
+    {
         $currentpackages = $currentconf['packages'];
         $possiblepackages = array();
         $obsoletepackages = array();
-        foreach($possibleconf['packages'] as $package){
+        foreach ($possibleconf['packages'] as $package) {
             $possiblepackages[] = $package['package'];
         }
-        foreach($currentpackages as $package)
-            if(!in_array($package,$possiblepackages))
+        foreach ($currentpackages as $package)
+            if (!in_array($package, $possiblepackages))
                 $obsoletepackages[] = $package;
         return $obsoletepackages;
     }

@@ -1485,8 +1485,18 @@ function get_select_options_with_id_separate_key($label_list, $key_list, $select
 function sugar_die($error_message, $exit_code = 1) {
     global $focus;
     sugar_cleanup();
-    echo $error_message;
-    die($exit_code);
+    //BEGIN CR1000068: throw exception for KREST
+    //echo $error_message;
+    //die($exit_code);
+    if ( @$GLOBALS['isREST'] ) {
+        throw new Exception( "sugar_die() triggered" , 500) ;
+    }else {
+        echo $error_message;
+        die($exit_code);
+    }
+    //END
+
+
 }
 
 /**

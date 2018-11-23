@@ -49,11 +49,11 @@ $app->group('/module/History', function () use ($app)
         //echo implode(' UNION ALL ', $queryArray);
         //return;
 
-        $objects = $db->limitQuery('select id, module from (' . implode(' UNION ALL ', $queryArray) . ') unionresult order by sortdate DESC', $start, $limit);
+        $objects = $db->limitQuery('select id, module from (' . implode(' UNION ', $queryArray) . ') unionresult order by sortdate DESC', $start, $limit);
 
         $count = 0;
         if ($getParams['count']) {
-            $historyCount = $db->fetchByAssoc($db->query('select count(id) itemcount from (' . implode(' UNION ALL ', $queryArray) . ') unionresult'));
+            $historyCount = $db->fetchByAssoc($db->query('select count(id) itemcount from (' . implode(' UNION ', $queryArray) . ') unionresult'));
             $count = $historyCount['itemcount'];
         }
 

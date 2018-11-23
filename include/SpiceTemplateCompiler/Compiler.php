@@ -8,7 +8,7 @@ namespace SpiceCRM\includes\SpiceTemplateCompiler;
 class Compiler
 {
 
-    public static function compile($txt, \SugarBean $bean = null, $lang = 'de_DE')
+    public static function compile( $txt, \SugarBean $bean = null, $lang = 'de_DE', array $additionalValues = null )
     {
         global $current_user;
         $app_list_strings = return_app_list_strings_language($lang);
@@ -30,6 +30,9 @@ class Compiler
                         break;
                     case 'system':
                         $obj = new System();
+                        break;
+                    case 'value':
+                        $obj = (object)$additionalValues;
                         break;
                     default:
                         //echo "$part is unknowen...";

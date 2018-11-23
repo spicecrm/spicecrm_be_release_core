@@ -257,17 +257,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
             $api->logOff();
         }
 
-        /*
-         * Saving the Meeting as a Google Calendar Event
-         */
-        if (isset($_SESSION['google_oauth'])) {
-            $calendar = new SpiceCRM\modules\GoogleCalendar\GoogleCalendar();
-            $event    = $calendar->createEvent($this, $this->external_id);
-
-            $this->external_id = $event->id;
-        }
-
-		$return_id = parent::save($check_notify, $fts_index_bean);
+        $return_id = parent::save($check_notify, $fts_index_bean);
 
         // check if contact_id is set
         if(!empty($this->contact_id)){
@@ -300,15 +290,20 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
         $startDate = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_start);
         $endDate   = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_end);
 
-        $event = new Google_Service_Calendar_Event([
+        $eventParams = [
+            'id'      => $this->external_id,
             'summary' => $this->name,
-            'start' => [
+            'start'   => [
                 'dateTime' => $startDate->format(DateTime::RFC3339),
             ],
-            'end' => [
+            'end'     => [
                 'dateTime' => $endDate->format(DateTime::RFC3339),
             ],
-        ]);
+            'description' => $this->description,
+            'location'    => $this->location,
+        ];
+
+        $event = new \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent($eventParams);
 
         return $event;
     }
@@ -318,10 +313,9 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
      *
      * Converts Google Calendar Event into Bean
      *
-     * @param $id
-     * @throws Exception
+     * @param \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event
      */
-    public function fromEvent(\Google_Service_Calendar_Event $event) {
+    public function fromEvent(\SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event) {
         $startDate = new \DateTime($event->start->dateTime);
         $endDate   = new \DateTime($event->end->dateTime);
 
@@ -337,14 +331,6 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
 
 		require_once("modules/Calendar/CalendarUtils.php");
 		CalendarUtils::correctRecurrences($this, $id);
-
-        // Remove the GCal event
-        if (isset($_SESSION['google_oauth'])) {
-            $calendar = new SpiceCRM\modules\GoogleCalendar\GoogleCalendar();
-            $calendar->removeEvent($this->gcal_id);
-
-            $this->removeGcalId();
-        }
 		
 		global $current_user;
 
@@ -358,7 +344,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
     public function removeGcalId() {
         global $db;
 
-        $query = "UPDATE meetings SET gcal_id = NULL WHERE id = '" . $this->id . "'";
+        $query = "UPDATE meetings SET external_id = NULL WHERE id = '" . $this->id . "'";
         $result = $db->query($query);
 
         return $result;

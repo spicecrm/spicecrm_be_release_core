@@ -1,5 +1,7 @@
 <?php
 
+$KRESTManager->registerExtension('telecockpit', '1.0');
+
 $app->post('/module/CampaignLog/{campaignlogid}/{status}', function ($req, $res, $args) use ($app) {
     global $timedate;
     // ACL Check

@@ -37,63 +37,162 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 
 // Task is used to store customer information.
-class Task extends SugarBean {
-        var $field_name_map;
+class Task extends SugarBean
+{
+    public $field_name_map;
 
 	// Stored fields
-	var $id;
-	var $date_entered;
-	var $date_modified;
-	var $assigned_user_id;
-	var $modified_user_id;
-	var $created_by;
-	var $created_by_name;
-	var $modified_by_name;
-	var $description;
-	var $name;
-	var $status;
-	var $date_due_flag;
-	var $date_due;
-	var $time_due;
-	var $date_start_flag;
-	var $date_start;
-	var $time_start;
-	var $priority;
-	var $parent_type;
-	var $parent_id;
-	var $contact_id;
+    public $id;
+    public $date_entered;
+    public $date_modified;
+    public $assigned_user_id;
+    public $modified_user_id;
+    public $created_by;
+    public $created_by_name;
+    public $modified_by_name;
+    public $description;
+    public $name;
+    public $status;
+    public $date_due_flag;
+    public $date_due;
+    public $time_due;
+    public $date_start_flag;
+    public $date_start;
+    public $time_start;
+    public $priority;
+    public $parent_type;
+    public $parent_id;
+    public $contact_id;
 
-	var $parent_name;
-	var $contact_name;
-	var $contact_phone;
-	var $contact_email;
-	var $assigned_user_name;
+    public $parent_name;
+    public $contact_name;
+    public $contact_phone;
+    public $contact_email;
+    public $assigned_user_name;
+
+    public $external_id;
 
 //bug 28138 todo
 //	var $default_task_name_values = array('Assemble catalogs', 'Make travel arrangements', 'Send a letter', 'Send contract', 'Send fax', 'Send a follow-up letter', 'Send literature', 'Send proposal', 'Send quote', 'Call to schedule meeting', 'Setup evaluation', 'Get demo feedback', 'Arrange introduction', 'Escalate support request', 'Close out support request', 'Ship product', 'Arrange reference call', 'Schedule training', 'Send local user group information', 'Add to mailing list');
 
-	var $table_name = "tasks";
+    public $table_name = "tasks";
 
-	var $object_name = "Task";
-	var $module_dir = 'Tasks';
+    public $object_name = "Task";
+    public $module_dir = 'Tasks';
 
-	var $importable = true;
+    public $importable = true;
 	// This is used to retrieve related fields from form posts.
-	var $additional_column_fields = Array('assigned_user_name', 'assigned_user_id', 'contact_name', 'contact_phone', 'contact_email', 'parent_name');
+    public $additional_column_fields = [
+        'assigned_user_name',
+        'assigned_user_id',
+        'contact_name',
+        'contact_phone',
+        'contact_email',
+        'parent_name',
+    ];
 
+    public $new_schema = true;
 
-	function __construct() {
+    /**
+     * Available status values
+     */
+    const NOT_STARTED   = 'Not Started';
+    const IN_PROGRESS   = 'In Progress';
+    const COMPLETED     = 'Completed';
+    const PENDING_INPUT = 'Pending Input';
+    const DEFERRED      = 'Deferred';
+
+    /**
+     * Task constructor.
+     */
+	public function __construct()
+    {
 		parent::__construct();
 	}
 
-	var $new_schema = true;
-
-    function save($check_notify = FALSE, $fts_index_bean = TRUE)
+    /**
+     * save
+     *
+     * Saves the Task Bean and if necessary also saves the Google Task
+     *
+     * @param bool $check_notify
+     * @param bool $fts_index_bean
+     * @return string
+     */
+    public function save($check_notify = false, $fts_index_bean = true)
     {
         if (empty($this->status) ) {
             $this->status = $this->getDefaultStatus();
         }
+
+        /*
+         * Saving the Task as a Google Task
+         */
+        if (isset($_SESSION['google_oauth'])) {
+            global $current_user;
+
+            if ($this->assigned_user_id == $current_user->id) {
+                $tasks = new SpiceCRM\modules\GoogleTasks\GoogleTasks();
+                $task  = $tasks->createTask($this);
+
+                $this->external_id = $task->id;
+            } else {
+                // else Task is assigned to a different user who may or may not have a Google Task sync set up
+                // however if the assigned user has been changed, the external_id should be set to null
+                // and deleted from that user's Google Task list
+                // unless it has already belonged to that different user in which case ¯\_(ツ)_/¯
+            }
+        }
+
         return parent::save($check_notify, $fts_index_bean);
+    }
+
+    /**
+     * toTask
+     *
+     * Converts the Task Bean into a Google Task
+     *
+     * @return Google_Service_Tasks_Task
+     */
+    public function toTask()
+    {
+        $dueDate = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_due);
+
+        $params = [
+            'id'     => $this->external_id,
+            'title'  => $this->name,
+            'notes'  => $this->description,
+            'status' => $this->convertStatus(),
+        ];
+
+        if ($dueDate) {
+            $params['dueDate'] = $dueDate->format(DateTime::RFC3339);
+        }
+
+        $task = new \SpiceCRM\modules\GoogleTasks\GoogleTask($params);
+
+        return $task;
+    }
+
+    /**
+     * convertStatus
+     *
+     * Converts the Spice Task Status into the Status used by Google Tasks
+     *
+     * @return string
+     */
+    private function convertStatus()
+    {
+        switch ($this->status) {
+            case self::COMPLETED:
+                return 'completed';
+            case self::NOT_STARTED:
+            case self::IN_PROGRESS:
+            case self::PENDING_INPUT:
+            case self::DEFERRED:
+            default:
+                return 'needsAction';
+        }
     }
 
 	function get_summary_text()
@@ -486,4 +585,41 @@ class Task extends SugarBean {
         return $query;
     }
 
+    /**
+     * mark_deleted
+     *
+     * Mark the Task as deleted and if possible also deletes the Google Task
+     *
+     * @param $id
+     * @throws Exception
+     */
+    public function mark_deleted($id)
+    {
+        // Remove the Google Task
+        if (isset($_SESSION['google_oauth'])) {
+            $tasks = new \SpiceCRM\modules\GoogleTasks\GoogleTasks();
+            $tasks->removeTask($this->external_id);
+
+            $this->removeExternalId();
+        }
+
+        parent::mark_deleted($id);
+    }
+
+    /**
+     * removeExternalId
+     *
+     * Set the external ID to null.
+     *
+     * @return bool|resource
+     */
+    public function removeExternalId()
+    {
+        global $db;
+
+        $query = "UPDATE " . $this->table_name . " SET external_id = NULL WHERE id = '" . $this->id . "'";
+        $result = $db->query($query);
+
+        return $result;
+    }
 }

@@ -194,7 +194,7 @@ SpiceCRM.controller('WBSPanelCtrl', ['$scope','WBSPanelService', function (_scop
                 var save = _service.saveNew(_name);
                 save.then(function (_result) {
                     _service.objects.push(_result);
-                    _scope.$apply();
+                    //_scope.$apply();
                 });
                 $('#newWbsName').val('');
             },

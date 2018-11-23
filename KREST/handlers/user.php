@@ -2,13 +2,13 @@
 
 /*
  * This File is part of KREST is a Restful service extension for SugarCRM
- * 
+ *
  * Copyright (C) 2015 AAC SERVICES K.S., DOSTOJEVSKÉHO RAD 5, 811 09 BRATISLAVA, SLOVAKIA
- * 
+ *
  * you can contat us at info@spicecrm.io
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
@@ -90,15 +90,13 @@ class KRESTUserHandler
         global $sugar_config;
 
         $newUser = BeanFactory::getBean('Users', $data['userId']);
-        if ($data['SystemGeneratedPassword']) {
-            $generatedPass = $newUser->generatePassword();
+        $newUser->setNewPassword($data['newpwd'], $data['SystemGeneratedPassword'] ? '1' : '0');
+        if ($data['sendByEmail']) {
             $emailTemp_id = $sugar_config['passwordsetting']['generatepasswordtmpl'];
-            $res = $newUser->sendPasswordToUser($emailTemp_id, ['password' => $generatedPass]);
+            $res = $newUser->sendPasswordToUser($emailTemp_id, ['password' => $data['newpwd']]);
             return ['status' => $res['status'], 'message' => $res['message']];
-        } else {
-            $newUser->setNewPassword($data['newpwd'], '1');
-            return ['status' => true];
         }
+        return ['status' => true];
     }
 
     public function change_password($data)
@@ -163,8 +161,9 @@ class KRESTUserHandler
         $retData = array();
         // do the magic
         foreach ($preferences as $name => $value) {
-            $userPreference->setPreference($name, $value, $category);
-            $retData[$name] = $userPreference->getPreference($name, $category);
+            if ( $value === null ) $userPreference->deletePreference( $name, $category );
+            else $userPreference->setPreference($name, $value, $category);
+            if (( $memmy = $userPreference->getPreference( $name, $category )) !== null ) $retData[$name] = $memmy;
         }
         return $retData;
     }
@@ -185,13 +184,10 @@ class KRESTUserHandler
             $emailTemp->disable_row_level_security = true;
 
             //replace instance variables in email templates
-            $htmlBody = $emailTemp->body_html;
-            $body = $emailTemp->body;
-
-            $htmlBody = str_replace('$token', $token, $htmlBody);
-            $body = str_replace('$token', $token, $body);
-            $emailTemp->body_html = $htmlBody;
-            $emailTemp->body = $body;
+            $memmy = $emailTemp->parse( null, [ 'token' => $token ] );
+            $emailTemp->body_html = $memmy['body_html'];
+            $emailTemp->body = $memmy['body'];
+            $emailTemp->subject = $memmy['subject'];
 
             $emailObj = new Email();
 
@@ -199,10 +195,9 @@ class KRESTUserHandler
             $emailObj->body       = from_html($emailTemp->body_html);
             $emailObj->to_addrs   = $email;
             $emailObj->to_be_sent = true;
-            $emailObj->save();
+            $result = $emailObj->save();
 
-
-            if ($result['status'] == true) {
+            if ($result['result'] == true) {
                 $emailObj->to_be_sent = false;
                 $emailObj->team_id = 1;
                 $emailObj->to_addrs = '';
