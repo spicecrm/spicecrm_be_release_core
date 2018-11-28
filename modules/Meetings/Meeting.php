@@ -167,17 +167,19 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
         {
             $td = $timedate->fromDb($this->date_start);
             if(!$td){
-            		$this->date_start = $timedate->to_db($this->date_start);
-            		$td = $timedate->fromDb($this->date_start);
+                $this->date_start = $timedate->to_db($this->date_start);
+                $td = $timedate->fromDb($this->date_start);
             }
             if($td)
             {
                 if (isset($this->duration_hours) && $this->duration_hours != '')
                 {
+                    $this->duration_hours = (int) $this->duration_hours;
                     $td->modify("+{$this->duration_hours} hours");
                 }
                 if (isset($this->duration_minutes) && $this->duration_minutes != '')
                 {
+                    $this->duration_minutes = (int) $this->duration_minutes;
                     $td->modify("+{$this->duration_minutes} mins");
                 }
                 $this->date_end = $td->asDb();
@@ -284,11 +286,13 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
      *
      * Converts the Bean into a Google Calendar Event
      *
-     * @return Google_Service_Calendar_Event
+     * @return \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent
+     * @throws Exception
      */
     public function toEvent() {
-        $startDate = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_start);
-        $endDate   = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_end);
+        $timeZone = new DateTimeZone('UTC');
+        $startDate = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_start, $timeZone);
+        $endDate   = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_end, $timeZone);
 
         $eventParams = [
             'id'      => $this->external_id,
@@ -314,6 +318,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
      * Converts Google Calendar Event into Bean
      *
      * @param \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event
+     * @throws Exception
      */
     public function fromEvent(\SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event) {
         $startDate = new \DateTime($event->start->dateTime);

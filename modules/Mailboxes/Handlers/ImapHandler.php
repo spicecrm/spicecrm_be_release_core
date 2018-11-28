@@ -40,7 +40,6 @@ class ImapHandler extends TransportHandler
         'smtp_encryption',
         'imap_pop3_username',
         'imap_pop3_password',
-        'reply_to',
     ];
 
     /**

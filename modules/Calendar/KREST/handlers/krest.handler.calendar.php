@@ -50,15 +50,17 @@ class CalendarRestHandler
         }
 
         $seedAbsence = BeanFactory::getBean('UserAbsences');
-        $user_absences = $db->query("SELECT id FROM user_absences WHERE deleted = 0 and date_start < '$end' AND date_end > '$start' AND user_id = '$userid'");
+        $user_absences = $db->query("SELECT id FROM user_absences WHERE deleted = 0 and date_start <= CAST('$end' as DATE) AND date_end >= CAST('$start' as DATE) AND user_id = '$userid'");
         while($absence = $db->fetchByAssoc($user_absences)){
             if($seedAbsence->retrieve($absence['id'])){
+                $eventStart = new DateTime($seedAbsence->date_start);
+                $eventEnd = new DateTime($seedAbsence->date_end);
                 $retArray[] = array(
                     'id' => $seedAbsence->id,
                     'module' => 'UserAbsences',
                     'type' => 'absence',
-                    'start' => $seedAbsence->date_start,
-                    'end' => $seedAbsence->date_end,
+                    'start' => $eventStart->format('Y-m-d H:i:s'),
+                    'end' => $eventEnd->format('Y-m-d H:i:s'),
                     'data' => $krestModuleHandler->mapBeanToArray('UserAbsences', $seedAbsence)
                 );
             }

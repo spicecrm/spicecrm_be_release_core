@@ -181,6 +181,8 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
         if (isset($this->date_start) && isset($this->duration_hours) && isset($this->duration_minutes)) {
             $td = $timedate->fromDb($this->date_start);
             if ($td) {
+                $this->duration_hours = (int) $this->duration_hours;
+                $this->duration_minutes = (int) $this->duration_minutes;
                 $this->date_end = $td->modify("+{$this->duration_hours} hours {$this->duration_minutes} mins")->asDb();
             }
         }
@@ -242,11 +244,12 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
      *
      * Converts the Bean into a Google Calendar Event
      *
-     * @return Google_Service_Calendar_Event
+     * @return \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent
      */
     public function toEvent() {
-        $startDate = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_start);
-        $endDate   = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_end);
+        $timeZone = new DateTimeZone('UTC');
+        $startDate = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_start, $timeZone);
+        $endDate   = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_end, $timeZone);
 
         $eventParams = [
             'id'      => $this->external_id,
