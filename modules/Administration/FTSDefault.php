@@ -42,7 +42,8 @@ if ($current_user->is_admin) {
     if ($_POST['ftsdefaultconf_process'] > 0) {
         //collect values for REST call
         //https://packages.spicecrm.io/ftsconfig
-        $route = "referencefts";
+        $route = $loader->loader->getRouteBase();
+        $route.= "fts";
         $package = (isset($_POST['ftsdefaultconf_package']) ? $_POST['ftsdefaultconf_package'] : "*");
         $version = $_POST['ftsdefaultconf_version'];
         $endpoint = implode("/", array($route, $package, $version));
