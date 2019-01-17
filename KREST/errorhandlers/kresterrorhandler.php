@@ -13,13 +13,13 @@ $c = $app->getContainer();
 # errorHandler is for PHP < 7
 $c['errorHandler'] = $c['phpErrorHandler'] = function( $container ) {
     return function( $request, $response, $exceptionObjectOrMessage ) {
-        outputError( $exceptionObjectOrMessage );
+        return handleErrorResponse($exceptionObjectOrMessage);
     };
 };
 
 $c['notFoundHandler'] = function ( $container ) {
     return function( $request, $response ) {
-        outputError( new KREST\NotFoundException());
+        return handleErrorResponse(new KREST\NotFoundException());
     };
 };
 
@@ -32,7 +32,11 @@ $c['notAllowedHandler'] = function( $container ) {
     };
 };
 
-
+/**
+ * kind of deprecated... only use outside of slim
+ * @param $exception
+ * @return string
+ */
 function outputError( $exception ) {
 
     $inDevMode = isset( $GLOBALS['sugar_config']['developerMode'] ) and $GLOBALS['sugar_config']['developerMode'];
@@ -40,7 +44,7 @@ function outputError( $exception ) {
     if ( is_object( $exception )) {
 
         if ( is_a( $exception, 'KREST\Exception' ) ) {
-            if ( $exception->isFatal() ) $GLOBALS['log']->fatal( $exception->getMessage() . ' in ' . $exception->getFile() . ':' . $exception->getLine() );
+            if ( $exception->isFatal() ) $GLOBALS['log']->fatal( $exception->getMessageToLog() . ' in ' . $exception->getFile() . ':' . $exception->getLine() );
             $responseData = $exception->getResponseData();
             if ( get_class( $exception ) === 'KREST\Exception' ) {
                 $responseData['line'] = $exception->getLine();
@@ -64,9 +68,47 @@ function outputError( $exception ) {
     }
 
     http_response_code( $httpCode ? $httpCode : 500 );
-    echo json_encode( [ 'error' => $responseData ]);
+    $json = json_encode( [ 'error' => $responseData ], JSON_PARTIAL_OUTPUT_ON_ERROR);
+    if(!$json)
+        echo json_encode([ 'error' => 'Error while JSON encoding of an exception: '.json_last_error_msg().'... with exception message: '.$exception->getMessage()]);
+    else
+        echo $json;
     exit;
 
+}
+
+function handleErrorResponse($exception)
+{
+    $inDevMode = isset( $GLOBALS['sugar_config']['developerMode'] ) and $GLOBALS['sugar_config']['developerMode'];
+
+    if ( is_object( $exception )) {
+
+        if ( is_a( $exception, 'KREST\Exception' ) ) {
+            if ( $exception->isFatal() ) $GLOBALS['log']->fatal( $exception->getMessageToLog() . ' in ' . $exception->getFile() . ':' . $exception->getLine() );
+            $responseData = $exception->getResponseData();
+            if ( get_class( $exception ) === 'KREST\Exception' ) {
+                $responseData['line'] = $exception->getLine();
+                $responseData['file'] = $exception->getFile();
+                $responseData['trace'] = $exception->getTrace();
+            }
+            $httpCode = $exception->getHttpCode();
+        } else {
+            if ( $inDevMode )
+                $responseData =  [ 'code' => $exception->getCode(), 'message' => $exception->getMessage(), 'line' => $exception->getLine(), 'file' => $exception->getFile(), 'trace' => $exception->getTrace() ];
+            else $responseData['error'] = ['message' => 'Application Error.'];
+            $httpCode = 500;
+        }
+
+    } else {
+
+        $GLOBALS['log']->fatal( $exception );
+        $responseData['error'] = [ 'message' => $inDevMode ? 'Application Error.' : $exception ];
+        $httpCode = 500;
+
+    }
+
+    $response = new \Slim\Http\Response();
+    return $response->withJson(['error' => $responseData], $httpCode ? $httpCode : 500, JSON_PARTIAL_OUTPUT_ON_ERROR);
 }
 
 
@@ -78,10 +120,10 @@ $app->add( function( $request, $response, $next ) {
         $response = $next( $request, $response );
     }
     catch( KREST\Exception $exception ) {
-        outputError( $exception );
+        return handleErrorResponse($exception);
     }
     catch( Exception $exception ) {
-        outputError( $exception );
+        return handleErrorResponse($exception);
     }
     return $response;
 });

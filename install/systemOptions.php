@@ -103,8 +103,11 @@ $out=<<<EOQ
 EOQ;
 foreach($drivers as $type => $driver) {
     $oci = ($type == "oci8")?"":'none'; // hack for special oracle message
+	//BEGIN CR1000089 display additional message about mysql 8 (release 2019.01.001)
+    $mysqlversion = ($type == "mysql")?"<br>CAUTION: mysql version 8 is not supported yet.":'';
+    //END
     $out.=<<<EOQ
-        <p id="input_$type"><input type="radio" class="checkbox" name="setup_db_type" id="setup_db_type_$type" value="$type" {$checked[$type]} onclick="document.getElementById('ociMsg').style.display='$oci';displayAdditionalParamsForDbType(this.value);" />{$mod_strings[$driver->label]}</p>        
+        <p id="input_$type"><input type="radio" class="checkbox" name="setup_db_type" id="setup_db_type_$type" value="$type" {$checked[$type]} onclick="document.getElementById('ociMsg').style.display='$oci';displayAdditionalParamsForDbType(this.value);" />{$mod_strings[$driver->label]}$mysqlversion</p>        
 EOQ;
 }
 

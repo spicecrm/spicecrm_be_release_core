@@ -139,11 +139,13 @@ $dictionary['OutputTemplate'] = array(
         )
     ),
     'indices' => array(
+/* no duplication handling possible...
         array(
             'name' => 'idx_output_template_name',
             'type'=> 'unique',
-            'fields'=> array('name')
+            'fields'=> array('name','deleted','language')
         ),
+*/
     ),
     'relationships' => array(
 

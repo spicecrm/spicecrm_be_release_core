@@ -88,22 +88,25 @@ class SugarAutoLoader{
         }
 
 
+//BEGIN include/google-api-php-client was removed in SpiceCRM 2018.11.001
+//Use SpiceCRM modules Google* instead
         // Autoload Google libraries
-        $classPath = explode('_', $class);
-
-        if ($classPath[0] != 'Google') {
-            return false;
-        }
-
-        // Drop 'Google', and maximum class file path depth in this project is 3.
-        $classPath = array_slice($classPath, 1, 2);
-
-        $filePath = 'include/google-api-php-client/src/Google/' . implode('/', $classPath) . '.php';
-
-        if (file_exists($filePath)) {
-            require_once($filePath);
-            return true;
-        }
+//        $classPath = explode('_', $class);
+//
+//        if ($classPath[0] != 'Google') {
+//            return false;
+//        }
+//
+//        // Drop 'Google', and maximum class file path depth in this project is 3.
+//        $classPath = array_slice($classPath, 1, 2);
+//
+//        $filePath = 'include/google-api-php-client/src/Google/' . implode('/', $classPath) . '.php';
+//
+//        if (file_exists($filePath)) {
+//            require_once($filePath);
+//            return true;
+//        }
+//END
 
   		return false;
 	}

@@ -113,6 +113,20 @@ if (is_admin($current_user) || isset ($from_sync_client) || is_admin_for_any_mod
 				    $sql .= $db->repairTable($focus, $execute);
 				    $repairedTables[$focus->table_name] = true;
 				}
+                // BEGIN CR1000085 Repair Audit Fields.Introduced in SpiceCRM 2018.11.001
+                if (($focus instanceOf SugarBean) && $db->tableExists($focus->get_audit_table_name()) && !isset($repairedTables[$focus->get_audit_table_name()])) {
+
+                    $df = new DynamicField($focus->module_dir);
+                    //Need to check if the method exists as during upgrade an old version of Dynamic Fields may be loaded.
+                    if (method_exists($df, "repairAuditFields"))
+                    {
+                        $df->bean = $focus;
+                        $sql .= $df->repairAuditFields($execute);
+                        $repairedTables[$focus->get_audit_table_name()] = true;
+                    }
+                }
+                // END
+
                 //Repair Custom Fields
                 if (($focus instanceOf SugarBean) && $focus->hasCustomFields() && !isset($repairedTables[$focus->table_name . '_cstm'])) {
 				    $df = new DynamicField($focus->module_dir);

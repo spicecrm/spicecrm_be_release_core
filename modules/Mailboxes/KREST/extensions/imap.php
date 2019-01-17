@@ -9,19 +9,7 @@ $app->get('/modules/Mailboxes/{id}/fetchemails', function($req, $res, $args) use
 });
 
 $app->get('/modules/Mailboxes/dashlet', function($req, $res, $args) use ($app, $handler) {
-    global $db;
-    $sql = "SELECT mailboxes.id, mailboxes.name,";
-    $sql .= " sum(if(emails.status ='unread', 1, 0)) emailsunread,";
-    $sql .= " sum(if(emails.status ='read', 1, 0)) emailsread,";
-    $sql .= " sum(if(emails.status ='closed', 1, 0)) emailsclosed";
-    $sql .= " FROM mailboxes, emails";
-    $sql .= " WHERE emails.mailbox_id = mailboxes.id AND mailboxes.deleted = 0";
-    $sql .= " GROUP BY mailboxes.id ORDER BY emailsunread DESC";
-    $res = $db->query($sql);
-    $mailboxes = [];
-    while ($row = $db->fetchByAssoc($res))
-        $mailboxes[] = $row;
-
+    $mailboxes = $handler->getMailboxesForDashlet();
     echo json_encode($mailboxes);
 });
 

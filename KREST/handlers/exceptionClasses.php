@@ -10,6 +10,7 @@ class Exception extends \Exception {
     protected $errorCode;
     protected $lbl = null;
     protected $details;
+    protected $logMessage = null;
 
     function __construct( $message = null, $errorCode = null ) {
         if ( isset( $errorCode )) $this->errorCode = $errorCode;
@@ -67,6 +68,19 @@ class Exception extends \Exception {
     public function setDetails( $details ) {
         $this->details = $details;
         return $this;
+    }
+
+    public function setLogMessage( $message ) {
+        $this->logMessage = $message;
+        return $this;
+    }
+
+    public function getLogMessage() {
+        return $this->logMessage;
+    }
+
+    public function getMessageToLog() {
+        return isset( $this->logMessage ) ? $this->logMessage : $this->message;
     }
 
 }
@@ -129,6 +143,27 @@ class UnauthorizedException extends Exception {
     function __construct( $message = null, $errorCode = null ) {
         if ( !isset( $message )) $this->lbl = 'ERR_HTTP_NO_AUTHORIZATION';
         parent::__construct( isset( $message ) ? $message : 'No Authorization', $errorCode );
+    }
+
+}
+
+class ConflictException extends Exception {
+
+    protected $isFatal = false;
+    protected $httpCode = 409;
+
+    function __construct( $message = null, $errorCode = null ) {
+        if ( !isset( $message )) $this->lbl = 'ERR_HTTP_CONFLICT';
+        parent::__construct( isset( $message ) ? $message : 'Conflict', $errorCode );
+    }
+
+    protected function extendResponseData() {
+        if ( isset( $this->conflicts )) $this->responseData['conflicts'] = $this->conflicts;
+    }
+
+    public function setConflicts( $conflicts ) {
+        $this->conflicts = $conflicts;
+        return $this;
     }
 
 }

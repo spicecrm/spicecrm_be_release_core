@@ -126,6 +126,7 @@ function formSubmitCheck(){ldelim}if(check_form(\'EditView\')){ldelim}document.E
       array (
           array (
             'name' => 'date_start',
+              'label' => 'LBL_DATE_TIME',
             'type' => 'datetimecombo',
             'displayParams' =>
             array (

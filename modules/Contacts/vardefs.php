@@ -400,18 +400,6 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'table' => 'users',
                 'duplicate_merge' => 'enabled'
             ),
-            'contactccdetails' => array(
-                'name' => 'contactccdetails',
-                'vname' => 'LBL_CONTACTCCDETAILS_LINK',
-                'type' => 'link',
-                'relationship' => 'contacts_contactccdetails',
-                'link_type' => 'one',
-                'source' => 'non-db',
-                'duplicate_merge' => 'disabled',
-                'massupdate' => false,
-                'default' => true, //UI: load related beans on contact load. module property required!
-                'module' => 'ContactCCDetails'
-            ),
             'campaign_id' => array(
                 'name' => 'campaign_id',
                 'comment' => 'Campaign that generated lead',
@@ -722,6 +710,20 @@ if (is_file("modules/ContactsOnlineProfiles/ContactsOnlineProfile.php")) {
         'relationship' => 'contact_contactonlineprofiles',
         'module' => 'ContactsOnlineProfiles',
         'source' => 'non-db',
+    );
+}
+if (is_file("modules/ContactCCDetails/ContactCCDetail.php")) {
+    $dictionary['Contact']['fields']['contactccdetails'] = array(
+        'name' => 'contactccdetails',
+        'vname' => 'LBL_CONTACTCCDETAILS_LINK',
+        'type' => 'link',
+        'relationship' => 'contacts_contactccdetails',
+        'link_type' => 'one',
+        'source' => 'non-db',
+        'duplicate_merge' => 'disabled',
+        'massupdate' => false,
+        'default' => true, //UI: load related beans on contact load. module property required!
+        'module' => 'ContactCCDetails'
     );
 }
 if (is_file("modules/Addresses/Address.php")) {

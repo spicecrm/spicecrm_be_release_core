@@ -2,13 +2,13 @@
 
 /*
  * This File is part of KREST is a Restful service extension for SugarCRM
- * 
+ *
  * Copyright (C) 2015 AAC SERVICES K.S., DOSTOJEVSKÉHO RAD 5, 811 09 BRATISLAVA, SLOVAKIA
- * 
+ *
  * you can contat us at info@spicecrm.io
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
@@ -61,7 +61,6 @@ class KRESTUserHandler
         return $guideline;
     }
 
-
     public function get_modules_acl()
     {
         global $moduleList;
@@ -84,21 +83,44 @@ class KRESTUserHandler
         return $retModules;
     }
 
-    public function set_new_password($data)
-    {
-
-        global $sugar_config;
-
+    public function set_new_password( $data ) {
         $newUser = BeanFactory::getBean('Users', $data['userId']);
-        if ($data['SystemGeneratedPassword']) {
-            $generatedPass = $newUser->generatePassword();
-            $emailTemp_id = $sugar_config['passwordsetting']['generatepasswordtmpl'];
-            $res = $newUser->sendPasswordToUser($emailTemp_id, ['password' => $generatedPass]);
+        $newUser->setNewPassword($data['newpwd'], $data['SystemGeneratedPassword'] ? '1' : '0');
+        if ($data['sendByEmail']) {
+            $emailTempl = $this->getProperEmailTemplate( $newUser, 'sendCredentials' );
+            $res = $newUser->sendPasswordToUser( $emailTempl, ['password' => $data['newpwd']]);
             return ['status' => $res['status'], 'message' => $res['message']];
-        } else {
-            $newUser->setNewPassword($data['newpwd'], '1');
-            return ['status' => true];
         }
+        return ['status' => true];
+    }
+
+    # $user can be a user id or a user object
+    public function getProperEmailTemplate( $user, $type ) {
+
+        if ( !is_object( $user )) {
+            $memmy = $user;
+            $user = new User();
+            $user->retrieve( $memmy );
+            if ( empty( $user->id )) throw ( new \KREST\Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve user with ID "'.$memmy.'"');
+        }
+
+        $destUserPrefs = new UserPreference( $user );
+        $destUserPrefs->reloadPreferences();
+        $destLang = $destUserPrefs->getPreference('language');
+        if ( !isset( $destLang{0} )) $destLang = 'en_us';
+
+        $emailTempl = new EmailTemplate();
+        $emailTempl->retrieve_by_string_fields( [ 'type' => $type, 'language' => $destLang ], false );
+
+        if ( empty( $emailTempl->id )) {
+            $GLOBALS['log']->warn('Could not retrieve email template "'.$type.'" for language of user preferences ("'.$destLang.'"), will try "en_us" instead');
+            $destLang = 'en_us';
+            $emailTempl->retrieve_by_string_fields( [ 'for_bean' => 'Users', 'type' => $type, 'language' => $destLang ], false );
+            if ( empty( $emailTempl->id )) throw ( new \KREST\Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve email template "'.$type.'" (for language "' . $destLang . '")');
+        }
+
+        return $emailTempl;
+
     }
 
     public function change_password($data)
@@ -122,7 +144,6 @@ class KRESTUserHandler
             );
         }
     }
-
 
     public function get_all_user_preferences( $category)
     {
@@ -163,46 +184,41 @@ class KRESTUserHandler
         $retData = array();
         // do the magic
         foreach ($preferences as $name => $value) {
-            $userPreference->setPreference($name, $value, $category);
-            $retData[$name] = $userPreference->getPreference($name, $category);
+            if ( $value === null ) $userPreference->deletePreference( $name, $category );
+            else $userPreference->setPreference($name, $value, $category);
+            if (( $memmy = $userPreference->getPreference( $name, $category )) !== null ) $retData[$name] = $memmy;
         }
         return $retData;
     }
 
-    public function sendTokenToUser($email)
-    {
-        global $db, $timedate, $sugar_config;
-        $result = array();
+    public function sendTokenToUser( $email ) {
+        global $db, $sugar_config;
 
-        $user_id = $this->getUserIdByEmail($email);
+       $user_id = $this->getUserIdByEmail($email);
 
         if (!empty($user_id)) {
+
             $token = User::generatePassword();
             $db->query( sprintf('INSERT INTO users_password_tokens ( id, user_id, date_generated ) VALUES ( "%s", "%s", NOW() )', $db->quote( $token ), $db->quote( $user_id )));
 
-            $emailTemp = new EmailTemplate();
-            $emailTemp->retrieve($sugar_config['passwordsetting']['tokentmpl']);
-            $emailTemp->disable_row_level_security = true;
+            $emailTempl = $this->getProperEmailTemplate( $user_id, 'sendTokenForNewPassword' );
+            $emailTempl->disable_row_level_security = true;
 
             //replace instance variables in email templates
-            $htmlBody = $emailTemp->body_html;
-            $body = $emailTemp->body;
-
-            $htmlBody = str_replace('$token', $token, $htmlBody);
-            $body = str_replace('$token', $token, $body);
-            $emailTemp->body_html = $htmlBody;
-            $emailTemp->body = $body;
+            $memmy = $emailTempl->parse( null, [ 'token' => $token ] );
+            $emailTempl->body_html = $memmy['body_html'];
+            $emailTempl->body = $memmy['body'];
+            $emailTempl->subject = $memmy['subject'];
 
             $emailObj = new Email();
 
-            $emailObj->name       = from_html($emailTemp->subject);
-            $emailObj->body       = from_html($emailTemp->body_html);
+            $emailObj->name       = from_html($emailTempl->subject);
+            $emailObj->body       = from_html($emailTempl->body_html);
             $emailObj->to_addrs   = $email;
             $emailObj->to_be_sent = true;
-            $emailObj->save();
+            $result = $emailObj->save();
 
-
-            if ($result['status'] == true) {
+            if ($result['result'] == true) {
                 $emailObj->to_be_sent = false;
                 $emailObj->team_id = 1;
                 $emailObj->to_addrs = '';
@@ -218,9 +234,11 @@ class KRESTUserHandler
             }
 
             return $result;
+
         } else {
             return false;
         }
+
     }
 
     public function checkToken($email, $token)
@@ -236,6 +254,7 @@ class KRESTUserHandler
 
         return $token_valid;
     }
+
     public function resetPass($data)
     {
 
@@ -252,7 +271,6 @@ class KRESTUserHandler
             return false;
         }
     }
-
 
     public function resetTempPass($data)
     {
@@ -276,4 +294,5 @@ class KRESTUserHandler
         while ($row = $db->fetchByAssoc($res)) $user_id = $row['id'];
         return $user_id;
     }
+
 }

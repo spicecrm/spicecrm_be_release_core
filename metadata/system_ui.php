@@ -1,5 +1,161 @@
 <?php
 
+$dictionary['sysuicalendars'] = array(
+    'table' => 'sysuicalendars',
+    'audited' => true,
+    'fields' =>
+        array(
+            'id' => array(
+                'name' => 'id',
+                'type' => 'id'
+            ),
+            'name' => array(
+                'name' => 'name',
+                'type' => 'varchar',
+                'len' => 100
+            ),
+            'icon' => array(
+                'name' => 'icon',
+                'type' => 'varchar',
+                'len' => 50
+            ),
+            'default' => array(
+                'name' => 'default',
+                'type' => 'int',
+                'len' => 1
+            ),
+        ),
+);
+
+$dictionary['sysuicalendaritems'] = array(
+    'table' => 'sysuicalendaritems',
+    'fields' =>
+        array(
+            'id' => array(
+                'name' => 'id',
+                'type' => 'id'
+            ),
+            'name' => array(
+                'name' => 'name',
+                'type' => 'varchar',
+                'len' => 100
+            ),
+            'module' => array(
+                'name' => 'module',
+                'type' => 'varchar',
+                'len' => 50
+            ),
+            'type' => array(
+                'name' => 'type',
+                'vname' => 'LBL_TYPE',
+                'type' => 'enum',
+                'len' => 100,
+                'options' => 'calendar_type_dom',
+                'importable' => 'required',
+                'required' => true,
+            ),
+            'field_date_start' => array(
+                'name' => 'field_date_start',
+                'type' => 'varchar',
+            ),
+            'field_date_end' => array(
+                'name' => 'field_date_end',
+                'type' => 'varchar',
+            ),
+            'field_event' => array(
+                'name' => 'field_event',
+                'type' => 'varchar',
+                'len' => 50
+            ),
+            'module_filter' => array(
+                'name' => 'module_filter',
+                'type' => 'id'
+            ),
+            'calendar_id' => array(
+                'name' => 'calendar_id',
+                'type' => 'id'
+            ),
+            'owner' => array(
+                'name' => 'owner',
+                'type' => 'id'
+            ),
+        ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuicalendaritems',
+            'type' => 'primary',
+            'fields' => array('id')),
+        array(
+            'name' => 'idx_sysuicalendaritems_owner',
+            'type' => 'index',
+            'fields' => array('owner'))
+    )
+);
+$dictionary['sysuicustomcalendaritems'] = array(
+    'table' => 'sysuicustomcalendaritems',
+    'fields' =>
+        array(
+            'id' => array(
+                'name' => 'id',
+                'type' => 'id'
+            ),
+            'name' => array(
+                'name' => 'name',
+                'type' => 'varchar',
+                'len' => 100
+            ),
+            'module' => array(
+                'name' => 'module',
+                'type' => 'varchar',
+                'len' => 50
+            ),
+            'type' => array(
+                'name' => 'type',
+                'vname' => 'LBL_TYPE',
+                'type' => 'enum',
+                'len' => 100,
+                'options' => 'calendar_type_dom',
+                'importable' => 'required',
+                'required' => true,
+            ),
+            'field_date_start' => array(
+                'name' => 'field_date_start',
+                'type' => 'varchar',
+            ),
+            'field_date_end' => array(
+                'name' => 'field_date_end',
+                'type' => 'varchar',
+            ),
+            'field_event' => array(
+                'name' => 'field_event',
+                'type' => 'varchar',
+                'len' => 50
+            ),
+            'module_filter' => array(
+                'name' => 'module_filter',
+                'type' => 'id'
+            ),
+            'calendar_id' => array(
+                'name' => 'calendar_id',
+                'type' => 'id'
+            ),
+            'owner' => array(
+                'name' => 'owner',
+                'type' => 'id'
+            ),
+        ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuicalendaritems',
+            'type' => 'primary',
+            'fields' => array('id')),
+        array(
+            'name' => 'idx_sysuicalendaritems_owner',
+            'type' => 'index',
+            'fields' => array('owner'))
+    )
+);
+
 $dictionary['sysuimodulerepository'] = array(
     'table' => 'sysuimodulerepository',
     'changerequests' => array(
@@ -2397,136 +2553,6 @@ $dictionary['sysuilibs'] = array(
 );
 
 
-
-
-
-$dictionary['syskrestlogconfig'] = array(
-    'table' => 'syskrestlogconfig',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'route' => array(
-            'name' => 'route',
-            'type' => 'varchar',
-            'len' => 255,
-        ),
-        'method' => array(
-            'name' => 'method',
-            'type' => 'varchar',
-            'len' => 6,
-        ),
-        'user_id' => array(
-            'name' => 'user_id',
-            'type' => 'varchar',
-            'len' => 15
-        ),
-        'ip' => array(
-            'name' => 'ip',
-            'type' => 'varchar',
-            'len' => 15
-        ),
-        'is_active' => array(
-            'name' => 'is_active',
-            'type' => 'bool',
-        ),
-    ),
-    'indices' => array(
-        array(
-            'name' => 'idx_syskrestlogconfig',
-            'type' => 'primary',
-            'fields' => array('id'),
-        ),
-        array(
-            'name' => 'unq_idx_syskrestlogconfig_v2',
-            'type' => 'unique',
-            'fields' => array('route', 'method', 'user_id', 'ip'),
-        ),
-    ),
-);
-
-
-$dictionary['syskrestlog'] = array(
-    'table' => 'syskrestlog',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'route' => array(
-            'name' => 'route',
-            'type' => 'varchar',
-            'len' => 255,
-        ),
-        'url' => array(
-            'name' => 'url',
-            'type' => 'varchar',
-            'len' => 255,
-        ),
-        'requested_at' => array(
-            'name' => 'requested_at',
-            'type' => 'datetime',
-        ),
-        'runtime' => array(
-            'name' => 'runtime',
-            'type' => 'int',
-        ),
-        'user_id' => array(
-            'name' => 'user_id',
-            'type' => 'varchar',
-            'len' => 36
-        ),
-        'ip' => array(
-            'name' => 'ip',
-            'type' => 'varchar',
-            'len' => 15
-        ),
-        'session_id' => array(
-            'name' => 'session_id',
-            'type' => 'varchar',
-            'len' => 30
-        ),
-        'method' => array(
-            'name' => 'method',
-            'type' => 'varchar',
-            'len' => 6
-        ),
-        'args' => array(
-            'name' => 'args',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'get_params' => array(
-            'name' => 'get_params',
-            'type' => 'text',
-        ),
-        'post_params' => array(
-            'name' => 'post_params',
-            'type' => 'text',
-        ),
-        'response' => array(
-            'name' => 'response',
-            'type' => 'text',
-        ),
-        'http_status_code' => array(
-            'name' => 'http_status_code',
-            'type' => 'int',
-        ),
-    ),
-    'indices' => array(
-        array(
-            'name' => 'idx_syskrestlog',
-            'type' => 'primary',
-            'fields' => array('id'),
-        ),
-        array(
-            'name' => 'idx_syskrestlog_requested_at',
-            'type' => 'index',
-            'fields' => array('requested_at'),
-        ),
-    ),
-);
 
 $dictionary['sysuihtmlstylesheets'] = array(
     'table' => 'sysuihtmlstylesheets',

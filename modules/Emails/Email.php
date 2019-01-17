@@ -1141,13 +1141,25 @@ class Email extends SugarBean
 
         // send the email only if the send flag is set
         if ($this->to_be_sent) {
-            $result = $this->sendEmail();
+            try {
+                $result = $this->sendEmail();
+            } catch (Exception $e) {
+                $result = [
+                    'result'  => false,
+                    'message' => 'Mail not sent: ' . $e->getMessage(),
+                ];
+            }
+
 
             if ($result['result'] == true) {
-                $this->status = 'sent';
+                $this->status      = 'sent';
                 $this->new_with_id = false;
                 parent::save($check_notify, $fts_index_bean);
-            } // todo handle errors
+            } else {
+                $this->status      = 'created';
+                $this->new_with_id = false;
+                parent::save($check_notify, $fts_index_bean);
+            }
 
             return $result;
         }
@@ -2471,7 +2483,7 @@ class Email extends SugarBean
                 $mailbox = Mailbox::getDefaultMailbox();
                 $this->mailbox_id = $mailbox->id;
             } catch (Exception $exception) {
-                return $exception;
+                throw $exception;
             }
         }
 
@@ -3708,6 +3720,16 @@ eoq;
     }
 
     /**
+     * links this email to another bean by using the assignBeanToEmail() method.
+     * @param SugarBean $bean
+     * @return bool
+     */
+    public function assignToBean(\SugarBean $bean)
+    {
+        return $this->assignBeanToEmail($bean->id, $bean->module_name);
+    }
+
+    /**
      * assignBeanToEmail
      *
      * Assigns a Bean to Email
@@ -3791,5 +3813,20 @@ eoq;
         $this->parent_type = $bean->module_name;
         $this->parent_id = $bean->id;
         return true;
+    }
+
+    /**
+     * saveSentiment
+     *
+     * Sets and saves the sentiment and magnitude of the email
+     * without going thru whatever it is that happens in the save function.
+     *
+     * @param $sentiment
+     * @param $magnitude
+     */
+    public function saveSentiment($sentiment, $magnitude) {
+        $this->sentiment = $sentiment;
+        $this->magnitude = $magnitude;
+        parent::save();
     }
 } // end class def

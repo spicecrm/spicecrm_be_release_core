@@ -1,6 +1,8 @@
 <?php
 require_once('modules/ProjectWBSs/ProjectWBS.php');
 
+$KRESTManager->registerExtension('projectmanagement', '1.0');
+
 $app->group('/projectwbs', function () use ($app)
 {
     $app->group('/my', function () use ($app)

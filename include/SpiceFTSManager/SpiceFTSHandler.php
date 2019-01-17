@@ -6,6 +6,7 @@ require_once('include/SpiceFTSManager/SpiceFTSAggregates.php');
 require_once('include/SpiceFTSManager/SpiceFTSBeanHandler.php');
 require_once('include/SpiceFTSManager/ElasticHandler.php');
 require_once('include/MVC/View/views/view.list.php');
+require_once('KREST/handlers/module.php');
 
 class SpiceFTSHandler
 {
@@ -243,6 +244,7 @@ class SpiceFTSHandler
                     "must" => array(
                         "multi_match" => array(
                             "query" => "$searchterm",
+                            "analyzer" => "standard",
                             'fields' => $searchfields['searchfields']
                         )
                     )
@@ -308,6 +310,7 @@ class SpiceFTSHandler
                     "must" => array(
                         "multi_match" => array(
                             "query" => "$searchterm",
+                            "analyzer" => "standard",
                             // 'operator' => 'or',
                             'fields' => $searchFields,
                         )
@@ -453,6 +456,7 @@ class SpiceFTSHandler
                     $searchParts[] = array(
                         "multi_match" => array(
                             "query" => $queryField,
+                            "analyzer" => "standard",
                             'fields' => [$indexProperty['indexfieldname']],
                             'fuzziness' => $indexProperty['duplicatefuzz'] ?: 0
                         )
@@ -483,10 +487,17 @@ class SpiceFTSHandler
         if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFTSQuery')) {
             $aclFilters = $GLOBALS['ACLController']->getFTSQuery($module);
             if (count($aclFilters) > 0) {
-                $queryParam['query']['bool']['filter']['bool']['should'] = $aclFilters;
-                $queryParam['query']['bool']['filter']['bool']['minimum_should_match'] = 1;
-            } else {
-                return false;
+                // do not write empty entries
+                if(isset($aclFilters['should']) && count($aclFilters['should']) > 1){
+                    $queryParam['query']['bool']['filter']['bool']['should'] = $aclFilters['should'];
+                    $queryParam['query']['bool']['filter']['bool']['minimum_should_match'] = 1;
+                }
+                if(isset($aclFilters['should']) && count($aclFilters['must_not']) > 1) {
+                    $queryParam['query']['bool']['filter']['bool']['must_not'] = $aclFilters['must_not'];
+                }
+                if(isset($aclFilters['should']) && count($aclFilters['must']) > 1) {
+                    $queryParam['query']['bool']['filter']['bool']['must'] = $aclFilters['must'];
+                }
             }
         }
 
@@ -569,6 +580,13 @@ class SpiceFTSHandler
                 );
             }
 
+            // check for modulefilter
+            if (!empty($params['modulefilter'])) {
+                require_once('include/SysModuleFilters/SysModuleFilters.php');
+                $sysFilter = new SysModuleFilters();
+                $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter']);
+            }
+
             //check if we use a wildcard for the search
             $useWildcard = false;
             if (preg_match("/\*/", $searchterm))
@@ -589,6 +607,11 @@ class SpiceFTSHandler
                     //if (!isset($hit['_source']{$field}))
                         $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
                 }
+
+                // get the email addresses
+                $krestHandler = new KRESTModuleHandler();
+                $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($module, $hit['_id']);
+
                 $hit['acl'] = $this->get_acl_actions($seed);
                 $hit['acl_fieldcontrol'] = $this->get_acl_fieldaccess($seed);
             }

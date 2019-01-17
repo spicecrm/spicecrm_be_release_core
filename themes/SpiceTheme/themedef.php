@@ -5,7 +5,7 @@ $themedef = array(
     'name'  => "SpiceCRM Theme",
     'description' => "SpiceCRM Theme",
     'version' => array(
-        'regex_matches' => array('2016\.*.*', '2017\.*.*', '2018\.*.*'),
+        'regex_matches' => array('2016\.*.*', '2017\.*.*', '20\.*.*'),
         ),
     'group_tabs' => true,
     );

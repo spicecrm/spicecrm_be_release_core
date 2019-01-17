@@ -97,6 +97,7 @@ class SystemUIRESTHandler
                     'singular_label' => $module['singular_label'],
                     'track' => $module['track'],
                     'visible' => $module['visible'] ? true : false,
+                    'audited' => $seed ? $seed->is_AuditEnabled() : false,
                     'tagging' => $module['tagging'] ? true : false,
                     'workflow' => $module['workflow'] ? true : false,
                     'duplicatecheck' => $module['duplicatecheck'],
@@ -274,6 +275,7 @@ class SystemUIRESTHandler
 
 
             $retArray[$actionset['actionset_id']]['actions'][] = array(
+                'id' => $actionset['id'],
                 'action' => $actionset['action'],
                 'component' => $actionset['component'],
                 'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new stdClass()
@@ -295,6 +297,7 @@ class SystemUIRESTHandler
 
 
             $retArray[$actionset['actionset_id']]['actions'][] = array(
+                'id' => $actionset['id'],
                 'action' => $actionset['action'],
                 'component' => $actionset['component'],
                 'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new stdClass()
@@ -1286,6 +1289,23 @@ class SystemUIRESTHandler
         $response['stylesheetsToUse'] = isset($GLOBALS['sugar_config']['htmlStylesheetsToUse']) ? $GLOBALS['sugar_config']['htmlStylesheetsToUse'] : (object)array();
 
         return $response;
+    }
+
+    function getAllModuleFilters() {
+        // load module filters list
+        $moduleFilters = [];
+        $filters = "SELECT 'global' As `type`, `id`, `name`, `module` FROM `sysmodulefilters` UNION ";
+        $filters .= "SELECT 'custom' As `type`, `id`, `name`, `module` FROM `syscustommodulefilters`";
+        $filters = $this->db->query($filters);
+        while ($filter = $this->db->fetchByAssoc($filters)) {
+            $moduleFilters[$filter['id']] = array(
+                'id' => $filter['id'],
+                'name' => $filter['name'],
+                'module' => $filter['module'],
+                'type' => $filter['type']
+            );
+        }
+        return $moduleFilters;
     }
 
 }

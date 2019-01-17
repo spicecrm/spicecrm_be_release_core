@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * deprectated fts routes
+ * this has been moved to SpiceFTSManager/KREST/extensions/search.php and a new route search with post params
+ */
 require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
 $ftsManager = new SpiceFTSHandler();
 

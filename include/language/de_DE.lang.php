@@ -204,6 +204,11 @@ $app_list_strings = array(
         'se' => 'Betreuer Supportr',
         'es' => 'Executive Sponsor'
     ),
+    'userabsences_type_dom' =>        array(
+        '' => '',
+        'Krankenstand' => 'Krankenstand',
+        'Urlaub' => 'Urlaub',
+    ),
     //e.g. en espaï¿½ol 'Apparel'=>'Ropa',
     'industry_dom' => array(
         '' => '',
@@ -514,6 +519,11 @@ $app_list_strings = array(
         'PortalUser' => 'Portalbenutzer',
         'Administrator' => 'Administrator',
     ),
+    'calendar_type_dom' =>
+        array(
+            'Voll' => 'Voll',
+            'Tag' => 'Tag',
+        ),
     'user_status_dom' => array(
         'Active' => 'Aktiv',
         'Inactive' => 'Inaktiv',
@@ -3949,11 +3959,14 @@ $app_list_strings['token_status'] = array(
     3 => 'Ungültig',
 );
 
-$app_list_strings ['emailTemplates_type_list'] = array(
+$app_list_strings['emailTemplates_type_list'] = array(
     '' => '',
     'campaign' => 'Kampagne',
     'email' => 'Email',
-    'bean2mail' => 'send Bean via mail'
+    'bean2mail' => 'send Bean via mail',
+    'notification' => 'Benachrichtigung',
+    'sendCredentials' => 'Zugangsdaten senden',
+    'sendTokenForNewPassword' => 'Token senden, wenn Passwort verloren'
 );
 
 $app_list_strings ['emailTemplates_type_list_campaigns'] = array(

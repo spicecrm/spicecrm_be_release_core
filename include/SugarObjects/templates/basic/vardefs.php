@@ -44,7 +44,8 @@ $vardefs = array(
                 'required' => true,
                 'reportable' => true,
                 'comment' => 'Unique identifier',
-                'duplicate_merge' => 'disabled'
+                'duplicate_merge' => 'disabled',
+                'audited' => false
             ),
         'name' =>
             array(
@@ -71,7 +72,8 @@ $vardefs = array(
                 'comment' => 'Date record created',
                 'enable_range_search' => true,
                 'options' => 'date_range_search_dom',
-                'duplicate_merge' => 'disabled'
+                'duplicate_merge' => 'disabled',
+                'audited' => false
             ),
         'date_modified' =>
             array(
@@ -82,7 +84,8 @@ $vardefs = array(
                 'comment' => 'Date record last modified',
                 'enable_range_search' => true,
                 'options' => 'date_range_search_dom',
-                'duplicate_merge' => 'disabled'
+                'duplicate_merge' => 'disabled',
+                'audited' => false
             ),
         'date_indexed' =>
             array(
@@ -92,7 +95,8 @@ $vardefs = array(
                 'comment' => 'Date record last indexed',
                 'enable_range_search' => true,
                 'options' => 'date_range_search_dom',
-                'duplicate_merge' => 'disabled'
+                'duplicate_merge' => 'disabled',
+                'audited' => false
             ),
         'modified_user_id' =>
             array(
@@ -108,10 +112,10 @@ $vardefs = array(
                 'reportable' => true,
                 'comment' => 'User who last modified record',
                 'massupdate' => false,
-                'duplicate_merge' => 'disabled'
+                'duplicate_merge' => 'disabled',
+                'audited' => false
             ),
-        'modified_by_name' =>
-            array(
+        'modified_by_name' =>  array(
                 'name' => 'modified_by_name',
                 'vname' => 'LBL_MODIFIED_BY',
                 'type' => 'relate',
@@ -124,10 +128,10 @@ $vardefs = array(
                 'link' => 'modified_user_link',
                 'duplicate_merge' => 'disabled',
                 'massupdate' => false,
-                'duplicate_merge' => 'disabled'
+                'duplicate_merge' => 'disabled',
+                'audited' => false
             ),
-        'created_by' =>
-            array(
+        'created_by' =>            array(
                 'name' => 'created_by',
                 'rname' => 'user_name',
                 'id_name' => 'modified_user_id',
@@ -139,10 +143,10 @@ $vardefs = array(
                 'group' => 'created_by_name',
                 'comment' => 'User who created record',
                 'massupdate' => false,
-                'duplicate_merge' => 'disabled'
+                'duplicate_merge' => 'disabled',
+                'audited' => false
             ),
-        'created_by_name' =>
-            array(
+        'created_by_name' =>            array(
                 'name' => 'created_by_name',
                 'vname' => 'LBL_CREATED_BY',
                 'type' => 'relate',
@@ -175,7 +179,8 @@ $vardefs = array(
                 'default' => '0',
                 'reportable' => false,
                 'comment' => 'Record deletion indicator',
-                'duplicate_merge' => 'disabled'
+                'duplicate_merge' => 'disabled',
+                'audited' => false
             ),
         'tags' =>
             array(
@@ -228,7 +233,4 @@ $vardefs = array(
                 'rhs_module' => $module, 'rhs_table' => strtolower($module), 'rhs_key' => 'created_by',
                 'relationship_type' => 'one-to-many')
     ),
-
-
 );
-?>

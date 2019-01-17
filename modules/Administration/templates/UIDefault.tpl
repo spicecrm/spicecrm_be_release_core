@@ -11,14 +11,14 @@
     <form name="UIDefaultConf" action="" method="POST">
         <h2>CAUTION! Following processes will be triggered:</h2>
         <ol>
-            <li><strong>delete</strong> current UI settings stored in sysui tables
+            <li><strong>delete</strong> current CORE UI settings stored in sysui tables
                 <div>
                     {$sysuitableslist}
                 </div>
             </li>
-            <li>load default UI settings into sysui tables</li>
+            <li>load default CORE UI settings into sysui tables</li>
         </ol>
-        <p>Custom configuration will not be affected.</p>
+        <p>Custom configuration and additional config loaded by Package Loader in UI will not be affected.</p>
         <p>&nbsp;</p>
         {nocache}
         {if $hasOpenChangeRequest}
@@ -72,7 +72,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td scope="col"><label>Select Version(s)</label><span class="required">*</span></td>
+                            <td scope="col"><label>Select Version<br>(latest recommended)</label><span class="required">*</span></td>
                             <td>
                                 <div id="versionslist">
                                     {*{if !$release}*}

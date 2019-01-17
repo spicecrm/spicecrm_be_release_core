@@ -113,6 +113,13 @@ $dictionary['Mailbox'] = [
             'type'    => 'bool',
             'comment' => 'System default mailbox flag',
         ],
+        'active' => [
+            'name'    => 'active',
+            'vname'   => 'LBL_ACTIVE',
+            'type'    => 'bool',
+            'default' => true,
+            'comment' => 'Mailbox active flag',
+        ],
         'emails' => [
             'name' => 'emails',
             'vname' => 'LBL_EMAILS_LINK',

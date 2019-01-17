@@ -109,7 +109,8 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
                 echo json_encode($KRESTModuleHandler->get_bean_duplicates($args['beanName'], $args['beanId']));
             });
             $app->get('/auditlog', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
-                echo json_encode($KRESTModuleHandler->get_bean_auditlog($args['beanName'], $args['beanId']));
+                $params = $req->getParams();
+                echo json_encode($KRESTModuleHandler->get_bean_auditlog($args['beanName'], $args['beanId'], $params));
             });
             $app->group('/noteattachment', function () use ($app, $KRESTModuleHandler) {
                 $app->get('', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
@@ -269,8 +270,8 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
                     echo json_encode($KRESTModuleHandler->set_related($args['beanName'], $args['beanId'], $args['linkname'], $postBody));
                 });
                 $app->delete('', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
-                    $postBody = $req->getParsedBody();
-                    echo json_encode($KRESTModuleHandler->delete_related($args['beanName'], $args['beanId'], $args['linkname'], $postBody));
+                    $params = $req->getParams();
+                    echo json_encode($KRESTModuleHandler->delete_related($args['beanName'], $args['beanId'], $args['linkname'], $params));
                 });
             });
             $app->post('/merge_bean', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
@@ -296,8 +297,9 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
         });
     })->add( function( $request, $response, $next ) {
         $beanName = $request->getAttribute('route')->getArgument('beanName');
-        if ( !BeanFactory::moduleExists( $beanName ))
-            throw ( new KREST\NotFoundException('Module not found.'))->setLookedFor(['module'=>$beanName])->setErrorCode('noModule');
+        if ( method_exists('BeanFactory', 'moduleExists') && !BeanFactory::moduleExists( $beanName )) {
+            throw (new KREST\NotFoundException('Module not found.'))->setLookedFor(['module' => $beanName])->setErrorCode('noModule');
+        }
         return $next( $request, $response );
     });
 });

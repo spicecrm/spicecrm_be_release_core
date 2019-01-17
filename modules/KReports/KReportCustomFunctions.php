@@ -46,3 +46,6 @@ if(!function_exists('interval1630'))
 		);
 	}
 }
+
+if(file_exists('custom/modules/KReports/KReportCustomFunctions.php'))
+    include('custom/modules/KReports/KReportCustomFunctions.php');

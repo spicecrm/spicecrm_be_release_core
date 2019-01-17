@@ -24,6 +24,13 @@ abstract class TransportHandler
 
     public function sendMail(\Email $email)
     {
+        if ($this->mailbox->active == false) {
+            return [
+                'result'  => 'false',
+                'message' => 'Message not sent. Mailbox inactive.',
+            ];
+        }
+
         if ($this->mailbox->mailbox_header != '') {
             $email->body = html_entity_decode($this->mailbox->mailbox_header) . $email->body;
         }

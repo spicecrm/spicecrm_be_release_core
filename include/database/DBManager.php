@@ -798,6 +798,33 @@ protected function checkQuery($sql, $object_name = false)
 		return $this->repairTableParams($tablename, $fielddefs,$new_index,$execute,$engine);
 	}
 
+    /**
+     * Implements repair of a db audit table for a bean.
+     * CR1000085 Repair Audit Fields.Introduced in SpiceCRM 2018.11.001
+     * @param  SugarBean $bean    SugarBean instance
+     * @param  bool   $execute true if we want the action to take place, false if we just want the sql returned
+     * @return string SQL statement or empty string, depending upon $execute
+     */
+    public function repairAuditTable($tablename, $fielddefs, $indices, $execute)
+    {
+        //Clean the indexes to prevent duplicate definitions
+        $new_index = array();
+        foreach($indices as $ind_def){
+            $new_index[$ind_def['name']] = $ind_def;
+        }
+        //jc: added this for beans that do not actually have a table, namely
+        //ForecastOpportunities
+        if($tablename == 'does_not_exist' || $tablename == '')
+            return '';
+
+        global $dictionary;
+        $engine=null;
+        if (isset($dictionary['audit']['engine']) && !empty($dictionary['audit']['engine']) )
+            $engine = $dictionary['audit']['engine'];
+
+        return $this->repairTableParams($tablename, $fielddefs, $new_index, $execute, $engine);
+    }
+
 	/**
 	 * Can this field be null?
 	 * Auto-increment and ID fields can not be null
@@ -2877,7 +2904,9 @@ protected function checkQuery($sql, $object_name = false)
 
 		$values=array();
 		$values['id'] = $this->massageValue(create_guid(), $fieldDefs['id']);
+		// $values['transactionid']= $GLOBALS['transactionID'];
 		$values['parent_id']= $this->massageValue($bean->id, $fieldDefs['parent_id']);
+		$values['transaction_id']= $this->massageValue($GLOBALS['transactionID'], $fieldDefs['transaction_id']);
 		$values['field_name']= $this->massageValue($changes['field_name'], $fieldDefs['field_name']);
 		$values['data_type'] = $this->massageValue($changes['data_type'], $fieldDefs['data_type']);
 		if ($changes['data_type']=='text') {

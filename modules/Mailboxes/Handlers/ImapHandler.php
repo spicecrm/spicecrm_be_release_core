@@ -101,6 +101,8 @@ class ImapHandler extends TransportHandler
      */
     public function fetchEmails()
     {
+        global $sugar_config;
+
         $imap_status = $this->checkConfiguration($this->incoming_settings);
         if (!$imap_status['result']) {
             return [
@@ -114,8 +116,19 @@ class ImapHandler extends TransportHandler
         $this->initMessageIDs();
 
         if ($this->mailbox->last_checked != '') {
-            $items = imap_search($stream, 'SINCE ' .
-                date('d-M-Y', strtotime($this->mailbox->last_checked)));
+            if (isset($sugar_config['mailboxes']['delta_t'])) {
+                $dateSince = date(
+                    'd-M-Y',
+                    strtotime(
+                        '-' . (int) $sugar_config['mailboxes']['delta_t'] . ' day',
+                        strtotime($this->mailbox->last_checked)
+                    )
+                );
+            } else {
+                $dateSince = date('d-M-Y', strtotime($this->mailbox->last_checked));
+            }
+
+            $items = imap_search($stream, 'SINCE ' . $dateSince);
         } else {
             $items = imap_search($stream, 'ALL');
         }
@@ -167,12 +180,12 @@ class ImapHandler extends TransportHandler
 
                 ++$new_mail_count;
             }
+
+            $this->mailbox->last_checked = date('Y-m-d H:i:s');
+            $this->mailbox->save();
         }
 
         imap_close($stream);
-
-        $this->mailbox->last_checked = date('Y-m-d H:i:s');
-        $this->mailbox->save();
 
         if (isset($this->mailbox->allow_external_delete) && $this->mailbox->allow_external_delete == true) {
             $this->fetchDeleted();
@@ -399,16 +412,33 @@ class ImapHandler extends TransportHandler
     {
         $message = (new \Swift_Message($email->name))
             ->setFrom([$this->mailbox->imap_pop3_username => $this->mailbox->imap_pop3_display_name])
-            ->setTo([$email->to()[0]['email']]) // todo make it work for multiple addresses
             ->setBody($email->body, 'text/html')
         ;
 
+        $toAddressess = [];
+        foreach ($email->to() as $address) {
+            array_push($toAddressess, $address['email']);
+        }
+        $message->setTo($toAddressess);
+
         if (!empty($email->cc_addrs)) {
-            $message->setCc([$email->cc_addrs]);
+            $ccAddressess = [];
+            foreach ($email->cc() as $address) {
+                array_push($ccAddressess, $address['email']);
+            }
+            $message->setCc($ccAddressess);
         }
 
         if (!empty($email->bcc_addrs)) {
-            $message->setBcc([$email->bcc_addrs]);
+            $bccAddressess = [];
+            foreach ($email->bcc() as $address) {
+                array_push($bccAddressess, $address['email']);
+            }
+            $message->setBcc($bccAddressess);
+        }
+
+        if ($this->mailbox->reply_to != '') {
+            $message->setReplyTo($this->mailbox->reply_to);
         }
 
         foreach (json_decode(\SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {

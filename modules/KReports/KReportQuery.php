@@ -205,14 +205,14 @@ class KReportQueryArray
             // 2011-03-25 added function to be evaluated
             if ($whereArrayEntry['operator'] == 'function') {
                 include('modules/KReports/kreportsConfig.php');
-                $customFunctionInclude = 'modules/KReports/kreportsConfig.php';
+                $customFunctionInclude = 'modules/KReports/KReportCustomFunctions.php';
                 if (file_exists($customFunctionInclude)) {
                     include($customFunctionInclude);
                     if (function_exists($whereArrayEntry['valuekey'])) {
                         $this->whereArray[$whereId]['operator'] = '';
                         $this->whereArray[$whereId]['value'] = '';
                         $this->whereArray[$whereId]['valuekey'] = '';
-
+                        global $opReturn;
                         eval("\$opReturn=" . $whereArrayEntry['valuekey'] . "(\$whereArrayEntry);");
                         if (is_array($opReturn) && count($opReturn) > 0) {
                             foreach ($opReturn as $thisOpField => $thisOpValue)

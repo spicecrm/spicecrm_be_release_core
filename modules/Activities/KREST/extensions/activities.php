@@ -39,7 +39,7 @@ $app->group('/module/Activities', function () use ($app) {
         //echo implode(' UNION ALL ', $queryArray);
         //return;
 
-        $objects = $db->limitQuery('SELECT id, module FROM ('.implode(' UNION ALL ', $queryArray) . ') unionresult ORDER BY sortdate ASC', $start, $limit);
+        $objects = $db->limitQuery('SELECT id, module FROM ('.implode(' UNION ', $queryArray) . ') unionresult ORDER BY sortdate ASC', $start, $limit);
 
         while ($object = $db->fetchByAssoc($objects)) {
 

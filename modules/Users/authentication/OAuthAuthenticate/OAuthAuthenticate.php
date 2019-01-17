@@ -8,10 +8,8 @@ class OAuthAuthenticate
 
 
     /**
-     * Constructs OAuthAuthenticate
+     * OAuthAuthenticate constructor.
      * This will load the user authentication class
-     *
-     * @return OAuthAuthenticate
      */
     public function __construct() {
         //todo change it to work with namespaces
@@ -19,7 +17,7 @@ class OAuthAuthenticate
             $this->authenticationDir . '/' .
             $this->userAuthenticateClass . '.php';
 
-        // check in custom dir first, in case someone want's to override an auth controller
+        // check in custom dir first, in case someone wants to override an auth controller
         if (file_exists('custom/' . $filepath)) {
             require_once('custom/' . $filepath);
         } elseif (file_exists($filepath)) {
@@ -34,9 +32,12 @@ class OAuthAuthenticate
      * returns true if the user was authenticated false otherwise
      * it also will load the user into current user if he was authenticated
      *
-     * @param string $username
+     * @param $username
      * @param string $password
-     * @return boolean
+     * @param bool $fallback
+     * @param array $PARAMS
+     * @return bool
+     * @throws \Exception
      */
     public function loginAuthenticate($username, $password = '', $fallback = false, $PARAMS = []) {
 
@@ -82,6 +83,7 @@ class OAuthAuthenticate
      * Once a user is authenticated on login this function will be called.
      * Populate the session with what is needed and log anything that needs to be logged
      *
+     * @return bool
      */
     public function postLoginAuthenticate() {
 

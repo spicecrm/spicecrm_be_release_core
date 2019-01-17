@@ -32,4 +32,18 @@ $app->group('/syslanguages', function () use ($app, $handler)
         });
     });
 
+    $app->post('/setdefault/{language}', function($req, $res, $args){
+            global $db, $current_user;
+
+            if(!$current_user->is_admin){
+                return $res->write(json_encode(['success' => false]));
+            }
+
+            $db->query("UPDATE syslangs SET is_default = 0 WHERE is_default = 1");
+            $db->query("UPDATE syslangs SET is_default = 1 WHERE language_code = '{$args['language']}'");
+
+            return $res->write(json_encode(['success' => true]));
+
+    });
+
 });

@@ -43,6 +43,7 @@ $dictionary['audit'] =
         'fields' => array (
             'id'=> array('name' =>'id', 'type' =>'id', 'len'=>'36','required'=>true),
             'parent_id'=>array('name' =>'parent_id', 'type' =>'id', 'len'=>'36','required'=>true),
+            'transaction_id'=>array('name' =>'transaction_id', 'type' =>'varchar', 'len'=>'36','required'=>false),
             'date_created'=>array('name' =>'date_created','type' => 'datetime'),
             'created_by'=>array('name' =>'created_by','type' => 'varchar','len' => 36),
             'field_name'=>array('name' =>'field_name','type' => 'varchar','len' => 100),

@@ -516,13 +516,13 @@ class SugarBean
             $this->audit_enabled_fields = array();
             foreach ($this->field_defs as $field => $properties) {
 
-                if (
-                (
-                    !empty($properties['Audited']) || !empty($properties['audited']))
-                ) {
+               if (
+                    // todo: figure out why the modified fields are always set to wrong audited value
+                    $properties['audited'] !== false && $properties['name'] != 'modified_by_name' && $properties['name'] != 'date_modified'
+               ) {
 
                     $this->audit_enabled_fields[$field] = $properties;
-                }
+               }
             }
         }
         return $this->audit_enabled_fields;
@@ -1231,6 +1231,37 @@ class SugarBean
     }
 
     /**
+     * Uses the Audit log and gets all change reocords grouped by field
+     * that have been changed on teh bean since the date passed in
+     *
+     * @param $date .. the date from which to check,
+     * @param $fields .. array of Fields to be checked
+     * @return array of changed fields
+     */
+    public function getAuditChangesAfterDate($date, $fields = []){
+        $records = [];
+
+        $query = "SELECT {$this->get_audit_table_name()}.*, users.user_name FROM {$this->get_audit_table_name()}, users WHERE users.id = {$this->get_audit_table_name()}.created_by AND parent_id = '$this->id' AND date_created > '$date'";
+        if(count($fields) > 0){
+            $query .= " AND field_name in ('".implode("','", $fields)."')";
+        }
+        $query .= " ORDER BY date_created DESC";
+
+        $recordsObject = $this->db->query($query);
+        while($record = $this->db->fetchByAssoc($recordsObject)){
+            if(!isset($records[$record['field_name']])){
+                $records[$record['field_name']] = [
+                    'value' => $this->{$record['field_name']},
+                    'changes' => []
+                ];
+            }
+            $records[$record['field_name']]['changes'][] = $record;
+        }
+
+        return $records;
+    }
+
+    /**
      * Returns the name of the audit table.
      * Audit table's name is based on implementing class' table name.
      *
@@ -1268,7 +1299,10 @@ class SugarBean
 
         // Renaming template indexes to fit the particular audit table (removed the brittle hard coding)
         foreach ($indices as $nr => $properties) {
-            $indices[$nr]['name'] = 'idx_' . strtolower($this->getTableName()) . '_' . $properties['name'];
+            // BEGIN CR1000085 enable repair/rebuild for audit tables. Make index name unique within database
+            //$indices[$nr]['name'] = 'idx_' . strtolower($this->getTableName()) . '_' . $properties['name'];
+            $indices[$nr]['name'] = 'idx_' . strtolower($table_name) . '_' . $properties['name'];
+            // END
         }
 
         $engine = null;
@@ -1279,6 +1313,37 @@ class SugarBean
         }
 
         $this->db->createTableParams($table_name, $fieldDefs, $indices, $engine);
+    }
+
+    /**
+     * If auditing is enabled, create the audit table.
+     * CR1000085 enable repair/rebuild for audit tables. Introduced in spicecrm 2018.11.001
+     * Function is used by the install scripts and a repair utility in the admin panel.
+     * Internal function, do not override.
+     */
+    function update_audit_table($execute = true)
+    {
+
+        global $dictionary;
+        $table_name = $this->get_audit_table_name();
+
+        require('metadata/audit_templateMetaData.php');
+
+        // Bug: 52583 Need ability to customize template for audit tables
+        $custom = 'custom/metadata/audit_templateMetaData_' . $this->getTableName() . '.php';
+        if (file_exists($custom)) {
+            require($custom);
+        }
+
+        $fieldDefs = $dictionary['audit']['fields'];
+        $indices = $dictionary['audit']['indices'];
+
+        // Renaming template indexes to fit the particular audit table (removed the brittle hard coding)
+        foreach ($indices as $nr => $properties) {
+            $indices[$nr]['name'] = 'idx_' . strtolower($this->getTableName()) . '_audit_' . $properties['name'];
+        }
+
+        $this->db->repairAuditTable($table_name, $fieldDefs, $indices, $execute);
     }
 
     /**
@@ -1319,7 +1384,7 @@ class SugarBean
      * @param boolean $fts_index_bean Optional, default true, if set to true SpiceFTSHandler will index the bean.
      * @todo Add support for field type validation and encoding of parameters.
      */
-    public function save($check_notify = false, $fts_index_bean = true)
+    public function  save($check_notify = false, $fts_index_bean = true)
     {
         $this->in_save = true;
         // cn: SECURITY - strip XSS potential vectors
@@ -2201,8 +2266,10 @@ class SugarBean
 
             $tpl = BeanFactory::getBean( 'EmailTemplates', $tplId );
             $parsedTpl = $tpl->parse( $this );
-            $defaultMailbox = Mailbox::getDefaultMailbox();
-            if ( $defaultMailbox && !empty( $defaultMailbox->id ) ) {
+
+            try {
+                $defaultMailbox = Mailbox::getDefaultMailbox();
+
                 $email = BeanFactory::getBean( 'Emails' );
                 $email->mailbox_id = $defaultMailbox->id;
                 $email->name = $parsedTpl['subject'];
@@ -2216,7 +2283,7 @@ class SugarBean
                     $GLOBALS['log']->fatal( $sendResults );
                 }
                 return true;
-            } else {
+            } catch (Exception $e) {
                 $GLOBALS['log']->fatal('Notifications: No Notification sent. Please check if default mailbox is set.');
                 return false;
             }

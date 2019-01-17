@@ -13,12 +13,12 @@ class MediaFile extends SugarBean {
     public $table_name = "mediafiles";
     public $object_name = "MediaFile";
     public $module_dir = 'MediaFiles';
-    public $unformated_numbers = true;
-    public $imageQualities = array( 'bmp' => true, 'gif' => null, 'jpg' => 85, 'jpeg' => 85, 'png' => 9, 'webp' => 80 ); # for png: it´s not the quality, it´s the compression (lossless)
-    public $imageFunctions = array( 'bmp' => 'bmp', 'gif' => 'gif', 'jpg' => 'jpeg', 'jpeg' => 'jpeg', 'png' => 'png', 'webp' => 'webp' );
+    private $imageQualities = array( 'bmp' => true, 'gif' => null, 'jpg' => 85, 'jpeg' => 85, 'png' => 9, 'webp' => 80 ); # for png: it´s not the quality, it´s the compression (lossless)
+    private $imageFunctions = array( 'bmp' => 'bmp', 'gif' => 'gif', 'jpg' => 'jpeg', 'jpeg' => 'jpeg', 'png' => 'png', 'webp' => 'webp' );
+    public $mediatype, $filetype, $width, $height, $hash, $name, $upload_completed;
 
-    public function __construct()
-    {
+    public function __construct() {
+        $this->makeSureDirsExist();
         parent::__construct();
     }
 
@@ -37,9 +37,9 @@ class MediaFile extends SugarBean {
     {
         global $sugar_config;
 
-        $bean = parent::save($check_notify, $fts_index_bean);
+        $returnOfSave = parent::save( $check_notify, $fts_index_bean );
 
-        if($bean && $this->upload_completed && $sugar_config['mediafiles']['cdnurl']){
+        if ( $this->upload_completed && isset( $sugar_config['mediafiles']['cdnurl']{0} )) {
             $chf = curl_init();
             curl_setopt($chf, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($chf, CURLOPT_SSL_VERIFYPEER, false);
@@ -51,11 +51,11 @@ class MediaFile extends SugarBean {
             curl_close($chf);
         }
 
-        return $bean;
+        return $returnOfSave;
     }
 
     private function getBase64(){
-        return base64_encode(file_get_contents(self::getMediaPath( $this->id )));
+        return base64_encode( file_get_contents( self::getMediaPath( $this->id )));
     }
 
     // Use thumbnailSizeAllowed() to check if generating a thumbnail in a specific size is allowed, before calling this method.
@@ -71,10 +71,10 @@ class MediaFile extends SugarBean {
             if ( $origWidth > $origHeight ) {
                 $borderY = 0;
                 $cutHeight = $origHeight;
-                $dummy = $origHeight / 0.75;
-                if ( $dummy < $origWidth ) {
-                    $borderX = round(( $origWidth - $dummy ) / 2);
-                    $cutWidth = round( $dummy );
+                $memmy = $origHeight / 0.75;
+                if ( $memmy < $origWidth ) {
+                    $borderX = round(( $origWidth - $memmy ) / 2);
+                    $cutWidth = round( $memmy );
                 } else {
                     $borderX = 0;
                     $cutWidth = $origWidth;
@@ -82,10 +82,10 @@ class MediaFile extends SugarBean {
             } elseif ( $origWidth < $origHeight ) {
                 $borderX = 0;
                 $cutWidth = $origWidth;
-                $dummy = $origWidth / 0.75;
-                if ( $dummy < $origHeight ) {
-                    $borderY = round(( $origHeight - $dummy ) / 2);
-                    $cutHeight = round( $dummy );
+                $memmy = $origWidth / 0.75;
+                if ( $memmy < $origHeight ) {
+                    $borderY = round(( $origHeight - $memmy ) / 2);
+                    $cutHeight = round( $memmy );
                 } else {
                     $borderY = 0;
                     $cutHeight = $origHeight;
@@ -232,7 +232,7 @@ class MediaFile extends SugarBean {
                 $requestedWidth = round($origWidth / ($origHeight / $requestedHeight));
         }
 
-        $filename = self::getFolderOfSizes() . $this->id . '.w' . $requestedWidth;
+        $filename = self::getFolderOfSizes() . '/' . $this->id . '.w' . $requestedWidth;
         $image = imagecreatetruecolor( $requestedWidth, $requestedHeight );
         $functionName = 'imagecreatefrom'.$this->filetype;
         $source = $functionName( self::getMediaPath( $this->id ));
@@ -275,40 +275,38 @@ class MediaFile extends SugarBean {
 
     public function deliverSize( $size ) {
         $this->outputHeaders();
-        readfile( self::getFolderOfSizes() . $this->id . ".w" . $size );
+        readfile( self::getFolderOfSizes() . '/' . $this->id . ".w" . $size );
     }
 
     public function deliverThumb( $size ) {
         $this->outputHeaders();
-        readfile( self::getFolderOfThumbs() . $this->id . ".thumb" . $size );
+        readfile( self::getFolderOfThumbs() . '/' .$this->id . ".thumb" . $size );
     }
 
     public static function deleteMedia( $mediaId ) {
         global $current_user, $db;
-        $db->query( 'UPDATE mediafiles SET deleted = 1 WHERE id="'.$mediaId.'"' . ( !$current_user->is_admin ? ' AND user_id="' . $current_user->id . '"' : '' ));
-        if ( $db->getAffectedRowCount() )
-            if ( $db->getAffectedRowCount() ) self::_deleteMediaPhysical( $mediaId );
+        $result = $db->query( 'UPDATE mediafiles SET deleted = 1 WHERE id="'.$mediaId.'"' . ( !$current_user->is_admin ? ' AND user_id="' . $current_user->id . '"' : '' ));
+        if ( $db->getAffectedRowCount( $result ))
+            if ( $db->getAffectedRowCount( $result )) self::_deleteMediaPhysical( $mediaId );
     }
 
     public static function cancelUpload( $mediaId ) {
         global $current_user, $db;
-        $db->query( 'DELETE FROM mediafiles WHERE id="'.$mediaId.'" AND upload_completed <> 1'.( !$current_user->is_admin ? ' AND user_id="' . $current_user->id . '"' : '' ));
-        if ( $db->getAffectedRowCount() ) self::_deleteMediaPhysical( $mediaId );
+        $result = $db->query( 'DELETE FROM mediafiles WHERE id="'.$mediaId.'" AND upload_completed <> 1'.( !$current_user->is_admin ? ' AND user_id="' . $current_user->id . '"' : '' ));
+        if ( $db->getAffectedRowCount( $result )) self::_deleteMediaPhysical( $mediaId );
     }
 
     private static function _deleteMediaPhysical( $mediaId ) {
-        if ( isset( $sugar_config['media_files_trash_dir']{0} ))
-            rename( self::getMediaPath( $mediaId ), self::getFolderOfTrash().$mediaId.'.'.microtime() );
-        else
-            unlink( self::getMediaPath( $mediaId ));
-        array_map( 'unlink', glob( self::getFolderOfThumbs().$mediaId.'.*' ));
-        array_map( 'unlink', glob( self::getFolderOfSizes().$mediaId.'.*' ));
+        if ( @$GLOBALS['sugar_config']['media_files_no_trash'] ) unlink( self::getMediaPath( $mediaId ));
+        else rename( self::getMediaPath( $mediaId ), self::getFolderOfTrash().$mediaId.'.'.microtime() );
+        if ( is_dir( $memmy = self::getFolderOfThumbs())) array_map( 'unlink', glob( $memmy.$mediaId.'.*' ));
+        if ( is_dir( $memmy = self::getFolderOfSizes())) array_map( 'unlink', glob( $memmy.$mediaId.'.*' ));
     }
 
     public static function completeUpload( $mediaId ) {
         global $current_user, $db;
-        $db->query( 'UPDATE mediafiles SET upload_completed = 1 WHERE id="'.$mediaId.'"'.( !$current_user->is_admin ? ' AND user_id="'.$current_user->id.'"':'' ));
-        return $db->getAffectedRowCount() == 1;
+        $result = $db->query( 'UPDATE mediafiles SET upload_completed = 1 WHERE id="'.$mediaId.'"'.( !$current_user->is_admin ? ' AND user_id="'.$current_user->id.'"':'' ));
+        return $db->getAffectedRowCount($result) == 1;
     }
 
     // public static deleteUnfinishedUploads()
@@ -318,7 +316,7 @@ class MediaFile extends SugarBean {
         if ( isset( $_FILES['file'] )) { // && $upload_file->confirm_upload() ) {
             $upload = new MediaFile();
             list( $mediatype,  $upload->filetype ) = explode( '/', $upload_file->getMime( $_FILES['file'] ));
-            $upload->mediatype = ( $mediatype === 'image' ? "1":"0" );
+            $upload->mediatype = ( $mediatype === 'image' ? '1':'0' );
             $upload->filesize = $_FILES['file']['size'];
             $upload->hash = md5_file( $_FILES['file']['tmp_name'] );
             list( $upload->width, $upload->height  ) = getimagesize( $_FILES['file']['tmp_name'] );
@@ -334,16 +332,42 @@ class MediaFile extends SugarBean {
         return $GLOBALS['sugar_config']['media_files_dir'] . $mediaId;
     }
 
+    public static function getFolderOfMedia() {
+        return isset( $GLOBALS['sugar_config']['media_files_dir']{0} ) ? $GLOBALS['sugar_config']['media_files_dir'] : 'media/';
+    }
+
     public static function getFolderOfThumbs() {
-        return $GLOBALS['sugar_config']['media_files_dir'] . '.thumbs/';
+        return self::getFolderOfMedia() . '.thumbs/';
     }
 
     public static function getFolderOfSizes() {
-        return $GLOBALS['sugar_config']['media_files_dir'] . '.sizes/';
+        return self::getFolderOfMedia() . '.sizes/';
     }
 
     public static function getFolderOfTrash() {
-        return $GLOBALS['sugar_config']['media_files_dir'] . '.trash/';
+        return self::getFolderOfMedia() . '.trash/';
+    }
+
+    private function makeSureDirsExist() {
+        $error = false;
+        if ( !is_dir( $memmy = self::getFolderOfMedia()) and !mkdir( $memmy, 0770 ) ) {
+            $GLOBALS['log']->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing media directory.' );
+            $error = true;
+        } else {
+            if ( !is_dir( $memmy = self::getFolderOfThumbs()) and !mkdir( $memmy, 0770 ) ) {
+                $GLOBALS['log']->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing thumbs directory.' );
+                $error = true;
+            }
+            if ( !is_dir( $memmy = self::getFolderOfSizes()) and !mkdir( $memmy, 0770 ) ) {
+                $GLOBALS['log']->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing sizes directory.' );
+                $error = true;
+            }
+            if ( !is_dir( $memmy = self::getFolderOfTrash()) and !mkdir( $memmy, 0770 ) ) {
+                $GLOBALS['log']->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing trash directory.' );
+                $error = true;
+            }
+        }
+        if ( $error ) sugar_die( 'Error with media file directory/directories. Please refer to sugarcrm.log (and error.log) for details.' );
     }
 
 }
