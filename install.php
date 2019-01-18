@@ -208,7 +208,11 @@ $workflow[] = 'dbConfig_a.php';
 //}
 $web_root = str_replace("/install.php", "", $web_root);
 //$web_root = "http://$web_root";
-$web_root = strtolower(substr($_SERVER['SERVER_PROTOCOL'], 0, strpos($_SERVER['SERVER_PROTOCOL'], "/")))."://$web_root";
+$web_root = "http";
+if(!empty($_SERVER['HTTPS'])) {
+    $web_root = "https";
+}
+$web_root.= "://$web_root";
 //END
 
 if (!isset($_SESSION['oc_install']) || $_SESSION['oc_install'] == false) {
