@@ -208,11 +208,11 @@ $workflow[] = 'dbConfig_a.php';
 //}
 $web_root = str_replace("/install.php", "", $web_root);
 //$web_root = "http://$web_root";
-$web_root = "http";
+$web_protocol = "http";
 if(!empty($_SERVER['HTTPS'])) {
-    $web_root = "https";
+    $web_protocol = "https";
 }
-$web_root.= "://$web_root";
+$web_root = $web_protocol."://$web_root";
 //END
 
 if (!isset($_SESSION['oc_install']) || $_SESSION['oc_install'] == false) {
