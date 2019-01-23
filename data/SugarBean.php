@@ -1384,7 +1384,7 @@ class SugarBean
      * @param boolean $fts_index_bean Optional, default true, if set to true SpiceFTSHandler will index the bean.
      * @todo Add support for field type validation and encoding of parameters.
      */
-    public function  save($check_notify = false, $fts_index_bean = true)
+    public function save($check_notify = false, $fts_index_bean = true)
     {
         $this->in_save = true;
         // cn: SECURITY - strip XSS potential vectors
