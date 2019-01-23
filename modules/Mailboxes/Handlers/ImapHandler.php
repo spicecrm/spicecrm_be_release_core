@@ -134,9 +134,10 @@ class ImapHandler extends TransportHandler
         }
 
         $new_mail_count = 0;
-
+        $checked_mail_count = 0;
         if (is_array($items)) {
             foreach ($items as $item) {
+                ++$checked_mail_count;
                 $email = \BeanFactory::getBean('Emails');
                 $overview = imap_fetch_overview($stream, $item);
                 $header = imap_headerinfo($stream, $item);
@@ -147,10 +148,9 @@ class ImapHandler extends TransportHandler
 
                 $email->mailbox_id = $this->mailbox->id;
                 $email->message_id = $overview[0]->message_id;
-                $email->name = imap_mime_header_decode($overview[0]->subject)[0]->text;
+                $email->name = $email->name = $this->parseSubject($overview[0]->subject);
                 $email->date_sent = date('Y-m-d H:i:s', strtotime($overview[0]->date));
-                $email->from_addr = imap_mime_header_decode($overview[0]->from)[0]->text .
-                    imap_mime_header_decode($overview[0]->from)[1]->text;
+                $email->from_addr = $this->parseAddress($overview[0]->from);
                 $email->to_addrs = imap_mime_header_decode($overview[0]->to)[0]->text; // todo multiple addresses
                 if (isset($header->ccaddress)) {
                     $email->cc_addrs = $header->ccaddress;
@@ -166,8 +166,12 @@ class ImapHandler extends TransportHandler
                 $structure->parseStructure();
 
                 $email->body = $structure->getEmailBody();
-                $email->save();
-
+                try {
+                    $email->save();
+                } catch (\Exception $e) {
+                    $GLOBALS['log']->error('Could not save email: ' . $email->name);
+                    continue;
+                }
                 foreach ($structure->getAttachments() as $attachment) {
                     \SpiceAttachments::saveEmailAttachment('Emails', $email->id, $attachment);
                 }
@@ -414,13 +418,15 @@ class ImapHandler extends TransportHandler
             ->setFrom([$this->mailbox->imap_pop3_username => $this->mailbox->imap_pop3_display_name])
             ->setBody($email->body, 'text/html')
         ;
-
-        $toAddressess = [];
-        foreach ($email->to() as $address) {
-            array_push($toAddressess, $address['email']);
+        if ($this->mailbox->catch_all_address == '') {
+            $toAddressess = [];
+            foreach ($email->to() as $address) {
+                array_push($toAddressess, $address['email']);
+            }
+            $message->setTo($toAddressess);
+        } else { // send everything to the catch all address
+            $message->setTo([$this->mailbox->catch_all_address]);
         }
-        $message->setTo($toAddressess);
-
         if (!empty($email->cc_addrs)) {
             $ccAddressess = [];
             foreach ($email->cc() as $address) {
@@ -467,7 +473,6 @@ class ImapHandler extends TransportHandler
                 'result'     => $this->transport_handler->send($message),
                 'message_id' => $message->getId(),
             ];
-
         } catch (\Swift_RfcComplianceException $exception) {
             $result = [
                 'result' => false,
@@ -527,5 +532,45 @@ class ImapHandler extends TransportHandler
         }
 
         return $response;
+    }
+    /**
+     * parseSubject
+     *
+     * Parses the subject of the email and converts the encoding if necessary.
+     *
+     * @param $imapSubject
+     * @return string
+     */
+    private function parseSubject($imapSubject) {
+        $decodedSubject = imap_mime_header_decode($imapSubject);
+        $subject = '';
+        if ((substr(strtolower($decodedSubject[0]->charset), 0 ,3) == 'iso')
+            || ($decodedSubject[0]->charset == 'Windows-1252')) {
+            $subject = utf8_encode($decodedSubject[0]->text);
+        } else {
+            $subject = $decodedSubject[0]->text;
+        }
+        return $subject;
+    }
+    /**
+     * parseAddress
+     *
+     * Parses the email address and converts the encoding if necessary.
+     *
+     * @param $imapAddress
+     * @return string
+     */
+    private function parseAddress($imapAddress) {
+        $decodedAddress = imap_mime_header_decode($imapAddress);
+        $address = '';
+        foreach ($decodedAddress as $addressPart) {
+            if (strtolower($addressPart->charset) != 'utf-8'
+                && strtolower($addressPart->charset) != 'default') {
+                $address .= utf8_encode($addressPart->text);
+            } else {
+                $address .= $addressPart->text;
+            }
+        }
+        return str_replace(',', '', $address);
     }
 }

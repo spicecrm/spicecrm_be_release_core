@@ -1694,6 +1694,10 @@ $dictionary['sysuiroles'] = array(
             'name' => 'description',
             'type' => 'text'
         ),
+        'default_dashboard' => array(
+            'name' => 'default_dashboard',
+            'type' => 'id'
+        ),
         'version' => array(
             'name' => 'version',
             'type' => 'varchar',
@@ -1762,6 +1766,10 @@ $dictionary['sysuicustomroles'] = array(
         'description' => array(
             'name' => 'description',
             'type' => 'text'
+        ),
+        'default_dashboard' => array(
+            'name' => 'default_dashboard',
+            'type' => 'id'
         ),
         'version' => array(
             'name' => 'version',
