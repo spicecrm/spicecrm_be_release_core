@@ -85,7 +85,10 @@ $install_script = true;
 //// INSTALL RESOURCE SETUP
 $css = 'install/install.css';
 $icon = 'include/images/spice_icon.png';
-$sugar_md = 'include/images/sugar_md_open.png';
+//BEGIN release 201901001
+//$sugar_md = 'include/images/sugar_md_open.png';
+$sugar_md = 'include/images/spicecrm_login.png';
+//END
 $loginImage = 'include/images/spicecrm_login.png';
 $common = 'install/installCommon.js';
 

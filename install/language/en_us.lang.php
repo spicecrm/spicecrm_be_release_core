@@ -570,8 +570,8 @@ $mod_strings = array(
     'LBL_COLLATION' => 'Collation Settings',
 	'LBL_REQUIRED_SYSTEM_NAME'=>'Provide a System Name for the SpiceCRM instance.',
 	'LBL_PATCH_UPLOAD' => 'Select a patch file from your local computer',
-	'LBL_INCOMPATIBLE_PHP_VERSION' => 'Php version 5.4 or above is required.',
-	'LBL_MINIMUM_PHP_VERSION' => 'Minimum Php version required is 5.4.0. Recommended Php version is 5.6.x.',
+	'LBL_INCOMPATIBLE_PHP_VERSION' => 'Php version 5.6 or above is required.',
+	'LBL_MINIMUM_PHP_VERSION' => 'Minimum Php version required is 5.6.0. Recommended Php version is 7.1.x.',
 	'LBL_YOUR_PHP_VERSION' => '(Your current php version is ',
 	'LBL_RECOMMENDED_PHP_VERSION' =>' Recommended php version is 5.6.x)',
 	'LBL_BACKWARD_COMPATIBILITY_ON' => 'Php Backward Compatibility mode is turned on. Set zend.ze1_compatibility_mode to Off for proceeding further',
@@ -582,12 +582,12 @@ $mod_strings = array(
         'body' => 			'<p>Here is your account username and your temporary password for the CRM:</p>'.
 							'<p>Username: <b>$contact_user_user_name</b><br>Password: <b>$contact_user_user_hash</b></p>'.
 							'<p>During the first login you have to change the temporary password.</p>'.
-        					'<p>You find the CRM here: {config.frontend_url}</p>',
+        					'<p>You will find the CRM here: {config.frontend_url}</p>',
         'txt_body' =>		"Here is your account username and your temporary password for the CRM:\n\n".
 							'Username: $contact_user_user_name'."\n".
 							'Password: $contact_user_user_hash'."\n\n".
 							"During the first login you have to change the temporary password.\n\n",
-							'You find the CRM here: {config.frontend_url}'.
+							'You will find the CRM here: {config.frontend_url}'.
         'name' =>			'System-generated password email',
 	),
 
