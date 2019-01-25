@@ -179,9 +179,9 @@ class KRESTModuleHandler
                 $searchTermFields = $searchParams['searchtermfields'] ? json_decode(html_entity_decode($searchParams['searchtermfields']), true) : [];
 
                 // if no serachterm field has been sent .. use the unified search fields
-                if (count($searchTermFields) == 0) {
-                    foreach ($thisBean->field_name_map as $fieldname => $fielddata) {
-                        if ($fielddata['unified_search']) {
+                if(count($searchTermFields) == 0){
+                    foreach($thisBean->field_name_map as $fieldname => $fielddata){
+                        if($fielddata['unified_search']){
                             $searchTermFields[] = $fieldname;
                         }
                     }
@@ -241,6 +241,18 @@ class KRESTModuleHandler
                         }
                     }
                     break;
+            }
+        }
+
+        if (!empty($searchParams['modulefilter'])) {
+            require_once('include/SysModuleFilters/SysModuleFilters.php');
+            $sysModuleFilters = new SysModuleFilters();
+            $filterWhere = $sysModuleFilters->generareWhereClauseForFilterId($searchParams['modulefilter']);
+            if ($filterWhere) {
+                if ($searchParams['whereclause'] != '')
+                    $searchParams['whereclause'] .= ' AND ';
+
+                $searchParams['whereclause'] .= '(' . $filterWhere . ')';
             }
         }
 
@@ -932,9 +944,15 @@ class KRESTModuleHandler
         if (!ACLController::checkAccess($relModule, 'list', true))
             throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
+        if($params['modulefilter']){
+            require_once('include/SysModuleFilters/SysModuleFilters.php');
+            $sysModuleFilters = new SysModuleFilters();
+            $addWhere =  $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter']);
+        }
+
         // get related beans and related module
         // get_linked_beans($field_name, $bean_name, $sort_array = array(), $begin_index = 0, $end_index = -1, $deleted = 0, $optional_where = "")
-        $relBeans = $thisBean->get_linked_beans($linkName, $GLOBALS['beanList'][$beanModule], json_decode($params['sort'], true) ?: array(), $params['offset'] ?: 0, $params['limit'] ?: 5);
+        $relBeans = $thisBean->get_linked_beans($linkName, $GLOBALS['beanList'][$beanModule], json_decode($params['sort'], true) ?: array(), $params['offset'] ?: 0, $params['limit'] ?: 5, 0, $addWhere);
 
         $retArray = array();
         foreach ($relBeans as $relBean) {
@@ -954,7 +972,7 @@ class KRESTModuleHandler
         }
 
         if ($params['getcount']) {
-            $relCount = $thisBean->get_linked_beans_count($linkName, $GLOBALS['beanList'][$beanModule]);
+            $relCount = $thisBean->get_linked_beans_count($linkName, $GLOBALS['beanList'][$beanModule], 0, $addWhere);
             return array(
                 'count' => $relCount,
                 'list' => $retArray
@@ -1578,8 +1596,7 @@ class KRESTModuleHandler
         return $beanDataArray;
     }
 
-    private
-    function getEmailAddresses($beanObject, $beanId)
+    public function getEmailAddresses($beanObject, $beanId)
     {
 
         $emailAddresses = BeanFactory::getBean('EmailAddresses');

@@ -32,6 +32,11 @@ class CampaignTask extends SugarBean
 
     function activate($status = 'targeted')
     {
+        global $db;
+        $thisId = $db->quote($this->id);
+        require_once('include/SysModuleFilters/SysModuleFilters.php');
+        $sysModuleFilters = new SysModuleFilters();
+
         $delete_query = "DELETE FROM campaign_log WHERE campaign_id='" . $this->campaign_id . "' AND campaigntask_id='" . $this->id . "' AND activity_type='$status'";
         $this->db->query($delete_query);
 
@@ -43,12 +48,27 @@ class CampaignTask extends SugarBean
         $insert_query .= "SELECT {$guidSQL}, $current_date, '{$this->campaign_id}' campaign_id,  plc.campaigntask_id , {$guidSQL},plp.prospect_list_id, plp.related_id, plp.related_type,'$status',0 ";
         $insert_query .= "FROM prospect_lists INNER JOIN prospect_lists_prospects plp ON plp.prospect_list_id = prospect_lists.id";
         $insert_query .= " INNER JOIN prospect_list_campaigntasks plc ON plc.prospect_list_id = prospect_lists.id";
-        $insert_query .= " WHERE plc.campaigntask_id='" . $GLOBALS['db']->quote($this->id) . "'";
+        $insert_query .= " WHERE plc.campaigntask_id='$thisId'";
         $insert_query .= " AND prospect_lists.deleted=0";
         $insert_query .= " AND plc.deleted=0";
         $insert_query .= " AND plp.deleted=0";
         $insert_query .= " AND prospect_lists.list_type!='test' AND prospect_lists.list_type not like 'exempt%'";
         $this->db->query($insert_query);
+
+        $prospect_list_filters = "SELECT plf.module, plf.module_filter, plf.prospectlist_id FROM prospect_list_filters plf";
+        $prospect_list_filters .= " INNER JOIN prospect_list_campaigntasks plc ON plf.prospectlist_id = plc.prospect_list_id";
+        $prospect_list_filters .= " WHERE plc.campaigntask_id = '$thisId' AND plc.deleted = 0";
+        $prospect_list_filters = $this->db->query($prospect_list_filters);
+
+        while ($row = $this->db->fetchByAssoc($prospect_list_filters)) {
+            $where = $sysModuleFilters->generareWhereClauseForFilterId($row['module_filter']);
+            $seed = BeanFactory::getBean($row['module']);
+            $insert_query = "INSERT INTO campaign_log (id,activity_date, campaign_id, campaigntask_id, target_tracker_key,list_id, target_id, target_type, activity_type, deleted)";
+            $insert_query .= " SELECT {$guidSQL}, $current_date, '{$this->campaign_id}',  '$thisId' , {$guidSQL}, '{$row['prospectlist_id']}', id, '{$row['module']}','$status',0";
+            $insert_query .= " FROM {$seed->table_name}";
+            $insert_query .= " WHERE deleted=0 AND NOT EXISTS (SELECT target_id FROM campaign_log WHERE campaign_log.target_id = {$seed->table_name}.id) AND $where";
+            $this->db->query($insert_query);
+        }
 
         // set to activated
         $this->activated = true;

@@ -171,4 +171,17 @@ $app->group('/configurator', function () use ($app) {
         $loader->cleanDefaultConf();
         echo json_encode($results);
     });
+
+    $app->get('/objectrepository', function($req, $res, $args) use($app){
+        global $db;
+
+        $db->query('SET SESSION group_concat_max_len = 1000000;');
+        $sql = 'SELECT CONCAT("\'", group_concat(item ORDER BY item SEPARATOR "\',\'"), "\'") FROM (SELECT component item FROM sysuiobjectrepository UNION SELECT component item FROM sysuicustomobjectrepository UNION SELECT module item FROM sysuimodulerepository UNION SELECT module item FROM sysuicustommodulerepository) x;';
+        
+        $dbResult = $db->query( $sql );
+        $row = $db->fetchByAssoc( $dbResult );
+
+        return $res->withJson([ 'repostring' => array_pop( $row ) ]);
+    });
+
 });

@@ -68,7 +68,17 @@ global $app_language, $sugar_config;
 global $current_language;
 
 // Get the login page image
-if ( sugar_is_file('custom/include/images/sugar_md.png') ) {
+if ( sugar_is_file('custom/themes/default/images/company_logo.png') ) {
+    $size = getimagesize('custom/themes/default/images/company_logo.png');
+    $width = $size[0];
+    $height= $size[1];
+    if($size[0] > 400){
+        $width = 400;
+        $height = round($size[1] * ($width/$size[0]), 0);
+    }
+    $login_image = '<IMG src="custom/themes/default/images/company_logo.png" alt="Sugar" width="'.$width.'" height="'.$height.'">';
+}
+elseif ( sugar_is_file('custom/include/images/sugar_md.png') ) {
     $login_image = '<IMG src="custom/include/images/sugar_md.png" alt="Sugar" width="340" height="25">';
 }
 else {

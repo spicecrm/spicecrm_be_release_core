@@ -232,7 +232,7 @@ $app_list_strings = array(
         'se' => 'Support Engineer',
         'es' => 'Executive Sponsor'
     ),
-    'user_absences_type_dom' =>        array(
+    'userabsences_type_dom' =>        array(
         '' => '',
         'Sick leave' => 'Sick leave',
         'Vacation' => 'Vacation',
@@ -598,6 +598,11 @@ $app_list_strings = array(
         array(
             'Active' => 'Active',
             'Inactive' => 'Inactive',
+        ),
+    'calendar_type_dom' =>
+        array(
+            'Full' => 'Full',
+            'Day' => 'Day',
         ),
     'knowledge_status_dom' =>
         array(
@@ -4073,11 +4078,13 @@ $app_list_strings['token_status'] = array(
     3 => 'Invalid',
 );
 
-$app_list_strings ['emailTemplates_type_list'] = array(
+$app_list_strings['emailTemplates_type_list'] = array(
     '' => '',
     'campaign' => 'Campaign',
     'email' => 'Email',
-    'bean2mail' => 'send Bean via mail'
+    'bean2mail' => 'send Bean via mail',
+    'sendCredentials' => 'Send credentials',
+    'sendTokenForNewPassword' => 'Send the token, when password is lost'
 );
 
 $app_list_strings ['emailTemplates_type_list_campaigns'] = array(

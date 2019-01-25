@@ -85,7 +85,10 @@ $install_script = true;
 //// INSTALL RESOURCE SETUP
 $css = 'install/install.css';
 $icon = 'include/images/spice_icon.png';
-$sugar_md = 'include/images/sugar_md_open.png';
+//BEGIN release 201901001
+//$sugar_md = 'include/images/sugar_md_open.png';
+$sugar_md = 'include/images/spicecrm_login.png';
+//END
 $loginImage = 'include/images/spicecrm_login.png';
 $common = 'install/installCommon.js';
 
@@ -200,13 +203,20 @@ $workflow[] = 'dbConfig_a.php';
 //$workflow[] = 'dbConfig_b.php';
 
 //define web root, which will be used as default for site_url
-if($_SERVER['SERVER_PORT']=='80'){
+//BEGIN CR1000119 review logic for web_root - release 2019.01.001
+//if($_SERVER['SERVER_PORT']=='80'){
     $web_root = $_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF'];
-}else{
-    $web_root = $_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].$_SERVER['PHP_SELF'];
-}
+//}else{
+//    $web_root = $_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].$_SERVER['PHP_SELF'];
+//}
 $web_root = str_replace("/install.php", "", $web_root);
-$web_root = "http://$web_root";
+//$web_root = "http://$web_root";
+$web_protocol = "http";
+if(!empty($_SERVER['HTTPS'])) {
+    $web_protocol = "https";
+}
+$web_root = $web_protocol."://$web_root";
+//END
 
 if (!isset($_SESSION['oc_install']) || $_SESSION['oc_install'] == false) {
     $workflow[] = 'siteConfig_a.php';

@@ -61,7 +61,6 @@ class KRESTUserHandler
         return $guideline;
     }
 
-
     public function get_modules_acl()
     {
         global $moduleList;
@@ -84,19 +83,44 @@ class KRESTUserHandler
         return $retModules;
     }
 
-    public function set_new_password($data)
-    {
-
-        global $sugar_config;
-
+    public function set_new_password( $data ) {
         $newUser = BeanFactory::getBean('Users', $data['userId']);
         $newUser->setNewPassword($data['newpwd'], $data['SystemGeneratedPassword'] ? '1' : '0');
         if ($data['sendByEmail']) {
-            $emailTemp_id = $sugar_config['passwordsetting']['generatepasswordtmpl'];
-            $res = $newUser->sendPasswordToUser($emailTemp_id, ['password' => $data['newpwd']]);
+            $emailTempl = $this->getProperEmailTemplate( $newUser, 'sendCredentials' );
+            $res = $newUser->sendPasswordToUser( $emailTempl, ['password' => $data['newpwd']]);
             return ['status' => $res['status'], 'message' => $res['message']];
         }
         return ['status' => true];
+    }
+
+    # $user can be a user id or a user object
+    public function getProperEmailTemplate( $user, $type ) {
+
+        if ( !is_object( $user )) {
+            $memmy = $user;
+            $user = new User();
+            $user->retrieve( $memmy );
+            if ( empty( $user->id )) throw ( new \KREST\Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve user with ID "'.$memmy.'"');
+        }
+
+        $destUserPrefs = new UserPreference( $user );
+        $destUserPrefs->reloadPreferences();
+        $destLang = $destUserPrefs->getPreference('language');
+        if ( !isset( $destLang{0} )) $destLang = 'en_us';
+
+        $emailTempl = new EmailTemplate();
+        $emailTempl->retrieve_by_string_fields( [ 'type' => $type, 'language' => $destLang ], false );
+
+        if ( empty( $emailTempl->id )) {
+            $GLOBALS['log']->warn('Could not retrieve email template "'.$type.'" for language of user preferences ("'.$destLang.'"), will try "en_us" instead');
+            $destLang = 'en_us';
+            $emailTempl->retrieve_by_string_fields( [ 'for_bean' => 'Users', 'type' => $type, 'language' => $destLang ], false );
+            if ( empty( $emailTempl->id )) throw ( new \KREST\Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve email template "'.$type.'" (for language "' . $destLang . '")');
+        }
+
+        return $emailTempl;
+
     }
 
     public function change_password($data)
@@ -120,7 +144,6 @@ class KRESTUserHandler
             );
         }
     }
-
 
     public function get_all_user_preferences( $category)
     {
@@ -168,31 +191,29 @@ class KRESTUserHandler
         return $retData;
     }
 
-    public function sendTokenToUser($email)
-    {
-        global $db, $timedate, $sugar_config;
-        $result = array();
+    public function sendTokenToUser( $email ) {
+        global $db, $sugar_config;
 
-        $user_id = $this->getUserIdByEmail($email);
+       $user_id = $this->getUserIdByEmail($email);
 
         if (!empty($user_id)) {
+
             $token = User::generatePassword();
             $db->query( sprintf('INSERT INTO users_password_tokens ( id, user_id, date_generated ) VALUES ( "%s", "%s", NOW() )', $db->quote( $token ), $db->quote( $user_id )));
 
-            $emailTemp = new EmailTemplate();
-            $emailTemp->retrieve($sugar_config['passwordsetting']['tokentmpl']);
-            $emailTemp->disable_row_level_security = true;
+            $emailTempl = $this->getProperEmailTemplate( $user_id, 'sendTokenForNewPassword' );
+            $emailTempl->disable_row_level_security = true;
 
             //replace instance variables in email templates
-            $memmy = $emailTemp->parse( null, [ 'token' => $token ] );
-            $emailTemp->body_html = $memmy['body_html'];
-            $emailTemp->body = $memmy['body'];
-            $emailTemp->subject = $memmy['subject'];
+            $memmy = $emailTempl->parse( null, [ 'token' => $token ] );
+            $emailTempl->body_html = $memmy['body_html'];
+            $emailTempl->body = $memmy['body'];
+            $emailTempl->subject = $memmy['subject'];
 
             $emailObj = new Email();
 
-            $emailObj->name       = from_html($emailTemp->subject);
-            $emailObj->body       = from_html($emailTemp->body_html);
+            $emailObj->name       = from_html($emailTempl->subject);
+            $emailObj->body       = from_html($emailTempl->body_html);
             $emailObj->to_addrs   = $email;
             $emailObj->to_be_sent = true;
             $result = $emailObj->save();
@@ -213,9 +234,11 @@ class KRESTUserHandler
             }
 
             return $result;
+
         } else {
             return false;
         }
+
     }
 
     public function checkToken($email, $token)
@@ -231,6 +254,7 @@ class KRESTUserHandler
 
         return $token_valid;
     }
+
     public function resetPass($data)
     {
 
@@ -247,7 +271,6 @@ class KRESTUserHandler
             return false;
         }
     }
-
 
     public function resetTempPass($data)
     {
@@ -271,4 +294,5 @@ class KRESTUserHandler
         while ($row = $db->fetchByAssoc($res)) $user_id = $row['id'];
         return $user_id;
     }
+
 }

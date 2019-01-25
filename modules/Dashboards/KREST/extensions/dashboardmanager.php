@@ -2,27 +2,57 @@
 
 $app->group('/dashboards', function () use ($app) {
 
-    $app->get('', function () use ($app) {
+    $app->group('/dashlets', function () use ($app) {
+        $app->get('', function ($req, $res, $args) use ($app) {
+            global $db;
+            $dashBoardDashlets = array();
+            $dashlets = "SELECT 'global' As `type`, dlts.* FROM sysuidashboarddashlets dlts UNION ";
+            $dashlets .= "SELECT 'custom' As `type`, cdlts.* FROM sysuicustomdashboarddashlets cdlts";
+            $dashlets = $db->query($dashlets);
+            while ($dashBoardDashlet = $db->fetchByAssoc($dashlets))
+                $dashBoardDashlets[] = $dashBoardDashlet;
+            return $res->withJson($dashBoardDashlets);
+        });
+        $app->post('/{id}', function ($req, $res, $args) use ($app) {
+            global $db;
+            $columns = [];
+            $values = [];
+            $params = $body = $req->getParsedBody();
+            $table = $params['type'] == 'global' ? 'sysuidashboarddashlets' : 'sysuicustomdashboarddashlets';
+            foreach ($params as $column => $value) {
+                if ($column != 'type') {
+                    $columns[] = $db->quote($column);
+                    $values[] = "'" . $db->quote($value) . "'";
+                }
+            }
+            $columns = implode(',',$columns);
+            $values = implode(',',$values);
+
+            $isAdded = $db->query("REPLACE INTO $table ($columns) VALUES ($values)");
+            return $res->withJson($isAdded);
+        });
+        $app->delete('/{id}', function ($req, $res, $args) use ($app) {
+            global $db;
+            $id = $db->quote($args['id']);
+            $isDeleted = $db->query("DELETE FROM sysuidashboarddashlets WHERE id = '$id'");
+            $isDeletedCustom = $db->query("DELETE FROM sysuicustomdashboarddashlets WHERE id = '$id'");
+            return $res->withJson($isDeleted && $isDeletedCustom);
+        });
+    });
+
+    $app->get('', function ($req, $res, $args) use ($app) {
         global $db;
         $dashBoards = array();
         $dashBoardsObj = $db->query("SELECT * FROM dashboards");
         while ($dashBoard = $db->fetchByAssoc($dashBoardsObj))
             $dashBoards[] = $dashBoard;
-        echo json_encode($dashBoards);
-    });
-    $app->get('/dashlets', function () use ($app) {
-        global $db;
-        $dashBoardDashlets = array();
-        $dashBoardDashletsObj = $db->query("SELECT * FROM sysuidashboarddashlets UNION SELECT * FROM sysuicustomdashboarddashlets");
-        while ($dashBoardDashlet = $db->fetchByAssoc($dashBoardDashletsObj))
-            $dashBoardDashlets[] = $dashBoardDashlet;
-        echo json_encode($dashBoardDashlets);
+        return $res->withJson($dashBoards);
     });
     $app->get('/{id}', function($req, $res, $args) use ($app) {
         global $db;
         $dashBoardBean = BeanFactory::getBean('Dashboards', $args['id']);
         $dashBoardBean = $dashBoardBean->retrieve($args['id']);
-        echo $dashBoardBean->components;
+        return $res->withJson($dashBoardBean->components);
     });
     $app->post('/{id}', function($req, $res, $args) use ($app) {
         global $db;
@@ -43,6 +73,6 @@ $app->group('/dashboards', function () use ($app) {
             $sql .= "', '" . $postbodyitem['dashlet_id'] . "')";
             if( !$db->query($sql) ) throw ( new KREST\Exception( $db->last_error ))->setFatal(true);
         }
-        echo json_encode(array('status' => $status));
+        return $res->withJson(array('status' => $status));
     });
 });

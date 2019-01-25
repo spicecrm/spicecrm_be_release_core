@@ -10,6 +10,7 @@ class Exception extends \Exception {
     protected $errorCode;
     protected $lbl = null;
     protected $details;
+    protected $logMessage = null;
 
     function __construct( $message = null, $errorCode = null ) {
         if ( isset( $errorCode )) $this->errorCode = $errorCode;
@@ -67,6 +68,19 @@ class Exception extends \Exception {
     public function setDetails( $details ) {
         $this->details = $details;
         return $this;
+    }
+
+    public function setLogMessage( $message ) {
+        $this->logMessage = $message;
+        return $this;
+    }
+
+    public function getLogMessage() {
+        return $this->logMessage;
+    }
+
+    public function getMessageToLog() {
+        return isset( $this->logMessage ) ? $this->logMessage : $this->message;
     }
 
 }

@@ -229,7 +229,7 @@ $dictionary['Email'] = [
         ],
         'mailbox_id' => [
             'name'       => 'mailbox_id',
-            'vname'      => 'LBL_MAILBOXES',
+            'vname'      => 'LBL_MAILBOX',
             'type'       => 'mailbox',
             'dbtype'     => 'varchar',
             'len'        => '36',

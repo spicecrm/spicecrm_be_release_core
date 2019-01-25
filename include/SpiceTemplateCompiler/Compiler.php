@@ -10,7 +10,8 @@ class Compiler
 
     public static function compile( $txt, \SugarBean $bean = null, $lang = 'de_DE', array $additionalValues = null )
     {
-        global $current_user;
+        global $current_user, $current_language, $app_list_strings;
+        // overwrite the current app_list_strings to the language of the template...
         $app_list_strings = return_app_list_strings_language($lang);
 
         if (preg_match_all("#\{([a-zA-Z\.\_0-9]+)\}#", $txt, $matches))
@@ -93,6 +94,9 @@ class Compiler
         // remove unresolved placeholders...
         //$txt = preg_replace("#\{([a-z\.\_0-9]+)\}#", "", $txt);
         $txt = preg_replace("#='(.*?)'#", '="$1"', $txt);
+        // set the current app_list_strings back to the current language...
+        $app_list_strings = return_app_list_strings_language($current_language);
+
         return $txt;
     }
 }

@@ -1780,25 +1780,23 @@ EOQ;
      * Replacement for the deprecated sendEmailForPassword function, to be used with KREST.
      * Sends a new password to the user.
      *
-     * @param $templateId
+     * @param object $emailTempl
      * @param array $additionalData
      * @return array
      */
-    public function sendPasswordToUser($templateId, $additionalData = []) {
+    public function sendPasswordToUser( $emailTempl, $additionalData = []) {
         $result = [ 'status'  => false ];
 
-        try {
-            $emailTemp = $this->getNewPasswordEmailTemplate($templateId, $additionalData);
-        } catch (Exception $e) {
-            $result['message'] = $e->getMessage();
-            return $result;
-        }
+        $memmy = $emailTempl->parse( $this, [ 'password' => $additionalData['password'] ] );
+        $emailTempl->body_html = $memmy['body_html'];
+        $emailTempl->body = $memmy['body'];
+        $emailTempl->subject = $memmy['subject'];
 
         $itemail = $this->emailAddress->getPrimaryAddress($this);
 
         $emailObj                   = new Email();
-        $emailObj->name             = from_html($emailTemp->subject);
-        $emailObj->body             = from_html($emailTemp->body_html);
+        $emailObj->name             = from_html($emailTempl->subject);
+        $emailObj->body             = from_html($emailTempl->body_html);
         $emailObj->to_addrs         = $itemail;
         $emailObj->to_be_sent       = true;
 
@@ -1851,41 +1849,33 @@ EOQ;
             return $result;
         }
 
-        if ( @$GLOBALS['isREST'] ) {
-
-            $memmy = $emailTemp->parse( $this, [ 'password' => $additionalData['password'] ] );
-            $emailTemp->body_html = $memmy['body_html'];
-            $emailTemp->body = $memmy['body'];
-            $emailTemp->subject = $memmy['subject'];
-
+        //replace instance variables in email templates
+        $htmlBody = $emailTemp->body_html;
+        $body = $emailTemp->body;
+        if ( isset( $additionalData['link'] ) && $additionalData['link'] == true ) {
+            $htmlBody = str_replace( '$contact_user_link_guid', $additionalData['url'], $htmlBody );
+            $body = str_replace( '$contact_user_link_guid', $additionalData['url'], $body );
         } else {
+            $htmlBody = str_replace( '$contact_user_user_hash', $additionalData['password'], $htmlBody );
+            $body = str_replace( '$contact_user_user_hash', $additionalData['password'], $body );
+        }
+        // Bug 36833 - Add replacing of special value $instance_url
+            //workaround due to UI email templates for backend
+            $htmlBody = str_replace( '{config.frontend_url}', '$config_site_url', $htmlBody );
+            $body = str_replace( '{config.frontend_url}', '$config_site_url', $body );
+        $htmlBody = str_replace( '$config_site_url', $sugar_config['site_url'], $htmlBody );
+        $body = str_replace( '$config_site_url', $sugar_config['site_url'], $body );
 
-            //replace instance variables in email templates
-            $htmlBody = $emailTemp->body_html;
-            $body = $emailTemp->body;
-            if ( isset( $additionalData['link'] ) && $additionalData['link'] == true ) {
-                $htmlBody = str_replace( '$contact_user_link_guid', $additionalData['url'], $htmlBody );
-                $body = str_replace( '$contact_user_link_guid', $additionalData['url'], $body );
-            } else {
-                $htmlBody = str_replace( '$contact_user_user_hash', $additionalData['password'], $htmlBody );
-                $body = str_replace( '$contact_user_user_hash', $additionalData['password'], $body );
-            }
-            // Bug 36833 - Add replacing of special value $instance_url
-            $htmlBody = str_replace( '$config_site_url', $sugar_config['site_url'], $htmlBody );
-            $body = str_replace( '$config_site_url', $sugar_config['site_url'], $body );
+        $htmlBody = str_replace( '$contact_user_user_name', $this->user_name, $htmlBody );
+        $htmlBody = str_replace( '$contact_user_pwd_last_changed', TimeDate::getInstance()->nowDb(), $htmlBody );
+        $body = str_replace( '$contact_user_user_name', $this->user_name, $body );
+        $body = str_replace( '$contact_user_pwd_last_changed', TimeDate::getInstance()->nowDb(), $body );
+        $emailTemp->body_html = $htmlBody;
+        $emailTemp->body = $body;
 
-            $htmlBody = str_replace( '$contact_user_user_name', $this->user_name, $htmlBody );
-            $htmlBody = str_replace( '$contact_user_pwd_last_changed', TimeDate::getInstance()->nowDb(), $htmlBody );
-            $body = str_replace( '$contact_user_user_name', $this->user_name, $body );
-            $body = str_replace( '$contact_user_pwd_last_changed', TimeDate::getInstance()->nowDb(), $body );
-            $emailTemp->body_html = $htmlBody;
-            $emailTemp->body = $body;
-
-            if ( from_html( $emailTemp->body_html ) == '' && $current_user->is_admin ) {
-                global $app_strings;
-                throw new Exception( $result['message'] = $app_strings['LBL_EMAIL_TEMPLATE_EDIT_PLAIN_TEXT'] );
-            }
-
+        if ( from_html( $emailTemp->body_html ) == '' && $current_user->is_admin ) {
+            global $app_strings;
+            throw new Exception( $result['message'] = $app_strings['LBL_EMAIL_TEMPLATE_EDIT_PLAIN_TEXT'] );
         }
 
         return $emailTemp;

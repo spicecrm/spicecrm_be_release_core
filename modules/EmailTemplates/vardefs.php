@@ -167,14 +167,14 @@ $dictionary['EmailTemplate'] = array(
         ),
         'body' => array(
             'name' => 'body',
-            'vname' => 'LBL_BODY',
+            'vname' => 'LBL_EMAIL_BODY_PLAIN',
             'type' => 'text',
             'comment' => 'Plain text body to be used in resulting email',
             'stylesheet_id_field' => 'style',
         ),
         'body_html' => array(
             'name' => 'body_html',
-            'vname' => 'LBL_BODY_HTML',
+            'vname' => 'LBL_EMAIL_BODY_HTML',
             'type' => 'html',
             'comment' => 'HTML formatted email body to be used in resulting email',
             'stylesheet_id_field' => 'style',
@@ -281,6 +281,11 @@ $dictionary['EmailTemplate'] = array(
             'name' => 'idx_email_template_forbean',
             'type' => 'index',
             'fields' => array('for_bean')
+        ),
+        array(
+            'name' => 'idx_email_template_type',
+            'type' => 'index',
+            'fields' => array('type')
         )
     ),
     'relationships' => array(

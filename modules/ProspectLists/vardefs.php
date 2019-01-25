@@ -168,7 +168,7 @@ $dictionary['ProspectList'] = array (
     		'type' => 'link',
     		'relationship' => 'prospect_list_accounts',
     		'source'=>'non-db',
-  		),  		
+  		),
   		'campaigns'=> array (
   			'name' => 'campaigns',
     		'type' => 'link',
@@ -208,6 +208,13 @@ $dictionary['ProspectList'] = array (
 			'len'=>'255',
 			'source'=>'non-db',
 		),
+        'prospect_list_filters' => array(
+            'name' => 'prospect_list_filters',
+            'type' => 'link',
+            'relationship' => 'prospectlists_prospect_list_filters',
+            'source' => 'non-db',
+            'module' => 'ProspectListFilters'
+        )
 	),
 
 	'indices' => array (
@@ -217,12 +224,27 @@ $dictionary['ProspectList'] = array (
 			'fields'=>array('name')
 		),
 	),
-	'relationships'=>array(
-	  'prospectlists_assigned_user' =>
-   array('lhs_module'=> 'Users', 'lhs_table'=> 'users', 'lhs_key' => 'id',
-   'rhs_module'=> 'prospectlists' , 'rhs_table'=> 'prospect_lists', 'rhs_key' => 'assigned_user_id',
-   'relationship_type'=>'one-to-many')
-)
+    'relationships' => array(
+        'prospectlists_assigned_user' => array(
+            'lhs_module' => 'Users',
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'prospectlists',
+            'rhs_table' => 'prospect_lists',
+            'rhs_key' => 'assigned_user_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'prospectlists_prospect_list_filters' => array(
+            'lhs_module' => 'ProspectLists',
+            'lhs_table' => 'prospectlists',
+            'lhs_key' => 'id',
+            'rhs_module' => 'ProspectListFilters',
+            'rhs_table' => 'prospect_list_filters',
+            'rhs_key' => 'prospectlist_id',
+            'relationship_type' => 'one-to-many'
+        ),
+
+    )
 );
 
 VardefManager::createVardef('ProspectLists','ProspectList', array('assignable', 'default'));

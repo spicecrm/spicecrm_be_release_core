@@ -243,7 +243,7 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
      * toEvent
      *
      * Converts the Bean into a Google Calendar Event
-     *
+     * 
      * @return \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent
      */
     public function toEvent() {

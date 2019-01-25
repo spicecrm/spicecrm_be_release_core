@@ -65,7 +65,11 @@ class ImapStructure
         if (!empty($this->raw_structure->parts)) {
             $this->iterateParts($this->raw_structure->parts);
         } else {
-            $this->email_body = imap_body($this->stream, $this->item);
+            $this->fetchBody($this->raw_structure, '1');
+
+            if (empty($this->email_body)) {
+                $this->email_body = imap_body($this->stream, $this->item);
+            }
         }
     }
 
@@ -160,18 +164,18 @@ class ImapStructure
     {
         switch ($part->encoding) {
             case self::ENC_QUOTED_PRINTABLE:
-                $email_body = imap_qprint(imap_fetchbody($this->stream, $this->item, $section));
+                $this->email_body = imap_qprint(imap_fetchbody($this->stream, $this->item, $section));
                 break;
             case self::ENC_BASE64:
-                $email_body = imap_base64(imap_fetchbody($this->stream, $this->item, $section));
+                $this->email_body = imap_base64(imap_fetchbody($this->stream, $this->item, $section));
                 break;
             default:
-                $email_body = imap_fetchbody($this->stream, $this->item, $section);
+                $this->email_body = imap_fetchbody($this->stream, $this->item, $section);
                 break;
         }
 
         // check if a part with subtype HTML actually contains HTML
-        if (($email_body == strip_tags($email_body)) && $part->subtype == 'HTML') {
+        if (($this->email_body != strip_tags($this->email_body)) && $part->subtype == 'HTML') {
             return;
         }
 
@@ -184,13 +188,13 @@ class ImapStructure
         $encoding = self::extractEncoding($part->parameters);
         switch (strtolower($encoding)) {
             case 'utf-8':
-                $this->email_body = $email_body;
+                $this->email_body = $this->email_body;
                 break;
             case 'iso-8859-1':
-                $this->email_body = utf8_encode($email_body);
+                $this->email_body = utf8_encode($this->email_body);
                 break;
             default:
-                $this->email_body = $email_body;
+                $this->email_body = $this->email_body;
                 break;
         }
 
@@ -212,7 +216,7 @@ class ImapStructure
     {
         if (!empty($parameters)) {
             foreach ($parameters as $parameter) {
-                if($parameter->attribute == 'CHARSET') {
+                if (strtoupper($parameter->attribute) == 'CHARSET') {
                     return $parameter->value;
                 }
             }

@@ -270,8 +270,8 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
                     echo json_encode($KRESTModuleHandler->set_related($args['beanName'], $args['beanId'], $args['linkname'], $postBody));
                 });
                 $app->delete('', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
-                    $postBody = $req->getParsedBody();
-                    echo json_encode($KRESTModuleHandler->delete_related($args['beanName'], $args['beanId'], $args['linkname'], $postBody));
+                    $params = $req->getParams();
+                    echo json_encode($KRESTModuleHandler->delete_related($args['beanName'], $args['beanId'], $args['linkname'], $params));
                 });
             });
             $app->post('/merge_bean', function($req, $res, $args) use ($app, $KRESTModuleHandler) {

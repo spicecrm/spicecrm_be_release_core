@@ -116,11 +116,17 @@ $dictionary['syskrestlog'] = array(
         ),
         'post_params' => array(
             'name' => 'post_params',
+            // This should be longtext, but MSSQL doesn´t know "longtext".
+            // Solution: With len=4294967295 like "longtext".
             'type' => 'text',
+            'len' => 4294967295
         ),
         'response' => array(
             'name' => 'response',
+            // This should be longtext, but MSSQL doesn´t know "longtext".
+            // Solution: With len=4294967295 like "longtext".
             'type' => 'text',
+            'len' => 4294967295
         ),
         'http_status_code' => array(
             'name' => 'http_status_code',
@@ -138,5 +144,35 @@ $dictionary['syskrestlog'] = array(
             'type' => 'index',
             'fields' => array('requested_at'),
         ),
+        array(
+            'name' => 'idx_syskrestlog_user_id',
+            'type' => 'index',
+            'fields' => array('user_id'),
+        ),
+        array(
+            'name' => 'idx_syskrestlog_route',
+            'type' => 'index',
+            'fields' => array('route'),
+        ),
+        array(
+            'name' => 'idx_syskrestlog_ip',
+            'type' => 'index',
+            'fields' => array('ip'),
+        ),
+        array(
+            'name' => 'idx_syskrestlog_method',
+            'type' => 'index',
+            'fields' => array('method'),
+        ),
+        array(
+            'name' => 'idx_syskrestlog_session_id',
+            'type' => 'index',
+            'fields' => array('session_id'),
+        ),
+        array(
+            'name' => 'idx_syskrestlog_http_status_code',
+            'type' => 'index',
+            'fields' => array('http_status_code'),
+        )
     ),
 );

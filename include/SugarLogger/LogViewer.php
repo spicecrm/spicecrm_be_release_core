@@ -35,17 +35,10 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-#require_once('include/SugarLogger/LoggerManager.php');
-#require_once('include/SugarLogger/LoggerTemplate.php');
-
 /**
- * Parsing and viewing SugarCRM Log
+ * Viewing/Selecting from database based SugarCRM Log
  */
 class LogViewer {
-
-    protected $logfile = 'sugarcrm';
-    protected $ext = '.log';
-    protected $log_dir = '.';
 
     private static $levelMapping = array(
         'debug'      => 100,
@@ -57,95 +50,108 @@ class LogViewer {
         'security'   => 5
     );
 
-    /**
-     * Constructor
-     * Reads settings from config file
-     */
-    public function __construct() {
-        $this->config = SugarConfig::getInstance();
-        $this->ext = $this->config->get('logger.file.ext', $this->ext);
-        $this->logfile = $this->config->get('logger.file.name', $this->logfile);
-        $this->dateFormat = $this->config->get('logger.file.dateFormat', $this->dateFormat);
-        $this->logSize = $this->config->get('logger.file.maxSize', $this->logSize);
-        $this->maxLogs = $this->config->get('logger.file.maxLogs', $this->maxLogs);
-        $this->filesuffix = $this->config->get('logger.file.suffix', $this->filesuffix);
-        $log_dir = $this->config->get('log_dir' , $this->log_dir);
-        $this->log_dir = $log_dir . (empty($log_dir)?'':'/');
-    }
+    private $maxLength;
 
-    public function getLinesOfFile( $filenr, &$allLines, $queryParams, $period = null ) {
-        $stop = false;
+    private $dbTableName = 'syslogs';
+
+    # Constructor. Reads settings from config file.
+    public function __construct() {
+
+        # Accessing the log file is allowed only for admins:
+        if ( !$GLOBALS['current_user']->isAdmin() )
+            throw ( new \KREST\ForbiddenException('Forbidden to view the CRM log. Only for admins.'))->setErrorCode('noCRMlogView');
 
         $config = SugarConfig::getInstance();
-        $maxLength = $config->get( 'logger.view.truncateText', 1000 );
+        $this->maxLength = $config->get( 'logger.view.truncateText', 500 ) * 1;
 
-        if ( $filenr > $this->maxLogs ) {
-            if ( @$GLOBALS['isREST'] ) throw new \KREST\BadRequestException('Wrong file number.');
-            else sugar_die('Wrong file number.');
-        }
-
-        $filename = $this->log_dir . $this->logfile . ( $filenr == 0 ? '':'_'.$filenr ) . $this->ext;
-
-        if ( !is_file( $filename )) return [];
-
-        if ( $fp = fopen( $filename, 'r' )) {
-            while ( $line = fgets( $fp )) {
-                if (( $lineParts = $this->parseLine( $line )) and $this->filterLine( $lineParts, $queryParams )) {
-                    if ( $period ) {
-                        $datetime = getdate( $lineParts['dtx'] );
-                        # Assuming that log files are sorted by date and time!
-                        if ( $period['type'] === 'year' ) {
-                            if ( $datetime['year'] > $period['year'] ) break;
-                            if ( $datetime['year'] < $period['year'] ) continue;
-                        } elseif ( $period['type'] === 'month') {
-                            if ( $datetime['year'] > $period['year'] ) break;
-                            if ( $datetime['year'] < $period['year'] ) continue;
-                            if ( $datetime['mon'] > $period['month'] ) break;
-                            if ( $datetime['mon'] < $period['month'] ) continue;
-                        } elseif ( $period['type'] === 'day') {
-                            if ( $datetime['year'] > $period['year'] ) break;
-                            if ( $datetime['year'] < $period['year'] ) continue;
-                            if ( $datetime['mon'] > $period['month'] ) break;
-                            if ( $datetime['mon'] < $period['month'] ) continue;
-                            if ( $datetime['mday'] > $period['day'] ) break;
-                            if ( $datetime['mday'] < $period['day'] ) continue;
-                        } elseif ( $period['type'] === 'hour') {
-                            if ( $datetime['year'] > $period['year'] ) break;
-                            if ( $datetime['year'] < $period['year'] ) continue;
-                            if ( $datetime['mon'] > $period['month'] ) break;
-                            if ( $datetime['mon'] < $period['month'] ) continue;
-                            if ( $datetime['mday'] > $period['day'] ) break;
-                            if ( $datetime['mday'] < $period['day'] ) continue;
-                            if ( $datetime['hours'] > $period['hour'] ) break;
-                            if ( $datetime['hours'] < $period['hour'] ) continue;
-                        }
-                    }
-                    $lineParts['txt'] = substr( $lineParts['txt'], 0, $maxLength );
-                    $lineParts['txtTruncated'] = strlen( $lineParts['txt'] ) > $maxLength;
-                    $allLines[] = $lineParts;
-                }
-            }
-            if ( isset( $queryParams['limit']{0} ) and count( $allLines ) > $queryParams['limit'] ) {
-                if ( count( $allLines ) - $queryParams['limit'] > 0 ) {
-                    array_splice( $allLines, 0, count( $allLines ) - $queryParams['limit'] );
-                    $stop = true;
-                }
-            }
-        }
-
-        return !$stop;
     }
 
-    public function getAllLines( $queryParams ) {
-        $response = [];
-        for ( $i = 0; $i < $this->maxLogs; $i++ ) {
-            if ( $this->getLinesOfFile( $i, $response, $queryParams ) === false ) break;
+    private function updateLevelValues() {
+        global $db;
+        if ( $wert=$db->getOne('SELECT count(*) FROM '.$this->dbTableName.' WHERE level_value IS NULL')) {
+            foreach ( self::$levelMapping as $level => $value ) {
+                $db->query( $s='UPDATE '.$this->dbTableName.' SET level_value = '.$value.' WHERE level_value IS NULL AND level = "'.$level.'"' );
+            }
         }
+    }
+
+    public function getLines( $queryParams, $period = null ) {
+        global $db;
+        $response = [];
+
+        $this->updateLevelValues();
+
+        $whereClauseParts = [];
+
+        if ( $period ) {
+
+            /*
+            $periodFilter = [];
+
+            switch ( $period['type'] ) {
+                case 'hour': $periodFilter[] = 'HOUR( date_entered ) = '.$period['hour'];
+                case 'day': $periodFilter[] = 'DAY( date_entered ) = '.$period['day'];
+                case 'month': $periodFilter[] = 'MONTH( date_entered ) = '.$period['month'];
+                case 'year': $periodFilter[] = 'YEAR( date_entered ) = '.$period['year'];
+
+            }
+            */
+
+            switch ( $period['type'] ) {
+                case 'hour':
+                    $begin = mktime( $period['hour'], 0, 0, $period['month'], $period['day'], $period['year'] );
+                    $afterEnd = mktime( $period['hour']+1, 0, 0, $period['month'], $period['day'], $period['year'] );
+                    break;
+                case 'day':
+                    $begin = mktime( 0, 0, 0, $period['month'], $period['day'], $period['year'] );
+                    $afterEnd = mktime( 0, 0, 0, $period['month'], $period['day']+1, $period['year'] );
+                    break;
+                case 'month':
+                    $begin = mktime( 0, 0, 0, $period['month'], 1, $period['year'] );
+                    $afterEnd = mktime( 0, 0, 0, $period['month']+1, 1, $period['year'] );
+                    break;
+                case 'year':
+                    $begin = mktime( 0, 0, 0, 1, 1, $period['year'] );
+                    $afterEnd = mktime( 0, 0, 0, 1, 1, $period['year']+1 );
+                    break;
+            }
+
+            $whereClauseParts[] = 'microtime >= '.$begin.' AND microtime < '.$afterEnd;
+
+            # if ( count( $periodFilter )) $whereClauseParts[] = implode( ' AND ', $periodFilter );
+
+        }
+
+        $filter = [];
+        if ( isset( $queryParams['userId']{0} )) $filter[] = 'created_by = "'.$db->quote($queryParams['userId']).'"';
+        if ( isset( $queryParams['level']{0} )) $filter[] = 'level_value <= '.self::$levelMapping[$queryParams['level']];
+        if ( isset( $queryParams['processId']{0} )) $filter[] = 'pid = "'.$db->quote($queryParams['processId']).'"';
+        if ( isset( $queryParams['text']{0} )) $filter[] = 'description like "%'.$db->quote($queryParams['text']).'%"';
+        if ( count( $filter )) $whereClauseParts[] = implode( ' AND ', $filter );
+
+        $whereClause = count( $whereClauseParts ) ? 'WHERE '.implode( ' AND ', $whereClauseParts ):'';
+
+        $limitClause = '';
+        if ( isset( $queryParams['limit']{0} )) {
+            $queryParams['limit'] *= 1;
+            $limitClause = 'LIMIT '.$queryParams['limit'];
+        }
+
+        $sql = 'SELECT id, pid, level as lev, LEFT( description, '.$this->maxLength.' ) AS txt, created_by as uid, if ( LENGTH( description ) <> LENGTH( LEFT( description, '.$this->maxLength.' )), 1, 0 ) AS txtTruncated, microtime as dtx FROM '.$this->dbTableName.' '.$whereClause.' ORDER BY microtime DESC '.$limitClause;
+
+        $GLOBALS['log_viewer_debug_info_sql'] = $sql;
+        $sqlResult = $db->query( $sql );
+        while ( $row = $db->fetchByAssoc( $sqlResult )) {
+            $row['txtTruncated'] = (boolean)$row['txtTruncated'];
+            $row['pid'] = isset( $row['pid']{0} ) ? (int)$row['pid']:null;
+            $row['dtx'] = (float)$row['dtx'];
+            $response[] = $row;
+        }
+
         return $response;
     }
 
     public function getLinesOfPeriod( $periodType, $criteria, $queryParams ) {
-        $response = [];
         $period = [ 'type' => $periodType ];
         switch ( $periodType ) {
             case 'hour':    $period['hour'] = $criteria[1];
@@ -153,50 +159,20 @@ class LogViewer {
             case 'month':   $period['month'] = substr( $criteria[0], 4, 2 );
             case 'year':    $period['year'] = substr( $criteria[0], 0, 4 );
         }
-        for ( $i = 0; $i < $this->maxLogs; $i++ ) {
-            if ( $this->getLinesOfFile( $i, $response, $queryParams, $period ) === false ) break;
-        }
-        return $response;
+        return $this->getLines( $queryParams, $period );
     }
 
-    function parseLine( $line ) {
-        if ( preg_match('#^(.+)\[(.+)\]\[(.+)\]\[(.+)\](.*)#', $line, $found )) {
-            $dummy = $dummy = strtotime( $found[1] );
-            return [
-                'dtx' => $dummy, // ISO format: ( new DateTime( '@'. ( $dummy )))->format( DATE_ISO8601 )
-                'pid' => $found[2],
-                'uid' => $found[3],
-                'lev' => strtolower( $found[4] ),
-                'txt' => trim( $found[5] )
-            ];
-        } else return false;
-    }
+    function getFullLine( $lineId ) {
+        global $db;
 
-    function filterLine( $lineParts, $queryParams ) {
-        if ( isset( $queryParams['userId']{0} ) and $queryParams['userId'] !== $lineParts['uid'] ) return false;
-        if ( isset( $queryParams['level']{0} ) and self::$levelMapping[$lineParts['lev']] > self::$levelMapping[$queryParams['level']] ) return false;
-        if ( isset( $queryParams['processId']{0} ) and $queryParams['processId'] !== $lineParts['pid'] ) return false;
-        return true;
-    }
+        $sql = 'SELECT id, pid, level as lev, description AS txt, created_by as uid, microtime as dtx FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
 
-    function getFullLine( $filenr, $linenr ) {
-        $filename = $this->logfile . ( $filenr == 0 ? '':'_'.$filenr ) . $this->ext;
-        $filepath = $this->log_dir . $filename;
-        if ( !is_file( $filepath )) {
-            $message = 'Log file not found.'.( $filenr > $this->maxLogs ? ' Wrong file number?':'' );
-            if ( @$GLOBALS['isREST'] ) throw ( new \KREST\NotFoundException( $message ) )->setLookedFor( $filename );
-            else sugar_die( $message );
-        }
-        if ( $fp = fopen( $filepath, 'r' )) {
-            for ( $i = 0; $i <= $linenr; $i++ ) if ( ( $line = fgets( $fp ) ) === false ) {
-                if ( @$GLOBALS['isREST'] ) throw ( new \KREST\NotFoundException() )->setLookedFor( "$filename, line $linenr" );
-                else return [];
-            }
-        } else {
-            if ( @$GLOBALS['isREST'] ) throw ( new \KREST\Exception( $message ) )->setDetails( $filename );
-            else sugar_die( $message );
-        }
-        return $this->parseLine( $line );
+        $line = $db->fetchOne( $sql );
+        if ( $line === false )
+            throw ( new \KREST\NotFoundException( 'Log line not found.'))->setLookedFor( $lineId );
+
+        return $line;
+
     }
 
 }

@@ -1489,7 +1489,7 @@ function sugar_die($error_message, $exit_code = 1) {
     //echo $error_message;
     //die($exit_code);
     if ( @$GLOBALS['isREST'] ) {
-        throw new Exception( "sugar_die() triggered" , 500) ;
+        throw new Exception( $error_message , 500) ;
     }else {
         echo $error_message;
         die($exit_code);

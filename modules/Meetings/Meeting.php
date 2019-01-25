@@ -287,7 +287,6 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
      * Converts the Bean into a Google Calendar Event
      *
      * @return \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent
-     * @throws Exception
      */
     public function toEvent() {
         $timeZone = new DateTimeZone('UTC');
@@ -318,7 +317,6 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
      * Converts Google Calendar Event into Bean
      *
      * @param \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event
-     * @throws Exception
      */
     public function fromEvent(\SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event) {
         $startDate = new \DateTime($event->start->dateTime);

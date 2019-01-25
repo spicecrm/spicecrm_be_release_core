@@ -192,14 +192,17 @@ class SpiceUIConfLoader
         foreach ($response as $tb => $content) {
             //truncate command
             $tables[] = $tb;
+            $thisCols = $this->getTableColumns($tb);
             switch ($tb) {
                 case 'syslangs':
                     $delQ = "DELETE FROM $tb WHERE 1=1";//$GLOBALS['db']->truncateTableSQL($tb);
                     break;
                 default:
-                    $delQ = "DELETE FROM $tb WHERE package IN('" . implode("','", $params['packages']) . "') ";
-                    if (in_array('core', $params['packages']))
-                        $delQ .= "OR package IS NULL OR package=''";
+                    if(array_search('package', $thisCols) !== false) {
+                        $delQ = "DELETE FROM $tb WHERE package IN('" . implode("','", $params['packages']) . "') ";
+                        if (in_array('core', $params['packages']))
+                            $delQ .= "OR package IS NULL OR package=''";
+                    }
             }
 
             $truncates[] = $delQ;
@@ -212,16 +215,15 @@ class SpiceUIConfLoader
                         "<br/>Action aborted");
 
                 //prcess only selected packages and empty package values
-                if (empty($decodeData['package']) && !in_array('core', $params['packages'])) {
+                if (isset($decodeData['package']) && empty($decodeData['package']) && !in_array('core', $params['packages'])) {
                     continue;
-                } elseif (!empty($decodeData['package']) && !in_array($decodeData['package'], $params['packages'])) {
+                } elseif (isset($decodeData['package']) && !empty($decodeData['package']) && !in_array($decodeData['package'], $params['packages'])) {
                     continue;
                 }
 
                 //compare table column names
                 if (!$tbColCheck) {
                     $referenceCols = array_keys($decodeData);
-                    $thisCols = $this->getTableColumns($tb);
                     if (!empty(array_diff($referenceCols, $thisCols))) {
                         die("Table structure for $tb is not up-to-date." .
                             "<br/>Reference table = " . implode(", ", $referenceCols) .

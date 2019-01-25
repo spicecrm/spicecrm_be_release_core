@@ -18,7 +18,8 @@ $app->group('/spiceui', function() use ($app, $uiRestHandler)
                     'modules' => $uiRestHandler->getModules(),
                     'roles' => $uiRestHandler->getSysRoles(),
                     'rolemodules' => $uiRestHandler->getSysRoleModules(),
-                    'copyrules' => $uiRestHandler->getSysCopyRules()
+                    'copyrules' => $uiRestHandler->getSysCopyRules(),
+                    'modulefilters' => $uiRestHandler->getAllModuleFilters()
                 ));
             });
             $app->group('/{module}/listtypes', function() use ($app, $uiRestHandler) {
@@ -56,7 +57,7 @@ $app->group('/spiceui', function() use ($app, $uiRestHandler)
             $getParams = $req->getParams();
             echo json_encode($uiRestHandler->checkComponentDefaultAlreadyExists($getParams));
         });
-        
+
         $app->post('/componentsets', function($req, $res, $args) use ($app, $uiRestHandler) {
             $postbody = $req->getParsedBody();
             echo json_encode($uiRestHandler->setComponentSets($postbody));

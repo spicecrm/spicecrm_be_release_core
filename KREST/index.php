@@ -32,7 +32,27 @@ header('Content-Type: application/json');
 require_once dirname(__FILE__).'/../vendor/autoload.php';
 require_once dirname(__FILE__).'/../vendor/slim/slim/Slim/App.php';
 
+//Check on function getallheaders! Not all PHP distributions have this function
+//Example: Nginx, PHP-FPM or any other FastCGI method of running PHP
+if (!function_exists('getallheaders'))
+{
+    function getallheaders()
+    {
+        $headers = [];
+        foreach ($_SERVER as $name => $value)
+        {
+            if (substr($name, 0, 5) == 'HTTP_')
+            {
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            }
+        }
+        return $headers;
+    }
+}
+
+
 $GLOBALS['isREST'] = true;
+$GLOBALS['guidRegex'] = '[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}'; // this simple form (no grouping) is required by SLIM
 
 /**
  * SETTINGs

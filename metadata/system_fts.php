@@ -65,7 +65,7 @@ $dictionary['sysftslog'] = array(
         ),
         'request_url' => array(
             'name' => 'request_url',
-            // this should be lomngtext on MYSQL but this is onyl for mysql .. so please levae it as text and handle manually
+            // this should be longtext... REALLY? "text" is not enough? URL longer than 65,535 bytes?
             'type' => 'text',
         ),
         'index_request' => array(
@@ -74,8 +74,10 @@ $dictionary['sysftslog'] = array(
         ),
         'index_response' => array(
             'name' => 'index_response',
-            // this should be lomngtext on MYSQL but this is onyl for mysql .. so please levae it as text and handle manually
+            // This should be longtext, but MSSQL doesn´t know "longtext".
+            // Solution: With len=4294967295 like "longtext".
             'type' => 'text',
+            'len' => 4294967295
         ),
         'rt_local' => array(
             'name' => 'rt_local',

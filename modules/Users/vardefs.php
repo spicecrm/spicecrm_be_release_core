@@ -689,8 +689,9 @@ $dictionary['User'] = array(
             'link_type' => 'one',
             'source' => 'non-db'
         ],
-        'user_absences' => array(
-            'name' => 'user_absences',
+        'userabsences' => array(
+            'name' => 'userabsences',
+            'rel_fields' => array('user_id' => array('type' => 'id')),
             'type' => 'link',
             'relationship' => 'users_userabsences',
             'source' => 'non-db',
@@ -753,7 +754,7 @@ $dictionary['User'] = array(
                 'lhs_table' => 'users',
                 'lhs_key' => 'id',
                 'rhs_module' => 'UserAbsences',
-                'rhs_table' => 'user_absences',
+                'rhs_table' => 'userabsences',
                 'rhs_key' => 'user_id',
                 'relationship_type' => 'one-to-many'
             ),

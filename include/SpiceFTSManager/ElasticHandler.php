@@ -6,6 +6,9 @@ class ElasticHandler
     var $indexPrefix = 'spicecrm';
     var $server = '127.0.0.1';
     var $port = '9200';
+    var $protocol = 'http';
+    var $ssl_verifyhost = 2;
+    var $ssl_verifypeer = 1;
 
     var $standardSettings = array(
         "analysis" => array(
@@ -21,6 +24,12 @@ class ElasticHandler
         $this->server = $sugar_config['fts']['server'];
         $this->port = $sugar_config['fts']['port'];
         $this->indexPrefix = $sugar_config['fts']['prefix'];
+        if(isset($sugar_config['fts']['protocol'])){$this->protocol = $sugar_config['fts']['protocol'];}
+        if(isset($sugar_config['fts']['ssl_verifyhost'])){$this->ssl_verifyhost = $sugar_config['fts']['ssl_verifyhost'];}
+        if(isset($sugar_config['fts']['ssl_verifypeer'])){$this->ssl_verifypeer = $sugar_config['fts']['ssl_verifypeer'];}
+
+
+
         $this->buildSettings();
     }
 
@@ -225,17 +234,20 @@ class ElasticHandler
 
         $data_string = !empty($body) ? json_encode($body) : '';
 
-        $cURL = 'http://' . $this->server . ':' . $this->port . '/';
+        $cURL = $this->protocol . '://' . $this->server . ':' . $this->port . '/';
         if (!empty($url)) $cURL .=  $url;
 //        file_put_contents("sugarcrm.log", print_r($cURL, true)."\n", FILE_APPEND);
         $ch = curl_init($cURL);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->ssl_verifyhost);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->ssl_verifypeer);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
                 'Content-Length: ' . strlen($data_string))
         );
+
 
         $start = microtime();
         $result = curl_exec($ch);

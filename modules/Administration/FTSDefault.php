@@ -41,7 +41,6 @@ if ($current_user->is_admin) {
     $loader = new SpiceFTSLoader();
     if ($_POST['ftsdefaultconf_process'] > 0) {
         //collect values for REST call
-        //https://packages.spicecrm.io/ftsconfig
         $route = $loader->loader->getRouteBase();
         $route.= "fts";
         $package = (isset($_POST['ftsdefaultconf_package']) ? $_POST['ftsdefaultconf_package'] : "*");

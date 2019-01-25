@@ -33,6 +33,10 @@ $dictionary['syslogs'] = array(
             'name' => 'level',
             'type' => 'varchar',
         ),
+        'level_value' => array(
+            'name' => 'level_value',
+            'type' => 'tinyint'
+        ),
         'description' => array(
             'name' => 'description',
             'type' => 'text',
@@ -58,6 +62,21 @@ $dictionary['syslogs'] = array(
             'name' => 'idx_syslogslogcreatedbylevel',
             'type' => 'index',
             'fields' => array('created_by', 'level')
+        ),
+        array(
+            'name' => 'idx_syslogs_microtime',
+            'type' => 'index',
+            'fields' => array('microtime')
+        ),
+        array(
+            'name' => 'idx_syslogs_pid',
+            'type' => 'index',
+            'fields' => array('pid')
+        ),
+        array(
+            'name' => 'idx_syslogs_level_value',
+            'type' => 'index',
+            'fields' => array('level_value')
         )
     )
 );

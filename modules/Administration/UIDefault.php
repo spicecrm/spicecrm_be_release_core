@@ -60,8 +60,20 @@ if ($current_user->is_admin) {
         $currentconf = $loader->getCurrentConf();
         //get possible conf
         $possibleconf = $loader->getPossibleConf();
+        //since release 2019.01.001: only core package shall be loadable from backend
+        //this is to simplify UI installation. Additional config packages are loadable from UI admin interface
+        foreach($possibleconf['packages'] as $idx => $package){
+            if($package['package'] != "core") unset($possibleconf['packages'][$idx]);
+        }
+        //re-index
+        $possibleconf['packages'] = array_values($possibleconf['packages']);
+        array_multisort($possibleconf['versions'], SORT_DESC);
+
         //obsolete conf
-        $obsoleteconf = $loader->getObsoleteConf($currentconf, $possibleconf);
+        //removed for release 2019.01.001
+        //$obsoleteconf = $loader->getObsoleteConf($currentconf, $possibleconf);
+        $obsoleteconf = array();
+
 
         //display form
         $loader->displayDefaultConfForm($currentconf, $possibleconf, $obsoleteconf);

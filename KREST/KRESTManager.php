@@ -322,6 +322,7 @@ class KRESTManager {
             'renewPass'    => $current_user->system_generated_password,
             'user_name'    => $current_user->user_name,
             'userid'       => $current_user->id,
+            'dev'          => $current_user->is_dev
         ];
 
         return $loginData;

@@ -120,6 +120,12 @@ $dictionary['Mailbox'] = [
             'default' => true,
             'comment' => 'Mailbox active flag',
         ],
+        'catch_all_address' => [
+            'name'    => 'catch_all_address',
+            'vname'   => 'LBL_CATCH_ALL_ADDRESS',
+            'type'    => 'varchar',
+            'comment' => 'Catch All address for debugging',
+        ],
         'emails' => [
             'name' => 'emails',
             'vname' => 'LBL_EMAILS_LINK',
