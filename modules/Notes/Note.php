@@ -275,7 +275,7 @@ class Note extends SugarBean {
 			}
 		}
 
-		if(!ACLController::moduleSupportsACL($this->parent_type) || ACLController::checkAccess($this->parent_type, 'view', $is_owner)) {
+		if(!$GLOBALS['ACLController']->moduleSupportsACL($this->parent_type) || $GLOBALS['ACLController']->checkAccess($this->parent_type, 'view', $is_owner)) {
 			$array_assign['PARENT'] = 'a';
 		} else {
 			$array_assign['PARENT'] = 'span';
@@ -289,7 +289,7 @@ class Note extends SugarBean {
 			}
 		}
 
-		if( ACLController::checkAccess('Contacts', 'view', $is_owner)) {
+		if( $GLOBALS['ACLController']->checkAccess('Contacts', 'view', $is_owner)) {
 			$array_assign['CONTACT'] = 'a';
 		} else {
 			$array_assign['CONTACT'] = 'span';

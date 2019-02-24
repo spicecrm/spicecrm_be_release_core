@@ -174,11 +174,11 @@ function export($type, $records = null, $members = false, $sample=false) {
     }
     $order_by = "";
     if($focus->bean_implements('ACL')){
-        if(!ACLController::checkAccess($focus->module_dir, 'export', true)){
-            ACLController::displayNoAccess();
+        if(!$GLOBALS['ACLController']->checkAccess($focus->module_dir, 'export', true)){
+            $GLOBALS['ACLController']->displayNoAccess();
             sugar_die('');
         }
-        if(ACLController::requireOwner($focus->module_dir, 'export')){
+        if($GLOBALS['ACLController']->requireOwner($focus->module_dir, 'export')){
             if(!empty($where)){
                 $where .= ' AND ';
             }

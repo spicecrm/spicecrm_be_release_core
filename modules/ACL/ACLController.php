@@ -37,11 +37,12 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 require_once('modules/ACLActions/actiondefs.php');
 require_once('modules/ACL/ACLJSController.php');
+
 class ACLController {
 
 
-    static function filterModuleList(&$moduleList, $by_value = true)
-    {  //PHP7 COMPAT > was NON-STATIC
+    function filterModuleList(&$moduleList, $by_value = true)
+    {
 
         global $aclModuleList, $current_user;
         if (is_admin($current_user)) return;
@@ -71,15 +72,15 @@ class ACLController {
             }
         }
         if (isset($compList['Calendar']) &&
-            !(self::checkModuleAllowed('Calls', $actions) || self::checkModuleAllowed('Meetings', $actions) || self::checkModuleAllowed('Tasks', $actions))
-        ) //PHP7 COMPAT > was ACLController::checkModuleAllowed
+            !($this->checkModuleAllowed('Calls', $actions) || $this->checkModuleAllowed('Meetings', $actions) || $this->checkModuleAllowed('Tasks', $actions))
+        )
         {
             if ($by_value) {
                 unset($moduleList[$compList['Calendar']]);
             } else {
                 unset($moduleList['Calendar']);
             }
-            if (isset($compList['Activities']) && !self::checkModuleAllowed('Notes', $actions)) { //PHP7 COMPAT > was ACLController::checkModuleAllowed
+            if (isset($compList['Activities']) && !$this->checkModuleAllowed('Notes', $actions)) {
                 if ($by_value) {
                     unset($moduleList[$compList['Activities']]);
                 } else {
@@ -96,7 +97,7 @@ class ACLController {
      * @param String $module_name
      * @return true if they are allowed.  false otherwise.
      */
-    static function checkModuleAllowed($module_name, $actions) //PHP7 COMPAT > was NON-STATIC
+    public function checkModuleAllowed($module_name, $actions)
     {
         if (!empty($actions[$module_name]['module']['access']['aclaccess']) &&
             ACL_ALLOW_ENABLED == $actions[$module_name]['module']['access']['aclaccess']
@@ -107,7 +108,7 @@ class ACLController {
         return false;
     }
 
-    static function disabledModuleList($moduleList, $by_value = true, $view = 'list')
+    public function disabledModuleList($moduleList, $by_value = true, $view = 'list')
     {
         global $aclModuleList, $current_user;
         if (is_admin($GLOBALS['current_user'])) return array();
@@ -164,7 +165,7 @@ class ACLController {
 
 	}
 
-    public static function checkAccess($category, $action, $is_owner = false, $type = 'module')
+    public function checkAccess($category, $action, $is_owner = false, $type = 'module')
     {
 
 
@@ -173,7 +174,7 @@ class ACLController {
             $category = $category->module_dir;
 
         // check that the module supports ACL ..
-        if(!ACLController::moduleSupportsACL($category))
+        if(!$GLOBALS['ACLController']->moduleSupportsACL($category))
             return true;
 
         global $current_user;
@@ -189,7 +190,15 @@ class ACLController {
         return ACLAction::userHasAccess($current_user->id, $category, $action, $type, $is_owner);
     }
 
-    public static function requireOwner($category, $value, $type = 'module')
+    /*
+     * function to get the field control .. not implemented for standard ACL Controller
+     */
+    public function getFieldAccess($bean, $view)
+    {
+        return [];
+    }
+
+    public function requireOwner($category, $value, $type = 'module')
     {
         global $current_user;
         if (is_admin($current_user)) return false;
@@ -201,7 +210,7 @@ class ACLController {
 		echo $jscontroller->getJavascript();
 	}
 
-	public static function moduleSupportsACL($module)
+	public function moduleSupportsACL($module)
     {
 		static $checkModules = array();
 		global $beanFiles, $beanList;
@@ -234,7 +243,7 @@ class ACLController {
 	    global $current_user;
 
         $thisFilter = [];
-        if (self::requireOwner($module, 'list')) {
+        if ($this->requireOwner($module, 'list')) {
             $thisFilter['should'][] = array(
                 'term' => array(
                     'assigned_user_id' => $current_user->id

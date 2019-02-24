@@ -46,7 +46,7 @@ $module_menu = array();
 // the link url, display text for the link, and the icon name.
 
 // Create Project
-if(ACLController::checkAccess('Projects', 'edit', true)) {
+if($GLOBALS['ACLController']->checkAccess('Projects', 'edit', true)) {
     $module_menu[] = array(
         'index.php?module=Projects&action=EditView&return_module=Projects&return_action=DetailView',
         isset($mod_strings['LNK_NEW_PROJECT']) ? $mod_strings['LNK_NEW_PROJECT'] : '',
@@ -56,7 +56,7 @@ if(ACLController::checkAccess('Projects', 'edit', true)) {
 
 	
 // Project List
-if(ACLController::checkAccess('Projects', 'list', true)) {
+if($GLOBALS['ACLController']->checkAccess('Projects', 'list', true)) {
     $module_menu[] = array(
         'index.php?module=Projects&action=index',
         isset($mod_strings['LNK_PROJECT_LIST']) ? $mod_strings['LNK_PROJECT_LIST'] : '',
@@ -66,7 +66,7 @@ if(ACLController::checkAccess('Projects', 'list', true)) {
 	
 	
 // Project Tasks
-if(ACLController::checkAccess('ProjectTask', 'list', true)) {
+if($GLOBALS['ACLController']->checkAccess('ProjectTask', 'list', true)) {
     $module_menu[] = array(
         'index.php?module=ProjectTasks&action=index',
         isset($mod_strings['LNK_PROJECT_TASK_LIST']) ? $mod_strings['LNK_PROJECT_TASK_LIST'] : '',

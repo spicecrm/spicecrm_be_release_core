@@ -55,7 +55,7 @@ if(isset($_REQUEST['user_id'])) {
 	$focus->assigned_user_id = $_REQUEST['user_id'];
 }
 if(!$focus->ACLAccess('Save')){
-		ACLController::displayNoAccess(true);
+		$GLOBALS['ACLController']->displayNoAccess(true);
 		sugar_cleanup(true);
 }
 if(!empty($_POST['assigned_user_id']) && ($focus->assigned_user_id != $_POST['assigned_user_id']) && ($_POST['assigned_user_id'] != $current_user->id)) {

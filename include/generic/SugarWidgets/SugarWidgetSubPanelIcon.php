@@ -93,8 +93,8 @@ class SugarWidgetSubPanelIcon extends SugarWidgetField
 		$action_access = false;
 		if(!empty($record) &&
 			($layout_def[$action] && !$layout_def['owner_module']
-			||  $layout_def[$action] && !ACLController::moduleSupportsACL($layout_def['owner_module'])
-			|| ACLController::checkAccess($layout_def['owner_module'], 'view', $layout_def['owner_id'] == $current_user->id))) {
+			||  $layout_def[$action] && !$GLOBALS['ACLController']->moduleSupportsACL($layout_def['owner_module'])
+			|| $GLOBALS['ACLController']->checkAccess($layout_def['owner_module'], 'view', $layout_def['owner_id'] == $current_user->id))) {
 			$action_access = true;
 		}
 		$icon_img_html = SugarThemeRegistry::current()->getImage( $module . '', 'border="0"',null,null,'.gif',$app_list_strings['moduleList'][$module]);

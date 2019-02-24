@@ -1860,9 +1860,10 @@ EOQ;
             $body = str_replace( '$contact_user_user_hash', $additionalData['password'], $body );
         }
         // Bug 36833 - Add replacing of special value $instance_url
-            //workaround due to UI email templates for backend
+            //workaround due to UI email templates for backend. Placeholder for $config_site_url was changed
             $htmlBody = str_replace( '{config.frontend_url}', '$config_site_url', $htmlBody );
             $body = str_replace( '{config.frontend_url}', '$config_site_url', $body );
+
         $htmlBody = str_replace( '$config_site_url', $sugar_config['site_url'], $htmlBody );
         $body = str_replace( '$config_site_url', $sugar_config['site_url'], $body );
 

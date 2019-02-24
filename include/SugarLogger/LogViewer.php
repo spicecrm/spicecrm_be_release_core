@@ -85,40 +85,10 @@ class LogViewer {
 
         if ( $period ) {
 
-            /*
-            $periodFilter = [];
+            $begin = gmmktime( $period['begin']['hour'], 0, 0, $period['begin']['month'], $period['begin']['day'], $period['begin']['year'] );
+            $end = gmmktime( $period['end']['hour'], 0, 0, $period['end']['month'], $period['end']['day'], $period['end']['year'] );
 
-            switch ( $period['type'] ) {
-                case 'hour': $periodFilter[] = 'HOUR( date_entered ) = '.$period['hour'];
-                case 'day': $periodFilter[] = 'DAY( date_entered ) = '.$period['day'];
-                case 'month': $periodFilter[] = 'MONTH( date_entered ) = '.$period['month'];
-                case 'year': $periodFilter[] = 'YEAR( date_entered ) = '.$period['year'];
-
-            }
-            */
-
-            switch ( $period['type'] ) {
-                case 'hour':
-                    $begin = mktime( $period['hour'], 0, 0, $period['month'], $period['day'], $period['year'] );
-                    $afterEnd = mktime( $period['hour']+1, 0, 0, $period['month'], $period['day'], $period['year'] );
-                    break;
-                case 'day':
-                    $begin = mktime( 0, 0, 0, $period['month'], $period['day'], $period['year'] );
-                    $afterEnd = mktime( 0, 0, 0, $period['month'], $period['day']+1, $period['year'] );
-                    break;
-                case 'month':
-                    $begin = mktime( 0, 0, 0, $period['month'], 1, $period['year'] );
-                    $afterEnd = mktime( 0, 0, 0, $period['month']+1, 1, $period['year'] );
-                    break;
-                case 'year':
-                    $begin = mktime( 0, 0, 0, 1, 1, $period['year'] );
-                    $afterEnd = mktime( 0, 0, 0, 1, 1, $period['year']+1 );
-                    break;
-            }
-
-            $whereClauseParts[] = 'microtime >= '.$begin.' AND microtime < '.$afterEnd;
-
-            # if ( count( $periodFilter )) $whereClauseParts[] = implode( ' AND ', $periodFilter );
+            $whereClauseParts[] = 'FLOOR( microtime ) >= '.$begin.' AND FLOOR( microtime ) < '.$end;
 
         }
 
@@ -127,6 +97,7 @@ class LogViewer {
         if ( isset( $queryParams['level']{0} )) $filter[] = 'level_value <= '.self::$levelMapping[$queryParams['level']];
         if ( isset( $queryParams['processId']{0} )) $filter[] = 'pid = "'.$db->quote($queryParams['processId']).'"';
         if ( isset( $queryParams['text']{0} )) $filter[] = 'description like "%'.$db->quote($queryParams['text']).'%"';
+        if ( isset( $queryParams['transactionId']{0} )) $filter[] = 'transaction_id = "'.$db->quote($queryParams['transactionId']).'"';
         if ( count( $filter )) $whereClauseParts[] = implode( ' AND ', $filter );
 
         $whereClause = count( $whereClauseParts ) ? 'WHERE '.implode( ' AND ', $whereClauseParts ):'';
@@ -137,9 +108,8 @@ class LogViewer {
             $limitClause = 'LIMIT '.$queryParams['limit'];
         }
 
-        $sql = 'SELECT id, pid, level as lev, LEFT( description, '.$this->maxLength.' ) AS txt, created_by as uid, if ( LENGTH( description ) <> LENGTH( LEFT( description, '.$this->maxLength.' )), 1, 0 ) AS txtTruncated, microtime as dtx FROM '.$this->dbTableName.' '.$whereClause.' ORDER BY microtime DESC '.$limitClause;
+        $sql = 'SELECT id, pid, level as lev, transaction_id as tid, LEFT( description, '.$this->maxLength.' ) AS txt, created_by as uid, if ( LENGTH( description ) <> LENGTH( LEFT( description, '.$this->maxLength.' )), 1, 0 ) AS txtTruncated, microtime as dtx FROM '.$this->dbTableName.' '.$whereClause.' ORDER BY microtime DESC '.$limitClause;
 
-        $GLOBALS['log_viewer_debug_info_sql'] = $sql;
         $sqlResult = $db->query( $sql );
         while ( $row = $db->fetchByAssoc( $sqlResult )) {
             $row['txtTruncated'] = (boolean)$row['txtTruncated'];
@@ -151,21 +121,23 @@ class LogViewer {
         return $response;
     }
 
-    public function getLinesOfPeriod( $periodType, $criteria, $queryParams ) {
-        $period = [ 'type' => $periodType ];
-        switch ( $periodType ) {
-            case 'hour':    $period['hour'] = $criteria[1];
-            case 'day':     $period['day'] = substr( $criteria[0], 6, 2 );
-            case 'month':   $period['month'] = substr( $criteria[0], 4, 2 );
-            case 'year':    $period['year'] = substr( $criteria[0], 0, 4 );
-        }
+    public function getLinesOfPeriod( $begin, $end, $queryParams ) {
+        $period = array();
+        $period['begin']['year'] = substr( $begin, 0, 4 );
+        $period['begin']['month'] = substr( $begin, 4, 2 );
+        $period['begin']['day'] = substr( $begin, 6, 2 );
+        $period['begin']['hour'] = substr( $begin, 8, 2 );
+        $period['end']['year'] = substr( $end, 0, 4 );
+        $period['end']['month'] = substr( $end, 4, 2 );
+        $period['end']['day'] = substr( $end, 6, 2 );
+        $period['end']['hour'] = substr( $end, 8, 2 );
         return $this->getLines( $queryParams, $period );
     }
 
     function getFullLine( $lineId ) {
         global $db;
 
-        $sql = 'SELECT id, pid, level as lev, description AS txt, created_by as uid, microtime as dtx FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
+        $sql = 'SELECT id, pid, level as lev, description AS txt, created_by as uid, microtime as dtx, transaction_id as tid FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
 
         $line = $db->fetchOne( $sql );
         if ( $line === false )

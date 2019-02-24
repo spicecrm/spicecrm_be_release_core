@@ -62,7 +62,7 @@ class SugarWidgetSubPanelTopSummaryButton extends SugarWidgetSubPanelTopButton
 		$module_name = 'Activities';
 		$id = $widget_data['focus']->id;
 		$initial_filter = "&record=$id&module_name=$currentModule";
-		if(ACLController::moduleSupportsACL($widget_data['module']) && !ACLController::checkAccess($widget_data['module'], 'detail', true)){
+		if($GLOBALS['ACLController']->moduleSupportsACL($widget_data['module']) && !$GLOBALS['ACLController']->checkAccess($widget_data['module'], 'detail', true)){
 			$temp =  '<input disabled type="button" name="summary_button" id="summary_button"'
 			. ' class="button"'
 			. ' title="' . $title . '"'

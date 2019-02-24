@@ -957,6 +957,19 @@ class Scheduler extends SugarBean {
         $sched17->modified_user_id	= '1';
         $sched17->catch_up			= '0';
         $sched17->save();
+
+        //added 2018-06-06
+        $sched18 = new Scheduler();
+        $sched18->name				= $mod_strings['LBL_OOTB_SYSFTSLOGSCLEANUP_INDEX'];
+        $sched18->job				= 'function::cleanSysFTSLogs';
+        $sched18->date_time_start	= create_date(2015,1,1) . ' ' . create_time(0,0,1);
+        $sched18->date_time_end		= create_date(2030,12,31) . ' ' . create_time(23,59,59);
+        $sched18->job_interval		= '50::3::*::*::*';
+        $sched18->status				= 'Active';
+        $sched18->created_by			= '1';
+        $sched18->modified_user_id	= '1';
+        $sched18->catch_up			= '0';
+        $sched18->save();
     }
 
     ////	END SCHEDULER HELPER FUNCTIONS
@@ -987,6 +1000,28 @@ class Scheduler extends SugarBean {
      * function overrides the one in SugarBean.php
      */
     function fill_in_additional_detail_fields() {
+        $this->job_interval_read = $this->getJobIntervalReadValue();
+        $this->last_status = $this->getLastStatusValue();
+    }
+
+    function getJobIntervalReadValue() {
+        global $mod_strings;
+        $mod_strings = return_module_language($GLOBALS['current_language'], 'Schedulers');
+        $this->parseInterval();
+        $this->setIntervalHumanReadable();
+        return $this->intervalHumanReadable;
+    }
+
+    function getLastStatusValue() {
+        global $db;
+        $lastStatus = $db->getOne("SELECT status FROM job_queue WHERE scheduler_id = '{$this->id}'  ORDER BY execute_time DESC");
+        return $lastStatus ?: '';
+    }
+
+    function save($check_notify = false, $fts_index_bean = true)
+    {
+        $this->job_interval_read = $this->getJobIntervalReadValue();
+        return parent::save($check_notify, $fts_index_bean);
     }
 
     /**

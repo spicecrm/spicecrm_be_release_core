@@ -72,7 +72,7 @@ public function getDuplicateQuery($focus, $prefix='')
 
 
 function getWideFormBody($prefix, $mod='', $formname=''){
-if(!ACLController::checkAccess('Leads', 'edit', true)){
+if(!$GLOBALS['ACLController']->checkAccess('Leads', 'edit', true)){
 		return '';
 	}
 global $mod_strings;
@@ -123,7 +123,7 @@ return $form;
 }
 
 function getFormBody($prefix, $mod='', $formname=''){
-	if(!ACLController::checkAccess('Leads', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Leads', 'edit', true)){
 		return '';
 	}
 global $mod_strings;
@@ -169,7 +169,7 @@ return $form;
 
 }
 function getForm($prefix, $mod='Leads'){
-	if(!ACLController::checkAccess('Leads', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Leads', 'edit', true)){
 		return '';
 	}
 if(!empty($mod)){
@@ -222,7 +222,7 @@ function handleSave($prefix,$redirect=true, $useRequired=false, $do_save=true, $
 	}
 	$focus = populateFromPost($prefix, $focus);
 	if(!$focus->ACLAccess('Save')){
-		ACLController::displayNoAccess(true);
+		$GLOBALS['ACLController']->displayNoAccess(true);
 		sugar_cleanup(true);
 	}
 

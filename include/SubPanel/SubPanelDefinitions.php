@@ -644,7 +644,7 @@ class SubPanelDefinitions
 
 				//check permissions.
 				$exempt = array_key_exists ( $values_array [ 'module' ], $modules_exempt_from_availability_check ) ;
-				$ok = $exempt || ( (! ACLController::moduleSupportsACL ( $values_array [ 'module' ] ) || ACLController::checkAccess ( $values_array [ 'module' ], 'list', true ) ) ) ;
+				$ok = $exempt || ( (! $GLOBALS['ACLController']->moduleSupportsACL ( $values_array [ 'module' ] ) || $GLOBALS['ACLController']->checkAccess ( $values_array [ 'module' ], 'list', true ) ) ) ;
 
 				$GLOBALS [ 'log' ]->debug ( "SubPanelDefinitions->get_available_tabs(): " . $key . "= " . ( $exempt ? "exempt " : "not exempt " .( $ok ? " ACL OK" : "" ) ) ) ;
 

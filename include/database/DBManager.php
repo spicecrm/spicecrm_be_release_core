@@ -1101,11 +1101,28 @@ protected function checkQuery($sql, $object_name = false)
             if ($key == 'len' && ($fielddef1[$key] >= $fielddef2[$key])) {
                 continue;
             }
-			return false;
+
+            // check if vardef definition might be a little different but correct
+            // example: dbType = 'text' and len=4294967295 which is a longtext in mysql
+            return $this->checkOnVarDefinition($fielddef1, $fielddef2);
 		}
 
 		return true;
 	}
+
+    /**
+     * introduced in spicecrm 201903001
+     * @param $fielddef1
+     * @param $fielddef2
+     * @return bool
+     */
+    public function checkOnVarDefinition($fielddef1, $fielddef2)
+    {
+        $dbtype = $fielddef1['type'];
+        $fieldtype = $this->getFieldType($fielddef2);
+
+        return ($dbtype == $fieldtype);
+    }
 
 	/**
 	 * Compare a field in two tables

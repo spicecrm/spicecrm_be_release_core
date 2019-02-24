@@ -33,7 +33,7 @@ $dictionary['syskrestlogconfig'] = array(
         'user_id' => array(
             'name' => 'user_id',
             'type' => 'varchar',
-            'len' => 15
+            'len' => 36
         ),
         'ip' => array(
             'name' => 'ip',
@@ -108,7 +108,7 @@ $dictionary['syskrestlog'] = array(
         'args' => array(
             'name' => 'args',
             'type' => 'varchar',
-            'len' => 100
+            'len' => 255
         ),
         'get_params' => array(
             'name' => 'get_params',
@@ -116,21 +116,20 @@ $dictionary['syskrestlog'] = array(
         ),
         'post_params' => array(
             'name' => 'post_params',
-            // This should be longtext, but MSSQL doesn´t know "longtext".
-            // Solution: With len=4294967295 like "longtext".
-            'type' => 'text',
-            'len' => 4294967295
+            'type' => 'longtext' # todo: MSSQL doesn´t know "longtext"
         ),
         'response' => array(
             'name' => 'response',
-            // This should be longtext, but MSSQL doesn´t know "longtext".
-            // Solution: With len=4294967295 like "longtext".
-            'type' => 'text',
-            'len' => 4294967295
+            'type' => 'longtext' # todo: MSSQL doesn´t know "longtext"
         ),
         'http_status_code' => array(
             'name' => 'http_status_code',
             'type' => 'int',
+        ),
+        'transaction_id' => array(
+            'name' => 'transaction_id',
+            'type' => 'varchar',
+            'len' => 36
         ),
     ),
     'indices' => array(
@@ -173,6 +172,11 @@ $dictionary['syskrestlog'] = array(
             'name' => 'idx_syskrestlog_http_status_code',
             'type' => 'index',
             'fields' => array('http_status_code'),
+        ),
+        array(
+            'name' => 'idx_syskrestlog_transaction_id',
+            'type' => 'index',
+            'fields' => array('transaction_id'),
         )
     ),
 );

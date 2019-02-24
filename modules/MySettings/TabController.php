@@ -82,7 +82,7 @@ function get_system_tabs(){
 					if (!in_array($tab, $moduleList))
 						unset($tabs[$id]);
 				}
-				ACLController :: filterModuleList($tabs); 
+                $GLOBALS['ACLController']->filterModuleList($tabs);
 				$tabs = $this->get_key_array($tabs);
 				$system_tabs_result = $tabs;
 			}else{

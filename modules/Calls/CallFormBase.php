@@ -48,7 +48,7 @@ require_once('include/SugarObjects/forms/FormBase.php');
 class CallFormBase extends FormBase {
 
 function getFormBody($prefix, $mod='', $formname='',$cal_date='',$cal_time=''){
-if(!ACLController::checkAccess('Calls', 'edit', true)){
+if(!$GLOBALS['ACLController']->checkAccess('Calls', 'edit', true)){
 		return '';
 	}
 global $mod_strings;
@@ -141,7 +141,7 @@ return $form;
 
 }
 function getFormHeader($prefix, $mod='', $title=''){
-	if(!ACLController::checkAccess('Calls', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Calls', 'edit', true)){
 		return '';
 	}
 	if(!empty($mod)){
@@ -168,7 +168,7 @@ EOQ;
 return $the_form;
 }
 function getFormFooter($prefic, $mod=''){
-	if(!ACLController::checkAccess('Calls', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Calls', 'edit', true)){
 		return '';
 	}
 global $app_strings;
@@ -182,7 +182,7 @@ return $the_form;
 }
 
 function getForm($prefix, $mod=''){
-	if(!ACLController::checkAccess('Calls', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Calls', 'edit', true)){
 		return '';
 	}
 $the_form = $this->getFormHeader($prefix, $mod);
@@ -253,7 +253,7 @@ function handleSave($prefix,$redirect=true,$useRequired=false) {
 	// retrieve happens here
 	$focus = populateFromPost($prefix, $focus);
 	if(!$focus->ACLAccess('Save')) {
-	   ACLController::displayNoAccess(true);
+	   $GLOBALS['ACLController']->displayNoAccess(true);
 	   sugar_cleanup(true);
 	}
 
@@ -522,7 +522,7 @@ function handleSave($prefix,$redirect=true,$useRequired=false) {
 } // end handleSave();
 
 function getWideFormBody ($prefix, $mod='', $formname='', $wide =true){
-	if(!ACLController::checkAccess('Calls', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Calls', 'edit', true)){
 		return '';
 	}
 global $mod_strings;

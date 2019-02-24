@@ -76,7 +76,7 @@ require_once('include/formbase.php');
 $focus = populateFromPost('', $focus);
 
 if(!$focus->ACLAccess('Save')){
-		ACLController::displayNoAccess(true);
+		$GLOBALS['ACLController']->displayNoAccess(true);
 		sugar_cleanup(true);
 }
 

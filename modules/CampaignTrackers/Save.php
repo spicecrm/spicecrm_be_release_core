@@ -48,7 +48,7 @@ $focus = new CampaignTracker();
 
 $focus->retrieve($_POST['record']);
 if(!$focus->ACLAccess('Save')){
-	ACLController::displayNoAccess(true);
+    $GLOBALS['ACLController']->displayNoAccess(true);
 	sugar_cleanup(true);
 }
 

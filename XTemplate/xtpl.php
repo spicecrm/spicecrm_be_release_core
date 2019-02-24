@@ -348,7 +348,7 @@ function out ($bname) {
 
 		if($focus && is_subclass_of($focus, 'SugarBean') && !$focus->ACLAccess($action)){
 
-			ACLController::displayNoAccess(true);
+			$GLOBALS['ACLController']->displayNoAccess(true);
 
 			sugar_die('');
 			return;

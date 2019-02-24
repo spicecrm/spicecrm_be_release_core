@@ -137,13 +137,13 @@ class ListView
         if(!$this->show_mass_update) $this->shouldProcess = false;
         if(is_subclass_of($seed, "SugarBean")) {
             if($seed->bean_implements('ACL')) {
-                if(!ACLController::checkAccess($seed->module_dir,'list',true)) {
+                if(!$GLOBALS['ACLController']->checkAccess($seed->module_dir,'list',true)) {
                     if($_REQUEST['module'] != 'Home') {
-                        ACLController::displayNoAccess();
+                        $GLOBALS['ACLController']->displayNoAccess();
                     }
                     return;
                 }
-                if(!ACLController::checkAccess($seed->module_dir,'export',true)) {
+                if(!$GLOBALS['ACLController']->checkAccess($seed->module_dir,'export',true)) {
                     $sugar_config['disable_export']= true;
                 }
 
@@ -1385,7 +1385,7 @@ class ListView
                     || (!empty($sugar_config['admin_export_only'])
                     && !(
                             is_admin($current_user)
-                            || (ACLController::moduleSupportsACL($_REQUEST['module'])
+                            || ($GLOBALS['ACLController']->moduleSupportsACL($_REQUEST['module'])
                                 && ACLAction::getUserAccessLevel($current_user->id,$_REQUEST['module'], 'access') == ACL_ALLOW_ENABLED
                                 && (ACLAction::getUserAccessLevel($current_user->id, $_REQUEST['module'], 'admin') == ACL_ALLOW_ADMIN ||
                                     ACLAction::getUserAccessLevel($current_user->id, $_REQUEST['module'], 'admin') == ACL_ALLOW_ADMIN_DEV)))))

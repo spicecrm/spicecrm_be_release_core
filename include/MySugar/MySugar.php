@@ -56,9 +56,9 @@ class MySugar
             && (!in_array('Activities', $GLOBALS['moduleList']))){
             $displayDashlet = false;
         }
-        elseif (ACLController::moduleSupportsACL($this->type) ) {
+        elseif ($GLOBALS['ACLController']->moduleSupportsACL($this->type) ) {
             $bean = SugarModule::get($this->type)->loadBean();
-            if ( !ACLController::checkAccess($this->type,'list',true,$bean->acltype)) {
+            if ( !$GLOBALS['ACLController']->checkAccess($this->type,'list',true,$bean->acltype)) {
                 $displayDashlet = false;
             }
             $displayDashlet = true;

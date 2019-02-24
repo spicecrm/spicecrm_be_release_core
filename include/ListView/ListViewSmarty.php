@@ -149,7 +149,7 @@ class ListViewSmarty extends ListViewDisplay
         }
 		// include button for Adding to Target List if in one of four applicable modules
 		if ( isset ( $_REQUEST['module']) && in_array ( $_REQUEST['module'] , array ( 'Contacts','Prospects','Leads','Accounts' ))
-		&& ACLController::checkAccess('ProspectLists','edit',true)) {
+		&& $GLOBALS['ACLController']->checkAccess('ProspectLists','edit',true)) {
 			$this->ss->assign( 'targetLink', $this->buildTargetList() ) ;
 		}
 		$this->processArrows($data['pageData']['ordering']);

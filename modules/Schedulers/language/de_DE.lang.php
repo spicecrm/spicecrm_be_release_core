@@ -36,6 +36,7 @@ $mod_strings = array(
     'LBL_OOTB_CLEANUP_QUEUE' => 'Clean Jobs Queue',
     'LBL_OOTB_FTS_INDEX' => 'Volltextsuche index',
     'LBL_OOTB_SYSLOGSCLEANUP_INDEX' => 'Clean up SysLogs',
+    'LBL_OOTB_SYSFTSLOGSCLEANUP_INDEX' => 'Clean up SysFTSLogs',
 
 //KReporter
     'LBL_RUNSCHEDULEDKREPORTS' => 'Geplante KReports ausführen',

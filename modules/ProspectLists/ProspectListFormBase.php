@@ -49,7 +49,7 @@ class ProspectListFormBase {
 
 function getForm($prefix, $mod='', $form=''){
 	
-	if(!ACLController::checkAccess('ProspectLists', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('ProspectLists', 'edit', true)){
 		return '';
 	}
 	
@@ -89,7 +89,7 @@ EOQ;
 }
 
 function getFormBody($prefix, $mod='',$formname='', $size='30',$script=true) {
-	if(!ACLController::checkAccess('ProspectLists', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('ProspectLists', 'edit', true)){
 		return '';
 	}
 	global $mod_strings;
@@ -144,7 +144,7 @@ EOQ;
 		}
 		$focus = populateFromPost($prefix, $focus);
 		if(!$focus->ACLAccess('Save')){
-			ACLController::displayNoAccess(true);
+			$GLOBALS['ACLController']->displayNoAccess(true);
 			sugar_cleanup(true);
 		}
 		if(empty($focus->name)){

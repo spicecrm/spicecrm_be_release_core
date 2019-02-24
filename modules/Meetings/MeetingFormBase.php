@@ -48,7 +48,7 @@ require_once('include/SugarObjects/forms/FormBase.php');
 class MeetingFormBase extends FormBase {
 
 	function getFormBody($prefix, $mod='', $formname=''){
-		if(!ACLController::checkAccess('Meetings', 'edit', true)){
+		if(!$GLOBALS['ACLController']->checkAccess('Meetings', 'edit', true)){
 		return '';
 	}
 		global $mod_strings;
@@ -119,7 +119,7 @@ return $form;
 
 
 function getForm($prefix, $mod='Meetings'){
-	if(!ACLController::checkAccess('Meetings', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Meetings', 'edit', true)){
 		return '';
 	}
 
@@ -221,7 +221,7 @@ function handleSave($prefix,$redirect=true, $useRequired=false) {
 	// retrieve happens here
 	$focus = populateFromPost($prefix, $focus);
 	if(!$focus->ACLAccess('Save')) {
-	   ACLController::displayNoAccess(true);
+	   $GLOBALS['ACLController']->displayNoAccess(true);
 	   sugar_cleanup(true);
 	}
 

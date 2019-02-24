@@ -31,13 +31,13 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 global $mod_strings, $app_strings, $sugar_config;
 $module_menu = Array();
-if(ACLController::checkAccess('Proposals','edit',true)){
+if($GLOBALS['ACLController']->checkAccess('Proposals','edit',true)){
     $module_menu[]=	Array("index.php?module=Proposals&action=EditView&return_module=Proposals&return_action=DetailView", $mod_strings['LNK_NEW_PROPOSAL'],"CreateProposals");
 }
-if(ACLController::checkAccess('Proposals','list',true)){
+if($GLOBALS['ACLController']->checkAccess('Proposals','list',true)){
     $module_menu[]=	Array("index.php?module=Proposals&action=index&return_module=Proposals&return_action=DetailView", $mod_strings['LNK_PROPOSAL_LIST'],"Proposals");
 }
-if(ACLController::checkAccess('Proposals','import',true)){
+if($GLOBALS['ACLController']->checkAccess('Proposals','import',true)){
     $module_menu[]=  Array("index.php?module=Import&action=Step1&import_module=Proposals&return_module=Proposals&return_action=index", $mod_strings['LNK_IMPORT_PROPOSALS'],"Import");
 }
 

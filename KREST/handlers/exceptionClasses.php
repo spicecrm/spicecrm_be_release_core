@@ -11,6 +11,7 @@ class Exception extends \Exception {
     protected $lbl = null;
     protected $details;
     protected $logMessage = null;
+    protected $httpHeaders = [];
 
     function __construct( $message = null, $errorCode = null ) {
         if ( isset( $errorCode )) $this->errorCode = $errorCode;
@@ -81,6 +82,14 @@ class Exception extends \Exception {
 
     public function getMessageToLog() {
         return isset( $this->logMessage ) ? $this->logMessage : $this->message;
+    }
+
+    public function setHttpHeader( $name, $value ) {
+        return $this->httpHeaders[$name] = $value;
+    }
+
+    public function getHttpHeaders() {
+        return $this->httpHeaders;
     }
 
 }
@@ -163,6 +172,23 @@ class ConflictException extends Exception {
 
     public function setConflicts( $conflicts ) {
         $this->conflicts = $conflicts;
+        return $this;
+    }
+
+}
+
+class ToManyRequestsException extends Exception {
+
+    protected $isFatal = false;
+    protected $httpCode = 429;
+
+    function __construct( $message = null, $errorCode = null ) {
+        if ( !isset( $message )) $this->lbl = 'ERR_HTTP_TO_MANY_REQUESTS';
+        parent::__construct( isset( $message ) ? $message : 'To Many Requests', $errorCode );
+    }
+
+    public function setRetryAfter( $seconds ) {
+        $this->setHttpHeader( 'Retry-After', $seconds );
         return $this;
     }
 

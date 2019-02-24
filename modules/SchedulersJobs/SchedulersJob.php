@@ -495,7 +495,7 @@ class SchedulersJob extends Basic
      * Run this job
      * @return bool Was the job successful?
      */
-    public function runJob()
+    public function runJob($sudo = true)
     {
         require_once('modules/Schedulers/_AddJobsHere.php');
 
@@ -503,7 +503,7 @@ class SchedulersJob extends Basic
         $exJob = explode('::', $this->target, 2);
         if($exJob[0] == 'function') {
             // set up the current user and drop session
-            if(!$this->setJobUser()) {
+            if($sudo && !$this->setJobUser()) {
                 return false;
             }
     		$func = $exJob[1];
@@ -552,7 +552,7 @@ class SchedulersJob extends Basic
             if($tmpJob instanceof RunnableSchedulerJob)
             {
                 // set up the current user and drop session
-                if(!$this->setJobUser()) {
+                if($sudo && !$this->setJobUser()) {
                     return false;
                 }
                 $tmpJob->setJob($this);
@@ -579,6 +579,17 @@ class SchedulersJob extends Basic
 		    $this->resolveJob(self::JOB_FAILURE, sprintf(translate('ERR_JOBTYPE', 'SchedulersJobs'), strip_tags($this->target)));
 		}
 		return false;
+    }
+
+    public function completeJob($isJobDone) {
+        $this->id = create_guid();
+        $this->new_with_id = true;
+        $this->status = self::JOB_STATUS_DONE;
+        $this->execute_time = $GLOBALS['timedate']->nowDb();
+        $this->resolution = $isJobDone ? self::JOB_SUCCESS : self::JOB_SUCCESS;
+        $this->save();
+
+        if($isJobDone) $this->updateSchedulerSuccess();
     }
 
 }  // end class Job

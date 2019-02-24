@@ -73,8 +73,8 @@ class ImportController extends SugarController
             elseif ( $_REQUEST['import_module'] == 'Users' && !is_admin($GLOBALS['current_user']) )
                 $this->bean = false;
             elseif ( $this->bean->bean_implements('ACL')){
-                if(!ACLController::checkAccess($this->bean->module_dir, 'import', true)){
-                    ACLController::displayNoAccess();
+                if(!$GLOBALS['ACLController']->checkAccess($this->bean->module_dir, 'import', true)){
+                    $GLOBALS['ACLController']->displayNoAccess();
                     sugar_die('');
                 }
             }

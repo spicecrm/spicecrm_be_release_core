@@ -150,7 +150,7 @@ EOQ;
             $focus->text_only = 0;
         }
 		if(!$focus->ACLAccess('Save')) {
-			ACLController::displayNoAccess(true);
+			$GLOBALS['ACLController']->displayNoAccess(true);
 			sugar_cleanup(true);
 		}
 		if(!isset($_REQUEST['published'])) $focus->published = 'off';

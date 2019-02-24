@@ -745,6 +745,61 @@ class MysqlManager extends DBManager
         return in_array($type, array('blob','text','longblob', 'longtext'));
     }
 
+    /**
+     * CR1000138 - 2019-02-12
+     * To ensure multiple database types support vardefs will sometimes be defined with a basic dbType and a specific length to match another column Type. Example dbType='text' and a len=4294967295. This definition creates a longtext column in mysql.
+     * Column will be created properly in database but repair/rebuild will not recognize that vardef match with column type
+     * This function matches definition with table column type for specific column types
+     * @param $dbtype
+     * @param $vardef
+     * @return string|null
+     */
+
+    public function checkOnVarDefinition($fielddef1, $fielddef2)
+    {
+        $dbtype = $fielddef1['type'];
+        switch($dbtype){
+            case 'longtext' :
+                $fieldtype = $this->getFieldType($fielddef2);
+                if(isset($fielddef2['len'])) {
+                    switch ($fieldtype) {
+                        case 'text':
+                            if ($fielddef2['len'] >= 0 && $fielddef2['len'] <= 255)
+                                $fieldtype = 'varchar';
+                            elseif($fielddef2['len'] > 255 && $fielddef2['len'] <= 65535)
+                                $fieldtype =  'text';
+                            elseif ($fielddef2['len'] > 65535 && $fielddef2['len'] <= 16777215)
+                                $fieldtype = 'mediumtext';
+                            elseif ($fielddef2['len'] > 16777215 &&  $fielddef2['len'] <= 4294967295)
+                                $fieldtype = 'longtext';
+                            break;
+                    }
+                }
+                break;
+
+            case 'bigint':
+                $fieldtype = $this->getFieldType($fielddef2);
+                switch ($fieldtype) {
+                    case 'int':
+                        if($fielddef2['len'] >= 0 && $fielddef2['len'] <= 4)
+                            $fieldtype =  'tinyint';
+                        elseif($fielddef2['len'] > 4 && $fielddef2['len'] <= 6)
+                            $fieldtype =  'smallint';
+                        elseif($fielddef2['len'] > 6 && $fielddef2['len'] <= 10)
+                            $fieldtype =  'mediumint';
+                        elseif($fielddef2['len'] > 11 && $fielddef2['len'] <= 19)
+                            $fieldtype =  'int';
+                        elseif($fielddef2['len'] >  19)
+                            $fieldtype =  'bigint';
+                        break;
+                }
+                break;
+        }
+
+        return ($dbtype === $fieldtype);
+
+    }
+
 	/**
 	 * @see DBManager::oneColumnSQLRep()
 	 */

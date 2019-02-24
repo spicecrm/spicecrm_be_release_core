@@ -103,7 +103,7 @@ $out=<<<EOQ
 EOQ;
 foreach($drivers as $type => $driver) {
     $oci = ($type == "oci8")?"":'none'; // hack for special oracle message
-	//BEGIN CR1000089 display additional message about mysql 8 (release 2019.01.001)
+    //BEGIN CR1000089 display additional message about mysql 8 (release 2019.01.001)
     $mysqlversion = ($type == "mysql")?"<br>CAUTION: mysql version 8 is not supported yet.":'';
     //END
     $out.=<<<EOQ

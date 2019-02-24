@@ -86,9 +86,18 @@ if(isset($GLOBALS['sugar_config']['krest']['error_reporting']))
 if(isset($GLOBALS['sugar_config']['krest']['display_errors']))
     ini_set('display_errors', $GLOBALS['sugar_config']['krest']['display_errors']);
 
-include('KREST/loggers/krestlogger.php');
-include('KREST/errorhandlers/kresterrorhandler.php');
+if ( @$GLOBALS['sugar_config']['krest']['rateLimiting']['active'] ) {
+    require_once 'handlers/KRESTRateLimiter.php';
+    $app->add(
+        function ( $request, $response, $next ) {
+            KRESTRateLimiter::check( $request->getMethod() );
+            return $response = $next( $request, $response );
+        }
+    );
+}
 
+require_once 'errorhandlers/kresterrorhandler.php';
+require_once 'loggers/krestlogger.php';
 
 // check if we have extension in the local path
 $checkRootPaths= ['include', 'modules', 'custom/modules'];

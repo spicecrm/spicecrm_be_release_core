@@ -58,7 +58,7 @@ if (isset($_REQUEST['mode']) and $_REQUEST['mode']=='Test') {
     $deleteTest->deleteTestRecords($focus);
 } else {
 	if(!$focus->ACLAccess('Delete')){
-		ACLController::displayNoAccess(true);
+		$GLOBALS['ACLController']->displayNoAccess(true);
 		sugar_cleanup(true);
 	}
 	$focus->mark_deleted($_REQUEST['record']);

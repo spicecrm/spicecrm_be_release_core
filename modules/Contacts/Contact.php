@@ -170,7 +170,7 @@ class Contact extends Person {
 		$is_owner = false;
 		//MFH BUG 18281; JChi #15255
 		$is_owner = !empty($this->assigned_user_id) && $this->assigned_user_id == $GLOBALS['current_user']->id;
-			if(!ACLController::moduleSupportsACL('Accounts') || ACLController::checkAccess('Accounts', 'view', $is_owner)){
+			if(!$GLOBALS['ACLController']->moduleSupportsACL('Accounts') || $GLOBALS['ACLController']->checkAccess('Accounts', 'view', $is_owner)){
 				$array_assign['ACCOUNT'] = 'a';
 			}else{
 				$array_assign['ACCOUNT'] = 'span';

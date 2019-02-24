@@ -579,11 +579,11 @@ $mod_strings = array(
     'advanced_password_new_account_email' => array(
         'subject' =>		'Your login credentials for the CRM',
         'description' =>	'This template is used when the System Administrator sends a new password to a user.',
-        'body' => 			'<p>Here is your account username and your temporary password for the CRM:</p>'.
+        'body' => 			'<p>Here are your account username and your temporary password for the CRM:</p>'.
 							'<p>Username: <b>$contact_user_user_name</b><br>Password: <b>$contact_user_user_hash</b></p>'.
 							'<p>During the first login you have to change the temporary password.</p>'.
         					'<p>You will find the CRM here: {config.frontend_url}</p>',
-        'txt_body' =>		"Here is your account username and your temporary password for the CRM:\n\n".
+        'txt_body' =>		"Here are your account username and your temporary password for the CRM:\n\n".
 							'Username: $contact_user_user_name'."\n".
 							'Password: $contact_user_user_hash'."\n\n".
 							"During the first login you have to change the temporary password.\n\n",

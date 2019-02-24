@@ -289,7 +289,7 @@ function get_user_module_list($user){
 
 	$app_list_strings = return_app_list_strings_language($current_language);
 	$modules = query_module_access_list($user);
-	ACLController :: filterModuleList($modules, false);
+    $GLOBALS['ACLController']->filterModuleList($modules, false);
 	global $modInvisList;
 
 	foreach($modInvisList as $invis){

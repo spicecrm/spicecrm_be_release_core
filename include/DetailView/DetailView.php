@@ -153,7 +153,7 @@ class DetailView extends ListView {
 		$db_offset=$offset-1;
 
 		$this->populateQueryWhere($isFirstView, $html_varName);
-		if(ACLController::requireOwner($seed->module_dir, 'view')) {
+		if($GLOBALS['ACLController']->requireOwner($seed->module_dir, 'view')) {
 			global $current_user;
 			$seed->getOwnerWhere($current_user->id);
        		if(!empty($this->query_where)) {

@@ -186,7 +186,7 @@ class SugarFieldCollection extends SugarFieldBase {
                 // Save the new or updated record
                 if($save){
                     if(!$obj->ACLAccess('save')){
-                        ACLController::displayNoAccess(true);
+                        $GLOBALS['ACLController']->displayNoAccess(true);
                         sugar_cleanup(true);
                     }
                     $obj->save();

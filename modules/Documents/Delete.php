@@ -56,7 +56,7 @@ if(!isset($_REQUEST['record']))
 $focus = new Document();
 $focus->retrieve($_REQUEST['record']);
 if(!$focus->ACLAccess('Delete')){
-	ACLController::displayNoAccess(true);
+	$GLOBALS['ACLController']->displayNoAccess(true);
 	sugar_cleanup(true);
 }
 if (isset($_REQUEST['object']) && $_REQUEST['object']="documentrevision") {

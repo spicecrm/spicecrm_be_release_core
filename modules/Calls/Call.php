@@ -459,7 +459,7 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
 
         global $app_list_strings;
         $parent_types = $app_list_strings['record_type_display'];
-        $disabled_parent_types = ACLController::disabledModuleList($parent_types, false, 'list');
+        $disabled_parent_types = $GLOBALS['ACLController']->disabledModuleList($parent_types, false, 'list');
         foreach ($disabled_parent_types as $disabled_parent_type) {
             if ($disabled_parent_type != $this->parent_type) {
                 unset($parent_types[$disabled_parent_type]);
@@ -852,7 +852,7 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
                 $is_owner = $current_user->id == $this->parent_name_owner;
             }
         }
-        if (!ACLController::moduleSupportsACL($this->parent_type) || ACLController::checkAccess($this->parent_type, 'view', $is_owner)) {
+        if (!$GLOBALS['ACLController']->moduleSupportsACL($this->parent_type) || $GLOBALS['ACLController']->checkAccess($this->parent_type, 'view', $is_owner)) {
             $array_assign['PARENT'] = 'a';
         } else {
             $array_assign['PARENT'] = 'span';
@@ -865,7 +865,7 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
                 $is_owner = $current_user->id == $this->contact_name_owner;
             }
         }
-        if (ACLController::checkAccess('Contacts', 'view', $is_owner)) {
+        if ($GLOBALS['ACLController']->checkAccess('Contacts', 'view', $is_owner)) {
             $array_assign['CONTACT'] = 'a';
         } else {
             $array_assign['CONTACT'] = 'span';

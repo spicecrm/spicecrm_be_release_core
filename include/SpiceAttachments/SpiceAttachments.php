@@ -140,10 +140,10 @@ class SpiceAttachments
         $filesize = strlen($decodedFile);
         $filemd5 = md5($decodedFile);
 
-        $upload_file->final_move($guid);
+        $upload_file->final_move($filemd5);
 
         // if we have an image create a thumbnail
-        $thumbnail = self::createThumbnail($guid, $file_mime_type);
+        $thumbnail = self::createThumbnail($filemd5, $file_mime_type);
 
         $db->query("INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, text, thumbnail, deleted, file_mime_type) VALUES ('{$guid}', '{$beanName}', '{$beanId}', '" . $current_user->id . "', '" . gmdate('Y-m-d H:i:s') . "', '{$filename}', '{$filesize}', '{$filemd5}', '{$post['text']}', '$thumbnail', 0, '{$file_mime_type}')");
         $file = base64_encode(file_get_contents(self::UPLOAD_DESTINATION . $guid));

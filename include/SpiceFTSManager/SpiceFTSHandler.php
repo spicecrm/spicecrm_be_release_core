@@ -363,14 +363,14 @@ class SpiceFTSHandler
             $aclFilters = $GLOBALS['ACLController']->getFTSQuery($module);
             if (count($aclFilters) > 0) {
                 // do not write empty entries
-                if(isset($aclFilters['should']) && count($aclFilters['should']) > 1){
+                if(isset($aclFilters['should']) && count($aclFilters['should']) >= 1){
                     $queryParam['query']['bool']['filter']['bool']['should'] = $aclFilters['should'];
                     $queryParam['query']['bool']['filter']['bool']['minimum_should_match'] = 1;
                 }
-                if(isset($aclFilters['should']) && count($aclFilters['must_not']) > 1) {
+                if(isset($aclFilters['must_not']) && count($aclFilters['must_not']) >= 1) {
                     $queryParam['query']['bool']['filter']['bool']['must_not'] = $aclFilters['must_not'];
                 }
-                if(isset($aclFilters['should']) && count($aclFilters['must']) > 1) {
+                if(isset($aclFilters['must']) && count($aclFilters['must']) >= 1) {
                     $queryParam['query']['bool']['filter']['bool']['must'] = $aclFilters['must'];
                 }
 
@@ -560,7 +560,7 @@ class SpiceFTSHandler
 
         foreach ($modArray as $module) {
 
-            if (!ACLController::checkAccess($module, 'list', true))
+            if (!$GLOBALS['ACLController']->checkAccess($module, 'list', true))
                 continue;
 
             // prepare the aggregates
@@ -614,6 +614,12 @@ class SpiceFTSHandler
 
                 $hit['acl'] = $this->get_acl_actions($seed);
                 $hit['acl_fieldcontrol'] = $this->get_acl_fieldaccess($seed);
+
+                // unset hidden fields
+                foreach($hit['acl_fieldcontrol'] as $field => $control){
+                    if($control == 1 && isset($hit['_source'][$field])) unset($hit['_source'][$field]);
+                }
+
             }
 
             // add the aggregations
@@ -643,23 +649,14 @@ class SpiceFTSHandler
 
         $aclArray = [];
         if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFieldAccess')) {
-            $beanDataArray['acl_fieldcontrol']['edit'] = $GLOBALS['ACLController']->getFieldAccess($bean, 'edit', false);
-            $beanDataArray['acl_fieldcontrol']['display'] = $GLOBALS['ACLController']->getFieldAccess($bean, 'display', false);
-
-            // remove any field that is hidden
             $controlArray = [];
-            foreach ($beanDataArray['acl_fieldcontrol']['display'] as $field => $fieldcontrol) {
+            foreach ($GLOBALS['ACLController']->getFieldAccess($bean, 'display', false) as $field => $fieldcontrol) {
                 if (!isset($controlArray[$field]) || (isset($controlArray[$field]) && $fieldcontrol > $controlArray[$field]))
                     $aclArray[$field] = $fieldcontrol;
             }
-            foreach ($beanDataArray['acl_fieldcontrol']['edit'] as $field => $fieldcontrol) {
+            foreach ($GLOBALS['ACLController']->getFieldAccess($bean, 'edit', false) as $field => $fieldcontrol) {
                 if (!isset($controlArray[$field]) || (isset($controlArray[$field]) && $fieldcontrol > $controlArray[$field]))
                     $aclArray[$field] = $fieldcontrol;
-            }
-
-            foreach ($controlArray as $field => $fieldcontrol) {
-                if ($fieldcontrol == 1)
-                    unset($beanDataArray[$field]);
             }
         }
 
@@ -728,6 +725,9 @@ class SpiceFTSHandler
         while ($bean = $db->fetchByAssoc($beans)) {
             echo 'Indexing module ' . $bean['module'] . ' ... ';
             $seed = BeanFactory::getBean($bean['module']);
+
+            //in case of module mispelling, no bean will be found. Catch here
+            if(!$seed) continue;
 
             $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)", 0, $packagesize - $beanCounter);
 

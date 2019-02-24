@@ -145,7 +145,7 @@ class EAPMController extends SugarController
             return $this->set_redirect('index.php');
         }
 		if(!$this->bean->ACLAccess('save')){
-			ACLController::displayNoAccess(true);
+			$GLOBALS['ACLController']->displayNoAccess(true);
 			sugar_cleanup(true);
 			return true;
 		}

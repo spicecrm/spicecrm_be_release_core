@@ -269,7 +269,7 @@ class SugarWidgetSubPanelTopButton extends SugarWidget
 		$temp='';
 		$inputID = $this->getWidgetId();
 
-		if(!empty($this->acl) && ACLController::moduleSupportsACL($defines['module'])  &&  !ACLController::checkAccess($defines['module'], $this->acl, true)){
+		if(!empty($this->acl) && $GLOBALS['ACLController']->moduleSupportsACL($defines['module'])  &&  !$GLOBALS['ACLController']->checkAccess($defines['module'], $this->acl, true)){
 			return $temp;
 		}
 

@@ -44,8 +44,8 @@ class SugarWidgetSubPanelTopArchiveEmailButton extends SugarWidgetSubPanelTopBut
 {
 	function display($defines)
 	{
-		if((ACLController::moduleSupportsACL($defines['module'])  && !ACLController::checkAccess($defines['module'], 'edit', true) ||
-			$defines['module'] == "History" & !ACLController::checkAccess("Emails", 'edit', true))){
+		if(($GLOBALS['ACLController']->moduleSupportsACL($defines['module'])  && !$GLOBALS['ACLController']->checkAccess($defines['module'], 'edit', true) ||
+			$defines['module'] == "History" & !$GLOBALS['ACLController']->checkAccess("Emails", 'edit', true))){
 			$temp = '';
 			return $temp;
 		}
@@ -69,7 +69,7 @@ class SugarWidgetSubPanelTopArchiveEmailButton extends SugarWidgetSubPanelTopBut
 		{
 			$additionalFormFields['to_email_addrs'] = $defines['focus']->email1;
 		}
-		if(ACLController::moduleSupportsACL($defines['module'])  && !ACLController::checkAccess($defines['module'], 'edit', true)){
+		if($GLOBALS['ACLController']->moduleSupportsACL($defines['module'])  && !$GLOBALS['ACLController']->checkAccess($defines['module'], 'edit', true)){
 			$button = "<input id='".preg_replace('[ ]', '', $value)."_button'  title='$title' class='button' type='button' name='".preg_replace('[ ]', '', strtolower($value))."_button' value='$value' disabled/>\n";
 			return $button;
 		}

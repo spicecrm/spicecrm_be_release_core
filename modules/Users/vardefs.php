@@ -76,6 +76,11 @@ $dictionary['User'] = array(
                 'searchview' => false,
             ),
         ),
+        'user_image' => array(
+            'name' => 'user_image',
+            'vname' => 'LBL_USER_IMAGE',
+            'type' => 'longtext'
+        ),
         'system_generated_password' => array(
             'name' => 'system_generated_password',
             'vname' => 'LBL_SYSTEM_GENERATED_PASSWORD',
@@ -125,6 +130,15 @@ $dictionary['User'] = array(
             'importable' => false,
             'studio' => array('listview' => false, 'searchview' => false, 'formula' => false),
         ),
+        'salutation' => array(
+            'name' => 'salutation',
+            'vname' => 'LBL_SALUTATION',
+            'type' => 'enum',
+            'options' => 'salutation_dom',
+            'massupdate' => false,
+            'len' => '255',
+            'comment' => 'Contact salutation (e.g., Mr, Ms)'
+        ),
         'first_name' => array(
             'name' => 'first_name',
             'vname' => 'LBL_FIRST_NAME',
@@ -140,6 +154,18 @@ $dictionary['User'] = array(
             'len' => '30',
             'importable' => 'required',
             'required' => true,
+        ),
+        'degree1' => array(
+            'name' => 'degree1',
+            'vname' => 'LBL_DEGREE1',
+            'type' => 'varchar',
+            'len' => 50
+        ),
+        'degree2' => array(
+            'name' => 'degree2',
+            'vname' => 'LBL_DEGREE2',
+            'type' => 'varchar',
+            'len' => 50
         ),
         'full_name' => array(
             'name' => 'full_name',

@@ -195,7 +195,7 @@ class SugarWebServiceUtilv3_1 extends SugarWebServiceUtilv3
         $actions = array('edit','delete','list','view','import','export');
         foreach ($actions as $action)
         {
-            $access = ACLController::checkAccess($module, $action, true);
+            $access = $GLOBALS['ACLController']->checkAccess($module, $action, true);
             $results[] = array('action' => $action, 'access' => $access);
         }
 
@@ -393,7 +393,7 @@ class SugarWebServiceUtilv3_1 extends SugarWebServiceUtilv3
 		}
 		$order_by=$seed->process_order_by($order_by, null);
 
-		if($seed->bean_implements('ACL') && ACLController::requireOwner($seed->module_dir, 'list') )
+		if($seed->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($seed->module_dir, 'list') )
 		{
 			global $current_user;
 			$owner_where = $seed->getOwnerWhere($current_user->id);

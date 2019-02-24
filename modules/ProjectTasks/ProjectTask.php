@@ -301,7 +301,7 @@ class ProjectTask extends SugarBean {
 				$is_owner = $current_user->id == $this->parent_name_owner;
 			}
 		}
-			if(ACLController::checkAccess('Project', 'view', $is_owner)){
+			if($GLOBALS['ACLController']->checkAccess('Project', 'view', $is_owner)){
 				$array_assign['PARENT'] = 'a';
 			}else{
 				$array_assign['PARENT'] = 'span';
@@ -314,7 +314,7 @@ class ProjectTask extends SugarBean {
 				$is_owner = $current_user->id == $this->depends_on_name_owner;
 			}
 		}
-			if( ACLController::checkAccess('ProjectTasks', 'view', $is_owner)){
+			if( $GLOBALS['ACLController']->checkAccess('ProjectTasks', 'view', $is_owner)){
 				$array_assign['PARENT_TASK'] = 'a';
 			}else{
 				$array_assign['PARENT_TASK'] = 'span';

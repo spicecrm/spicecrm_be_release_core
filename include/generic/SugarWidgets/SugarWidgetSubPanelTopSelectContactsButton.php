@@ -81,7 +81,7 @@ class SugarWidgetSubPanelTopSelectContactsButton extends SugarWidgetSubPanelTopS
 		}
 
 		$focus = $widget_data['focus'];
-		if(ACLController::moduleSupportsACL($widget_data['module']) && !ACLController::checkAccess($widget_data['module'], 'list', true)){
+		if($GLOBALS['ACLController']->moduleSupportsACL($widget_data['module']) && !$GLOBALS['ACLController']->checkAccess($widget_data['module'], 'list', true)){
 			$button = ' <input type="button" name="' .$this->getWidgetId() . '" id="' .$this->getWidgetId() . '" class="button"' . "\"\n"
 			. ' title="' . $this->title . '"'
 			. ' value="' . $this->value . "\"\n"

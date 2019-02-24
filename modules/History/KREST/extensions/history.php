@@ -36,7 +36,7 @@ $app->group('/module/History', function () use ($app)
 
             // get the query
             $seed = BeanFactory::getBean($module);
-            if($seed && ACLController::checkAccess($module, 'list') && method_exists($seed, 'get_history_query')){
+            if($seed && $GLOBALS['ACLController']->checkAccess($module, 'list') && method_exists($seed, 'get_history_query')){
                 $query = $seed->get_history_query($args['parentmodule'], $args['parentid'], $getParams['own']);
                 if(is_array($query)){
                     $queryArray = array_merge($queryArray, $query);

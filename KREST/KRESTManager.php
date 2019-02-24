@@ -23,6 +23,7 @@ class KRESTManager {
     var $tmpSessionId = null;
     var $requestParams = array();
     var $noAuthentication = false;
+    var $adminOnly = false;
     var $extensions = array();
 
     public function __construct($theApp, $requestParams = array()) {
@@ -54,6 +55,18 @@ class KRESTManager {
             $this->noAuthentication = true;
         else if ($currentPath === $path)
             $this->noAuthentication = true;
+    }
+
+    public function adminAccessOnly($path) {
+        // support for IIS
+        $currentPath = $this->app->getContainer()['environment']->get("REDIRECT_URL") ?: $this->app->getContainer()['environment']->get("REQUEST_URI");
+        $currentPath = explode('/KREST', $currentPath, 2)[1];
+        //var_dump($currentPath);
+        //$this->noAuthentication = true;
+        if (substr($path, -1) === '*' && strpos($currentPath, substr($path, 0, -1)) === 0)
+            $this->adminOnly = true;
+        else if ($currentPath === $path)
+            $this->adminOnly = true;
     }
 
     public function authenticate() {
@@ -129,6 +142,10 @@ class KRESTManager {
                 $this->authenticationError('session invalid');
         } else {
             $this->authenticationError('auth data missing');
+        }
+
+        if($this->adminOnly && !$GLOBALS['current_user']->is_admin){
+            $this->authenticationError('Admin Access only');
         }
     }
 
@@ -292,7 +309,7 @@ class KRESTManager {
             $_SESSION['KREST'] = true;
 
             $_SESSION['avail_modules'] = query_module_access_list($user);
-            ACLController:: filterModuleList($_SESSION['avail_modules'], false);
+            $GLOBALS['ACLController']->filterModuleList($_SESSION['avail_modules'], false);
 
             $_SESSION['authenticated_user_id'] = $current_user->id;
             $_SESSION['unique_key'] = $sugar_config['unique_key'];
@@ -322,6 +339,7 @@ class KRESTManager {
             'renewPass'    => $current_user->system_generated_password,
             'user_name'    => $current_user->user_name,
             'userid'       => $current_user->id,
+            'user_image'   => $current_user->user_image,
             'dev'          => $current_user->is_dev
         ];
 

@@ -80,7 +80,7 @@ class EAPMViewDetail extends ViewDetail {
         if($GLOBALS['current_user']->is_admin || empty($this->bean) || empty($this->bean->id) || $this->bean->isOwner($GLOBALS['current_user']->id)){
  			parent::display();
         } else {
-        	ACLController::displayNoAccess();
+        	$GLOBALS['ACLController']->displayNoAccess();
         }
  	}
 }

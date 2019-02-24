@@ -96,10 +96,10 @@ var $selectedCategories = array();
         $this->searchFields = $dashletData['SugarFeedDashlet']['searchFields'];
         $this->columns = $dashletData['SugarFeedDashlet']['columns'];
 		$catCount = count($this->categories);
-		ACLController::filterModuleList($this->categories, false);
+		$GLOBALS['ACLController']->filterModuleList($this->categories, false);
 		if(count($this->categories) < $catCount){
 			if(!empty($this->selectedCategories)){
-				ACLController::filterModuleList($this->selectedCategories, true);
+				$GLOBALS['ACLController']->filterModuleList($this->selectedCategories, true);
 			}else{
 				$this->selectedCategories = array_keys($this->categories);
 				unset($this->selectedCategories[0]);

@@ -478,7 +478,7 @@ $xtpl->assign('TIME_START', substr($focus->time_start,0,5));
 $xtpl->assign('TIME_MERIDIEM', $timedate->AMPMMenu('',$focus->time_start));
 
 $parent_types = $app_list_strings['record_type_display'];
-$disabled_parent_types = ACLController::disabledModuleList($parent_types,false, 'list');
+$disabled_parent_types = $GLOBALS['ACLController']->disabledModuleList($parent_types,false, 'list');
 
 foreach($disabled_parent_types as $disabled_parent_type){
 	if($disabled_parent_type != $focus->parent_type){
@@ -554,7 +554,7 @@ $change_parent_button = '<input type="button" name="button" tabindex="2" class="
 $xtpl->assign("CHANGE_PARENT_BUTTON", $change_parent_button);
 
 $button_attr = '';
-if(!ACLController::checkAccess('Contacts', 'list', true)){
+if(!$GLOBALS['ACLController']->checkAccess('Contacts', 'list', true)){
 	$button_attr = 'disabled="disabled"';
 }
 
@@ -683,7 +683,7 @@ if($parse_open) {
 }
 ///////////////////////////////////////////////////////////////////////////////
 ////	EMAIL TEMPLATES
-if(ACLController::checkAccess('EmailTemplates', 'list', true) && ACLController::checkAccess('EmailTemplates', 'view', true)) {
+if($GLOBALS['ACLController']->checkAccess('EmailTemplates', 'list', true) && $GLOBALS['ACLController']->checkAccess('EmailTemplates', 'view', true)) {
 	$et = new EmailTemplate();
 	$etResult = $focus->db->query($et->create_new_list_query('','',array(),array(),''));
 	$email_templates_arr[] = '';

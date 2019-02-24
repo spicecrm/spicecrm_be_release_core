@@ -68,7 +68,7 @@ class ViewSugarpdf extends SugarView{
          
          // ACL control
         if(!empty($this->bean) && !$this->bean->ACLAccess($this->sugarpdfBean->aclAction)){
-            ACLController::displayNoAccess(true);
+            $GLOBALS['ACLController']->displayNoAccess(true);
             sugar_cleanup(true);
         }
         

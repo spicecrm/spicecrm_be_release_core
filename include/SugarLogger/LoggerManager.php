@@ -104,7 +104,7 @@ class LoggerManager
      * @param $db
      */
     public static function getDbManager(){
-        if(is_null(self::$db) && !$GLOBALS['installing']) {
+        if ( is_null( self::$db ) && empty( $GLOBALS['installing'] )) {
             if (!is_null($GLOBALS['db'])) {
                 self::$db = $GLOBALS['db'];
             } else {

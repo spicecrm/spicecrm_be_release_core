@@ -46,7 +46,7 @@ class DashboardComponent extends SugarBean {
 	function bean_implements($interface)
 	{
 		switch($interface){
-			case 'ACL':return true;
+			case 'ACL':return false;
 		}
 		return false;
 	}

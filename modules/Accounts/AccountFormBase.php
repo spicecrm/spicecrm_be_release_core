@@ -100,7 +100,7 @@ function checkForDuplicates($prefix){
 
 
 function buildTableForm($rows, $mod='Accounts'){
-	if(!ACLController::checkAccess('Accounts', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Accounts', 'edit', true)){
 		return '';
 	}
 	global $action;
@@ -213,7 +213,7 @@ function buildTableForm($rows, $mod='Accounts'){
 }
 
 function getForm($prefix, $mod='', $form=''){
-	if(!ACLController::checkAccess('Accounts', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Accounts', 'edit', true)){
 		return '';
 	}
 if(!empty($mod)){
@@ -246,7 +246,7 @@ return $the_form;
 
 
 function getFormBody($prefix,$mod='', $formname=''){
-	if(!ACLController::checkAccess('Accounts', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Accounts', 'edit', true)){
 		return '';
 	}
 global $mod_strings;
@@ -293,7 +293,7 @@ return $form;
 
 
 function getWideFormBody($prefix, $mod='',$formname='',  $contact=''){
-	if(!ACLController::checkAccess('Accounts', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Accounts', 'edit', true)){
 		return '';
 	}
 	
@@ -494,7 +494,7 @@ function handleSave($prefix,$redirect=true, $useRequired=false){
 		}
 	}
 	if(!$focus->ACLAccess('Save')){
-		ACLController::displayNoAccess(true);
+        $GLOBALS['ACLController']->displayNoAccess(true);
 		sugar_cleanup(true);
 	}
 

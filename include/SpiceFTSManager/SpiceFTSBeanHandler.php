@@ -38,7 +38,7 @@ class SpiceFTSBeanHandler
 
         // add Standard Fields
         foreach (SpiceFTSUtils::$standardFields as $standardField => $standardFieldData) {
-            if ( isset( $this->seed->$standardField ) and ( $this->seed->$standardField == '0' || !empty($this->seed->$standardField))) {
+            if (isset($this->seed->field_name_map[$standardField]) &&  isset( $this->seed->$standardField ) and ( $this->seed->$standardField == '0' || !empty($this->seed->$standardField))) {
                 $indexArray[$standardField] = $this->mapDataType($this->seed->field_name_map[$standardField]['type'], $this->seed->$standardField);
             }
         }

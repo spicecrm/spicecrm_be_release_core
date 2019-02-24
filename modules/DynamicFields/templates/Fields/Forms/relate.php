@@ -51,7 +51,7 @@ function get_body (&$ss , $vardef)
         $modules [ $module ] = translate ( 'LBL_MODULE_NAME', $module ) ;
     }
     
-    foreach ( ACLController::disabledModuleList ( $modules, false, 'list' ) as $disabled_parent_type )
+    foreach ( $GLOBALS['ACLController']->disabledModuleList ( $modules, false, 'list' ) as $disabled_parent_type )
     {
         unset ( $modules [ $disabled_parent_type ] ) ;
     }

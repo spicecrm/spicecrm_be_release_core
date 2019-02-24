@@ -41,12 +41,19 @@ class SpiceLanguageLoader{
     public $routebase = "";
     public $release = true;
 
-    public function __construct(){
-        $this->loader = new SpiceUILoader();
+    public function __construct($endpoint = null){
+        $this->loader = new SpiceUILoader($endpoint);
         $this->routebase = $this->getRouteBase();
 
-        if(!preg_match('/release/', $this->routebase))
-            $this->release = false;
+        if(empty($endpoint)){
+            $this->routebase = $this->getRouteBase();
+            if (!preg_match('/release/', $this->routebase))
+                $this->release = false;
+
+        }else{
+            if (!preg_match('/packages.spicecrm.io/', $this->endpoint))
+                $this->release = false;
+        }
     }
 
 
@@ -137,7 +144,7 @@ class SpiceLanguageLoader{
         // $route = "referencelanguage";
         $package = '*';
 
-        $endpoint = implode("/", array($this->routebase, $language, $package, '*'));
+        $endpoint = implode("/", array('language', $language, $package, '*'));
         $results = $this->loadDefaultConf($endpoint, array('route' => $this->routebase, 'languages' => $language, 'package' => '*', 'version' => '*'), false);
         return $results;
     }

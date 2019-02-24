@@ -120,6 +120,13 @@ $dictionary['Mailbox'] = [
             'default' => true,
             'comment' => 'Mailbox active flag',
         ],
+        'hidden' => [
+            'name'    => 'hidden',
+            'vname'   => 'LBL_HIDDEN',
+            'type'    => 'bool',
+            'default' => false,
+            'comment' => 'Mailbox hidden flag',
+        ],
         'catch_all_address' => [
             'name'    => 'catch_all_address',
             'vname'   => 'LBL_CATCH_ALL_ADDRESS',

@@ -59,7 +59,7 @@ class ViewConvertLead extends SugarView
     public function preDisplay()
     {
         if (!$this->bean->ACLAccess('edit')) {
-            ACLController::displayNoAccess();
+            $GLOBALS['ACLController']->displayNoAccess();
             sugar_die('');
         }
     }

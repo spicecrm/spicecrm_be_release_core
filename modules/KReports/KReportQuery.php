@@ -923,13 +923,28 @@ class KReportQuery
                         $this->fromString .= ' ' . $selectArray['join'] . ' ';
                     }
                     break;
+                case 'SpiceACL':
+                    $selectArray = array('where' => '', 'from' => '', 'select' => '');
+                    if(method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray'))
+                        $GLOBALS['ACLController']->addACLAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], $true);
+                    if (!empty($selectArray['where'])) {
+                        if (empty($this->whereString)) {
+                            $this->whereString = " " . $selectArray['where'] . " ";
+                        } else {
+                            $this->whereString .= " AND " . $selectArray['where'] . " ";
+                        }
+                    }
+                    if (!empty($selectArray['join'])) {
+                        $this->fromString .= ' ' . $selectArray['join'] . ' ';
+                    }
+                    break;
                 case 'PRO':
                     $this->fromString .= ' ';
                     $this->joinSegments['root:' . $this->root_module]['object']->add_team_security_where_clause($this->fromString, $this->rootGuid);
                     break;
                 //2013-03-26 Bug#460 Typo changed
                 case 'SecurityGroups':
-                    if ($this->joinSegments['root:' . $this->root_module]['object']->bean_implements('ACL') && ACLController::requireSecurityGroup($this->joinSegments['root:' . $this->root_module]['object']->module_dir, 'list')) {
+                    if ($this->joinSegments['root:' . $this->root_module]['object']->bean_implements('ACL') && $GLOBALS['ACLController']->requireSecurityGroup($this->joinSegments['root:' . $this->root_module]['object']->module_dir, 'list')) {
                         require_once('modules/SecurityGroups/SecurityGroup.php');
                         $securitygroup = new SecurityGroup();
                         global $current_user;
@@ -948,7 +963,7 @@ class KReportQuery
                     break;
                 default:
                     //by deault check ownwer clause
-                    if(!$current_user->is_admin && $this->joinSegments['root:' . $this->root_module]['object']->bean_implements('ACL')  && ACLController::requireOwner($this->joinSegments['root:' . $this->root_module]['object']->module_dir, 'list')) {
+                    if(!$current_user->is_admin && $this->joinSegments['root:' . $this->root_module]['object']->bean_implements('ACL')  && $GLOBALS['ACLController']->requireOwner($this->joinSegments['root:' . $this->root_module]['object']->module_dir, 'list')) {
                         //2013-02-22 missing check if we have a wherestring at all
                         if ($this->whereString != '')
                             $this->whereString .= ' AND ';
@@ -1051,7 +1066,7 @@ class KReportQuery
                             $this->joinSegments[$thisPath]['object'] = new $beanList[$this->joinSegments[$leftPath]['object']->$rightArrayEl->getRelatedModuleName()](); //$rightArray[2]
 
                             //bugfix 2010-08-19, respect ACL role access for owner reuqired in select
-                            if ($this->joinSegments[$leftPath]['object']->bean_implements('ACL') && ACLController::requireOwner($this->joinSegments[$leftPath]['object']->module_dir, 'list')) {
+                            if ($this->joinSegments[$leftPath]['object']->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($this->joinSegments[$leftPath]['object']->module_dir, 'list')) {
                                 //2013-02-22 missing check if we have a wherestring at all
                                 if ($this->whereString != '')
                                     $this->whereString .= ' AND ';
@@ -1085,13 +1100,28 @@ class KReportQuery
                                             $this->fromString .= ' ' . $selectArray['join'] . ' ';
                                         }
                                         break;
+                                    case 'SpiceACL':
+                                        $selectArray = array('where' => '', 'from' => '', 'select' => '');
+                                        if(method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray'))
+                                            $GLOBALS['ACLController']->addACLAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], $true);
+                                        if (!empty($selectArray['where'])) {
+                                            if (empty($this->whereString)) {
+                                                $this->whereString = " " . $selectArray['where'] . " ";
+                                            } else {
+                                                $this->whereString .= " AND " . $selectArray['where'] . " ";
+                                            }
+                                        }
+                                        if (!empty($selectArray['join'])) {
+                                            $this->fromString .= ' ' . $selectArray['join'] . ' ';
+                                        }
+                                        break;
                                     case 'PRO':
                                         $this->fromString .= ' ';
                                         $this->joinSegments[$thisPath]['object']->add_team_security_where_clause($this->fromString, $this->joinSegments[$thisPath]['alias']);
                                         break;
                                     //2013-03-26 Bug#460 Typo changed
                                     case 'SecurityGroups':
-                                        if ($this->joinSegments[$thisPath]['object']->bean_implements('ACL') && ACLController::requireSecurityGroup($this->joinSegments[$thisPath]['object']->module_dir, 'list')) {
+                                        if ($this->joinSegments[$thisPath]['object']->bean_implements('ACL') && $GLOBALS['ACLController']->requireSecurityGroup($this->joinSegments[$thisPath]['object']->module_dir, 'list')) {
                                             require_once('modules/SecurityGroups/SecurityGroup.php');
                                             $securitygroup = new SecurityGroup();
                                             global $current_user;
@@ -1523,7 +1553,7 @@ class KReportQuery
         // check for Role based access on root module
         // 2013-02-22 ... added anyway for each segment ... no need to add here again ...
         /*
-          if (!$current_user->is_admin && $this->joinSegments['root:' . $this->root_module]['object']->bean_implements('ACL') && ACLController::requireOwner($this->joinSegments['root:' . $this->root_module]['object']->module_dir, 'list')) {
+          if (!$current_user->is_admin && $this->joinSegments['root:' . $this->root_module]['object']->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($this->joinSegments['root:' . $this->root_module]['object']->module_dir, 'list')) {
           $this->whereString .= ' AND ' . $this->rootGuid . '.assigned_user_id=\'' . $current_user->id . '\'';
           }
          */

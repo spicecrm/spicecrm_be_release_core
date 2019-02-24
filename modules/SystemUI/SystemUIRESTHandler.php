@@ -77,10 +77,10 @@ class SystemUIRESTHandler
             $aclArray = [];
             $seed = BeanFactory::getBean($module['module']);
             if ($seed) {
-                $aclActions = ['list', 'view', 'delete', 'edit', 'create', 'export', 'import'];
+                $aclActions = ['list', 'listrelated', 'view', 'delete', 'edit', 'create', 'export', 'import'];
                 foreach ($aclActions as $aclAction) {
                     // $aclArray[$aclAction] = $seed->ACLAccess($aclAction);
-                    $aclArray[$aclAction] = ACLController::checkAccess($module['module'], $aclAction, true);
+                    $aclArray[$aclAction] = $GLOBALS['ACLController']->checkAccess($module['module'], $aclAction, true);
                 }
             } else {
                 $aclArray['list'] = true;

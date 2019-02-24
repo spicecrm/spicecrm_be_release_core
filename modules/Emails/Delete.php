@@ -51,7 +51,7 @@ if(!isset($_REQUEST['record']))
 $focus->retrieve($_REQUEST['record']);
 $email_type = $focus->type;
 if(!$focus->ACLAccess('Delete')){
-	ACLController::displayNoAccess(true);
+	$GLOBALS['ACLController']->displayNoAccess(true);
 	sugar_cleanup(true);
 }
 $focus->mark_deleted($_REQUEST['record']);

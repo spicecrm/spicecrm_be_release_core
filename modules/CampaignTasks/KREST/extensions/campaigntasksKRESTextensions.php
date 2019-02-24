@@ -6,7 +6,7 @@ require_once('KREST/handlers/module.php');
 $app->get('/module/CampaignTasks/{campaignid}/items', function ($req, $res, $args) use ($app) {
     global $timedate;
 
-    if (!ACLController::checkAccess('CampaignTasks', 'detail', true))
+    if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'detail', true))
         throw ( new KREST\ForbiddenException("Forbidden for details in module CampaignTasks."))->setErrorCode('noModuleDetails');
 
     $getParams = $_GET;
@@ -46,7 +46,7 @@ $app->get('/module/CampaignTasks/{campaignid}/items', function ($req, $res, $arg
 $app->post('/module/CampaignTasks/{campaignid}/activate', function ($req, $res, $args) use ($app) {
 
     // ACL Check
-    if (!ACLController::checkAccess('CampaignTasks', 'edit', true))
+    if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'edit', true))
         throw ( new KREST\ForbiddenException("Forbidden to edit in module CampaignTasks."))->setErrorCode('noModuleEdit');
 
     // load the campaign task

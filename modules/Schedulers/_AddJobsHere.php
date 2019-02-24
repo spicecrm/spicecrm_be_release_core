@@ -75,6 +75,7 @@ $job_strings = [
     24 => 'processEmails',
     25 => 'processSpiceImports',
     26 => 'cleanSysLogs',
+    27 => 'cleanSysFTSLogs',
 
 ];
 
@@ -685,5 +686,16 @@ function processSpiceImports(){
 function cleanSysLogs(){
     $defaultInterval = "7 DAY";
     $q = "DELETE FROM syslogs WHERE date_entered < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['logger']['db']['clean_interval']) && !empty($GLOBALS['sugar_config']['logger']['db']['clean_interval']) ? $GLOBALS['sugar_config']['logger']['db']['clean_interval'] : $defaultInterval).")";
+    $GLOBALS['db']->query($q);
+}
+
+/**
+ * Job 27
+ * Clean sysftslogs
+ */
+
+function cleanSysFTSLogs(){
+    $defaultInterval = "14 DAY";
+    $q = "DELETE FROM sysftslogs WHERE date_entered < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['fts']['log_clean_interval']) && !empty($GLOBALS['sugar_config']['fts']['clean_interval']) ? $GLOBALS['sugar_config']['fts']['log_clean_interval'] : $defaultInterval).")";
     $GLOBALS['db']->query($q);
 }

@@ -13,23 +13,45 @@ class SpiceUILoader
     public $endpoint = 'https://packages.spicecrm.io/';
     public $curl;
 
-    public function __construct()
+
+    /**
+     * SpiceUIConfLoader constructor.
+     * @param null $endpoint introduced with CR1000133
+     */
+    public function __construct($endpoint = null)
     {
         global $sugar_config;
         $this->db = DBManagerFactory::getTypeInstance($sugar_config['dbconfig']['db_type']);
         if (!$this->db->connect($sugar_config['dbconfig']))
             die('database connection failed');
 
-        if (isset($sugar_config['spiceconfigreference']['endpoint']) && !empty($sugar_config['spiceconfigreference']['endpoint'])) {
-            $this->endpoint = $sugar_config['spiceconfigreference']['endpoint'];
+        //CR1000133: old config til release 201901001
+        if(empty($endpoint)){
+            $endpoint = $sugar_config['spiceconfigreference']['endpoint'];
+        }
+        //CR1000133 new config from release 201902001 on
+        if(!empty($sugar_config['packageloader']['sources'][0])){
+            $endpoint = $sugar_config['packageloader']['sources'][0];
+        }
+
+
+        if (!empty($endpoint)) {
+            $this->endpoint = $endpoint;
             if (substr($this->endpoint, -1) != "/") {
                 $this->endpoint .= "/";
             }
+        }else{
+            $GLOBALS['log']->error("No endpoint defined");
         }
 
         $this->curl = curl_init();
     }
 
+
+    /**
+     * @deprecated CR1000133 since release 201902001 - keep a while for BWC
+     * @return bool|string
+     */
     public function getRouteBase(){
         global $sugar_config;
         $routebase ="release";

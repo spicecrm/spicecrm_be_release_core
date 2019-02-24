@@ -353,6 +353,19 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
         return $result;
     }
 
+
+    function get_contacts($params = array())
+    {
+        // First, get the list of IDs.
+        $query = "SELECT contact_id as id from meetings_contacts where meeting_id='$this->id' AND deleted=0 ";
+        if(!empty($params)){
+            if(isset($params['order_by']) && !empty($params['order_by'])){
+                $query.= " ".$params['order_by']." ";
+            }
+        }
+        return $this->build_related_list($query, new Contact());
+    }
+
 	function get_summary_text() {
 		return "$this->name";
 	}
@@ -507,7 +520,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
 
 		global $app_list_strings;
 		$parent_types = $app_list_strings['record_type_display'];
-		$disabled_parent_types = ACLController::disabledModuleList($parent_types,false, 'list');
+		$disabled_parent_types = $GLOBALS['ACLController']->disabledModuleList($parent_types,false, 'list');
 		foreach($disabled_parent_types as $disabled_parent_type){
 			if($disabled_parent_type != $this->parent_type){
 				unset($parent_types[$disabled_parent_type]);
@@ -881,7 +894,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
 			}
 		}
 
-		if(!ACLController::moduleSupportsACL($this->parent_type) || ACLController::checkAccess($this->parent_type, 'view', $is_owner)) {
+		if(!$GLOBALS['ACLController']->moduleSupportsACL($this->parent_type) || $GLOBALS['ACLController']->checkAccess($this->parent_type, 'view', $is_owner)) {
 			$array_assign['PARENT'] = 'a';
 		} else {
 			$array_assign['PARENT'] = 'span';
@@ -896,7 +909,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
 			}
 		}
 
-		if(ACLController::checkAccess('Contacts', 'view', $is_owner)) {
+		if($GLOBALS['ACLController']->checkAccess('Contacts', 'view', $is_owner)) {
 			$array_assign['CONTACT'] = 'a';
 		} else {
 			$array_assign['CONTACT'] = 'span';

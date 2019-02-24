@@ -86,7 +86,7 @@ if ($appointment_filter == 'last this_month') {
 $dayEnd = $timedate->asDb($laterDate->get_day_end_time());
 $GLOBALS['log']->debug("filter $appointment_filter date $dayEnd");
 
-if(ACLController::checkAccess('Meetings', 'list', true)){
+if($GLOBALS['ACLController']->checkAccess('Meetings', 'list', true)){
 	$meeting = new Meeting();
 	$where = '(';
 	$or = false;
@@ -116,7 +116,7 @@ if(ACLController::checkAccess('Meetings', 'list', true)){
 	$focus_meetings_list = $meeting->get_full_list("time_start", $where);
 }
 
-if(ACLController::checkAccess('Calls', 'list', true)) {
+if($GLOBALS['ACLController']->checkAccess('Calls', 'list', true)) {
 	$call = new Call();
 	$where = '(';
 	$or = false;

@@ -1,11 +1,3 @@
-24-01-2019
-----------
-SpiceTheme Login image loadable from administration settings
-
-31-10-2018
-----------
-KReporter v4.4 free version
-
 25-04-2018
 ----------
 KREST major upgrade of Slim library to 3.9.2. KREST release 3.0.0

@@ -202,6 +202,17 @@ $dictionary['Scheduler'] = array('table' => 'schedulers',
 			'required' => true,
 			'reportable' => false,
 		),
+		'job_interval_read' => array (
+			'name' => 'job_interval_read',
+			'type' => 'varchar',
+            'source' => 'non-db',
+        ),
+		'last_status' => array (
+			'name' => 'last_status',
+            'vname' => 'LBL_LAST_STATUS',
+            'type' => 'varchar',
+            'source' => 'non-db',
+        ),
 		'adv_interval' => array (
 			'name' => 'adv_interval',
 			'vname' => 'LBL_ADV_OPTIONS',

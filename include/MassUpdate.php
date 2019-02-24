@@ -349,7 +349,7 @@ eoq;
 		global $app_strings;
 		global $current_user;
 
-		if($this->sugarbean->bean_implements('ACL') && ( !ACLController::checkAccess($this->sugarbean->module_dir, 'edit', true) || !ACLController::checkAccess($this->sugarbean->module_dir, 'massupdate', true) ) ){
+		if($this->sugarbean->bean_implements('ACL') && ( !$GLOBALS['ACLController']->checkAccess($this->sugarbean->module_dir, 'edit', true) || !$GLOBALS['ACLController']->checkAccess($this->sugarbean->module_dir, 'massupdate', true) ) ){
 			return '';
 		}
 
@@ -637,7 +637,7 @@ EOJS;
 			</button></span>";
 			$parent_type = $field['parent_type'];
             $parent_types = $app_list_strings[$parent_type];
-            $disabled_parent_types = ACLController::disabledModuleList($parent_types,false, 'list');
+            $disabled_parent_types = $GLOBALS['ACLController']->disabledModuleList($parent_types,false, 'list');
             foreach($disabled_parent_types as $disabled_parent_type) {
 			    unset($parent_types[$disabled_parent_type]);
             }

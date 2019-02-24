@@ -64,7 +64,7 @@ if (!empty($_POST['assigned_user_id']) && ($project->assigned_user_id != $_POST[
 }
 
 	if(!$project->ACLAccess('Save')){
-		ACLController::displayNoAccess(true);
+		$GLOBALS['ACLController']->displayNoAccess(true);
 		sugar_cleanup(true);
 	}
 

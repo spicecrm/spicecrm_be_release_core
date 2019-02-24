@@ -43,8 +43,18 @@ if ($current_user->is_admin) {
         //https://packages.spicecrm.io/referenceconfig/*/2018.02.001
         $packages = $_POST['packages'];
         $versions = $_POST['versions'];
-        $routebase = $loader->routebase;
-        $routeparams = implode("/", array( $routebase, implode(",", $packages), implode(",", $versions)));
+
+        //BEGIN CR1000133 multiple packageloader sources
+        global $sugar_config;
+        //ensure backward compatibility
+        if(!isset($sugar_config['packageloader']['sources']) || empty($sugar_config['packageloader']['sources'])) {
+            $routebase = $loader->routebase;
+            $routeparams = implode("/", array($routebase, implode(",", $packages), implode(",", $versions)));
+        }
+        else {
+            $routeparams = implode("/", array(implode(",", $packages), implode(",", $versions)));
+        }
+        //END
 
         $results = $loader->loadDefaultConf($routeparams, array('packages' => $packages, 'versions' => $versions));
         $loader->cleanDefaultConf();

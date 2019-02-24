@@ -337,7 +337,7 @@ class SugarController
 		$view = ViewFactory::loadView($this->view, $this->module, $this->bean, $this->view_object_map, $this->target_module);
 		$GLOBALS['current_view'] = $view;
 		if(!empty($this->bean) && !$this->bean->ACLAccess($view->type) && $view->type != 'list'){
-			ACLController::displayNoAccess(true);
+			$GLOBALS['ACLController']->displayNoAccess(true);
 			sugar_cleanup(true);
 		}
 		if(isset($this->errors)){
@@ -536,7 +536,7 @@ class SugarController
 			}
 		}
 		if(!$this->bean->ACLAccess('save')){
-			ACLController::displayNoAccess(true);
+			$GLOBALS['ACLController']->displayNoAccess(true);
 			sugar_cleanup(true);
 		}
 		$this->bean->unformat_all_fields();
@@ -580,7 +580,7 @@ class SugarController
 		//if there is some custom logic for deletion.
 		if(!empty($_REQUEST['record'])){
 			if(!$this->bean->ACLAccess('Delete')){
-				ACLController::displayNoAccess(true);
+				$GLOBALS['ACLController']->displayNoAccess(true);
 				sugar_cleanup(true);
 			}
 			$this->bean->mark_deleted($_REQUEST['record']);
@@ -622,7 +622,7 @@ class SugarController
 		if(!empty($_REQUEST['massupdate']) && $_REQUEST['massupdate'] == 'true' && (!empty($_REQUEST['uid']) || !empty($_REQUEST['entire']))){
 			if(!empty($_REQUEST['Delete']) && $_REQUEST['Delete']=='true' && !$this->bean->ACLAccess('delete')
                 || (empty($_REQUEST['Delete']) || $_REQUEST['Delete']!='true') && !$this->bean->ACLAccess('save')){
-				ACLController::displayNoAccess(true);
+				$GLOBALS['ACLController']->displayNoAccess(true);
 				sugar_cleanup(true);
 			}
 

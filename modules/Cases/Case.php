@@ -142,7 +142,7 @@ class aCase extends Basic {
 				$is_owner = $current_user->id == $this->account_id_owner;
 			}
 		}
-			if(!ACLController::moduleSupportsACL('Accounts') || ACLController::checkAccess('Accounts', 'view', $is_owner)){
+			if(!$GLOBALS['ACLController']->moduleSupportsACL('Accounts') || $GLOBALS['ACLController']->checkAccess('Accounts', 'view', $is_owner)){
 				$array_assign['ACCOUNT'] = 'a';
 			}else{
 				$array_assign['ACCOUNT'] = 'span';

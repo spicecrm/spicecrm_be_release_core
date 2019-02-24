@@ -73,8 +73,8 @@ class CalendarDashlet extends Dashlet {
 		global $cal_strings, $current_language;
 		$cal_strings = return_module_language($current_language, 'Calendar');
 		
-		if(!ACLController::checkAccess('Calendar', 'list', true))
-			ACLController::displayNoAccess(true);
+		if(!$GLOBALS['ACLController']->checkAccess('Calendar', 'list', true))
+			$GLOBALS['ACLController']->displayNoAccess(true);
 						
 		$cal = new Calendar($this->view);
 		$cal->dashlet = true;

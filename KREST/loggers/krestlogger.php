@@ -23,12 +23,13 @@ $mw = function ($request, $response, $next)
     $log->ip = $request->getServerParam('REMOTE_ADDR');
     $log->get_params = json_encode($_GET);
     $log->post_params = $request->getBody()->getContents();
-    $log->requested_at = date('Y-m-d H:i:s');
+    $log->requested_at = gmdate('Y-m-d H:i:s');
     // $current_user is an empty beansobject if the current route doesn't need any authentication...
     $log->user_id = $current_user->id;
     // and session is also missing!
     $log->session_id = session_id();
     //var_dump($request->getParsedBody(), $request->getParams());
+    $log->transaction_id = $GLOBALS['transactionID'];
 
     // check if this request has to be logged by some rules...
     $sql = "SELECT COUNT(id) cnt FROM syskrestlogconfig WHERE 
@@ -58,7 +59,7 @@ $mw = function ($request, $response, $next)
     {
         $log->http_status_code = $response->getStatusCode();
         $log->runtime = (microtime(true) - $starting_time)*1000;
-        $log->response = $db->quote(ob_get_contents());
+        $log->response = ob_get_contents();
         ob_end_flush();
 
         // if the endpoint didn't use echo... instead the response object ist correctly returned by the endpoint

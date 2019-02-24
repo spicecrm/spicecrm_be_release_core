@@ -91,7 +91,7 @@ if($focus->status == 'draft') {
 
 // ACL Access Check
 if (!$focus->ACLAccess('DetailView')){
-	ACLController::displayNoAccess(true);
+	$GLOBALS['ACLController']->displayNoAccess(true);
 	sugar_cleanup(true);
 }
 

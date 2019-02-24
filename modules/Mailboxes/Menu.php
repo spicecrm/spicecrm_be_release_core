@@ -46,9 +46,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 global $mod_strings, $app_strings, $sugar_config;
 
 
-if(ACLController::checkAccess('Mailboxes', 'edit', true))$module_menu[]=Array("index.php?module=Mailboxes&action=EditView&return_module=Mailboxes&return_action=index", $mod_strings['LNK_NEW_MAILBOX'],"CreateMailboxes", 'Mailboxes');
-if(ACLController::checkAccess('Mailboxes', 'list', true))$module_menu[]=Array("index.php?module=Mailboxes&action=index&return_module=Mailboxes&return_action=DetailView", $mod_strings['LNK_MAILBOX_LIST'],"Mailboxes", 'Mailboxes');
-if(ACLController::checkAccess('Mailboxes', 'import', true))$module_menu[]=Array("index.php?module=Import&action=Step1&import_module=Mailboxes&return_module=Mailboxes&return_action=index", $mod_strings['LNK_IMPORT_MAILBOXES'],"Import", 'Mailboxes');
+if($GLOBALS['ACLController']->checkAccess('Mailboxes', 'edit', true))$module_menu[]=Array("index.php?module=Mailboxes&action=EditView&return_module=Mailboxes&return_action=index", $mod_strings['LNK_NEW_MAILBOX'],"CreateMailboxes", 'Mailboxes');
+if($GLOBALS['ACLController']->checkAccess('Mailboxes', 'list', true))$module_menu[]=Array("index.php?module=Mailboxes&action=index&return_module=Mailboxes&return_action=DetailView", $mod_strings['LNK_MAILBOX_LIST'],"Mailboxes", 'Mailboxes');
+if($GLOBALS['ACLController']->checkAccess('Mailboxes', 'import', true))$module_menu[]=Array("index.php?module=Import&action=Step1&import_module=Mailboxes&return_module=Mailboxes&return_action=index", $mod_strings['LNK_IMPORT_MAILBOXES'],"Import", 'Mailboxes');
 
 
 

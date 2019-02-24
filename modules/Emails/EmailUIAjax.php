@@ -307,7 +307,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
     case "getQuickCreateForm":
     	$GLOBALS['log']->debug("********** EMAIL 2.0 - Asynchronous - at: getQuickCreateForm");
         if(isset($_REQUEST['qc_module']) && !empty($_REQUEST['qc_module'])) {
-        	if (!ACLController::checkAccess($_REQUEST['qc_module'],'edit', true)) {
+        	if (!$GLOBALS['ACLController']->checkAccess($_REQUEST['qc_module'],'edit', true)) {
         		echo trim($json->encode(array('html' => translate('LBL_NO_ACCESS', 'ACL')), true));
         		break;
         	}
@@ -509,7 +509,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
         	$GLOBALS['log']->debug("********** EMAIL 2.0 - Marking emails $uids as {$_REQUEST['type']}");
 
         	$ret = array();
-        	if(strpos($_REQUEST['folder'], 'sugar::') !== false && ($_REQUEST['type'] == 'deleted') && !ACLController::checkAccess('Emails', 'delete')) {
+        	if(strpos($_REQUEST['folder'], 'sugar::') !== false && ($_REQUEST['type'] == 'deleted') && !$GLOBALS['ACLController']->checkAccess('Emails', 'delete')) {
         		$ret['status'] = false;
         		$ret['message'] = $app_strings['LBL_EMAIL_DELETE_ERROR_DESC'];
         	} else {

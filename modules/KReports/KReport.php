@@ -180,7 +180,7 @@ class KReportPluginManager
                     if ($report) {
                         if ($integrationParams->activePlugins->$pluginId == 1) {
                             // for export plugins check export right
-                            if ($pluginData['category'] === 'export' && !ACLController::checkAccess('KReports', 'export', false))
+                            if ($pluginData['category'] === 'export' && !$GLOBALS['ACLController']->checkAccess('KReports', 'export', false))
                                 continue;
 
                             // plugin specific checks
@@ -808,6 +808,7 @@ class KReport extends SugarBean
 
                     case 'enum' :
                     case 'radioenum' :
+                    case 'dynamicenum' :  //added 2019-02-13 contribution by fibrecrm for SuiteCRM dynamic dropdowns support
                         //2013-03-15 check if we have a group concat then translate the individual values
                         if (in_array($this->fieldNameMap [$fieldID]['sqlFunction'], array('GROUP_CONCAT', 'GROUP_CONASC', 'GROUP_CONDSC'))) {
                             $valArray = explode(',', $fieldValue);

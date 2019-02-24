@@ -410,7 +410,7 @@ eoq;
 
 		//Link drop-downs
 		$parent_types = $app_list_strings['record_type_display'];
-		$disabled_parent_types = ACLController::disabledModuleList($parent_types, false, 'list');
+		$disabled_parent_types = $GLOBALS['ACLController']->disabledModuleList($parent_types, false, 'list');
 
 		foreach($disabled_parent_types as $disabled_parent_type) {
 		  unset($parent_types[$disabled_parent_type]);
@@ -2092,7 +2092,7 @@ eoq;
 			} // if
 			$where = "({$table}.deleted = 0 AND eabr.primary_address = 1 AND {$table}.id <> '{$current_user->id}')";
 
-            if (ACLController::requireOwner($module, 'list')) {
+            if ($GLOBALS['ACLController']->requireOwner($module, 'list')) {
             	$where = $where . " AND ({$table}.assigned_user_id = '{$current_user->id}')";
             } // if
 			if(!empty($whereAdd)) {
@@ -2230,7 +2230,7 @@ eoq;
 				$where = "({$table}.deleted = 0 AND eabr.primary_address = 1)";
 			}
 
-			if (ACLController::requireOwner($module, 'list')) {
+			if ($GLOBALS['ACLController']->requireOwner($module, 'list')) {
 				$where = $where . " AND ({$table}.assigned_user_id = '{$current_user->id}')";
 			} // if
 			if(!empty($whereAdd)) {
@@ -2461,7 +2461,7 @@ eoq;
 
 		global $app_strings;
 
-		if(ACLController::checkAccess('EmailTemplates', 'list', true) && ACLController::checkAccess('EmailTemplates', 'view', true)) {
+		if($GLOBALS['ACLController']->checkAccess('EmailTemplates', 'list', true) && $GLOBALS['ACLController']->checkAccess('EmailTemplates', 'view', true)) {
 			$et = new EmailTemplate();
             $etResult = $et->db->query($et->create_new_list_query('',"(type IS NULL OR type='' OR type='email')",array(),array(),''));
 			$email_templates_arr = array('' => $app_strings['LBL_NONE']);

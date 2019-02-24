@@ -293,8 +293,8 @@ class CalendarController extends SugarController
     {
         $this->view = 'json';
         
-        if(!ACLController::checkAccess('Calendar', 'list', true)){
-            ACLController::displayNoAccess(true);
+        if(!$GLOBALS['ACLController']->checkAccess('Calendar', 'list', true)){
+            $GLOBALS['ACLController']->displayNoAccess(true);
         }
     
         require_once('modules/Calendar/Calendar.php');

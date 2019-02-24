@@ -59,8 +59,8 @@ class KRESTLogViewer {
     public function getRoutes() {
         global $db;
         $response = [];
-        $sqlResult = $db->query( 'SELECT DISTINCT route FROM syskrestlog ORDER BY route' );
-        while ( $row = $db->fetchByAssoc( $sqlResult )) $response[] = array_shift( $row );
+        $dbResult = $db->query( 'SELECT DISTINCT route FROM syskrestlog ORDER BY route' );
+        while ( $row = $db->fetchByAssoc( $dbResult )) $response[] = array_shift( $row );
         return $response;
     }
 
@@ -72,36 +72,25 @@ class KRESTLogViewer {
 
         if ( $period ) {
 
-            switch ( $period['type'] ) {
-                case 'hour':
-                    $begin = mktime( $period['hour'], 0, 0, $period['month'], $period['day'], $period['year'] );
-                    $afterEnd = mktime( $period['hour']+1, 0, 0, $period['month'], $period['day'], $period['year'] );
-                    break;
-                case 'day':
-                    $begin = mktime( 0, 0, 0, $period['month'], $period['day'], $period['year'] );
-                    $afterEnd = mktime( 0, 0, 0, $period['month'], $period['day']+1, $period['year'] );
-                    break;
-                case 'month':
-                    $begin = mktime( 0, 0, 0, $period['month'], 1, $period['year'] );
-                    $afterEnd = mktime( 0, 0, 0, $period['month']+1, 1, $period['year'] );
-                    break;
-                case 'year':
-                    $begin = mktime( 0, 0, 0, 1, 1, $period['year'] );
-                    $afterEnd = mktime( 0, 0, 0, 1, 1, $period['year']+1 );
-                    break;
-            }
+            $begin = gmmktime( $period['begin']['hour'], 0, 0, $period['begin']['month'], $period['begin']['day'], $period['begin']['year'] );
+            $end = gmmktime( $period['end']['hour'], 0, 0, $period['end']['month'], $period['end']['day'], $period['end']['year'] );
 
-            $whereClauseParts[] = 'microtime >= '.$begin.' AND microtime < '.$afterEnd;
+            $whereClauseParts[] = 'UNIX_TIMESTAMP( CONVERT_TZ( requested_at, "+00:00", @@SESSION.time_zone )) >= '.$begin.' AND UNIX_TIMESTAMP( CONVERT_TZ( requested_at, "+00:00", @@SESSION.time_zone )) < '.$end;
 
         }
 
         $filter = [];
         if ( isset( $queryParams['method']{0} )) $filter[] = 'method = "'.$db->quote($queryParams['method']).'"';
-        if ( isset( $queryParams['route']{0} )) $filter[] = 'route = "'.$db->quote($queryParams['method']).'"';
+        if ( isset( $queryParams['route']{0} )) $filter[] = 'route = "'.$db->quote($queryParams['route']).'"';
         if ( isset( $queryParams['postParams']{0} )) $filter[] = 'post_params like "%'.$db->quote($queryParams['postParams']).'%"';
         if ( isset( $queryParams['urlParams']{0} )) $filter[] = 'get_params like "%'.$db->quote($queryParams['urlParams']).'%"';
         if ( isset( $queryParams['routeArgs']{0} )) $filter[] = 'args like "%'.$db->quote($queryParams['routeArgs']).'%"';
         if ( isset( $queryParams['response']{0} )) $filter[] = 'response like "%'.$db->quote($queryParams['response']).'%"';
+        if ( isset( $queryParams['theUrl']{0} )) $filter[] = 'url like "%'.$db->quote($queryParams['theUrl']).'%"';
+        if ( isset( $queryParams['ipAddress']{0} )) $filter[] = 'ip like "%'.$db->quote($queryParams['ipAddress']).'%"';
+        if ( isset( $queryParams['userId']{0} )) $filter[] = 'user_id = "'.$db->quote($queryParams['userId']).'"';
+        if ( isset( $queryParams['status']{0} )) $filter[] = 'http_status_code = "'.$db->quote($queryParams['status']).'"';
+        if ( isset( $queryParams['transactionId']{0} )) $filter[] = 'transaction_id = "'.$db->quote($queryParams['transactionId']).'"';
         if ( count( $filter )) $whereClauseParts[] = implode( ' AND ', $filter );
 
         $whereClause = count( $whereClauseParts ) ? 'WHERE '.implode( ' AND ', $whereClauseParts ):'';
@@ -112,34 +101,37 @@ class KRESTLogViewer {
             $limitClause = 'LIMIT '.$queryParams['limit'];
         }
 
-        $sql = 'SELECT id, route, method, args as routeArgs, get_params as getParams, user_id as uid, UNIX_TIMESTAMP(requested_at) as dtx, http_status_code as status FROM '.$this->dbTableName.' '.$whereClause.' ORDER BY requested_at DESC '.$limitClause;
+        $sql = 'SELECT k.id, route, method, args as routeArgs, get_params as urlParams, k.user_id as uid, UNIX_TIMESTAMP( CONVERT_TZ( requested_at, "+00:00", @@SESSION.time_zone )) as dtx, http_status_code as status, k.transaction_id as tid, count(s.id) AS clr FROM '.$this->dbTableName.' AS k LEFT JOIN syslogs AS s ON k.transaction_id = s.transaction_id '.$whereClause.' GROUP BY k.id ORDER BY requested_at DESC '.$limitClause;
 
-        $sqlResult = $db->query( $sql );
-        while ( $row = $db->fetchByAssoc( $sqlResult )) {
+        $dbResult = $db->query( $sql );
+        while ( $row = $db->fetchByAssoc( $dbResult )) {
             $row['pid'] = isset( $row['pid']{0} ) ? (int)$row['pid']:null;
             $row['dtx'] = (float)$row['dtx'];
-            $row['status'] = (integer)$row['status'];
+            $row['status'] = isset( $row['status'] ) ? (integer)$row['status']:$row['status'];
+            $row['clr'] = (integer)$row['clr'];
             $response[] = $row;
         }
 
         return $response;
     }
 
-    public function getLinesOfPeriod( $periodType, $criteria, $queryParams ) {
-        $period = [ 'type' => $periodType ];
-        switch ( $periodType ) {
-            case 'hour':    $period['hour'] = $criteria[1];
-            case 'day':     $period['day'] = substr( $criteria[0], 6, 2 );
-            case 'month':   $period['month'] = substr( $criteria[0], 4, 2 );
-            case 'year':    $period['year'] = substr( $criteria[0], 0, 4 );
-        }
+    public function getLinesOfPeriod( $begin, $end, $queryParams ) {
+        $period = array();
+        $period['begin']['year'] = substr( $begin, 0, 4 );
+        $period['begin']['month'] = substr( $begin, 4, 2 );
+        $period['begin']['day'] = substr( $begin, 6, 2 );
+        $period['begin']['hour'] = substr( $begin, 8, 2 );
+        $period['end']['year'] = substr( $end, 0, 4 );
+        $period['end']['month'] = substr( $end, 4, 2 );
+        $period['end']['day'] = substr( $end, 6, 2 );
+        $period['end']['hour'] = substr( $end, 8, 2 );
         return $this->getLines( $queryParams, $period );
     }
 
     function getFullLine( $lineId ) {
         global $db;
 
-        $sql = 'SELECT id, route, method, args as routeArgs, get_params as urlParams, post_params as postParams, response, user_id as uid, UNIX_TIMESTAMP(requested_at) as dtx, http_status_code as status FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
+        $sql = 'SELECT id, route, method, args as routeArgs, get_params as urlParams, post_params as postParams, response, user_id as uid, UNIX_TIMESTAMP(requested_at) as dtx, http_status_code as status, transaction_id as tid FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
 
         $line = $db->fetchOne( $sql );
         if ( $line === false )
@@ -147,6 +139,15 @@ class KRESTLogViewer {
 
         return $line;
 
+    }
+
+    function getAllUser() {
+        global $db;
+        $list = [];
+        $sql = 'SELECT id,user_name as name FROM users WHERE is_group = 0 AND deleted = 0 ORDER BY user_name';
+        $dbResult = $db->query( $sql );
+        while ( $row = $db->fetchByAssoc( $dbResult )) $list[] = $row;
+        return $list;
     }
 
 }

@@ -385,7 +385,7 @@ class Lead extends Person {
 				$is_owner = $current_user->id == $this->account_name_owner;
 			}
 		}
-			if( ACLController::checkAccess('Accounts', 'view', $is_owner)){
+			if( $GLOBALS['ACLController']->checkAccess('Accounts', 'view', $is_owner)){
 				$array_assign['ACCOUNT'] = 'a';
 			}else{
 				$array_assign['ACCOUNT'] = 'span';
@@ -398,7 +398,7 @@ class Lead extends Person {
 				$is_owner = $current_user->id == $this->opportunity_name_owner;
 			}
 		}
-			if( ACLController::checkAccess('Opportunities', 'view', $is_owner)){
+			if( $GLOBALS['ACLController']->checkAccess('Opportunities', 'view', $is_owner)){
 				$array_assign['OPPORTUNITY'] = 'a';
 			}else{
 				$array_assign['OPPORTUNITY'] = 'span';
@@ -413,7 +413,7 @@ class Lead extends Person {
 				$is_owner = $current_user->id == $this->contact_name_owner;
 			}
 		}
-			if( ACLController::checkAccess('Contacts', 'view', $is_owner)){
+			if( $GLOBALS['ACLController']->checkAccess('Contacts', 'view', $is_owner)){
 				$array_assign['CONTACT'] = 'a';
 			}else{
 				$array_assign['CONTACT'] = 'span';

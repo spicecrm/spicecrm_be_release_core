@@ -94,7 +94,7 @@ else{
 if(isset($_REQUEST['email_id'])) $sugarbean->email_id = $_REQUEST['email_id'];
 
 if(!$sugarbean->ACLAccess('Save')){
-        ACLController::displayNoAccess(true);
+        $GLOBALS['ACLController']->displayNoAccess(true);
         sugar_cleanup(true);
 }
 

@@ -271,7 +271,7 @@ class ViewList extends SugarView{
     }
     function display(){
         if(!$this->bean || !$this->bean->ACLAccess('list')){
-            ACLController::displayNoAccess();
+            $GLOBALS['ACLController']->displayNoAccess();
         } else {
             $this->listViewPrepare();
             $this->listViewProcess();

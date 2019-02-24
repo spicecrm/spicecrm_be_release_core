@@ -18,6 +18,8 @@ class SpiceModuleCreator extends SugarBean{
     public $modulename; //module name
     public $tablename; //table name for database
     public $beanname; //class name for module
+    public $usenamespace; //use namespace name for module
+    public $namespace; //namespace for module
 
 
     public function __construct()
@@ -114,6 +116,9 @@ class SpiceModuleCreator extends SugarBean{
         $this->id = $this->modulename;
         $this->tablename = $_POST['tablename'];
         $this->beanname = $_POST['beanname'];
+
+        $this->namespace = $_POST['namespace'];
+        $this->usenamespace = intval($_POST['usenamespace']);
 
         //create files
         if(!$this->createModuleDir())
@@ -230,14 +235,18 @@ VardefManager::createVardef('" . $this->modulename . "', '" . $this->beanname . 
         $file = $path . DIRECTORY_SEPARATOR . $this->beanname.".php";
         if(!file_exists($file)) {
             $hl = fopen($file, "w");
-            $fcontent = "<?php \n 
+            $fcontent = "<?php \n";
+            if($this->usenamespace){
+                $fcontent.= "namespace ".$this->namespace.";\n";
+            }
+            $fcontent.= "
 if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
         
 require_once('data/SugarBean.php');
 
 class ". $this->beanname." extends SugarBean {
     public \$module_dir = '".str_replace("modules/", "", $this->modulename)."';
-    public \$object_name = '".$this->beanname."';
+    public \$object_name = ".($this->usenamespace ? "__NAMESPACE__.'".$this->beanname."'" : "'".$this->beanname."'").";
     public \$table_name = '".$this->tablename."';
     public \$new_schema = true;
     

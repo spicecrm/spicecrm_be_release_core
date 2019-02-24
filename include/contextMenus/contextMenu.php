@@ -70,7 +70,7 @@ class contextMenu
      */
     function addMenuItem($text, $action, $module = null, $aclAction = null, $params = null) {
         // check ACLs if module and aclAction set otherwise no ACL check
-        if(((!empty($module) && !empty($aclAction)) && ACLController::checkAccess($module, $aclAction)) || (empty($module) || empty($aclAction))) {
+        if(((!empty($module) && !empty($aclAction)) && $GLOBALS['ACLController']->checkAccess($module, $aclAction)) || (empty($module) || empty($aclAction))) {
             $item = array('text' => translate($text),
                           'action' => $action);
             foreach(array('url', 'target', 'helptext', 'emphasis', 'strongemphasis', 'disabled', 'selected', 'submenu', 'checked') as $param) {

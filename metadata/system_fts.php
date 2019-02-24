@@ -65,8 +65,7 @@ $dictionary['sysftslog'] = array(
         ),
         'request_url' => array(
             'name' => 'request_url',
-            // this should be longtext... REALLY? "text" is not enough? URL longer than 65,535 bytes?
-            'type' => 'text',
+            'type' => 'longtext' # todo: MSSQL doesn´t know "longtext"
         ),
         'index_request' => array(
             'name' => 'index_request',
@@ -74,10 +73,7 @@ $dictionary['sysftslog'] = array(
         ),
         'index_response' => array(
             'name' => 'index_response',
-            // This should be longtext, but MSSQL doesn´t know "longtext".
-            // Solution: With len=4294967295 like "longtext".
-            'type' => 'text',
-            'len' => 4294967295
+            'type' => 'longtext' # todo: MSSQL doesn´t know "longtext"
         ),
         'rt_local' => array(
             'name' => 'rt_local',

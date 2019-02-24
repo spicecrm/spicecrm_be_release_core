@@ -1,7 +1,7 @@
 <?php
 
 $app->get('/modules/SpiceImports/savedImports/{beanName}', function ($req, $res, $args) use ($app) {
-    if (!ACLController::checkAccess('SpiceImports', 'list', true))
+    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'list', true))
         throw (new KREST\ForbiddenException("Forbidden for details in module SpiceImports."))->setErrorCode('noModuleDetails');
 
     $bean = BeanFactory::getBean('SpiceImports');
@@ -9,7 +9,7 @@ $app->get('/modules/SpiceImports/savedImports/{beanName}', function ($req, $res,
 });
 
 $app->post('/modules/SpiceImports/upf', function ($req, $res, $args) use ($app) {
-    if (!ACLController::checkAccess('SpiceImports', 'edit', true))
+    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'edit', true))
         throw (new KREST\ForbiddenException("Forbidden for details in module SpiceImports."))->setErrorCode('noModuleDetails');
     $properties = $_GET;
     $bean = BeanFactory::getBean('SpiceImports');
@@ -17,7 +17,7 @@ $app->post('/modules/SpiceImports/upf', function ($req, $res, $args) use ($app) 
 });
 
 $app->delete('/modules/SpiceImports/upf', function () use ($app) {
-    if (!ACLController::checkAccess('SpiceImports', 'delete', true))
+    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'delete', true))
         throw (new KREST\ForbiddenException("Forbidden to delete in module SpiceImports."))->setErrorCode('noModuleDelete');
 
     $filemd5 = $_GET['filemd5'];
@@ -26,7 +26,7 @@ $app->delete('/modules/SpiceImports/upf', function () use ($app) {
 });
 
 $app->post('/modules/SpiceImports/import', function () use ($app) {
-    if (!ACLController::checkAccess('SpiceImports', 'edit', true))
+    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'edit', true))
         throw (new KREST\ForbiddenException("Forbidden for details in module SpiceImports."))->setErrorCode('noModuleDetails');
 
     $postParams = $_GET ?: Array();
@@ -36,7 +36,7 @@ $app->post('/modules/SpiceImports/import', function () use ($app) {
 
 $app->get('/modules/SpiceImports/{importId}/logs', function ($req, $res, $args) use ($app) {
 
-    if (!ACLController::checkAccess('SpiceImports', 'detail', true))
+    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'detail', true))
         throw (new KREST\ForbiddenException("Forbidden for details in module SpiceImports."))->setErrorCode('noModuleDetails');
 
     $id = $args['importId'];

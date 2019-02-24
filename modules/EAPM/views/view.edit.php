@@ -129,7 +129,7 @@ class EAPMViewEdit extends ViewEdit {
             
             parent::display();
         } else {
-        	ACLController::displayNoAccess();
+        	$GLOBALS['ACLController']->displayNoAccess();
         }
  	}
 }

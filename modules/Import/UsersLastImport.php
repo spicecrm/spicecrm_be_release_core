@@ -91,8 +91,8 @@ class UsersLastImport extends SugarBean
     {
         $array_assign = parent::listviewACLHelper();
         $is_owner = false;
-        if ( !ACLController::moduleSupportsACL('Accounts')
-                || ACLController::checkAccess('Accounts', 'view', $is_owner) ) {
+        if ( !$GLOBALS['ACLController']->moduleSupportsACL('Accounts')
+                || $GLOBALS['ACLController']->checkAccess('Accounts', 'view', $is_owner) ) {
             $array_assign['ACCOUNT'] = 'a';
         }
         else {

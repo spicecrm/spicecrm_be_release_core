@@ -228,9 +228,7 @@ class SpiceLogger implements LoggerTemplate
     )
     {
         //do not log on install!
-        if($GLOBALS['installing'] === true){
-            return true;
-        }
+        if ( !empty( $GLOBALS['installing'] )) return true;
 
         //check if level is set for user
 //        if(!empty($GLOBALS['current_user']->id) &&
@@ -248,10 +246,13 @@ class SpiceLogger implements LoggerTemplate
                 "created_by" => (!empty($logparams['user']) ?: '-none-'),
                 'microtime' => microtime(true),
                 "date_entered" => $td->nowDb(),
-                "description" => $message);
+                "description" => $message,
+                "transaction_id" => isset( $GLOBALS['transactionID'] ) ? $GLOBALS['transactionID']:null );
 
+            global $dictionary;
+            require_once('modules/TableDictionary.php');
             LoggerManager::getDbManager();
-            $sql = LoggerManager::$db->insertParams("syslogs", $GLOBALS['dictionary']['syslogs']['fields'], $log, null, false);
+            $sql = LoggerManager::$db->insertParams("syslogs", $dictionary['syslogs']['fields'], $log, null, false);
             LoggerManager::$db->queryOnly($sql);
 //        }
         //END

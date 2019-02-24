@@ -111,7 +111,7 @@ if(empty($focus->id)){
 echo getClassicModuleTitle($focus->module_dir, $params, true);
 
 if (!$focus->ACLAccess('EditView')) {
-    ACLController::displayNoAccess(true);
+    $GLOBALS['ACLController']->displayNoAccess(true);
     sugar_cleanup(true);
 }
 

@@ -31,7 +31,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 global $mod_strings, $app_strings;
 
-if(ACLController::checkAccess('TRSystems', 'edit', true))$module_menu[]=Array("index.php?module=SpiceThemePages&action=EditView&return_module=SpiceThemePages&return_action=DetailView", $mod_strings['LNK_SPICETHEMEPAGE_NEW'],"CreateSpiceThemePage");
-if(ACLController::checkAccess('TRSystems', 'list', true))$module_menu[]=Array("index.php?module=SpiceThemePages&action=index&return_module=SpiceThemePages&return_action=DetailView", $mod_strings['LNK_SPICETHEMEPAGE_LIST'],"SpiceThemePage");
+if($GLOBALS['ACLController']->checkAccess('TRSystems', 'edit', true))$module_menu[]=Array("index.php?module=SpiceThemePages&action=EditView&return_module=SpiceThemePages&return_action=DetailView", $mod_strings['LNK_SPICETHEMEPAGE_NEW'],"CreateSpiceThemePage");
+if($GLOBALS['ACLController']->checkAccess('TRSystems', 'list', true))$module_menu[]=Array("index.php?module=SpiceThemePages&action=index&return_module=SpiceThemePages&return_action=DetailView", $mod_strings['LNK_SPICETHEMEPAGE_LIST'],"SpiceThemePage");
 
 ?>

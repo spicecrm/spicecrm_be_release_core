@@ -69,14 +69,14 @@ class KRESTUserHandler
 
         $retModules = array();
 
-        foreach (ACLController::disabledModuleList($moduleList) as $disabledModule)
+        foreach ($GLOBALS['ACLController']->disabledModuleList($moduleList) as $disabledModule)
             unset($moduleList[$disabledModule]);
 
         foreach ($moduleList as $module) {
-            $retModules[$module]['acl']['enabled'] = ACLController::moduleSupportsACL($module);
+            $retModules[$module]['acl']['enabled'] = $GLOBALS['ACLController']->moduleSupportsACL($module);
             if ($retModules[$module]['acl']['enabled']) {
                 foreach ($actions as $action)
-                    $retModules[$module]['acl'][$action] = ACLController::checkAccess($module, $action);
+                    $retModules[$module]['acl'][$action] = $GLOBALS['ACLController']->checkAccess($module, $action);
             }
         }
 

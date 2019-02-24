@@ -15,7 +15,7 @@ class CalendarRestHandler
 
         $krestModuleHandler = new KRESTModuleHandler();
 
-        if(ACLController::checkAccess('Meetings', 'list', $current_user->id)) {
+        if($GLOBALS['ACLController']->checkAccess('Meetings', 'list', $current_user->id)) {
             $seedMeeting = BeanFactory::getBean('Meetings');
             $meetings = $db->query("SELECT id FROM meetings WHERE deleted = 0 and date_start < '$end' AND date_end > '$start' AND assigned_user_id = '$userid'");
             while($meeting = $db->fetchByAssoc($meetings)){
@@ -32,7 +32,7 @@ class CalendarRestHandler
             }
         }
 
-        if(ACLController::checkAccess('Calls', 'list', $current_user->id)) {
+        if($GLOBALS['ACLController']->checkAccess('Calls', 'list', $current_user->id)) {
             $seedCall = BeanFactory::getBean('Calls');
             $calls = $db->query("SELECT id FROM calls WHERE deleted = 0 and date_start < '$end' AND date_end > '$start' AND assigned_user_id = '$userid'");
             while($call = $db->fetchByAssoc($calls)){

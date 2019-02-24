@@ -827,6 +827,10 @@ class SugarBean
      */
     function createRelationshipMeta($key, $db, $tablename, $dictionary, $module_dir, $iscustom = false)
     {
+        //forget relationships if tablename is empty. Will be the case with MergeRecords.
+        //avoid unnecessary log line "createRelationshipMeta: Metadata for table  does not exist"
+        if(empty($tablename)) return;
+
         //load the module dictionary if not supplied.
         if (empty($dictionary) && !empty($module_dir)) {
             if ($iscustom) {
@@ -2532,7 +2536,7 @@ class SugarBean
             $show_deleted = 1;
         }
 
-        if ($this->bean_implements('ACL') && ACLController::requireOwner($this->module_dir, 'list')) {
+        if ($this->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($this->module_dir, 'list')) {
             global $current_user;
             $owner_where = $this->getOwnerWhere($current_user->id);
 
@@ -2592,7 +2596,7 @@ class SugarBean
         $secondarySelectedFields = array();
         $ret_array = array();
         $distinct = '';
-        if ($this->bean_implements('ACL') && ACLController::requireOwner($this->module_dir, 'list')) {
+        if ($this->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($this->module_dir, 'list')) {
             global $current_user;
             $owner_where = $this->getOwnerWhere($current_user->id);
             if (empty($where)) {
@@ -3297,7 +3301,7 @@ class SugarBean
             $show_deleted = 1;
         }
 
-        if ($this->bean_implements('ACL') && ACLController::requireOwner($this->module_dir, 'list')) {
+        if ($this->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($this->module_dir, 'list')) {
             global $current_user;
             $owner_where = $this->getOwnerWhere($current_user->id);
 
@@ -5630,7 +5634,7 @@ class SugarBean
             case 'list':
             case 'index':
             case 'listview':
-                return ACLController::checkAccess($this->module_dir, 'list', true);
+                return $GLOBALS['ACLController']->checkAccess($this->module_dir, 'list', true);
             case 'edit':
             case 'save':
                 if (!$is_owner && $not_set && !empty($this->id)) {
@@ -5648,17 +5652,17 @@ class SugarBean
                 }
             case 'popupeditview':
             case 'editview':
-                return ACLController::checkAccess($this, 'edit', $is_owner, $this->acltype);
+                return $GLOBALS['ACLController']->checkAccess($this, 'edit', $is_owner, $this->acltype);
             case 'view':
             case 'detail':
             case 'detailview':
-                return ACLController::checkAccess($this, 'view', $is_owner, $this->acltype);
+                return $GLOBALS['ACLController']->checkAccess($this, 'view', $is_owner, $this->acltype);
             case 'delete':
-                return ACLController::checkAccess($this, 'delete', $is_owner, $this->acltype);
+                return $GLOBALS['ACLController']->checkAccess($this, 'delete', $is_owner, $this->acltype);
             case 'export':
-                return ACLController::checkAccess($this->module_dir, 'export', $is_owner, $this->acltype);
+                return $GLOBALS['ACLController']->checkAccess($this->module_dir, 'export', $is_owner, $this->acltype);
             case 'import':
-                return ACLController::checkAccess($this->module_dir, 'import', true, $this->acltype);
+                return $GLOBALS['ACLController']->checkAccess($this->module_dir, 'import', true, $this->acltype);
         }
         //if it is not one of the above views then it should be implemented on the page level
         return true;

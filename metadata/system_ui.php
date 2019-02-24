@@ -1,5 +1,36 @@
 <?php
 
+$dictionary['sysuipackagerepositories'] = array(
+    'table' => 'sysuipackagerepositories',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'url' => array(
+            'name' => 'url',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'description' => array(
+            'name' => 'description',
+            'type' => 'text'
+        ),
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuipackagerepositories',
+            'type' => 'primary',
+            'fields' => array('id'))
+    )
+);
+
 $dictionary['sysuicalendars'] = array(
     'table' => 'sysuicalendars',
     'audited' => true,
@@ -813,7 +844,7 @@ $dictionary['sysuiactionsetitems'] = array(
         'component' => array(
             'name' => 'component',
             'type' => 'varchar',
-            'len' => 36
+            'len' => 100
         ),
         'actionconfig' => array(
             'name' => 'actionconfig',
@@ -866,7 +897,7 @@ $dictionary['sysuicustomactionsetitems'] = array(
         'component' => array(
             'name' => 'component',
             'type' => 'varchar',
-            'len' => 36
+            'len' => 100
         ),
         'actionconfig' => array(
             'name' => 'actionconfig',
@@ -1353,7 +1384,7 @@ $dictionary['sysuicomponentmoduleconf'] = array(
     'table' => 'sysuicomponentmoduleconf',
     'changerequests' => array(
         'active' => true,
-        'name' => array('module','component')
+        'name' => array('module', 'component')
     ),
     'fields' => array(
         'id' => array(
@@ -2561,7 +2592,6 @@ $dictionary['sysuilibs'] = array(
 );
 
 
-
 $dictionary['sysuihtmlstylesheets'] = array(
     'table' => 'sysuihtmlstylesheets',
     'changerequests' => array(
@@ -2607,7 +2637,7 @@ $dictionary['sysuihtmlstylesheets'] = array(
         array(
             'name' => 'idx_sysuihtmlstylesheets_2',
             'type' => 'index',
-            'fields' => array('id','inactive')
+            'fields' => array('id', 'inactive')
         ),
     )
 );

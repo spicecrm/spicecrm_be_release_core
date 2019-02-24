@@ -45,11 +45,16 @@ require_once 'include/SpiceAttachments/SpiceAttachments.php';
 
 class Mailbox extends SugarBean {
 
-	var $module_dir = 'Mailboxes';
-	var $table_name = "mailboxes";
-	var $object_name = "Mailbox";
+	public $module_dir = 'Mailboxes';
+	public $table_name = "mailboxes";
+	public $object_name = "Mailbox";
 
 	public $transport_handler;
+	public $log_level = 2; // todo remove hardcode
+
+    const LOG_NONE  = 0;
+    const LOG_ERROR = 1;
+    const LOG_DEBUG = 2;
 
     /**
      * Mailbox constructor.
@@ -213,9 +218,7 @@ class Mailbox extends SugarBean {
     public static function getDefaultMailbox()
     {// todo errors when no default mailbox available
 
-        if(@$GLOBALS['installing'] === true){
-            return false;
-        }
+        if ( !empty( $GLOBALS['installing'] )) return false;
 
 //        global $db;
 //        if(is_null($db)){

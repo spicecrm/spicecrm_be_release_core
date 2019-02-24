@@ -11,9 +11,10 @@ $app->get('/portal/{id}/portalaccess', function($req, $res, $args) use ( $app ) 
         'user' => new stdClass()
     );
 
-    $contact = BeanFactory::getBean('Contacts', $args['id']);
-    if (!isset($contact->id)) throw ( new KREST\NotFoundException('Contact not found.'))->setLookedFor(['id'=>$args['id'],'module'=>'Contacts']);
-    if (!$contact->ACLAccess('edit')) throw ( new KREST\ForbiddenException('Forbidden to edit contact.'))->setErrorCode('noRecordEdit');
+    $contact = BeanFactory::getBean('Contacts');
+    $contact->retrieve( $args['id'] );
+    if ( !isset($contact->id )) throw ( new KREST\NotFoundException('Contact not found.'))->setLookedFor(['id'=>$args['id'],'module'=>'Contacts']);
+    if ( !$contact->ACLAccess( 'edit' )) throw ( new KREST\ForbiddenException('Forbidden to edit contact.'))->setErrorCode('noRecordEdit');
 
     // get acl roles
     $roles = $db->query("SELECT id, name FROM acl_roles WHERE deleted = 0 ORDER BY name");
@@ -27,23 +28,28 @@ $app->get('/portal/{id}/portalaccess', function($req, $res, $args) use ( $app ) 
         $retArray['portalRoles'][] = $role;
     }
 
-    if ( $contact->portal_user_id and $user = BeanFactory::getBean('Users', $contact->portal_user_id )) {
+    if ( !empty( $contact->portal_user_id )) {
+        $user = BeanFactory::getBean('Users');
+        $user->retrieve( $contact->portal_user_id );
+        if ( !empty( $user->id )) {
 
-        $retArray['user']->id = $user->id;
-        $retArray['user']->username = $user->user_name;
-        $retArray['user']->status = $user->status == 'Active' ? true : false;
+            $retArray['user']->id = $user->id;
+            $retArray['user']->username = $user->user_name;
+            $retArray['user']->status = $user->status == 'Active' ? true : false;
 
-        $roles = $user->get_linked_beans('aclroles', 'ACLRole');
+            $roles = $user->get_linked_beans( 'aclroles', 'ACLRole' );
 
-        foreach ( $roles as $role ) {
-            $retArray['user']->aclRole = $role->id;
-            break;
+            foreach ( $roles as $role ) {
+                $retArray['user']->aclRole = $role->id;
+                break;
+            }
+
+            // portalRole
+            $portalRoles = $db->query( "SELECT * FROM sysuiuserroles WHERE user_id='$user->id'" );
+            $portalRole = $db->fetchByAssoc( $portalRoles );
+            $retArray['user']->portalRole = $portalRole['sysuirole_id'];
+
         }
-
-        // portalRole
-        $portalRoles = $db->query("SELECT * FROM sysuiuserroles WHERE user_id='$user->id'");
-        $portalRole = $db->fetchByAssoc( $portalRoles );
-         $retArray['user']->portalRole = $portalRole['sysuirole_id'];
     }
 
     $retArray['pwdCheck'] = array(
@@ -58,7 +64,8 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
 
     $db->transactionStart();
 
-    $contact = BeanFactory::getBean('Contacts', $args['contactId']);
+    $contact = BeanFactory::getBean('Contacts');
+    $contact->retrieve( $args['contactId'] );
     if ( !isset( $contact->id )) throw ( new \KREST\NotFoundException('Contact not found.'))->setLookedFor([ 'id' => $args['contactId'], 'module' => 'Contacts' ]);
     if ( !$contact->ACLAccess( 'edit' )) throw ( new KREST\ForbiddenException('Forbidden to edit contact.'))->setErrorCode('noModuleEdit');
 
@@ -73,10 +80,12 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
         $isNewUser = false;
     } else {
         $isNewUser = true;
+        if ( !empty( $contact->portal_user_id ))
+            throw ( new KREST\BadRequestException('Contact already has portal user data. Creation of another portal user is not possible.'))->setErrorCode('contactAlreadyHasPortalUser');
     }
 
-    if ( $db->fetchOne( $sql=sprintf('SELECT id FROM users WHERE user_name = "%s" AND id <> "%s" AND deleted = 0 LIMIT 1', $db->quote( $postParams['username']), $contact->portal_user_id )))
-        throw ( new KREST\BadRequestException('User name already taken.'.$sql))->setErrorCode('usernameAlreadyTaken');
+    if ( $db->fetchOne( sprintf('SELECT id FROM users WHERE user_name = "%s" AND id <> "%s" AND deleted = 0 LIMIT 1', $db->quote( $postParams['username']), $contact->portal_user_id )))
+        throw ( new KREST\BadRequestException('User name already taken.'))->setErrorCode('usernameAlreadyTaken');
     if ( empty( $postParams['username'] ))
         throw ( new KREST\BadRequestException('Missing user name.'))->setErrorCode('missingUserName');
     if ( strlen( $postParams['username'] ) > $GLOBALS['dictionary']['User']['fields']['user_name']['len'] )
@@ -108,18 +117,39 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
         $user->inbound_processing_allowed = 0;
     }
 
+    /*
     if ( empty( $user->save() )) {
         $db->transactionRollback();
         $GLOBALS['log']->fatal( 'Create/Update portal user: Could not save user for contact '.$args['contactId'].'.' );
         throw ( new KREST\Exception( 'Could not save user.' ) );
     }
+    */
+    try {
+        $user->save();
+    } catch( Exception $e ) {
+        $db->transactionRollback();
+        $GLOBALS['log']->fatal( 'Create/Update portal user: Could not save user for contact ' . $args['contactId'] . '.' );
+        throw ( new KREST\Exception( 'Could not save user. '.$e->getMessage() ));
+    }
 
+    /*
     if ( $isNewUser ) {
         $contact->portal_user_id = $user->id;
         if ( empty( $contact->save() )) {
             $db->transactionRollback();
             $GLOBALS['log']->fatal( 'Create/Edit portal user: Could not save contact '.$args['contactId'].'.' );
             throw ( new KREST\Exception( 'Could not save contact.' ) );
+        }
+    }
+    */
+    if ( $isNewUser ) {
+        $contact->portal_user_id = $user->id;
+        try {
+            $contact->save();
+        } catch( Exception $e ) {
+            $db->transactionRollback();
+            $GLOBALS['log']->fatal( 'Create/Edit portal user: Could not save contact '.$args['contactId'].'.' );
+            throw ( new KREST\Exception( 'Could not save contact. '.$e->getMessage() ));
         }
     }
 
@@ -154,7 +184,7 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
 
     $db->transactionCommit();
 
-    return $res->withJson(['success' => true, 'action' => $isNewUser ? 'create':'update']);
+    return $res->withJson(['success' => true, 'action' => $isNewUser ? 'create':'update', 'userId' => $user->id ]);
 });
 
 $app->get('/portal/{contactId}/testUsername', function( $req, $res, $args ) use ( $app ) {

@@ -130,14 +130,14 @@ class DashletsDialog {
 				else{
                 	$displayDashlet = true;
                 	//check ACL ACCESS
-                	if(!empty($dashletMeta[$files['class']]['module']) && ACLController::moduleSupportsACL($dashletMeta[$files['class']]['module'])){
+                	if(!empty($dashletMeta[$files['class']]['module']) && $GLOBALS['ACLController']->moduleSupportsACL($dashletMeta[$files['class']]['module'])){
                 		$type = 'module';
                 		if($dashletMeta[$files['class']]['module'] == 'Trackers')
                 			$type = 'Tracker';
-                		if(!ACLController::checkAccess($dashletMeta[$files['class']]['module'], 'view', true, $type)){
+                		if(!$GLOBALS['ACLController']->checkAccess($dashletMeta[$files['class']]['module'], 'view', true, $type)){
                 			$displayDashlet = false;
                 		}
-                		if(!ACLController::checkAccess($dashletMeta[$files['class']]['module'], 'list', true, $type)){
+                		if(!$GLOBALS['ACLController']->checkAccess($dashletMeta[$files['class']]['module'], 'list', true, $type)){
                 			$displayDashlet = false;
                 		}
                 	}

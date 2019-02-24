@@ -77,8 +77,9 @@ function outputError( $exception ) {
 
 }
 
-function handleErrorResponse($exception)
-{
+function handleErrorResponse($exception) {
+
+    $specialResponseHeaders = [];
     $inDevMode = isset( $GLOBALS['sugar_config']['developerMode'] ) and $GLOBALS['sugar_config']['developerMode'];
 
     if ( is_object( $exception )) {
@@ -92,6 +93,7 @@ function handleErrorResponse($exception)
                 $responseData['trace'] = $exception->getTrace();
             }
             $httpCode = $exception->getHttpCode();
+            $specialResponseHeaders = $exception->getHttpHeaders();
         } else {
             if ( $inDevMode )
                 $responseData =  [ 'code' => $exception->getCode(), 'message' => $exception->getMessage(), 'line' => $exception->getLine(), 'file' => $exception->getFile(), 'trace' => $exception->getTrace() ];
@@ -108,7 +110,9 @@ function handleErrorResponse($exception)
     }
 
     $response = new \Slim\Http\Response();
+    foreach ( $specialResponseHeaders as $k => $v ) $response = $response->withHeader( $k, $v );
     return $response->withJson(['error' => $responseData], $httpCode ? $httpCode : 500, JSON_PARTIAL_OUTPUT_ON_ERROR);
+
 }
 
 

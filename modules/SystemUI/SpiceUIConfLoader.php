@@ -65,16 +65,34 @@ class SpiceUIConfLoader
         'syshooks'
     );
 
-    public function __construct()
+    /**
+     * SpiceUIConfLoader constructor.
+     * @param null $endpoint introduced with CR1000133
+     */
+    public function __construct($endpoint = null)
     {
         global $current_user;
+        $this->loader = new SpiceUILoader($endpoint);
 
-        $this->loader = new SpiceUILoader();
-        $this->routebase = $this->getRouteBase();
-        if (!preg_match('/release/', $this->routebase))
-            $this->release = false;
+//BEGIN CR1000133 multiple packageloader sources:
+// routebase not needed anymore but keep a while for BWC
+        if(empty($endpoint)){
+            $this->routebase = $this->getRouteBase();
+            if (!preg_match('/release/', $this->routebase))
+                $this->release = false;
+
+        }else{
+            if (!preg_match('/packages.spicecrm.io/', $this->endpoint))
+                $this->release = false;
+        }
+//END
     }
 
+
+    /**
+     * @deprecated since release 201902001
+     * @return string
+     */
     public function getRouteBase()
     {
         $routebase = $this->loader->getRouteBase();
@@ -132,6 +150,7 @@ class SpiceUIConfLoader
             die('<pre>' . print_r($response, true));
             throw new Exception("REST Call error somewhere... Action aborted");
         }
+
         //check if release and force unique version number
         if ($this->release === true) {
             $response['versions'] = array();
@@ -145,7 +164,7 @@ class SpiceUIConfLoader
 
     public function loadPackage($package, $version = '*')
     {
-        $endpoint = implode("/", array($this->routebase, $package, $version));
+        $endpoint = implode("/", array('config', $package, $version));
         return $this->loadDefaultConf($endpoint, array('route' => $this->routebase, 'packages' => [$package], 'version' => $version), false);
     }
 

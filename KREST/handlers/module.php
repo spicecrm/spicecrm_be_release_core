@@ -126,7 +126,7 @@ class KRESTModuleHandler
         );
 
         // acl check if user can list
-        if (!ACLController::checkAccess($beanModule, 'list', true) && !in_array($beanModule, $aclWhitelist))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'list', true) && !in_array($beanModule, $aclWhitelist))
             throw (new KREST\ForbiddenException("Forbidden to list in module $beanModule."))->setErrorCode('noModuleList');
 
         $thisBean = BeanFactory::getBean($beanModule);
@@ -446,7 +446,7 @@ class KRESTModuleHandler
         );
 
         // acl check if user can list
-        if (!ACLController::checkAccess($beanModule, 'export', true) && !in_array($beanModule, $aclWhitelist))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'export', true) && !in_array($beanModule, $aclWhitelist))
             throw (new KREST\ForbiddenException("Forbidden to export module $beanModule."))->setErrorCode('noModuleList');
 
         $thisBean = BeanFactory::getBean($beanModule);
@@ -735,7 +735,7 @@ class KRESTModuleHandler
     {
         global $current_language;
         // acl check if user can get the detail
-        if (!ACLController::checkAccess($beanModule, 'delete', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'delete', true))
             throw (new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
@@ -748,7 +748,7 @@ class KRESTModuleHandler
         global $current_language, $app_list_strings;
 
         // acl check if user can get the detail
-        if (!ACLController::checkAccess($beanModule, 'view', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
             throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId, array('encode' => false)); //set encode to false to avoid things like ' being translated to &#039;
@@ -783,7 +783,7 @@ class KRESTModuleHandler
         global $db;
 
         // acl check if user can get the detail
-        if (!ACLController::checkAccess($beanModule, 'view', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
             throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
@@ -817,7 +817,7 @@ class KRESTModuleHandler
     public function check_bean_duplicates($beanModule, $beanData)
     {
         // acl check if user can get the detail
-        if (!ACLController::checkAccess($beanModule, 'view', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
             throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         // load the bean and populate from row
@@ -837,7 +837,7 @@ class KRESTModuleHandler
         global $db;
 
         // acl check if user can get the detail
-        if (!ACLController::checkAccess($beanModule, 'view', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
             throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
@@ -857,7 +857,7 @@ class KRESTModuleHandler
     public function get_bean_attachment($beanModule, $beanId)
     {
         // acl check if user can get the detail
-        if (!ACLController::checkAccess($beanModule, 'view', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
             throw (new KREST\ForbiddenException("Forbidden to view in for module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule);
@@ -880,18 +880,21 @@ class KRESTModuleHandler
         throw (new KREST\NotFoundException('Attachment/File not found.'));
     }
 
-    public function set_bean_attachment($beanModule, $beanId)
+    public function set_bean_attachment($beanModule, $beanId, $post = '')
     {
+        global $sugar_config;
         require_once('include/upload_file.php');
         $upload_file = new UploadFile('file');
-        if (isset($_FILES['file']) && $upload_file->confirm_upload()) {
-            $filename = $upload_file->get_stored_file_name();
-            $file_mime_type = $upload_file->mime_type;
-            $filesize = $upload_file->get_uploaded_file_size();
-            $filemd5 = $upload_file->get_uploaded_file_md5();
+        if($post['file']){
+            $decodedFile = base64_decode($post['file']);
+            $upload_file->set_for_soap($beanId, $decodedFile);
+            $upload_file->final_move($beanId, true);
+        } else if (isset($_FILES['file']) && $upload_file->confirm_upload()) {
             $upload_file->use_proxy = $_FILES['file']['proxy'] ? true : false;
             $upload_file->final_move($beanId, true);
         }
+
+        return array('filename' => $post['filename'], 'filetype' => $post['filemimetype']);
     }
 
     public function download_bean_attachment($beanModule, $beanId)
@@ -931,7 +934,7 @@ class KRESTModuleHandler
     {
 
         // acl check if user can get the detail
-        if (!ACLController::checkAccess($beanModule, 'view', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
             throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         // get the bean
@@ -941,7 +944,7 @@ class KRESTModuleHandler
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
-        if (!ACLController::checkAccess($relModule, 'list', true))
+        if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
             throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         if($params['modulefilter']){
@@ -984,7 +987,7 @@ class KRESTModuleHandler
     public function add_related($beanModule, $beanId, $linkName, $relatedIds)
     {
 
-        if (!ACLController::checkAccess($beanModule, 'edit', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true))
             throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
@@ -995,7 +998,7 @@ class KRESTModuleHandler
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
-        if (!ACLController::checkAccess($relModule, 'list', true))
+        if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
             throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
 
@@ -1012,7 +1015,7 @@ class KRESTModuleHandler
     public function set_related($beanModule, $beanId, $linkName, $postparams)
     {
 
-        if (!ACLController::checkAccess($beanModule, 'edit', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true))
             throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
@@ -1023,7 +1026,7 @@ class KRESTModuleHandler
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
-        if (!ACLController::checkAccess($relModule, 'list', true))
+        if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
             throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         // set the relate module
@@ -1047,8 +1050,9 @@ class KRESTModuleHandler
             if ($relid) {
                 $valArray = Array();
                 foreach ($relFields as $relfield => $relmapdata) {
-                    $fieldArray[] = $relfield;
-                    $valArray[] = $relfield . " = '" . (is_bool($postparams[$relmapdata['map']]) ? (int)$postparams[$relmapdata['map']] : $postparams[$relmapdata['map']]) . "'";
+                    if( isset( $postparams[$relmapdata['map']] )) {
+                        $valArray[] = "$relfield = '{$postparams[$relmapdata['map']]}'";
+                    }
                 }
 
                 $thisBean->db->query("UPDATE " . $thisBean->{$linkName}->relationship->getRelationshipTable() . " SET " . implode(', ', $valArray) . " WHERE id ='$relid'");
@@ -1062,7 +1066,7 @@ class KRESTModuleHandler
     public function delete_related($beanModule, $beanId, $linkName, $postParams)
     {
 
-        if (!ACLController::checkAccess($beanModule, 'edit', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true))
             throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
@@ -1073,7 +1077,7 @@ class KRESTModuleHandler
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
-        if (!ACLController::checkAccess($relModule, 'list', true))
+        if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
             throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         $thisBean->load_relationship($linkName);
@@ -1099,12 +1103,12 @@ class KRESTModuleHandler
     {
         global $current_user, $timedate;
 
-        if (!ACLController::checkAccess($beanModule, 'edit', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true))
             throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         if ($post_params['deleted']) {
 
-            if (!ACLController::checkAccess($beanModule, 'delete', true))
+            if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'delete', true))
                 throw (new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
             $this->delete_bean($beanModule, $beanId);
@@ -1138,6 +1142,9 @@ class KRESTModuleHandler
             }
         }
 
+        // get the field access details
+        $fieldControl = $GLOBALS['ACLController']->getFieldAccess($thisBean, 'edit', false);
+
         foreach ($thisBean->field_name_map as $fieldId => $fieldData) {
             if ($fieldId == 'date_entered')
                 continue;
@@ -1146,10 +1153,8 @@ class KRESTModuleHandler
                 case 'link':
                     break;
                 default:
-                    if (isset($post_params[$fieldData['name']]))
-                        $thisBean->{
-                        $fieldData['name']
-                        } = $post_params[$fieldData['name']];
+                    if (isset($post_params[$fieldData['name']]) && (!isset($fieldControl[$fieldData['name']]) || (isset($fieldControl[$fieldData['name']]) && $fieldControl[$fieldData['name']] > 2)))
+                        $thisBean->{$fieldData['name']} = $post_params[$fieldData['name']];
                     break;
             }
         }
@@ -1264,7 +1269,7 @@ class KRESTModuleHandler
     public
     function delete_bean($beanModule, $beanId)
     {
-        if (!ACLController::checkAccess($beanModule, 'delete', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'delete', true))
             throw (new KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
         $thisBean = BeanFactory::getBean($beanModule);

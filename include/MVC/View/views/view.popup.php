@@ -45,7 +45,7 @@ class ViewPopup extends SugarView{
 		global $popupMeta, $mod_strings;
 
         if(($this->bean instanceOf SugarBean) && !$this->bean->ACLAccess('list')){
-            ACLController::displayNoAccess();
+            $GLOBALS['ACLController']->displayNoAccess();
             sugar_cleanup(true);
         }
 

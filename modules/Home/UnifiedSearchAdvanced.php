@@ -96,7 +96,7 @@ class UnifiedSearchAdvanced {
 
 		foreach($users_modules as $key=>$module)
 		{
-            if(ACLController::checkAccess($key, 'list', true))
+            if($GLOBALS['ACLController']->checkAccess($key, 'list', true))
             {
                 $modules_to_search[$key]['checked'] = true;
             }
@@ -120,7 +120,7 @@ class UnifiedSearchAdvanced {
 		//Now add the rest of the modules that are searchable via Global Search settings
 		foreach($unified_search_modules_display as $module=>$data)
 		{
-			if(!isset($modules_to_search[$module]) && $data['visible'] && ACLController::checkAccess($module, 'list', true))
+			if(!isset($modules_to_search[$module]) && $data['visible'] && $GLOBALS['ACLController']->checkAccess($module, 'list', true))
 			{
 			   $modules_to_search[$module]['checked'] = false;
 			} else if (isset($modules_to_search[$module]) && !$data['visible']) {

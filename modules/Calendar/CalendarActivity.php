@@ -172,7 +172,7 @@ class CalendarActivity {
 		}
 		
 		// get all upcoming meetings, tasks due, and calls for a user
-		if(ACLController::checkAccess('Meetings', 'list', $current_user->id == $user_id)) {
+		if($GLOBALS['ACLController']->checkAccess('Meetings', 'list', $current_user->id == $user_id)) {
 			$meeting = new Meeting();
 
 			if($current_user->id  == $user_id) {
@@ -197,7 +197,7 @@ class CalendarActivity {
 		}
 
 		if($show_calls){
-			if(ACLController::checkAccess('Calls', 'list',$current_user->id  == $user_id)) {
+			if($GLOBALS['ACLController']->checkAccess('Calls', 'list',$current_user->id  == $user_id)) {
 				$call = new Call();
 
 				if($current_user->id  == $user_id) {
@@ -224,7 +224,7 @@ class CalendarActivity {
 
 
 		if($show_tasks){
-			if(ACLController::checkAccess('Tasks', 'list',$current_user->id == $user_id)) {
+			if($GLOBALS['ACLController']->checkAccess('Tasks', 'list',$current_user->id == $user_id)) {
 				$task = new Task();
 
 				$where = CalendarActivity::get_occurs_within_where_clause('tasks', '', $view_start_time, $view_end_time, 'date_due', $view);

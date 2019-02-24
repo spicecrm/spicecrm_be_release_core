@@ -51,7 +51,7 @@ if (isset($_REQUEST['uid'])) {
         $bean1->retrieve($merge_ids[0]);
         $bean2->retrieve($merge_ids[1]);
         if ( !$bean1->ACLAccess('edit') || !$bean2->ACLAccess('edit') ) {
-            ACLController::displayNoAccess();
+            $GLOBALS['ACLController']->displayNoAccess();
             sugar_die('');
         }
     }

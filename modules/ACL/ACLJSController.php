@@ -49,13 +49,13 @@ class ACLJSController
 	
 	function getJavascript(){
 		global $action;
-		if(!ACLController::moduleSupportsACL($this->module)){
+		if(!$GLOBALS['ACLController']->moduleSupportsACL($this->module)){
 			return '';
 		}
 		$script = "<SCRIPT>\n//BEGIN ACL JAVASCRIPT\n";
 
 		if($action == 'DetailView'){
-			if(!ACLController::checkAccess($this->module,'edit', $this->is_owner)){
+			if(!$GLOBALS['ACLController']->checkAccess($this->module,'edit', $this->is_owner)){
 			$script .= <<<EOQ
 						if(typeof(document.DetailView) != 'undefined'){
 							if(typeof(document.DetailView.elements['Edit']) != 'undefined'){
@@ -67,7 +67,7 @@ class ACLJSController
 						} 		
 EOQ;
 }
-			if(!ACLController::checkAccess($this->module,'delete', $this->is_owner)){
+			if(!$GLOBALS['ACLController']->checkAccess($this->module,'delete', $this->is_owner)){
 			$script .= <<<EOQ
 						if(typeof(document.DetailView) != 'undefined'){
 							if(typeof(document.DetailView.elements['Delete']) != 'undefined'){
@@ -126,7 +126,7 @@ EOQ;
 	
 	function getFieldByIdScript($name, $def){
 		$script = '';
-		if(!ACLController::checkAccess($def['module'], $def['action_option'], true)){
+		if(!$GLOBALS['ACLController']->checkAccess($def['module'], $def['action_option'], true)){
 		foreach($this->getHTMLValues($def) as $key=>$value){
 			$script .=  "\nif(document.getElementById('$name'))document.getElementById('$name')." . $key . '="' .$value. '";'. "\n";
 		}
@@ -137,7 +137,7 @@ EOQ;
 	
 	function getFieldByNameScript($name, $def){
 		$script = '';
-		if(!ACLController::checkAccess($def['module'], $def['action_option'], true)){
+		if(!$GLOBALS['ACLController']->checkAccess($def['module'], $def['action_option'], true)){
 			
 		foreach($this->getHTMLValues($def) as $key=>$value){
 			$script .=  <<<EOQ
@@ -156,7 +156,7 @@ EOQ;
 		$script = '';
 
 
-		if(!ACLController::checkAccess($def['module'], $def['action_option'], true)){
+		if(!$GLOBALS['ACLController']->checkAccess($def['module'], $def['action_option'], true)){
 			foreach($this->getHTMLValues($def) as $key=>$value){
 				$script .= "\nif(typeof(document.$form.$name.$key) != 'undefined')\n document.$form.$name.".$key . '="' .$value. '";';
 			}

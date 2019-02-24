@@ -102,7 +102,7 @@ class MergeRecord extends SugarBean {
         
         // Bug 18853 - Disable this view if the user doesn't have edit and delete permissions
         if ( !$this->merge_bean->ACLAccess('edit') || !$this->merge_bean->ACLAccess('delete') ) {
-            ACLController::displayNoAccess();
+            $GLOBALS['ACLController']->displayNoAccess();
             sugar_die('');
         }
         
@@ -185,7 +185,7 @@ class MergeRecord extends SugarBean {
         if($is_owner == 'not_set'){
             $is_owner = $this->merge_bean->isOwner($current_user->id);
         }
-        return ACLController::checkAccess($this->merge_bean->module_dir,'edit', true);
+        return $GLOBALS['ACLController']->checkAccess($this->merge_bean->module_dir,'edit', true);
     }
     
 
@@ -325,7 +325,7 @@ class MergeRecord extends SugarBean {
             }
         }
         // Add ACL Check
-        if($this->merge_bean->bean_implements('ACL') && ACLController::requireOwner($this->merge_bean->module_dir, 'delete') )
+        if($this->merge_bean->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($this->merge_bean->module_dir, 'delete') )
         {
             global $current_user;
             $where_clauses[] = $this->merge_bean->getOwnerWhere($current_user->id);

@@ -205,7 +205,7 @@ $workflow[] = 'dbConfig_a.php';
 //define web root, which will be used as default for site_url
 //BEGIN CR1000119 review logic for web_root - release 2019.01.001
 //if($_SERVER['SERVER_PORT']=='80'){
-    $web_root = $_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF'];
+$web_root = $_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF'];
 //}else{
 //    $web_root = $_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].$_SERVER['PHP_SELF'];
 //}

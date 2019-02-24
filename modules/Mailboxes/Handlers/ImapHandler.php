@@ -113,6 +113,13 @@ class ImapHandler extends TransportHandler
         }
 
         $stream = $this->getImapStream($this->mailbox->imap_inbox_dir);
+
+        $imapErrors = imap_errors();
+
+        if ($imapErrors) {
+            $GLOBALS['log']->error('IMAP connection failure: ' . implode(';', $imapErrors));
+        }
+
         $this->initMessageIDs();
 
         if ($this->mailbox->last_checked != '') {
@@ -133,8 +140,14 @@ class ImapHandler extends TransportHandler
             $items = imap_search($stream, 'ALL');
         }
 
+        if ($this->mailbox->log_level == \Mailbox::LOG_DEBUG) {
+            $GLOBALS['log']->error($this->mailbox->name . ': ' . count($items) . ' emails in mailbox since '
+                . date('d-M-Y', strtotime($dateSince)));
+        }
+
         $new_mail_count = 0;
         $checked_mail_count = 0;
+
         if (is_array($items)) {
             foreach ($items as $item) {
                 ++$checked_mail_count;
@@ -151,7 +164,7 @@ class ImapHandler extends TransportHandler
                 $email->name = $email->name = $this->parseSubject($overview[0]->subject);
                 $email->date_sent = date('Y-m-d H:i:s', strtotime($overview[0]->date));
                 $email->from_addr = $this->parseAddress($overview[0]->from);
-                $email->to_addrs = imap_mime_header_decode($overview[0]->to)[0]->text; // todo multiple addresses
+                $email->to_addrs = $this->parseAddress($overview[0]->to); // todo multiple addresses
                 if (isset($header->ccaddress)) {
                     $email->cc_addrs = $header->ccaddress;
                 }
@@ -172,6 +185,8 @@ class ImapHandler extends TransportHandler
                     $GLOBALS['log']->error('Could not save email: ' . $email->name);
                     continue;
                 }
+
+
                 foreach ($structure->getAttachments() as $attachment) {
                     \SpiceAttachments::saveEmailAttachment('Emails', $email->id, $attachment);
                 }
@@ -190,6 +205,13 @@ class ImapHandler extends TransportHandler
         }
 
         imap_close($stream);
+
+        if ($this->mailbox->log_level == \Mailbox::LOG_DEBUG) {
+            $GLOBALS['log']->error($this->mailbox->name . ': ' . $checked_mail_count . ' emails checked');
+        }
+        if ($this->mailbox->log_level == \Mailbox::LOG_DEBUG) {
+            $GLOBALS['log']->error($this->mailbox->name . ': ' . $new_mail_count . ' emails fetched');
+        }
 
         if (isset($this->mailbox->allow_external_delete) && $this->mailbox->allow_external_delete == true) {
             $this->fetchDeleted();
@@ -309,9 +331,23 @@ class ImapHandler extends TransportHandler
      */
     private function emailExists($message_id)
     {
+        // Check if the Email exists in the current mailbox
         if (in_array($message_id, $this->message_ids)) {
             return true;
         }
+
+        // Check if the Email exists for a different mailbox
+        global $db;
+        $query = "SELECT DISTINCT id FROM emails WHERE message_id='" . $message_id . "'";
+        $q = $db->query($query);
+        $result = $db->fetchByAssoc($q);
+
+        if (!empty($result)) { // Substitute the old mailbox ID with the current one
+            $query2 = "UPDATE emails SET mailbox_id='" . $this->mailbox->id . "' WHERE id='" . $result['id'] . "'";
+            $q2 = $db->query($query2);
+            $result2 = $db->fetchByAssoc($q2);
+        }
+
         return false;
     }
 
@@ -418,6 +454,7 @@ class ImapHandler extends TransportHandler
             ->setFrom([$this->mailbox->imap_pop3_username => $this->mailbox->imap_pop3_display_name])
             ->setBody($email->body, 'text/html')
         ;
+
         if ($this->mailbox->catch_all_address == '') {
             $toAddressess = [];
             foreach ($email->to() as $address) {
@@ -427,6 +464,9 @@ class ImapHandler extends TransportHandler
         } else { // send everything to the catch all address
             $message->setTo([$this->mailbox->catch_all_address]);
         }
+
+
+
         if (!empty($email->cc_addrs)) {
             $ccAddressess = [];
             foreach ($email->cc() as $address) {
@@ -473,6 +513,7 @@ class ImapHandler extends TransportHandler
                 'result'     => $this->transport_handler->send($message),
                 'message_id' => $message->getId(),
             ];
+
         } catch (\Swift_RfcComplianceException $exception) {
             $result = [
                 'result' => false,
@@ -533,6 +574,7 @@ class ImapHandler extends TransportHandler
 
         return $response;
     }
+
     /**
      * parseSubject
      *
@@ -544,14 +586,17 @@ class ImapHandler extends TransportHandler
     private function parseSubject($imapSubject) {
         $decodedSubject = imap_mime_header_decode($imapSubject);
         $subject = '';
+
         if ((substr(strtolower($decodedSubject[0]->charset), 0 ,3) == 'iso')
-            || ($decodedSubject[0]->charset == 'Windows-1252')) {
+        || ($decodedSubject[0]->charset == 'Windows-1252')) {
             $subject = utf8_encode($decodedSubject[0]->text);
         } else {
             $subject = $decodedSubject[0]->text;
         }
+
         return $subject;
     }
+
     /**
      * parseAddress
      *
@@ -563,6 +608,7 @@ class ImapHandler extends TransportHandler
     private function parseAddress($imapAddress) {
         $decodedAddress = imap_mime_header_decode($imapAddress);
         $address = '';
+
         foreach ($decodedAddress as $addressPart) {
             if (strtolower($addressPart->charset) != 'utf-8'
                 && strtolower($addressPart->charset) != 'default') {
@@ -571,6 +617,7 @@ class ImapHandler extends TransportHandler
                 $address .= $addressPart->text;
             }
         }
+
         return str_replace(',', '', $address);
     }
 }

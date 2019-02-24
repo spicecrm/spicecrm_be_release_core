@@ -36,24 +36,29 @@ $viewdefs['SpiceModuleCreator']['EditView'] = array(
             array(
                 array('name' => 'modulepath',
                     'customLabel' => 'Module path <span class="required">*</span>',
-                    'customCode' => '<input name="modulepath" value="custom/modules/"> example custom/modules/'
+                    'customCode' => '<input name="modulepath" id="modulepath" value="custom/modules/" style="width:200px"> example custom/modules/'
                 ),
             ),
             array(
                 array('name' => 'modulename',
                     'customLabel' => 'Module name <span class="required">*</span>',
-                    'customCode' => '<input name="modulename" id="modulename" value=""> example Games'
+                    'customCode' => '<input name="modulename" id="modulename" value="" style="width:200px"> example Games'
                 ),
             ),
             array(
                 array('name' => 'tablename',
                     'customLabel' => 'Table name <span class="required">*</span>',
-                    'customCode' => '<input name="tablename" id="tablename" value=""> example games'),
+                    'customCode' => '<input name="tablename" id="tablename" value="" style="width:200px"> example games'),
             ),
             array(
                 array('name' => 'beanname',
                     'customLabel' => 'Bean name <span class="required">*</span>',
-                    'customCode' => '<input name="beanname" id="beanname" value=""> example Game'),
+                    'customCode' => '<input name="beanname" id="beanname" value="" style="width:200px"> example Game'),
+            ),
+            array(
+                array('name' => 'namespace',
+                    'customLabel' => 'namespace <span class=""></span>',
+                    'customCode' => 'add to class <input type="checkbox" name="usenamespace" id="usenamespace" value="1"/>&nbsp;<input name="namespace" id="namespace" value="" style="width:200px"> example SpiceCRM\custom\modules\Games'),
             ),
 //            array(
 //                array('name' => 'creatoraction',

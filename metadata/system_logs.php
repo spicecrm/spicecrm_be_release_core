@@ -40,6 +40,11 @@ $dictionary['syslogs'] = array(
         'description' => array(
             'name' => 'description',
             'type' => 'text',
+        ),
+        'transaction_id' => array(
+            'name' => 'transaction_id',
+            'type' => 'varchar',
+            'len' => 36
         )
     ),
     'indices' => array(
@@ -77,6 +82,11 @@ $dictionary['syslogs'] = array(
             'name' => 'idx_syslogs_level_value',
             'type' => 'index',
             'fields' => array('level_value')
+        ),
+        array(
+            'name' => 'idx_syslogs_transaction_id',
+            'type' => 'index',
+            'fields' => array('transaction_id')
         )
     )
 );

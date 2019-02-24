@@ -155,6 +155,8 @@ class Email extends SugarBean
     public $recipient_addresses = [];
     public $processors = [];
 
+    public $mailbox;
+
     /**
      * Openness Statuses
      */
@@ -174,6 +176,10 @@ class Email extends SugarBean
         $this->emailAddress = new SugarEmailAddress();
 
         $this->imagePrefix = rtrim($GLOBALS['sugar_config']['site_url'], "/") . "/cache/images/";
+
+        if ($this->load_relationship('mailboxes')) {
+            $mailbox = $this->mailboxes->getBeans()[$this->mailbox_id];
+        }
     }
 
     function email2init()
@@ -1069,7 +1075,7 @@ class Email extends SugarBean
 
             if ($this->load_relationship('mailboxes')) {
                 $mailbox = $this->mailboxes->getBeans()[$this->mailbox_id];
-                if($mailbox) //check on object (mainly for spicecrm installation process)
+                if($mailbox) // check on object (mainly for spicecrm installation process)
                     $mailbox->initTransportHandler();
             }
 
@@ -1143,6 +1149,7 @@ class Email extends SugarBean
         if ($this->to_be_sent) {
             try {
                 $result = $this->sendEmail();
+                $this->to_be_sent = false;
             } catch (Exception $e) {
                 $result = [
                     'result'  => false,
@@ -2508,7 +2515,7 @@ class Email extends SugarBean
                 $is_owner = $current_user->id == $this->parent_name_owner;
             }
         }
-        if (!ACLController::moduleSupportsACL($this->parent_type) || ACLController::checkAccess($this->parent_type, 'view', $is_owner)) {
+        if (!$GLOBALS['ACLController']->moduleSupportsACL($this->parent_type) || $GLOBALS['ACLController']->checkAccess($this->parent_type, 'view', $is_owner)) {
             $array_assign['PARENT'] = 'a';
         } else {
             $array_assign['PARENT'] = 'span';
@@ -2520,7 +2527,7 @@ class Email extends SugarBean
                 $is_owner = $current_user->id == $this->contact_name_owner;
             }
         }
-        if (ACLController::checkAccess('Contacts', 'view', $is_owner)) {
+        if ($GLOBALS['ACLController']->checkAccess('Contacts', 'view', $is_owner)) {
             $array_assign['CONTACT'] = 'a';
         } else {
             $array_assign['CONTACT'] = 'span';
@@ -3702,6 +3709,12 @@ eoq;
             if (class_exists($processor['processor_class'])) {
                 if (method_exists($processor['processor_class'], $processor['processor_method'])) {
                     $mailbox_processor = new $processor['processor_class']($this);
+
+                    if ($this->mailbox->log_level == \Mailbox::LOG_DEBUG) {
+                        $GLOBALS['log']->error('Processor ' . $processor['processor_class'] . '->'
+                            . $processor['processor_method'] . ' started for email ' . $this->id);
+                    }
+
                     $result = call_user_func_array(
                         [$mailbox_processor, $processor['processor_method']],
                         []
@@ -3828,5 +3841,23 @@ eoq;
         $this->sentiment = $sentiment;
         $this->magnitude = $magnitude;
         parent::save();
+    }
+
+    /**
+     * retrieves all related emails to a given bean
+     * should be static I know...
+     * @param SugarBean $bean
+     * @return array of Emails or empty
+     */
+    public function retrieve_for_bean(\SugarBean $bean)
+    {
+        $emails = [];
+        $sql = "SELECT email_id FROM emails_beans WHERE bean_id = '{$bean->id}' AND deleted = 0";
+        $res = $this->db->query($sql);
+        while($row = $this->db->fetchByAssoc($res))
+        {
+            $emails[] = $this->retrieve($row['email_id']);
+        }
+        return $emails;
     }
 } // end class def

@@ -6,7 +6,7 @@ $app->post('/module/CampaignLog/{campaignlogid}/{status}', function ($req, $res,
     global $timedate;
     // ACL Check
     /* todo: check what ACL we need to check
-    if (!ACLController::checkAccess('CampaignTasks', 'edit', true)) {
+    if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'edit', true)) {
         http_response_code(403);
         echo('not authorized for module ' . 'CampaignTasks');
         exit;

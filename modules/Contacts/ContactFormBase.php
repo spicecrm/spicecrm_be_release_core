@@ -83,7 +83,7 @@ public function getDuplicateQuery($focus, $prefix='')
 
 function getWideFormBody($prefix, $mod='',$formname='',  $contact = '', $portal = true){
 
-	if(!ACLController::checkAccess('Contacts', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Contacts', 'edit', true)){
 		return '';
 	}
 
@@ -316,7 +316,7 @@ EOQ;
 }
 
 function getFormBody($prefix, $mod='', $formname=''){
-	if(!ACLController::checkAccess('Contacts', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Contacts', 'edit', true)){
 		return '';
 	}
 global $mod_strings;
@@ -380,7 +380,7 @@ return $form;
 
 }
 function getForm($prefix, $mod=''){
-	if(!ACLController::checkAccess('Contacts', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Contacts', 'edit', true)){
 		return '';
 	}
 if(!empty($mod)){
@@ -446,7 +446,7 @@ function handleSave($prefix, $redirect=true, $useRequired=false){
 
 	}
 	if(!$focus->ACLAccess('Save')){
-			ACLController::displayNoAccess(true);
+            $GLOBALS['ACLController']->displayNoAccess(true);
 			sugar_cleanup(true);
 	}
 	if($_REQUEST['action'] != 'BusinessCard' && $_REQUEST['action'] != 'ConvertLead' && $_REQUEST['action'] != 'ConvertProspect')

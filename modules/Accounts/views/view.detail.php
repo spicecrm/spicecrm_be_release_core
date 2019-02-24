@@ -63,7 +63,7 @@ class AccountsViewDetail extends ViewDetail {
 		
 		$this->dv->process();
 		global $mod_strings;
-		if(ACLController::checkAccess('Contacts', 'edit', true)) {
+		if($GLOBALS['ACLController']->checkAccess('Contacts', 'edit', true)) {
 			$push_billing = '<span class="id-ff"><button class="button btn_copy" title="' . $mod_strings['LBL_PUSH_CONTACTS_BUTTON_LABEL'] . 
 								 '" type="button" onclick=\'open_contact_popup("Contacts", 600, 600, "&account_name=' .
 								 urlencode($this->bean->name) . '&html=change_address' .

@@ -68,8 +68,8 @@ class KReportsController extends SugarController {
 
         require_once('modules/ACL/ACLController.php');
 
-        if (ACLController::checkAccess($thisReport->module_dir, 'edit', $thisReport->assigned_user_id == $current_user->id ? true : false)) {
-            if (ACLController::checkAccess($thisReport->module_dir, 'delete', $thisReport->assigned_user_id == $current_user->id ? true : false))
+        if ($GLOBALS['ACLController']->checkAccess($thisReport->module_dir, 'edit', $thisReport->assigned_user_id == $current_user->id ? true : false)) {
+            if ($GLOBALS['ACLController']->checkAccess($thisReport->module_dir, 'delete', $thisReport->assigned_user_id == $current_user->id ? true : false))
                 print 2;
             else
                 print 1;

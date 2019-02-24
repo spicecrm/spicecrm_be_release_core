@@ -1,10 +1,11 @@
 function populateModuleCreator() {
-
     $( "#modulename" ).keyup(function() {
         //set table name
         $( "#tablename" ).val($('#modulename').val().toLowerCase());
         //set beanname
         $( "#beanname" ).val($('#modulename').val().substring(0, ($('#modulename').val().length-1)));
+        //set namespace
+        $( "#namespace" ).val('SpiceCRM\\' + $('#modulepath').val().replace(/\//g, '\\') + $('#modulename').val());
     });
 }
 function requiredFieldsForModuleCreator(){

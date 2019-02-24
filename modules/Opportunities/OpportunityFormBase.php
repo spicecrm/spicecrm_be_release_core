@@ -127,7 +127,7 @@ function buildTableForm($rows, $mod='Opportunities'){
 }
 
 function getForm($prefix, $mod='Opportunities'){
-	if(!ACLController::checkAccess('Opportunities', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Opportunities', 'edit', true)){
 		return '';
 	}
 if(!empty($mod)){
@@ -162,7 +162,7 @@ return $the_form;
 }
 
 function getWideFormBody($prefix, $mod='Opportunities', $formname='', $lead='', $showaccount = true){
-	if(!ACLController::checkAccess('Opportunities', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Opportunities', 'edit', true)){
 		return '';
 	}
 	if(empty($lead)){
@@ -312,7 +312,7 @@ return $the_form;
 } // end getWideFormBody
 
 function getFormBody($prefix, $mod='Opportunities', $formname=''){
-	if(!ACLController::checkAccess('Opportunities', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Opportunities', 'edit', true)){
 		return '';
 	}
 if(!empty($mod)){
@@ -440,8 +440,8 @@ function handleSave($prefix,$redirect=true, $useRequired=false){
         }
     }
 	$focus = populateFromPost($prefix, $focus);
-	if( !ACLController::checkAccess($focus->module_dir, 'edit', $focus->isOwner($current_user->id))){
-		ACLController::displayNoAccess(true);
+	if( !$GLOBALS['ACLController']->checkAccess($focus->module_dir, 'edit', $focus->isOwner($current_user->id))){
+		$GLOBALS['ACLController']->displayNoAccess(true);
 	}
 	$check_notify = FALSE;
 	if (isset($GLOBALS['check_notify'])) {

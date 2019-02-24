@@ -335,7 +335,7 @@ function validate_user($user_name, $password){
 		global $app_list_strings, $current_language;
 		$app_list_strings = return_app_list_strings_language($current_language);
 		$modules = query_module_access_list($user);
-		ACLController :: filterModuleList($modules, false);
+        $GLOBALS['ACLController']->filterModuleList($modules, false);
 		global $modInvisList;
 
 		foreach($modInvisList as $invis){

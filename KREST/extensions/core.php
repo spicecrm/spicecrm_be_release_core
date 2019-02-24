@@ -29,23 +29,23 @@ $app->get('/', function () use ($KRESTManager) {
     ));
 });
 
-$app->get('/test', function( $req, $res, $args ) {
-    return $res->withJson([ 'test' => true, 'viaMethod' => 'GET' ]);
+$app->get('/test', function ($req, $res, $args) {
+    return $res->withJson(['test' => true, 'viaMethod' => 'GET']);
 });
 
-$app->post('/test', function( $req, $res, $args ) {
-    return $res->withJson([ 'test' => true, 'viaMethod' => 'POST' ]);
+$app->post('/test', function ($req, $res, $args) {
+    return $res->withJson(['test' => true, 'viaMethod' => 'POST']);
 });
 
 $app->get('/sysinfo', function () use ($KRESTManager) {
     global $sugar_config;
 
-    if(isset($GLOBALS['sugar_config']['syslanguages']['spiceuisource']) && $GLOBALS['sugar_config']['syslanguages']['spiceuisource'] == 'db'){
-        if(!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
+    if (isset($GLOBALS['sugar_config']['syslanguages']['spiceuisource']) && $GLOBALS['sugar_config']['syslanguages']['spiceuisource'] == 'db') {
+        if (!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
         $languages = LanguageManager::getLanguages(true);
     } else {
 
-        foreach($GLOBALS['sugar_config']['languages'] as $language_code => $language_name){
+        foreach ($GLOBALS['sugar_config']['languages'] as $language_code => $language_name) {
             $languages['available'][] = [
                 'language_code' => $language_code,
                 'language_name' => $language_name,
@@ -58,10 +58,13 @@ $app->get('/sysinfo', function () use ($KRESTManager) {
 
     echo json_encode(array(
         'version' => '2.0',
+        'systemsettings' => [
+            'upload_maxsize' => $sugar_config['upload_maxsize']
+        ],
         'extensions' => $KRESTManager->extensions,
         'languages' => $languages,
-        'loginSidebarUrl' => isset ( $sugar_config['uiLoginSidebarUrl']{0} ) ? $sugar_config['uiLoginSidebarUrl'] : false,
-        'ChangeRequestRequired' => isset( $GLOBALS['sugar_config']['change_request_required'] ) ? (boolean)$GLOBALS['sugar_config']['change_request_required'] : false,
+        'loginSidebarUrl' => isset ($sugar_config['uiLoginSidebarUrl']{0}) ? $sugar_config['uiLoginSidebarUrl'] : false,
+        'ChangeRequestRequired' => isset($GLOBALS['sugar_config']['change_request_required']) ? (boolean)$GLOBALS['sugar_config']['change_request_required'] : false,
         'sessionMaxLifetime' => (int)ini_get('session.gc_maxlifetime')
     ));
 });
@@ -83,30 +86,30 @@ $app->get('/validatesession', function () use ($app) {
 });
 
 $app->post('/tmpfile', function ($req, $res, $args) use ($app) {
-    $postBody = file_get_contents( 'php://input' );
+    $postBody = file_get_contents('php://input');
     $temppath = sys_get_temp_dir();
     $filename = create_guid();
     file_put_contents($temppath . '/' . $filename, base64_decode($postBody));
-    echo json_encode( array( 'filepath' => $temppath.'/'.$filename ));
+    echo json_encode(array('filepath' => $temppath . '/' . $filename));
 });
 
 $app->post('/httperrors', function ($req, $res, $args) use ($app) {
     $errors = $req->getParsedBodyParam('errors');
     $logtext = '';
     $now = date('c');
-    foreach ( $errors as $error ) $logtext .= $now."\n".var_export( $error, true )."\n------------------------------\n";
-    $ret = file_put_contents( 'ui_http_network_errors.log', $logtext,FILE_APPEND );
-    return $res->withJson([ 'success' => $ret !== false ]);
+    foreach ($errors as $error) $logtext .= $now . "\n" . var_export($error, true) . "\n------------------------------\n";
+    $ret = file_put_contents('ui_http_network_errors.log', $logtext, FILE_APPEND);
+    return $res->withJson(['success' => $ret !== false]);
 });
 
-$app->get('/timezones', function ( $req, $res, $args ) use ($app) {
-    return $res->withJson( TimeDate::getTimezoneList() );
+$app->get('/timezones', function ($req, $res, $args) use ($app) {
+    return $res->withJson(TimeDate::getTimezoneList());
 });
 
-$app->get('/systags', function ( $req, $res, $args ) use ($app) {
+$app->get('/systags', function ($req, $res, $args) use ($app) {
     global $db;
     $tags = [];
     $dbresult = $db->query('SELECT name FROM systags WHERE isactive = 1 ORDER BY name');
-    while ( $row = $db->fetchByAssoc( $dbresult )) $tags[] = $row['name'];
-    return $res->withJson(['systags'=>$tags]);
+    while ($row = $db->fetchByAssoc($dbresult)) $tags[] = $row['name'];
+    return $res->withJson(['systags' => $tags]);
 });

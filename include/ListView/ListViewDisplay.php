@@ -265,7 +265,7 @@ class ListViewDisplay
 		$menuItems = array();
 
 		// delete
-		if ( ACLController::checkAccess($this->seed->module_dir,'delete',true) && $this->delete )
+		if ( $GLOBALS['ACLController']->checkAccess($this->seed->module_dir,'delete',true) && $this->delete )
 			$menuItems[] = $this->buildDeleteLink($location);
 		// compose email
         if ( $this->email )
@@ -273,7 +273,7 @@ class ListViewDisplay
 		// mass update
 		$mass = $this->getMassUpdate();
 		$mass->setSugarBean($this->seed);
-		if ( ( ACLController::checkAccess($this->seed->module_dir,'edit',true) && ACLController::checkAccess($this->seed->module_dir,'massupdate',true) ) && $this->showMassupdateFields && $mass->doMassUpdateFieldsExistForFocus() )
+		if ( ( $GLOBALS['ACLController']->checkAccess($this->seed->module_dir,'edit',true) && $GLOBALS['ACLController']->checkAccess($this->seed->module_dir,'massupdate',true) ) && $this->showMassupdateFields && $mass->doMassUpdateFieldsExistForFocus() )
             $menuItems[] = $this->buildMassUpdateLink($location);
 		// merge
 		if ( $this->mailMerge )
@@ -281,12 +281,12 @@ class ListViewDisplay
 		if ( $this->mergeduplicates )
 		    $menuItems[] = $this->buildMergeDuplicatesLink($location);
 		// add to target list
-		if ( $this->targetList && ACLController::checkAccess('ProspectLists','edit',true) )
+		if ( $this->targetList && $GLOBALS['ACLController']->checkAccess('ProspectLists','edit',true) )
 		    $menuItems[] = $this->buildTargetList($location);
 		// export
                 //BEGIN CORE MOFIFICATION maretval 2016-06-22: action still appears when disable_export ist true
-                //ORIGINAL: if ( ACLController::checkAccess($this->seed->module_dir,'export',true) && $this->export )
-                if ( ACLController::checkAccess($this->seed->module_dir,'export',true) && $this->export && !$GLOBALS['sugar_config']['disable_export'])
+                //ORIGINAL: if ( $GLOBALS['ACLController']->checkAccess($this->seed->module_dir,'export',true) && $this->export )
+                if ( $GLOBALS['ACLController']->checkAccess($this->seed->module_dir,'export',true) && $this->export && !$GLOBALS['sugar_config']['disable_export'])
                 //END
                     $menuItems[] = $this->buildExportLink($location);
 
@@ -414,7 +414,7 @@ class ListViewDisplay
         $return_string.= isset($_REQUEST['action']) ? "&return_action={$_REQUEST['action']}" : "";
         $return_string.= isset($_REQUEST['record']) ? "&return_id={$_REQUEST['record']}" : "";
         //need delete and edit access.
-		if (!(ACLController::checkAccess($this->seed->module_dir, 'edit', true)) or !(ACLController::checkAccess($this->seed->module_dir, 'delete', true))) {
+		if (!($GLOBALS['ACLController']->checkAccess($this->seed->module_dir, 'edit', true)) or !($GLOBALS['ACLController']->checkAccess($this->seed->module_dir, 'delete', true))) {
 			return "";
 		}
 

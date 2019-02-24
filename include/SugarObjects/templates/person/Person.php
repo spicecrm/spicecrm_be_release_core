@@ -136,6 +136,25 @@ class Person extends Basic
         return $app_list_strings['salutation_letter_dom'][$this->salutation];
     }
 
+    public function getLetterName()
+    {
+        $nameArray = [];
+        if(!empty($this->degreee1)) $nameArray[] =  $this->degreee1;
+        if(!empty($this->first_name)) $nameArray[] =  $this->first_name;
+        if(!empty($this->last_name)) $nameArray[] =  $this->last_name;
+        if(!empty($this->degree2)) $nameArray[] =  $this->degree2;
+        return implode_r(' ', $nameArray);
+    }
+
+    public function getLetterLastName()
+    {
+        $nameArray = [];
+        if(!empty($this->degreee1)) $nameArray[] =  $this->degreee1;
+        if(!empty($this->last_name)) $nameArray[] =  $this->last_name;
+        if(!empty($this->degree2)) $nameArray[] =  $this->degree2;
+        return implode_r(' ', $nameArray);
+    }
+
     /**
      * @see parent::save()
      */

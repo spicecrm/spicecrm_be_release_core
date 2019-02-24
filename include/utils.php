@@ -354,6 +354,7 @@ function get_sugar_config_defaults() {
         ),
         'kdeploymentmw_upcoming_minutes' => 12, // maintenance Windows ending in X minutes
         'kdeploymentmw_near_interval' => 10, // maintenance Windows starting in X minutes
+        //CR1000133: 'packageloader' => array('sources' => array('https://packages.spicecrm.io/')), //default source to load UI config from
     );
 
     if (!is_object($locale)) {
@@ -2516,7 +2517,7 @@ function parse_list_modules(&$listArray) {
             $returnArray['ProjectTask'] = $listArray['ProjectTask'];
         }
     }
-    $acldenied = ACLController::disabledModuleList($listArray, false);
+    $acldenied = $GLOBALS['ACLController']->disabledModuleList($listArray, false);
     foreach ($acldenied as $denied) {
         unset($returnArray[$denied]);
     }

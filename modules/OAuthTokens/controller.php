@@ -44,7 +44,7 @@ class OAuthTokensController extends SugarController
 		//if there is some custom logic for deletion.
 		if(!empty($_REQUEST['record'])){
 			if(!is_admin($current_user) && $this->bean->assigned_user_id != $current_user->id) {
-                ACLController::displayNoAccess(true);
+                $GLOBALS['ACLController']->displayNoAccess(true);
                 sugar_cleanup(true);
 			}
 			$this->bean->mark_deleted($_REQUEST['record']);

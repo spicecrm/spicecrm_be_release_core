@@ -48,7 +48,7 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
         # }
         # Commented out by Andi because: Creating a bean doesn´t check access rights. And code not necessary, because of following lines (checkAccess).
 
-        if(!ACLController::checkAccess($args['beanName'], 'edit', true))
+        if(!$GLOBALS['ACLController']->checkAccess($args['beanName'], 'edit', true))
             throw ( new KREST\ForbiddenException('Forbidden to edit in module '.$args['beanName'].'.'))->setErrorCode('noModuleEdit');
 
         $items = $req->getParsedBody();
@@ -92,6 +92,12 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
             */
             $params = $req->getParams();
             //var_dump($req->getParsedBody(), $params, $req->getParsedBody(), $req->getParams());
+
+            $req->getBody()->rewind();
+            if ( $req->getBody()->getContents() === '' ) { # and $req->getContentType() === 'application/json'
+                throw ( new \KREST\BadRequestException('Request has empty content. Retry?! Or contact the administrator!' ))->setFatal(true);
+            }
+
             $bean = $KRESTModuleHandler->add_bean($args['beanName'], $args['beanId'], $params);
             echo json_encode($bean);
         });
@@ -120,7 +126,8 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
                     echo json_encode($KRESTModuleHandler->download_bean_attachment($args['beanName'], $args['beanId']));
                 });
                 $app->post('', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
-                    echo json_encode($KRESTModuleHandler->set_bean_attachment($args['beanName'], $args['beanId']));
+                    $postBody = $req->getParsedBody();
+                    echo json_encode($KRESTModuleHandler->set_bean_attachment($args['beanName'], $args['beanId'], $postBody));
                 });
             });
             $app->group('/attachment', function () use ($app) {

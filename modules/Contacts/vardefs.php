@@ -539,7 +539,52 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'type' => 'varchar',
                 'len' => 36
             ),
-        ),
+            /*
+            'portal_user_id' => array(
+                'name' => 'portal_user_id',
+                'vname' => 'LBL_PORTAL_USER_ID',
+                'type' => 'varchar',
+                'len' => 36,
+                'rname' => 'id',
+                'id_name' => 'portal_user_id',
+                'vname' => 'LBL_PORTAL_USER_ID',
+                'type' => 'relate',
+                'table' => 'users',
+                'isnull' => 'true',
+                'module' => 'Users',
+                'dbType' => 'id',
+                'reportable' => false,
+                'source' => 'non-db',
+                'massupdate' => false
+            ),
+            */
+            /*
+            'portalusers' => array(
+                'name' => 'portalusers',
+                'type' => 'link',
+                'relationship' => 'portalusers_contacts',
+                'source' => 'non-db',
+                'module' => 'Contacts',
+            ),
+            */
+            /* for now not necessary:
+            'portal_user_name' => array(
+                'name' => 'portal_user_name',
+                'rname' => 'user_name',
+                'id_name' => 'portal_user_id',
+                'vname' => 'LBL_PORTAL_USER',
+                'type' => 'relate',
+                'link' => 'portalusers',
+                'table' => 'users',
+                'isnull' => 'true',
+                'module' => 'Users',
+                'dbType' => 'varchar',
+                'len' => '255',
+                'source' => 'non-db',
+                'unified_search' => true,
+            ),
+            */
+    ),
     'indices' => array(
         array(
             'name' => 'idx_cont_last_first',
@@ -674,7 +719,18 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
             'rhs_module' => 'Meetings', 'rhs_table' => 'meetings', 'rhs_key' => 'parent_id',
             'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
             'relationship_role_column_value' => 'Contacts'
+        ),
+        /*
+        'portalusers_contacts' => array (
+            'lhs_module' => 'Contacts',
+            'lhs_table' => 'contacts',
+            'lhs_key' => 'portal_user_id',
+            'rhs_module' => 'Users',
+            'rhs_table' => 'users',
+            'rhs_key' => 'id',
+            'relationship_type' => 'one-to-one',
         )
+        */
     ),
 
     //This enables optimistic locking for Saves From EditView

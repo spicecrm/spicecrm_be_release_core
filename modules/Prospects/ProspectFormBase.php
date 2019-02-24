@@ -170,7 +170,7 @@ function buildTableForm($rows, $mod=''){
 
 }
 function getWideFormBody($prefix, $mod='',$formname='',  $prospect = ''){
-	if(!ACLController::checkAccess('Prospects', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Prospects', 'edit', true)){
 		return '';
 	}
 	
@@ -301,7 +301,7 @@ return $form;
 }
 
 function getFormBody($prefix, $mod='', $formname=''){
-	if(!ACLController::checkAccess('Prospects', 'edit', true)){
+	if(!$GLOBALS['ACLController']->checkAccess('Prospects', 'edit', true)){
 		return '';
 	}
 global $mod_strings;
@@ -365,7 +365,7 @@ return $form;
 
 }
 function getForm($prefix, $mod=''){
-if(!ACLController::checkAccess('Prospects', 'edit', true)){
+if(!$GLOBALS['ACLController']->checkAccess('Prospects', 'edit', true)){
 		return '';
 	}
 if(!empty($mod)){

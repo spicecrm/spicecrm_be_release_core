@@ -59,6 +59,7 @@ $mod_strings = array(
     'LBL_OOTB_REMOVE_DOCUMENTS_FROM_FS' => 'Removal of documents from filesystem',
     'LBL_OOTB_FTS_INDEX' => 'FullTextSearch index',
     'LBL_OOTB_SYSLOGSCLEANUP_INDEX' => 'Clean up SysLogs',
+    'LBL_OOTB_SYSFTSLOGSCLEANUP_INDEX' => 'Clean up SysFTSLogs',
 
     //KReporter
     'LBL_RUNSCHEDULEDKREPORTS' => 'Process scheduled KReports',

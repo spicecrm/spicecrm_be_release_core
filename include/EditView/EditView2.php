@@ -281,13 +281,13 @@ class EditView
 
         // BEGMOD KORGOBJECTS
         // see if bean is managed ... if yes create the object and add template
-        if (!empty($GLOBALS['KAuthAccessController'])) {
-            if ($GLOBALS['KAuthAccessController']->selfOrgManaged($GLOBALS['beanList'][$this->module])) {
-                require_once('modules/KOrgObjects/KOrgObject.php');
-                $this->korgObject = new KOrgObject();
-                $this->korgObject->getOrgManagementPanel($this->module, $this->defs, $this->view);
-            }
-        }
+//        if (!empty($GLOBALS['KAuthAccessController'])) {
+//            if ($GLOBALS['KAuthAccessController']->selfOrgManaged($GLOBALS['beanList'][$this->module])) {
+//                require_once('modules/KOrgObjects/KOrgObject.php');
+//                $this->korgObject = new KOrgObject();
+//                $this->korgObject->getOrgManagementPanel($this->module, $this->defs, $this->view);
+//            }
+//        }
         // ENDMOD KORGOBJECTS
 
 
@@ -748,14 +748,14 @@ class EditView
 
         // BEGMOD KORGOBJECTS
         // see if bean is managed ... if yes create the object and add template
-        if (!empty($GLOBALS['KAuthAccessController'])) {
-            if ($GLOBALS['KAuthAccessController']->selfOrgManaged($GLOBALS['beanList'][$this->module])) {
-                require_once('modules/KOrgObjects/KOrgObject.php');
-                $this->korgObject = new KOrgObject();
-                if (method_exists($this->korgObject, 'get' . $this->view . 'Data'))
-                    $this->korgObject->{'get' . $this->view . 'Data'}($this->module, $this->focus, $this->th->ss);
-            }
-        }
+//        if (!empty($GLOBALS['KAuthAccessController'])) {
+//            if ($GLOBALS['KAuthAccessController']->selfOrgManaged($GLOBALS['beanList'][$this->module])) {
+//                require_once('modules/KOrgObjects/KOrgObject.php');
+//                $this->korgObject = new KOrgObject();
+//                if (method_exists($this->korgObject, 'get' . $this->view . 'Data'))
+//                    $this->korgObject->{'get' . $this->view . 'Data'}($this->module, $this->focus, $this->th->ss);
+//            }
+//        }
         // ENDMOD KORGOBJECTS
 
         //Use the output filter to trim the whitespace

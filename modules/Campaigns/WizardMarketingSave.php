@@ -75,7 +75,7 @@ if (isset($_REQUEST['record']) && !empty($_REQUEST['record'])) {
     $marketing->retrieve($_REQUEST['record']);
 }
 if(!$marketing->ACLAccess('Save')){
-        ACLController::displayNoAccess(true);
+        $GLOBALS['ACLController']->displayNoAccess(true);
         sugar_cleanup(true);
 }
 

@@ -55,7 +55,7 @@ else
 	$record = $_REQUEST['record'];
 	$sugarbean->retrieve($record);
 	if(!$sugarbean->ACLAccess('Delete')){
-		ACLController::displayNoAccess(true);
+		$GLOBALS['ACLController']->displayNoAccess(true);
 		sugar_cleanup(true);
 	}
 	$GLOBALS['log']->info("deleting record: $record");

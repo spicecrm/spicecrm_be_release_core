@@ -184,7 +184,7 @@ class SugarApplication
     }
 
     function ACLFilter(){
-        ACLController :: filterModuleList($GLOBALS['moduleList']);
+        $GLOBALS['ACLController']->filterModuleList($GLOBALS['moduleList']);
     }
 
     /**

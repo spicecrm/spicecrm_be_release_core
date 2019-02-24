@@ -39,4 +39,13 @@ $app->group('/module/Emails/{id}', function () use ($app) {
         echo json_encode(array('status' => 'success'));
 
     });
+
+    $app->get('/process', function ($req, $res, $args) use ($app) {
+        $email = BeanFactory::getBean('Emails', $args['id']);
+        if (!$email) {
+            throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(id);
+        }
+
+        $email->processEmail();        
+    });
 });

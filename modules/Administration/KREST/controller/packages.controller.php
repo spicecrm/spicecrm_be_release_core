@@ -21,6 +21,17 @@ class PackageController {
         $this->langloader = new SpiceLanguageLoader();
     }
 
+    function getRepoUrl($repoid){
+        global $db;
+        $repourl = '';
+        if($repoid){
+            $repository = $db->fetchByAssoc($db->query("SELECT * FROM sysuipackagerepositories WHERE id = '{$repoid}'"));
+            $repourl = $repository['url'];
+        }
+        if(empty($repourl)) $repourl = "https://packages.spicecrm.io";
+        return $repourl;
+    }
+
     private function checkAdmin(){
         global $current_user;
         if(!$current_user->is_admin) {
@@ -28,11 +39,27 @@ class PackageController {
         }
     }
 
-    function getPackages($req, $res, $args)
+    function getRepositories($req, $res, $args)
     {
         $this->checkAdmin();
 
-        $getJSONcontent = file_get_contents('https://packages.spicecrm.io/referenceconfig');
+        global $db;
+        $repositories = [];
+        $repositorieObjects = $db->query("SELECT * FROM sysuipackagerepositories");
+        while($repository = $db->fetchByAssoc($repositorieObjects)){
+            $repositories[] = $repository;
+        };
+        return $res->write(json_encode($repositories));
+    }
+
+    function getPackages($req, $res, $args)
+    {
+        global $db;
+
+        $this->checkAdmin();
+
+        $repourl = $this->getRepoUrl($args['repository']);
+        $getJSONcontent = file_get_contents("{$repourl}/config");
 
         $content = json_decode($getJSONcontent);
         if ($this->confloader->release === true) {
@@ -48,7 +75,8 @@ class PackageController {
     function loadPackage($req, $res, $args)
     {
         $this->checkAdmin();
-        return $res->write(json_encode(['response' => $this->confloader->loadPackage($args['package'])]));
+        $confloader = new SpiceUIConfLoader($this->getRepoUrl($args['repository']));
+        return $res->write(json_encode(['response' => $confloader->loadPackage($args['package'], '*')]));
     }
 
     function deletePackage($req, $res, $args)
@@ -60,7 +88,8 @@ class PackageController {
     function loadLanguage($req, $res, $args)
     {
         $this->checkAdmin();
-        return $res->write(json_encode($this->langloader->loadLanguage($args['language'])));
+        $langloader = new SpiceLanguageLoader($this->getRepoUrl($args['repository']));
+        return $res->write(json_encode($langloader->loadLanguage($args['language'])));
     }
 
     function deleteLanguage($req, $res, $args)

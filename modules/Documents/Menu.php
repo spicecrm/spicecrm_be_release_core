@@ -47,9 +47,9 @@ global $mod_strings;
 global $current_user;
 
 
-if(ACLController::checkAccess('Documents', 'edit', true))$module_menu[]=Array("index.php?module=Documents&action=EditView&return_module=Documents&return_action=DetailView", $mod_strings['LNK_NEW_DOCUMENT'],"CreateDocuments");
-if(ACLController::checkAccess('Documents', 'list', true))$module_menu[]=Array("index.php?module=Documents&action=index", $mod_strings['LNK_DOCUMENT_LIST'],"Documents");
-if(ACLController::checkAccess('Documents', 'edit', true)){
+if($GLOBALS['ACLController']->checkAccess('Documents', 'edit', true))$module_menu[]=Array("index.php?module=Documents&action=EditView&return_module=Documents&return_action=DetailView", $mod_strings['LNK_NEW_DOCUMENT'],"CreateDocuments");
+if($GLOBALS['ACLController']->checkAccess('Documents', 'list', true))$module_menu[]=Array("index.php?module=Documents&action=index", $mod_strings['LNK_DOCUMENT_LIST'],"Documents");
+if($GLOBALS['ACLController']->checkAccess('Documents', 'edit', true)){
 	
 	$admin = new Administration();
 	$admin->retrieveSettings();
