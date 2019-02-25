@@ -170,6 +170,10 @@ class CalendarActivity {
 		    $completedMeetings = " AND meetings.status = 'Planned' ";
 		    $completedTasks = " AND tasks.status != 'Completed' ";
 		}
+
+		//needed for installation process
+		if(is_null($GLOBALS['ACLController']))
+            $GLOBALS['ACLController'] = new ACLController();
 		
 		// get all upcoming meetings, tasks due, and calls for a user
 		if($GLOBALS['ACLController']->checkAccess('Meetings', 'list', $current_user->id == $user_id)) {
