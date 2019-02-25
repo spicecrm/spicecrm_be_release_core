@@ -644,26 +644,6 @@ function processEmails() {
     }
 }
 
-$scheduledtaskhandle = opendir('./modules/Schedulers/ScheduledTasks');
-while (false !== ($scheduledtaskfile = readdir($scheduledtaskhandle))) {
-    if (preg_match('/\.php$/', $scheduledtaskfile)) {
-        include('modules/Schedulers/ScheduledTasks/' . $scheduledtaskfile);
-    }
-}
-
-if (file_exists('modules/Schedulers/ScheduledTasks/scheduledtasks.php')) {
-    require('modules/Schedulers/ScheduledTasks/scheduledtasks.php');
-}
-
-if (file_exists('custom/modules/Schedulers/_AddJobsHere.php')) {
-	require('custom/modules/Schedulers/_AddJobsHere.php');
-}
-
-if (file_exists('custom/modules/Schedulers/Ext/ScheduledTasks/scheduledtasks.ext.php'))
-{
-	require('custom/modules/Schedulers/Ext/ScheduledTasks/scheduledtasks.ext.php');
-}
-
 /**
  * Job 25
  * Process SpiceImports Schedules
@@ -699,3 +679,24 @@ function cleanSysFTSLogs(){
     $q = "DELETE FROM sysftslogs WHERE date_entered < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['fts']['log_clean_interval']) && !empty($GLOBALS['sugar_config']['fts']['clean_interval']) ? $GLOBALS['sugar_config']['fts']['log_clean_interval'] : $defaultInterval).")";
     $GLOBALS['db']->query($q);
 }
+
+if($scheduledtaskhandle = opendir('./modules/Schedulers/ScheduledTasks')) {
+    while (false !== ($scheduledtaskfile = readdir($scheduledtaskhandle))) {
+        if (preg_match('/\.php$/', $scheduledtaskfile)) {
+            include('modules/Schedulers/ScheduledTasks/' . $scheduledtaskfile);
+        }
+    }
+}
+if (file_exists('modules/Schedulers/ScheduledTasks/scheduledtasks.php')) {
+    require('modules/Schedulers/ScheduledTasks/scheduledtasks.php');
+}
+
+if (file_exists('custom/modules/Schedulers/_AddJobsHere.php')) {
+	require('custom/modules/Schedulers/_AddJobsHere.php');
+}
+
+if (file_exists('custom/modules/Schedulers/Ext/ScheduledTasks/scheduledtasks.ext.php'))
+{
+	require('custom/modules/Schedulers/Ext/ScheduledTasks/scheduledtasks.ext.php');
+}
+
