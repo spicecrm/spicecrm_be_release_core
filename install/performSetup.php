@@ -325,15 +325,15 @@ echo "<br>";
 
     // default OOB schedulers
 
-//    echo $line_entry_format.$mod_strings['LBL_PERFORM_DEFAULT_SCHEDULER'].$line_exit_format;
-//    installLog($mod_strings['LBL_PERFORM_DEFAULT_SCHEDULER']);
-//    $scheduler = new Scheduler();
-//    installerHook('pre_createDefaultSchedulers');
-//    $scheduler->rebuildDefaultSchedulers();
-//    installerHook('post_createDefaultSchedulers');
-//
-//
-//    echo $mod_strings['LBL_PERFORM_DONE'];
+    echo $line_entry_format.$mod_strings['LBL_PERFORM_DEFAULT_SCHEDULER'].$line_exit_format;
+    installLog($mod_strings['LBL_PERFORM_DEFAULT_SCHEDULER']);
+    $scheduler = new Scheduler();
+    installerHook('pre_createDefaultSchedulers');
+    $scheduler->rebuildDefaultSchedulers();
+    installerHook('post_createDefaultSchedulers');
+
+
+    echo $mod_strings['LBL_PERFORM_DONE'];
 
 
 

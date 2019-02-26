@@ -620,7 +620,7 @@ EOQ;
 }
 
 if($the_file === 'end'){
-    $url = str_replace('install.php','',"http://".$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']);
+    $url = str_replace('install.php','',$web_protocol."://".$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']);
     header("Location: {$url}");
     die();
 }

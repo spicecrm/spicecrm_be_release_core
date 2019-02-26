@@ -609,12 +609,17 @@ class Scheduler extends SugarBean {
     function setIntervalHumanReadable() {
         global $current_user;
         global $mod_strings;
+        $labels = $mod_strings;
+
+        if (!$labels) {
+            $labels = return_module_language($GLOBALS['current_language'], 'Schedulers');
+        }
 
         /* [0]:min [1]:hour [2]:day of month [3]:month [4]:day of week */
         $ints = $this->intervalParsed;
         $intVal = array('-', ',');
-        $intSub = array($mod_strings['LBL_RANGE'], $mod_strings['LBL_AND']);
-        $intInt = array(0 => $mod_strings['LBL_MINS'], 1 => $mod_strings['LBL_HOUR']);
+        $intSub = array($labels['LBL_RANGE'], $labels['LBL_AND']);
+        $intInt = array(0 => $labels['LBL_MINS'], 1 => $labels['LBL_HOUR']);
         $tempInt = '';
         $iteration = '';
 
@@ -632,24 +637,24 @@ class Scheduler extends SugarBean {
                             $exRange = explode('-', $val);
                             foreach($exRange as $valRange) {
                                 if($tempInt != '') {
-                                    $tempInt .= $mod_strings['LBL_AND'];
+                                    $tempInt .= $labels['LBL_AND'];
                                 }
                                 $tempInt .= $this->handleIntervalType($key, $valRange, $ints['raw'][0], $ints['raw'][1]);
                             }
                         } elseif($tempInt != $iteration) {
-                            $tempInt .= $mod_strings['LBL_AND'];
+                            $tempInt .= $labels['LBL_AND'];
                         }
                         $tempInt .= $this->handleIntervalType($key, $val, $ints['raw'][0], $ints['raw'][1]);
                     }
                 } elseif(false !== strpos($interval, '-')) {
                     $exRange = explode('-', $interval);
-                    $tempInt .= $mod_strings['LBL_FROM'];
+                    $tempInt .= $labels['LBL_FROM'];
                     $check = $tempInt;
 
                     foreach($exRange as $val) {
                         if($tempInt == $check) {
                             $tempInt .= $this->handleIntervalType($key, $val, $ints['raw'][0], $ints['raw'][1]);
-                            $tempInt .= $mod_strings['LBL_RANGE'];
+                            $tempInt .= $labels['LBL_RANGE'];
 
                         } else {
                             $tempInt .= $this->handleIntervalType($key, $val, $ints['raw'][0], $ints['raw'][1]);
@@ -657,7 +662,7 @@ class Scheduler extends SugarBean {
                     }
 
                 } elseif(false !== strpos($interval, '*/')) {
-                    $tempInt .= $mod_strings['LBL_EVERY'];
+                    $tempInt .= $labels['LBL_EVERY'];
                     $tempInt .= $this->handleIntervalType($key, $interval, $ints['raw'][0], $ints['raw'][1]);
                 } else {
                     $tempInt .= $this->handleIntervalType($key, $interval, $ints['raw'][0], $ints['raw'][1]);
@@ -666,7 +671,7 @@ class Scheduler extends SugarBean {
         } // end foreach()
 
         if($tempInt == '') {
-            $this->intervalHumanReadable = $mod_strings['LBL_OFTEN'];
+            $this->intervalHumanReadable = $labels['LBL_OFTEN'];
         } else {
             $tempInt = trim($tempInt);
             if(';' == substr($tempInt, (strlen($tempInt)-1), strlen($tempInt))) {
@@ -1005,8 +1010,6 @@ class Scheduler extends SugarBean {
     }
 
     function getJobIntervalReadValue() {
-        global $mod_strings;
-        $mod_strings = return_module_language($GLOBALS['current_language'], 'Schedulers');
         $this->parseInterval();
         $this->setIntervalHumanReadable();
         return $this->intervalHumanReadable;

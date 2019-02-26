@@ -105,12 +105,12 @@ class VardefManager{
         }
 
         if(empty($templates[$template])){
-            $path = 'include/SugarObjects/templates/' . $template . '/vardefs.php';
+            $path = get_custom_file_if_exists('include/SugarObjects/templates/' . $template . '/vardefs.php');
             if(file_exists($path)){
                 require($path);
                 $templates[$template] = $vardefs;
             }else{
-                $path = 'include/SugarObjects/implements/' . $template . '/vardefs.php';
+                $path = get_custom_file_if_exists('include/SugarObjects/implements/' . $template . '/vardefs.php');
                 if(file_exists($path)){
                     require($path);
                     $templates[$template] = $vardefs;

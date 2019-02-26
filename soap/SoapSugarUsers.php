@@ -1530,8 +1530,8 @@ function search_by_module($user_name, $password, $search_string, $modules, $offs
 	                        'Bugs'=>array('where'=>array('Bugs' => array(0 => "bugs.name like '{0}%'", 1 => "bugs.bug_number = {0}")),'fields'=>"bugs.id, bugs.name, bugs.bug_number"),
 							'Cases'=>array('where'=>array('Cases' => array(0 => "cases.name like '{0}%'", 1 => "cases.case_number = {0}")),'fields'=>"cases.id, cases.name, cases.case_number"),
 							'Leads'=>array('where'=>array('Leads' => array(0 => "leads.first_name like '{0}%'",1 => "leads.last_name like '{0}%'"), 'EmailAddresses' => array(0 => "ea.email_address like '{0}%'")), 'fields'=>"leads.id, leads.first_name, leads.last_name, leads.status"),
- 							'Project'=>array('where'=>array('Project' => array(0 => "project.name like '{0}%'")), 'fields'=>"project.id, project.name"),
-                            'ProjectTask'=>array('where'=>array('ProjectTask' => array(0 => "project.id = '{0}'")), 'fields'=>"project_task.id, project_task.name"),
+ 							'Projects'=>array('where'=>array('Projects' => array(0 => "projects.name like '{0}%'")), 'fields'=>"projects.id, projects.name"),
+                            'ProjectTasks'=>array('where'=>array('ProjectTasks' => array(0 => "projects.id = '{0}'")), 'fields'=>"projecttasks.id, projecttasks.name"),
 							'Contacts'=>array('where'=>array('Contacts' => array(0 => "contacts.first_name like '{0}%'", 1 => "contacts.last_name like '{0}%'"), 'EmailAddresses' => array(0 => "ea.email_address like '{0}%'")),'fields'=>"contacts.id, contacts.first_name, contacts.last_name"),
 							'Opportunities'=>array('where'=>array('Opportunities' => array(0 => "opportunities.name like '{0}%'")), 'fields'=>"opportunities.id, opportunities.name"),
 							'Users'=>array('where'=>array('EmailAddresses' => array(0 => "ea.email_address like '{0}%'")),'fields'=>"users.id, users.user_name, users.first_name, ea.email_address"),
@@ -1591,8 +1591,8 @@ function search_by_module($user_name, $password, $search_string, $modules, $offs
 						// We need to confirm that the user is a member of the team of the item.
 
 
-		                if($module_name == 'ProjectTask'){
-		                    $tmpQuery .= "INNER JOIN project ON $seed->table_name.project_id = project.id ";
+		                if($module_name == 'ProjectTasks'){
+		                    $tmpQuery .= "INNER JOIN projects ON $seed->table_name.project_id = projects.id ";
 		                }
 
 		               	if(isset($seed->emailAddress) && $key == 'EmailAddresses'){

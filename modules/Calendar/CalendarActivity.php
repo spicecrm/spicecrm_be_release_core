@@ -171,8 +171,8 @@ class CalendarActivity {
 		    $completedTasks = " AND tasks.status != 'Completed' ";
 		}
 
-		//needed for installation process
-		if(is_null($GLOBALS['ACLController']))
+        //needed for installation process
+        if(is_null($GLOBALS['ACLController']))
             $GLOBALS['ACLController'] = new ACLController();
 		
 		// get all upcoming meetings, tasks due, and calls for a user

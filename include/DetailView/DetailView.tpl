@@ -168,6 +168,9 @@ class="yui-navset detailview_tabs"
 				        {{if $fields[$subField]}}
 				        	{counter name="panelFieldCount"}
 				            {{sugar_field parentFieldArray='fields' tabindex=$tabIndex vardef=$fields[$subField] displayType='DetailView'}}&nbsp;
+				        {{elseif $fields[$subField.name]}}
+                            {counter name="panelFieldCount"}
+                            {{sugar_field parentFieldArray='fields'  tabindex=$tabindex vardef=$fields[$subField.name] displayType='DetailView' displayParams=$subField.displayParams}}&nbsp;
 				        {{else}}
 				        	{counter name="panelFieldCount"}
 				            {{$subField}}
