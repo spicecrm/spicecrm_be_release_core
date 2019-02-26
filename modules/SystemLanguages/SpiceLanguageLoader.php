@@ -147,7 +147,7 @@ class SpiceLanguageLoader{
         $endpoint = implode("/", array('language', $language, $package, '*'));
         $results = $this->loadDefaultConf($endpoint, array('route' => $this->routebase, 'languages' => $language, 'package' => '*', 'version' => '*'), false);
         //BEGIN CR1000150: $sugar_config['syslanguages']['spiceuisource'] to 'db'
-        if($results){
+        if($results['success']){
             if(!class_exists('Configurator', false)){
                 require_once 'modules/Configurator/Configurator.php';
             }
