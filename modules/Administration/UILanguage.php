@@ -52,8 +52,9 @@ if ($current_user->is_admin) {
 
         //load fresh stuff
         //foreach($languages as $language) {
-            $routeparams = implode("/", array($loader->routebase, implode(",", $languages), implode(",", $packages), '*'));
-            $results = $loader->loadDefaultConf($routeparams, array('languages' => implode(',', $languages), 'packages' => $packages, 'version' => implode("','", $version)));
+//            $routeparams = implode("/", array($loader->routebase, implode(",", $languages), implode(",", $packages), '*'));
+//            $results = $loader->loadDefaultConf($routeparams, array('languages' => implode(',', $languages), 'packages' => $packages, 'version' => implode("','", $version)));
+            $results = $loader->loadLanguage(implode(',', $languages));
             echo "<br>Loaded language labels for " . implode(", ",$languages);
             echo "<br>Packages: " . implode(", ",$packages);
             echo "<br>Version: " . implode(", ",$version);
