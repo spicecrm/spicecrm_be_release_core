@@ -65,6 +65,7 @@ class LoggerManager
 		'info'       => 70,
 		'warn'       => 50,
 		'deprecated' => 40,
+        'login'      => 30,
 		'error'      => 25,
 		'fatal'      => 10,
 		'security'   => 5,
@@ -105,7 +106,7 @@ class LoggerManager
      */
     public static function getDbManager(){
         if ( is_null( self::$db ) && empty( $GLOBALS['installing'] )) {
-            if (!is_null($GLOBALS['db'])) {
+            if ( isset( $GLOBALS['db'] )) {
                 self::$db = $GLOBALS['db'];
             } else {
                 self::$db = DBManagerFactory::getTypeInstance(self::$_dbconfig['db_type'], self::$_dbconfig);

@@ -45,7 +45,7 @@ require_once('include/Dashlets/DashletGeneric.php');
 class MyEmailsDashlet extends DashletGeneric {
     function __construct($id, $def = null) {
         global $current_user, $app_strings, $dashletData;
-		require('modules/Emails/Dashlets/MyEmailsDashlet/MyEmailsDashlet.data.php');
+		require(get_custom_file_if_exists('modules/Emails/Dashlets/MyEmailsDashlet/MyEmailsDashlet.data.php'));
 
         parent::__construct($id, $def);
 

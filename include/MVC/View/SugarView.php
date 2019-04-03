@@ -1,4 +1,7 @@
 <?php
+use SpiceCRM\includes\SpiceReminders\SpiceReminders;
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -281,6 +284,7 @@ class SugarView
         global $app_strings;
         global $current_user;
         global $sugar_config;
+        global $beanFiles;
         global $app_list_strings;
         global $mod_strings;
         global $current_language;
@@ -459,14 +463,14 @@ class SugarView
                     $sideBarManager->display($ss);
                 }
                 $ss->assign('ACTION', $this->action);
-                if (file_exists('include/SpiceReminders/SpiceReminders.php')) {
-                    require_once('include/SpiceReminders/SpiceReminders.php');
-                    $reminders = SpiceReminders::getReminders(5);
+                if (class_exists('SpiceCRM\includes\SpiceReminders\SpiceReminders')) {
+//                    require_once('include/SpiceReminders/SpiceReminders.php');
+                    $reminders = \SpiceCRM\includes\SpiceReminders\SpiceReminders::getReminders(5);
                     $ss->assign("reminderRecords", $reminders);
                 }
-                if (file_exists('include/SpiceFavorites/SpiceFavorites.php')) {
-                    require_once('include/SpiceFavorites/SpiceFavorites.php');
-                    $reminders = SpiceFavorites::getFavoritesRaw('', 5);
+                if (class_exists('SpiceCRM\includes\SpiceFavorites\SpiceFavorites')) {
+//                    require_once('include/SpiceFavorites/SpiceFavorites.php');
+                    $reminders = \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::getFavoritesRaw('', 5);
                     $ss->assign("favoriteRecords", $reminders);
                 }
             }
@@ -685,7 +689,7 @@ class SugarView
                 $pages = $current_user->getPreference('pages', 'Home');
                 // merge with published Pages
                 if (sugar_is_file('modules/SpiceThemePages/SpiceThemePage.php')) {
-                    require_once('modules/SpiceThemePages/SpiceThemePage.php');
+                    require_once($beanFiles['SpiceThemePage']);
                     SpiceThemePage::mergePages($pages);
                 }
                 $homeModString = return_module_language($GLOBALS['current_language'], 'Home');
@@ -728,7 +732,7 @@ class SugarView
                     $ss->assign('iaquicknotescount', SpiceNotes::getQuickNotesCount($this->bean->module_dir, $this->bean->id));
                     // handle the Attachments
                     require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    $ss->assign('iaattachmentscount', SpiceAttachments::getAttachmentsCount());
+                    $ss->assign('iaattachmentscount', \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsCount());
                 }
                 require_once('modules/SpiceThemeController/SpiceThemeController.php');
                 $ss->assign('footerToggled', SpiceThemeController::getToggleFooterline());

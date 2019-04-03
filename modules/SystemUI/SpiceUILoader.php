@@ -5,6 +5,7 @@
  * get records from reference database
  * Endpoint to retrieve data is located in config.php
  */
+namespace SpiceCRM\modules\SystemUI;
 
 class SpiceUILoader
 {
@@ -21,7 +22,7 @@ class SpiceUILoader
     public function __construct($endpoint = null)
     {
         global $sugar_config;
-        $this->db = DBManagerFactory::getTypeInstance($sugar_config['dbconfig']['db_type']);
+        $this->db = \DBManagerFactory::getTypeInstance($sugar_config['dbconfig']['db_type']);
         if (!$this->db->connect($sugar_config['dbconfig']))
             die('database connection failed');
 
@@ -54,9 +55,9 @@ class SpiceUILoader
      */
     public function getRouteBase(){
         global $sugar_config;
-        $routebase ="release";
+        $routebase ="";
         if (isset($sugar_config['spiceconfigreference']['routebase']) && !empty($sugar_config['spiceconfigreference']['routebase'])) {
-            $routebase = $sugar_config['spiceconfigreference']['routebase'];
+            $routebase = empty($sugar_config['spiceconfigreference']['routebase']) ? "release" : $sugar_config['spiceconfigreference']['routebase'];
             if (substr($routebase, 0, 1) == "/") {
                 $routebase = substr($routebase, 1);
             }
@@ -124,7 +125,7 @@ class SpiceUILoader
         if(!class_exists('SystemDeploymentCR'))
             return false;
 
-        $cr = new SystemDeploymentCR();
+        $cr = new \SystemDeploymentCR();
         $list = $cr->getList(array(), 'active');
 
         if(count($list['list']) > 0)

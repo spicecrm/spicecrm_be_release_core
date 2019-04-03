@@ -1,5 +1,143 @@
 <?php
 
+$dictionary['systextids_modules'] = array(
+    'table' => 'systextids_modules',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'text_id' => array(
+            'name' => 'text_id',
+            'type' => 'id'
+        ),
+        'module' => array(
+            'name' => 'module',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_systextids_modules',
+            'type' => 'primary',
+            'fields' => array('id')),
+        array(
+            'name' => 'idx_systextids_modules_text_id',
+            'type' => 'index',
+            'fields' => array('text_id'))
+    )
+);
+
+$dictionary['syscustomtextids_modules'] = array(
+    'table' => 'syscustomtextids_modules',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'text_id' => array(
+            'name' => 'text_id',
+            'type' => 'id'
+        ),
+        'module' => array(
+            'name' => 'module',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_systextids_modules',
+            'type' => 'primary',
+            'fields' => array('id')),
+        array(
+            'name' => 'idx_systextids_modules_text_id',
+            'type' => 'index',
+            'fields' => array('text_id'))
+    )
+);
+$dictionary['systextids'] = array(
+    'table' => 'systextids',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'text_id' => array(
+            'name' => 'text_id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'label' => array(
+            'name' => 'label',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'text_type' => array(
+            'name' => 'text_type',
+            'type' => 'varchar',
+            'len' => '255'
+        ),
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_systextids',
+            'type' => 'primary',
+            'fields' => array('id')),
+        array(
+            'name' => 'idx_systextids_text_id',
+            'type' => 'index',
+            'fields' => array('text_id'))
+    )
+);
+$dictionary['syscustomtextids'] = array(
+    'table' => 'syscustomtextids',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'text_id' => array(
+            'name' => 'text_id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'label' => array(
+            'name' => 'label',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'text_type' => array(
+            'name' => 'text_type',
+            'type' => 'varchar',
+            'len' => '255'
+        ),
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_systextids',
+            'type' => 'primary',
+            'fields' => array('id')),
+        array(
+            'name' => 'idx_systextids_text_id',
+            'type' => 'index',
+            'fields' => array('text_id'))
+    )
+);
+
 $dictionary['sysuipackagerepositories'] = array(
     'table' => 'sysuipackagerepositories',
     'audited' => true,
@@ -28,6 +166,199 @@ $dictionary['sysuipackagerepositories'] = array(
             'name' => 'idx_sysuipackagerepositories',
             'type' => 'primary',
             'fields' => array('id'))
+    )
+);
+
+
+$dictionary['sysuiloadtasks'] = array(
+    'table' => 'sysuiloadtasks',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'display' => array(
+            'name' => 'display',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'phase' => array(
+            'name' => 'phase',
+            'type' => 'varchar',
+            'len' => 10
+        ),
+        'sequence' => array(
+            'name' => 'sequence',
+            'type' => 'varchar',
+            'len' => 10
+        ),
+        'route' => array(
+            'name' => 'route',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'version' => array(
+            'name' => 'version',
+            'type' => 'varchar',
+            'len' => 16
+        ),
+        'package' => array(
+            'name' => 'package',
+            'type' => 'varchar',
+            'len' => 32
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuiloadtasks',
+            'type' => 'primary',
+            'fields' => array('id')
+        )
+    )
+);
+
+$dictionary['sysuiloadtaskitems'] = array(
+    'table' => 'sysuiloadtaskitems',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'sysuiloadtasks_id' => array(
+            'name' => 'sysuiloadtasks_id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'method' => array(
+            'name' => 'method',
+            'type' => 'varchar',
+            'len' => 150
+        ),
+        'version' => array(
+            'name' => 'version',
+            'type' => 'varchar',
+            'len' => 16
+        ),
+        'package' => array(
+            'name' => 'package',
+            'type' => 'varchar',
+            'len' => 32
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuiloadtaskitems',
+            'type' => 'primary',
+            'fields' => array('id')
+        )
+    )
+);
+
+
+$dictionary['sysuicustomloadtasks'] = array(
+    'table' => 'sysuicustomloadtasks',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'display' => array(
+            'name' => 'display',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'phase' => array(
+            'name' => 'phase',
+            'type' => 'varchar',
+            'len' => 10
+        ),
+        'sequence' => array(
+            'name' => 'sequence',
+            'type' => 'varchar',
+            'len' => 10
+        ),
+        'route' => array(
+            'name' => 'route',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'version' => array(
+            'name' => 'version',
+            'type' => 'varchar',
+            'len' => 16
+        ),
+        'package' => array(
+            'name' => 'package',
+            'type' => 'varchar',
+            'len' => 32
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuiloadtasks',
+            'type' => 'primary',
+            'fields' => array('id')
+        )
+    )
+);
+
+
+$dictionary['sysuicustomloadtaskitems'] = array(
+    'table' => 'sysuicustomloadtaskitems',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'sysuiloadtasks_id' => array(
+            'name' => 'sysuiloadtasks_id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'method' => array(
+            'name' => 'method',
+            'type' => 'varchar',
+            'len' => 150
+        ),
+        'version' => array(
+            'name' => 'version',
+            'type' => 'varchar',
+            'len' => 16
+        ),
+        'package' => array(
+            'name' => 'package',
+            'type' => 'varchar',
+            'len' => 32
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuicustomloadtaskitems',
+            'type' => 'primary',
+            'fields' => array('id')
+        )
     )
 );
 

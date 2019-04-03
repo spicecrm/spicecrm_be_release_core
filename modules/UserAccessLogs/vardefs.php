@@ -55,6 +55,11 @@ $GLOBALS['dictionary']['UserAccessLog'] = array(
             'relationship' => 'users_useraccesslogs',
             'source' => 'non-db',
             'vname' => 'LBL_USER',
+        ),
+        'login_name' => array(
+            'name' => 'login_name',
+            'type' => 'varchar',
+            'len' => 255
         )
     ),
     'relationships' => array(

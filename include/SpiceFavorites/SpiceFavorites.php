@@ -1,5 +1,7 @@
 <?php
 
+namespace SpiceCRM\includes\SpiceFavorites;
+
 class SpiceFavorites
 {
 
@@ -42,6 +44,9 @@ class SpiceFavorites
             return 0;
     }
 
+    public static function loadFavorites(){
+        return SpiceFavorites::getFavoritesRaw('', 50);
+    }
 
     public static function getFavoritesRaw($beanModule = '', $lastN = 10)
     {
@@ -58,18 +63,27 @@ class SpiceFavorites
             $favoritesRes = $db->query("SELECT * FROM spicefavorites WHERE user_id='$current_user->id' $moduleWhere ORDER BY date_entered DESC");
 
         $thisBean = null;
-
+        $module_icons = array(); //CR1000149
         while ($thisFav = $db->fetchByAssoc($favoritesRes)) {
             if (!($thisBean instanceof $beanList[$thisFav['bean']])) {
-                $thisBean = BeanFactory::getBean($thisFav['bean']);
+                $thisBean = \BeanFactory::getBean($thisFav['bean']);
             }
+
+            //BEGIN CR1000149
+            if(!isset($module_icons[$thisFav['bean']])){
+                $module_icons[$thisFav['bean']] = \SugarThemeRegistry::current()->getImageURL($thisFav['bean'].'.gif');
+            }
+            //END
 
             if($thisBean->retrieve($thisFav['beanid'])) {
                 $favorites[] = array(
                     'item_id' => $thisFav['beanid'],
                     'module_name' => $thisFav['bean'],
                     'item_summary' => $thisBean->name,
-                    'item_summary_short' => substr($thisBean->name, 0, 15)
+                    'item_summary_short' => substr($thisBean->name, 0, 15),
+                    //BEGIN CR1000149
+                    'module_icon' => \SugarThemeRegistry::current()->getImageURL($thisFav['bean'].'.gif')
+                    //END
                 );
             } else {
                 self::delete_favorite($thisFav['module'], $thisFav['beanid']);
@@ -92,7 +106,7 @@ class SpiceFavorites
 
         $favorites = self::getFavoritesRaw($beanModule);
         if (count($favorites) > 0) {
-            $ss = new Sugar_Smarty();
+            $ss = new \Sugar_Smarty();
             $ss->assign('items', $favorites);
             $ss->assign('title', 'Favorites');
             return $ss->fetch('modules/SpiceThemeController/tpls/SpiceGenericMenuItems.tpl');

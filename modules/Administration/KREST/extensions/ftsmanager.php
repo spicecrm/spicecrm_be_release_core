@@ -1,8 +1,8 @@
 <?php
 
-require_once('include/SpiceFTSManager/SpiceFTSRESTManager.php');
+// require_once('include/SpiceFTSManager/SpiceFTSRESTManager.php');
 
-$spiceFTSManager = new SpiceFTSRESTManager();
+$spiceFTSManager = new SpiceCRM\includes\SpiceFTSManager\SpiceFTSRESTManager();
 
 $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
     $app->group('/core', function () use ($app, $spiceFTSManager) {
@@ -40,8 +40,8 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
             echo json_encode($spiceFTSManager->setFTSFields($args['module'], $items));
         });
         $app->post('/resetindex', function($req, $res, $args) use ($app, $spiceFTSManager) {
-            require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
-            $ftsHandler = new SpiceFTSHandler();
+//            require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
+            $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
 
             // delete and recreate the index
             $spiceFTSManager->deleteIndex($args['module']);
@@ -53,8 +53,8 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
             echo json_encode(array('status' => 'success'));
         });
         $app->post('/index', function($req, $res, $args) use ($app, $spiceFTSManager) {
-            require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
-            $ftsHandler = new SpiceFTSHandler();
+//            require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
+            $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
 
             // delete and recreate the index
             $spiceFTSManager->deleteIndex($args['module']);

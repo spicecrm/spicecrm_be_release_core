@@ -146,9 +146,10 @@ class MailboxesController
      */
     public function getMailboxes($req, $res, $args) {
         $result = [];
+        $params = $req->getParams();
 
         $where = 'hidden=0';
-        switch ($args->scope) {
+        switch ($params['scope']) {
             case 'inbound':
                 $where .= ' AND inbound_comm=1';
                 break;

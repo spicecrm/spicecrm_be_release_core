@@ -1241,7 +1241,10 @@ class KReport extends SugarBean
                 if ($this->kQueryArray->countSelectString != '') {
                     $queryResults = $db->fetchByAssoc($db->limitquery($this->kQueryArray->countSelectString, 0, $selectionLimit));
                     echo $this->kQueryArray->countSelectString;
-                    return $queryResults ['totalcount'];
+                    //BEGIN fix maretval 2019-03-07
+                    //return $queryResults ['totalcount'];
+                    return $queryResults ['totalCount'];
+                    //END
                 } else {
                     return $db->getRowCount($db->limitquery($query, 0, $selectionLimit));
                 }
@@ -1249,7 +1252,10 @@ class KReport extends SugarBean
             } else {
                 if ($this->kQueryArray->countSelectString != '') {
                     $queryResults = $db->fetchByAssoc($db->query($this->kQueryArray->countSelectString));
-                    return $queryResults ['totalcount'];
+                    //BEGIN fix maretval 2019-03-07
+                    //return $queryResults['totalcount'];
+                    return $queryResults['totalCount'];
+                    //END
                 } else {
                     return $db->getRowCount($queryResults = $db->query($query));
                 }
@@ -1409,11 +1415,14 @@ class KReport extends SugarBean
             }
 
             $query .= ' ORDER BY record_id ASC';
+            file_put_contents("sugarcrm.log", print_r(__LINE__, true)."\n", FILE_APPEND);
 
             $snapshotResults = $db->query($query);
+            file_put_contents("sugarcrm.log", print_r('here', true)."\n", FILE_APPEND);
 
             // still need to process this to have all teh setting for theformat
             $sqlArray = $this->get_report_main_sql_query('', true, '');
+            file_put_contents("sugarcrm.log", print_r($sqlArray, true)."\n", FILE_APPEND);
 
             //2017-06-28 bug fix load snapshot queryArray and overwrite current one
             $query = 'SELECT data FROM kreportsnapshots WHERE id = \'' . $snapshotid . '\'';

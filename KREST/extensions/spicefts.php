@@ -4,8 +4,8 @@
  * deprectated fts routes
  * this has been moved to SpiceFTSManager/KREST/extensions/search.php and a new route search with post params
  */
-require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
-$ftsManager = new SpiceFTSHandler();
+//require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
+$ftsManager = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
 
 $app->group('/fts', function () use ($app, $ftsManager)
 {

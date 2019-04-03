@@ -1,5 +1,7 @@
 <?php
 
+namespace SpiceCRM\modules\SystemUI;
+
 class SystemUIRESTHandler
 {
     var $db;
@@ -18,6 +20,9 @@ class SystemUIRESTHandler
             throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
     }
 
+    /**
+     * @deprected move to controller
+     */
     function getModuleRepository()
     {
         $retArray = array();
@@ -33,6 +38,11 @@ class SystemUIRESTHandler
         return $retArray;
     }
 
+    /**
+     * @deprectaed moved to controller
+     *
+     * @return array
+     */
     function getComponents()
     {
         $retArray = array();
@@ -49,6 +59,11 @@ class SystemUIRESTHandler
         return $retArray;
     }
 
+    /**
+     * @deprectaed ... moved to modulesController
+     *
+     * @return array
+     */
     function getModules()
     {
         global $current_user, $moduleList, $modInvisList;
@@ -75,7 +90,7 @@ class SystemUIRESTHandler
 
             // get acls for the module
             $aclArray = [];
-            $seed = BeanFactory::getBean($module['module']);
+            $seed = \BeanFactory::getBean($module['module']);
             if ($seed) {
                 $aclActions = ['list', 'listrelated', 'view', 'delete', 'edit', 'create', 'export', 'import'];
                 foreach ($aclActions as $aclAction) {
@@ -103,7 +118,8 @@ class SystemUIRESTHandler
                     'duplicatecheck' => $module['duplicatecheck'],
                     'favorites' => $module['favorites'],
                     'listtypes' => $listArray,
-                    'acl' => $aclArray
+                    'acl' => $aclArray,
+                    'ftsactivities' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::checkActivities($module['module'])
                 );
             }
         }
@@ -112,6 +128,8 @@ class SystemUIRESTHandler
     }
 
     /**
+     * @deprectaed .. moved to controller
+     *
      * http://localhost/spicecrm_dev/KREST/spiceui/core/components
      * @return array
      */
@@ -138,8 +156,8 @@ class SystemUIRESTHandler
                 'sequence' => $componentset['sequence'],
                 'component' => $componentset['component'],
                 'package' => $componentset['package'],
-                //'componentconfig' => json_decode(str_replace(array("\r", "\n", "&#039;"), array('', '', '"'), html_entity_decode($componentset['componentconfig'], ENT_QUOTES)), true) ?: new stdClass()
-                'componentconfig' => json_decode(str_replace(array("\r", "\n", "&#039;", "'"), array('', '', '"', '"'), $componentset['componentconfig']), true) ?: new stdClass()
+                //'componentconfig' => json_decode(str_replace(array("\r", "\n", "&#039;"), array('', '', '"'), html_entity_decode($componentset['componentconfig'], ENT_QUOTES)), true) ?: new \stdClass()
+                'componentconfig' => json_decode(str_replace(array("\r", "\n", "&#039;", "'"), array('', '', '"', '"'), $componentset['componentconfig']), true) ?: new \stdClass()
             );
         }
 
@@ -163,7 +181,7 @@ class SystemUIRESTHandler
                 'sequence' => $componentset['sequence'],
                 'component' => $componentset['component'],
                 'package' => $componentset['package'],
-                'componentconfig' => json_decode(str_replace(array("\r", "\n", "&#039;", "'"), array('', '', '"', '"'), $componentset['componentconfig']), true) ?: new stdClass()
+                'componentconfig' => json_decode(str_replace(array("\r", "\n", "&#039;", "'"), array('', '', '"', '"'), $componentset['componentconfig']), true) ?: new \stdClass()
             );
         }
         return $retArray;
@@ -177,7 +195,7 @@ class SystemUIRESTHandler
 
         // check if we have a CR set
         if ($_SESSION['SystemDeploymentCRsActiveCR'])
-            $cr = BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
+            $cr = \BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
 
         foreach ($data['add'] as $componentsetid => $componentsetdata) {
 
@@ -257,6 +275,11 @@ class SystemUIRESTHandler
 
     }
 
+    /**
+     * @deprected .. moved to controller
+     *
+     * @return array
+     */
     function getActionSets()
     {
         $retArray = array();
@@ -278,7 +301,7 @@ class SystemUIRESTHandler
                 'id' => $actionset['id'],
                 'action' => $actionset['action'],
                 'component' => $actionset['component'],
-                'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new stdClass()
+                'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new \stdClass()
             );
         }
 
@@ -300,13 +323,19 @@ class SystemUIRESTHandler
                 'id' => $actionset['id'],
                 'action' => $actionset['action'],
                 'component' => $actionset['component'],
-                'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new stdClass()
+                'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new \stdClass()
             );
         }
 
         return $retArray;
     }
 
+    /**
+     *
+     * @deprectaed .. moved to controller
+     *
+     * @return array
+     */
     function getSysRoles()
     {
         global $current_user;
@@ -419,6 +448,10 @@ class SystemUIRESTHandler
 
     }
 
+    /**
+     * @deprectaed ... moved to controller
+     * @return array
+     */
     function getSysRoleModules()
     {
         global $current_user;
@@ -459,6 +492,12 @@ class SystemUIRESTHandler
         return $retArray;
     }
 
+
+    /**
+     * @deprecated moved to controller
+     *
+     * @return array
+     */
     function getSysCopyRules()
     {
         $retArray = array();
@@ -485,33 +524,43 @@ class SystemUIRESTHandler
         return $retArray;
     }
 
+    /**
+     * @deprectaed moved to controller
+     *
+     * @return array
+     */
     function getComponentDefaultConfigs()
     {
         $retArray = array();
         $componentconfigs = $this->db->query("SELECT * FROM sysuicomponentdefaultconf");
         while ($componentconfig = $this->db->fetchByAssoc($componentconfigs)) {
-            $retArray[$componentconfig['component']][trim($componentconfig['role_id'])] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($componentconfig['componentconfig'])), true) ?: new stdClass();
+            $retArray[$componentconfig['component']][trim($componentconfig['role_id'])] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($componentconfig['componentconfig'])), true) ?: new \stdClass();
         }
 
         $componentconfigs = $this->db->query("SELECT * FROM sysuicustomcomponentdefaultconf");
         while ($componentconfig = $this->db->fetchByAssoc($componentconfigs)) {
-            $retArray[$componentconfig['component']][trim($componentconfig['role_id'])] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($componentconfig['componentconfig'])), true) ?: new stdClass();
+            $retArray[$componentconfig['component']][trim($componentconfig['role_id'])] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($componentconfig['componentconfig'])), true) ?: new \stdClass();
         }
 
         return $retArray;
     }
 
+    /**
+     * @deprectaed moved to controller
+     *
+     * @return array
+     */
     function getComponentModuleConfigs()
     {
         $retArray = array();
         $componentconfigs = $this->db->query("SELECT * FROM sysuicomponentmoduleconf");
         while ($componentconfig = $this->db->fetchByAssoc($componentconfigs)) {
-            $retArray[$componentconfig['module']][$componentconfig['component']][trim($componentconfig['role_id'])] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($componentconfig['componentconfig'])), true) ?: new stdClass();
+            $retArray[$componentconfig['module']][$componentconfig['component']][trim($componentconfig['role_id'])] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($componentconfig['componentconfig'])), true) ?: new \stdClass();
         }
 
         $componentconfigs = $this->db->query("SELECT * FROM sysuicustomcomponentmoduleconf");
         while ($componentconfig = $this->db->fetchByAssoc($componentconfigs)) {
-            $retArray[$componentconfig['module']][$componentconfig['component']][trim($componentconfig['role_id'])] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($componentconfig['componentconfig'])), true) ?: new stdClass();
+            $retArray[$componentconfig['module']][$componentconfig['component']][trim($componentconfig['role_id'])] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($componentconfig['componentconfig'])), true) ?: new \stdClass();
         }
 
         return $retArray;
@@ -540,160 +589,7 @@ class SystemUIRESTHandler
         return $result;
     }
 
-    function getFieldSets()
-    {
-        $retArray = array();
-        $fieldsets = $this->db->query("SELECT sysuifieldsetsitems.*, sysuifieldsets.id fid, sysuifieldsets.module, sysuifieldsets.name, sysuifieldsets.package fieldsetpackage FROM sysuifieldsets LEFT JOIN sysuifieldsetsitems ON sysuifieldsetsitems.fieldset_id = sysuifieldsets.id ORDER BY fieldset_id, sequence");
-        while ($fieldset = $this->db->fetchByAssoc($fieldsets)) {
 
-            if (!isset($retArray[$fieldset['fid']])) {
-                $retArray[$fieldset['fid']] = array(
-                    'name' => $fieldset['name'],
-                    'package' => $fieldset['fieldsetpackage'],
-                    'module' => $fieldset['module'] ?: '*',
-                    'type' => 'global',
-                    'items' => []
-                );
-            }
-
-            if (!empty($fieldset['field']))
-                $retArray[$fieldset['fid']]['items'][] = array(
-                    'id' => $fieldset['id'],
-                    'package' => $fieldset['package'],
-                    'field' => $fieldset['field'],
-                    'fieldconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($fieldset['fieldconfig'])), true) ?: new stdClass(),
-                    'sequence' => $fieldset['sequence']
-                );
-            elseif (!empty($fieldset['fieldset']))
-                $retArray[$fieldset['fid']]['items'][] = array(
-                    'id' => $fieldset['id'],
-                    'package' => $fieldset['package'],
-                    'fieldset' => $fieldset['fieldset'],
-                    'fieldconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($fieldset['fieldconfig'])), true) ?: new stdClass(),
-                    'sequence' => $fieldset['sequence']
-                );
-        }
-
-        $fieldsets = $this->db->query("SELECT sysuicustomfieldsetsitems.*, sysuicustomfieldsets.id fid, sysuicustomfieldsets.module, sysuicustomfieldsets.name, sysuicustomfieldsets.package fieldsetpackage FROM sysuicustomfieldsets LEFT JOIN sysuicustomfieldsetsitems ON sysuicustomfieldsetsitems.fieldset_id = sysuicustomfieldsets.id ORDER BY fieldset_id, sequence");
-        while ($fieldset = $this->db->fetchByAssoc($fieldsets)) {
-
-            if (!isset($retArray[$fieldset['fid']])) {
-                $retArray[$fieldset['fid']] = array(
-                    'name' => $fieldset['name'],
-                    'package' => $fieldset['fieldsetpackage'],
-                    'module' => $fieldset['module'] ?: '*',
-                    'type' => 'custom',
-                    'items' => []
-                );
-            }
-
-            if (!empty($fieldset['field']))
-                $retArray[$fieldset['fid']]['items'][] = array(
-                    'id' => $fieldset['id'],
-                    'package' => $fieldset['package'],
-                    'field' => $fieldset['field'],
-                    'fieldconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($fieldset['fieldconfig'])), true) ?: new stdClass(),
-                    'sequence' => $fieldset['sequence']
-                );
-            elseif (!empty($fieldset['fieldset']))
-                $retArray[$fieldset['fid']]['items'][] = array(
-                    'id' => $fieldset['id'],
-                    'package' => $fieldset['package'],
-                    'fieldset' => $fieldset['fieldset'],
-                    'fieldconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($fieldset['fieldconfig'])), true) ?: new stdClass(),
-                    'sequence' => $fieldset['sequence']
-                );
-        }
-
-        return $retArray;
-    }
-
-    function setFieldSets($data)
-    {
-        global $current_user, $db;
-
-        $this->checkAdmin();
-
-        // check if we have a CR set
-        if ($_SESSION['SystemDeploymentCRsActiveCR'])
-            $cr = BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
-
-
-        // add items
-        foreach ($data['add'] as $fieldsetid => $fieldsetdata) {
-            $db->query("INSERT INTO sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsets (id, module, name, package, version) VALUES('$fieldsetid', '" . $fieldsetdata['module'] . "', '" . $fieldsetdata['name'] . "', '" . $fieldsetdata['package'] . "', '{$_SESSION['confversion']}')");
-
-            // add to the CR
-            if($cr) $cr->addDBEntry("sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsets", $fieldsetid, 'I',  $fieldsetdata['module'] . "/" . $fieldsetdata['name']);
-
-            foreach ($fieldsetdata['items'] as $fieldsetitem) {
-                $db->query("INSERT INTO sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems (id, fieldset_id, field, fieldset, sequence, fieldconfig, package, version) VALUES('" . $fieldsetitem['id'] . "','$fieldsetid','" . $fieldsetitem['field'] . "','" . $fieldsetitem['fieldset'] . "','" . $fieldsetitem['sequence'] . "','" . json_encode($fieldsetitem['fieldconfig']) . "','" . $fieldsetitem['package'] . "', '{$_SESSION['confversion']}')");
-
-                // add to the CR
-                if($cr) $cr->addDBEntry("sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems", $fieldsetitem['id'], 'I',  $fieldsetdata['module'] . "/" . $fieldsetdata['name'] . '/' . $fieldsetitem['field']);
-            }
-        }
-
-        // handle the update
-        foreach ($data['update'] as $fieldsetid => $fieldsetdata) {
-
-            // get the record and check for change
-            $record = $db->fetchByAssoc($db->query("SELECT * FROM sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsets WHERE id='$fieldsetid'"));
-            if($record['name'] != $fieldsetdata['name'] || $record['package'] != $fieldsetdata['package']) {
-                // update the record
-                $db->query("UPDATE sysui" . ($fieldsetdata['type'] == 'custom' ? 'custom' : '') . "fieldsets SET name='" . $fieldsetdata['name'] . "', package='" . $fieldsetdata['package'] . "', version='{$_SESSION['confversion']}' WHERE id='$fieldsetid'");
-
-                // add to the CR
-                if ($cr) $cr->addDBEntry("sysui" . ($fieldsetdata['type'] == 'custom' ? 'custom' : '') . "fieldsets", $fieldsetid, 'U', $fieldsetdata['module'] . "/" . $fieldsetdata['name']);
-            }
-
-            // get all fieldset items
-            $items = $db->query("SELECT * FROM sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems WHERE fieldset_id = '$fieldsetid'");
-            while($item = $db->fetchByAssoc($items)){
-                $i = 0;$itemIndex = false;
-                foreach ($fieldsetdata['items'] as $index => $fieldsetitem) {
-                    if($fieldsetitem['id'] == $item['id']){
-                        unset($fieldsetdata['items'][$index]);
-                        $itemIndex = true;
-                        break;
-                    }
-                }
-
-                // if we have the entry
-                if($itemIndex !== false){
-                    if($item['sequence'] != $fieldsetitem['sequence'] ||
-                        $item['package'] != $fieldsetitem['package'] ||
-                        $item['field'] != $fieldsetitem['field'] ||
-                        $item['fieldset'] != $fieldsetitem['fieldset'] ||
-                        md5($item['fieldconfig']) != md5(json_encode($fieldsetitem['fieldconfig']))){
-                        $db->query("UPDATE sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems  SET package = '" . $fieldsetitem['package'] . "', field = '" . $fieldsetitem['field'] . "', fieldset = '" . $fieldsetitem['fieldset'] . "', sequence = '" . $fieldsetitem['sequence'] . "', fieldconfig = '" . json_encode($fieldsetitem['fieldconfig']) . "', version = '{$_SESSION['confversion']}' WHERE id='{$item['id']}'");
-
-                        // add to the CR
-                        if($cr) $cr->addDBEntry("sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems", $fieldsetitem['id'], 'U',  $fieldsetdata['module'] . "/" . $fieldsetdata['name'] . '/' . $fieldsetitem['field']);
-                    }
-
-                } else {
-                    // remove it
-                    $db->query("DELETE FROM sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems WHERE id='{$item['id']}'");
-                    // add to the CR
-                    if($cr) $cr->addDBEntry("sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems", $fieldsetitem['id'], 'D',  $fieldsetdata['module'] . "/" . $fieldsetdata['name'] . '/' . $fieldsetitem['field']);
-
-                }
-            }
-
-            // add all items we did not find
-            foreach ($fieldsetdata['items'] as $fieldsetitem) {
-                $db->query("INSERT INTO sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems (id, fieldset_id, package, field, fieldset, sequence, fieldconfig, version) VALUES('" . $fieldsetitem['id'] . "','$fieldsetid','" . $fieldsetitem['package'] . "','" . $fieldsetitem['field'] . "','" . $fieldsetitem['fieldset'] . "','" . $fieldsetitem['sequence'] . "','" . json_encode($fieldsetitem['fieldconfig']) . "', '{$_SESSION['confversion']}')");
-
-                // add to the CR
-                if($cr) $cr->addDBEntry("sysui".($fieldsetdata['type'] == 'custom' ? 'custom': '')."fieldsetsitems", $fieldsetitem['id'], 'I',  $fieldsetdata['module'] . "/" . $fieldsetdata['name'] . '/' . $fieldsetitem['field']);
-
-            }
-        }
-
-        return true;
-
-    }
 
     function checkFieldSetAlreadyExists($params){
 
@@ -709,7 +605,11 @@ class SystemUIRESTHandler
         $result = $this->db->fetchByAssoc($sysuiconfigs);
         return $result;
     }
-
+    /**
+     * @deprecated moved to controller
+     *
+     * @return mixed
+     */
     function getFieldDefs($modules)
     {
         $retArray = array(
@@ -718,12 +618,26 @@ class SystemUIRESTHandler
             'fieldstatusnetworks' => $this->getStatusNetworks()
         );
         foreach ($modules as $module) {
-            $seed = BeanFactory::getBean($module);
+            $seed = \BeanFactory::getBean($module);
             $retArray['fielddefs'][$module] = $seed->field_name_map;
+            $indexProperties = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexProperties($module);
+            if($indexProperties) {
+                foreach ($indexProperties as $indexProperty) {
+                    if ($indexProperty['index'] == 'analyzed' && $indexProperty['duplicatecheck'] && isset($retArray['fielddefs'][$module][$indexProperty['indexfieldname']])) {
+                        $retArray['fielddefs'][$module][$indexProperty['indexfieldname']]['duplicatecheck'] = true;
+                    }
+                }
+            }
         }
+
         return $retArray;
     }
 
+    /**
+     * @deprecated moved to controller
+     *
+     * @return array
+     */
     private function getStatusNetworks(){
         global $db;
         $retArray = [];
@@ -816,6 +730,11 @@ class SystemUIRESTHandler
         return true;
     }
 
+    /**
+     * @deprecated can be deleted with next cleanup
+     *
+     * @return mixed
+     */
     public function getAllModelValidations()
     {
         $sql = "SELECT id, `module` 
@@ -892,6 +811,12 @@ class SystemUIRESTHandler
         return true;
     }
 
+    /**
+     * @deprectaed .. moved to controllers
+     *
+     * @return array
+     *
+     */
     public function getLibraries()
     {
         $return = [];
@@ -1123,23 +1048,19 @@ class SystemUIRESTHandler
         return $mappingArray;
     }
 
-    function getRoutes()
-    {
-        $routeArray = array();
-        $routes = $this->db->query("SELECT * FROM sysuiroutes UNION SELECT * FROM sysuicustomroutes");
-        while ($route = $this->db->fetchByAssoc($routes)) {
 
-            $routeArray[] = $route;
-
-        }
-        return $routeArray;
-    }
-
+    /**
+     * @deprectaed .. moved to trackers controller and loader
+     *
+     * @param string $module
+     * @param int $limit
+     * @return array
+     */
     function getRecent($module = '', $limit = 5)
     {
         global $current_user;
         require_once('modules/Trackers/Tracker.php');
-        $tracker = new Tracker();
+        $tracker = new \Tracker();
         $history = $tracker->get_recently_viewed($current_user->id, $module ? array($module) : '', $limit);
         $recentItems = Array();
         foreach ($history as $key => $row) {
@@ -1153,26 +1074,14 @@ class SystemUIRESTHandler
         return $recentItems;
     }
 
+    /**
+     * @deprecated
+     *
+     * @return array
+     */
     function getFavorites()
     {
-        require_once('include/SpiceFavorites/SpiceFavorites.php');
-        return SpiceFavorites::getFavoritesRaw('', 0);
-    }
-
-    function setFavorite($module, $id)
-    {
-
-    }
-
-    function deleteFavorite($module, $id)
-    {
-
-    }
-
-    function getReminders()
-    {
-        require_once('include/SpiceReminders/SpiceReminders.php');
-        return SpiceReminders::getRemindersRaw('', 0);
+        return \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::getFavoritesRaw('', 0);
     }
 
     // for the listtypes
@@ -1222,7 +1131,7 @@ class SystemUIRESTHandler
                     'adminaction' => $admincomponent['adminaction'],
                     'admin_label' => $admincomponent['admin_label'],
                     'component' => $admincomponent['component'],
-                    'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($admincomponent['componentconfig'])), true) ?: new stdClass()
+                    'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($admincomponent['componentconfig'])), true) ?: new \stdClass()
                 );
             }
 
@@ -1234,7 +1143,7 @@ class SystemUIRESTHandler
                     'adminaction' => $admincomponent['adminaction'],
                     'admin_label' => $admincomponent['admin_label'],
                     'component' => $admincomponent['component'],
-                    'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($admincomponent['componentconfig'])), true) ?: new stdClass()
+                    'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($admincomponent['componentconfig'])), true) ?: new \stdClass()
                 );
             }
         }
@@ -1290,22 +1199,4 @@ class SystemUIRESTHandler
 
         return $response;
     }
-
-    function getAllModuleFilters() {
-        // load module filters list
-        $moduleFilters = [];
-        $filters = "SELECT 'global' As `type`, `id`, `name`, `module` FROM `sysmodulefilters` UNION ";
-        $filters .= "SELECT 'custom' As `type`, `id`, `name`, `module` FROM `syscustommodulefilters`";
-        $filters = $this->db->query($filters);
-        while ($filter = $this->db->fetchByAssoc($filters)) {
-            $moduleFilters[$filter['id']] = array(
-                'id' => $filter['id'],
-                'name' => $filter['name'],
-                'module' => $filter['module'],
-                'type' => $filter['type']
-            );
-        }
-        return $moduleFilters;
-    }
-
 }

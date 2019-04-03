@@ -1,5 +1,6 @@
 <?php
 
+namespace SpiceCRM\includes\SpiceAttachments;
 use Slim\Http\UploadedFile;
 
 class SpiceAttachments
@@ -87,7 +88,7 @@ class SpiceAttachments
         $guid = create_guid();
 
         require_once('include/upload_file.php');
-        $upload_file = new UploadFile('file');
+        $upload_file = new \UploadFile('file');
         if (isset($_FILES['file']) && $upload_file->confirm_upload()) {
             $filename = $upload_file->get_stored_file_name();
             $file_mime_type = $upload_file->mime_type;
@@ -122,7 +123,7 @@ class SpiceAttachments
         $guid = create_guid();
 
         require_once('include/upload_file.php');
-        $upload_file = new UploadFile('file');
+        $upload_file = new \UploadFile('file');
 
         $decodedFile = base64_decode($post['file']);
         $upload_file->set_for_soap($post['filename'], $decodedFile);
@@ -191,7 +192,7 @@ class SpiceAttachments
 
         $bytes = file_put_contents(self::UPLOAD_DESTINATION.$file_name_md5, $file_content);
         if(!$bytes)
-            throw new Exception("Could not save file {$file['name']} to upload://$guid");
+            throw new \Exception("Could not save file {$file['name']} to upload://$guid");
 
         $thumbnail = self::createThumbnail($file_name_md5, $file_mime_type);
 

@@ -26,7 +26,7 @@ if(!function_exists('getcurrentuserid'))
 		
 		return array(
 		    'operator' => 'oneof',
-		    'value' => $current_user->id . ',seed_chris_id'
+		    'value' => $current_user->id
 		);
 	}
 }

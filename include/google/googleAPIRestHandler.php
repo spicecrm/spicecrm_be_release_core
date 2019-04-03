@@ -3,7 +3,7 @@
 class googleAPIRestHandler
 {
 
-    public function search($term)
+    public function search($term, $locationbias = 'ipbias')
     {
         global $sugar_config;
 
@@ -13,7 +13,7 @@ class googleAPIRestHandler
 
         $ch = curl_init();
         // https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=sol4 it&inputtype=textquery&fields=photos,formatted_address,name,place_id&key=AIzaSyCmw4Z9h4lf9eUGVyjKPyr9yr1s8WeXlPM
-        $url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" . $sugar_config['googleapikey'] . "&inputtype=textquery&fields=photos,formatted_address,name,place_id&input=" . urlencode($term);
+        $url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key={$sugar_config['googleapikey']}&locationbias=".trim($locationbias)."&inputtype=textquery&fields=photos,formatted_address,name,place_id&input=" . urlencode($term);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

@@ -122,35 +122,50 @@ class LogicHook
             self::$hooks = array();
         }
 
-	public function loadHooks($module_dir)
-	{
-	    global $db;
+    public function loadHooks($module_dir)
+    {
+        global $sugar_config;
+
+        // config|_override.php
+        if (is_file('config.php')) {
+            require_once('config.php'); // provides $sugar_config
+        }
+
+        // load up the config_override.php file.  This is used to provide default user settings
+        if (is_file('config_override.php')) {
+            require_once('config_override.php');
+        }
+
+
+        if(!is_null($GLOBALS['db'])){
+            $dbhooks = $GLOBALS['db'];
+        }
 
         $hook_array = array();
-	    if(!empty($module_dir)) {
-	        $custom = "custom/modules/$module_dir";
-	    } else {
-	        $custom = "custom/modules";
-	    }
-		if(file_exists("$custom/logic_hooks.php")){
+        if(!empty($module_dir)) {
+            $custom = "custom/modules/$module_dir";
+        } else {
+            $custom = "custom/modules";
+        }
+        if(file_exists("$custom/logic_hooks.php")){
             if(isset($GLOBALS['log'])){
-	    	    $GLOBALS['log']->debug('Including module specific hook file for '.$custom);
+                $GLOBALS['log']->debug('Including module specific hook file for '.$custom);
             }
-		    include("$custom/logic_hooks.php");
-		}
-		if(empty($module_dir)) {
-		    $custom = "custom/application";
-		}
-		if(file_exists("$custom/Ext/LogicHooks/logichooks.ext.php")) {
+            include("$custom/logic_hooks.php");
+        }
+        if(empty($module_dir)) {
+            $custom = "custom/application";
+        }
+        if(file_exists("$custom/Ext/LogicHooks/logichooks.ext.php")) {
             if(isset($GLOBALS['log'])){
-			    $GLOBALS['log']->debug('Including Ext hook file for '.$custom);
+                $GLOBALS['log']->debug('Including Ext hook file for '.$custom);
             }
-			include("$custom/Ext/LogicHooks/logichooks.ext.php");
-		}
+            include("$custom/Ext/LogicHooks/logichooks.ext.php");
+        }
 
-		// load from database
-        if(is_null($db) && empty( $GLOBALS['installing'] )) {
-		    if(!class_exists('DBManagerFactory', false)) {
+        // load from database
+        if(is_null($dbhooks) && empty( $GLOBALS['installing'] )) {
+            if(!class_exists('DBManagerFactory', false)) {
                 if(is_null($GLOBALS['log'])){
                     require_once "include/SugarLogger/LoggerManager.php";
                     $GLOBALS['log'] = LoggerManager::getLogger('SugarCRM');
@@ -158,21 +173,43 @@ class LogicHook
                 require_once "include/TimeDate.php";
                 require_once "include/database/DBManagerFactory.php";
             }
-		    $db = DBManagerFactory::getInstance();
+            $dbhooks = DBManagerFactory::getInstance();
         }
+        $SpiceCRMHooks = [];
         if( empty( $GLOBALS['installing'] )) {
-            if(empty($module_dir)){
-                $hooks = $db->query("SELECT event, hook_index, hook_include, hook_class, hook_method FROM syshooks WHERE ( module = '' OR module IS NULL ) AND hook_active = 1 UNION SELECT event, hook_index, hook_include, hook_class, hook_method FROM syscustomhooks WHERE ( module = '' OR module IS NULL ) AND hook_active = 1");
-            } else {
-                $hooks = $db->query("SELECT event, hook_index, hook_include, hook_class, hook_method FROM syshooks WHERE module='$module_dir' AND hook_active = 1 UNION SELECT event, hook_index, hook_include, hook_class, hook_method FROM syscustomhooks WHERE module='$module_dir' AND hook_active = 1");
-            }
 
-            while ($hook = $db->fetchByAssoc($hooks)) {
-                $hook_array[$hook['event']][] = array($hook['hook_index'], '', $hook['hook_include'], $hook['hook_class'], $hook['hook_method']);
+            if(empty($module_dir)){
+
+                if(isset($_SESSION['SpiceCRM']['hooks']['*'])){
+                    $SpiceCRMHooks = $_SESSION['SpiceCRM']['hooks']['*'];
+                } else {
+                    $hooks = $dbhooks->query("SELECT event, hook_index, hook_include, hook_class, hook_method FROM syshooks WHERE ( module = '' OR module IS NULL ) AND hook_active = 1 UNION SELECT event, hook_index, hook_include, hook_class, hook_method FROM syscustomhooks WHERE ( module = '' OR module IS NULL ) AND hook_active = 1");
+
+                    while ($hook = $dbhooks->fetchByAssoc($hooks)) {
+                        $SpiceCRMHooks[] = array($hook['hook_index'], '', $hook['hook_include'], $hook['hook_class'], $hook['hook_method']);
+                    }
+
+                    // write to the session to speed up performance
+                    $_SESSION['SpiceCRM']['hooks']['*'] = $SpiceCRMHooks;
+                }
+            } else {
+                if(isset($_SESSION['SpiceCRM']['hooks'][$module_dir])){
+                    $SpiceCRMHooks = $_SESSION['SpiceCRM']['hooks'][$module_dir];
+                } else {
+                    $hooks = $dbhooks->query("SELECT event, hook_index, hook_include, hook_class, hook_method FROM syshooks WHERE module='$module_dir' AND hook_active = 1 UNION SELECT event, hook_index, hook_include, hook_class, hook_method FROM syscustomhooks WHERE module='$module_dir' AND hook_active = 1");
+
+                    while ($hook = $dbhooks->fetchByAssoc($hooks)) {
+                        $SpiceCRMHooks[] = array($hook['hook_index'], '', $hook['hook_include'], $hook['hook_class'], $hook['hook_method']);
+                    }
+
+                    // write to the session to speed up performance
+                    $_SESSION['SpiceCRM']['hooks'][$module_dir] = $SpiceCRMHooks;
+                }
+
             }
         }
-		return $hook_array;
-	}
+        return array_merge($hook_array, $SpiceCRMHooks);
+    }
 
 	public function getHooks($module_dir, $refresh = false)
 	{

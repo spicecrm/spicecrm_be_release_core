@@ -33,12 +33,9 @@
  * initiliaze indexes
  */
 
-require_once 'include/SpiceFTSManager/SpiceFTSCreator.php';
-require_once 'include/SpiceFTSManager/SpiceFTSLoader.php';
-
 if ($current_user->is_admin) {
 
-    $loader = new SpiceFTSLoader();
+    $loader = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSLoader();
     if ($_POST['ftsdefaultconf_process'] > 0) {
         //collect values for REST call
         $route = $loader->loader->getRouteBase();
@@ -49,7 +46,7 @@ if ($current_user->is_admin) {
         $loader->loadDefaultConf($endpoint, array('route' => $route, 'package' => $package, 'version' => $version));
 
         //initialize
-        $spiceftsconf = new SpiceFTSCreator();
+        $spiceftsconf = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSCreator();
         $spiceftsconf->initialize();
 
     } else {

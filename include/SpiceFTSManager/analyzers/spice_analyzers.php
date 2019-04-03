@@ -1,38 +1,45 @@
 <?php
+
+/**
+ * determine if we have a lgnauge specific filter set to be applied
+ */
+global $sugar_config;
+$languagefilter = [];
+if($sugar_config['fts']['languagefilter']){
+    $languagefilter[] = $sugar_config['fts']['languagefilter'];
+}
+
 $elasticAnalyzers = array(
+    "spice_standard" => array(
+        "type" => "custom",
+        "tokenizer" => "standard",
+        "filter" => $languagefilter
+    ),
     "spice_ngram" => array(
         "type" => "custom",
         "tokenizer" => "spice_ngram",
-        //"tokenizer" => "standard",
-        "filter" => ["lowercase"]
+        "filter" => array_merge(["lowercase"],$languagefilter)
+    ),
+    "spice_accountname" => array(
+        "type" => "custom",
+        "tokenizer" => "spice_ngram",
+        "filter" => array_merge(["lowercase"],$languagefilter),
+        "stopwords" => ['GmbH', 'Gesellschaft', 'Co', 'KG', 'EU', 'AG', 'SE', 'Österreich', 'Verein', 'Vereinigung']
     ),
     "spice_html" => array(
         "type" => "custom",
         "tokenizer" => "spice_ngram",
-        //"tokenizer" => "standard",
-        "filter" => ["lowercase"],
+        "filter" => array_merge(["lowercase"],$languagefilter),
         "char_filter" => ["html_strip"]
     ),
     "spice_edgengram" => array(
         "type" => "custom",
         "tokenizer" => "spice_edgengram",
-        //"tokenizer" => "standard",
+        "filter" => array_merge(["lowercase"],$languagefilter)
+    ),
+    "spice_email" => array(
+        "type" => "custom",
+        "tokenizer" => "spice_email",
         "filter" => ["lowercase"]
-    ),
-    "spice_email" => array(
-        "type" => "custom",
-        "tokenizer" => "spice_email"
-    ),
-    /*
-    "spice_edgengram" => array(
-        "type" => "custom",
-        // "tokenizer" => "spice_ngram",
-        "tokenizer" => "standard",
-        "filter" => ["standard", "lowercase", "spice_edgengram"]
-    ),
-    "spice_email" => array(
-        "tokenizer" => "uax_url_email",
-        "filter" => ["spice_email", "lowercase", "unique"]
     )
-    */
 );

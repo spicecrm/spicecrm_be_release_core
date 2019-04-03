@@ -1969,6 +1969,15 @@ function clean_incoming_data() {
         foreach ( $req as $k => $v ) {
             $_REQUEST[$k] = $v;
 
+            //PHP7 COMPAT maretval 20161025: do not keep dirty keys.
+            //Happens with call / meeting scheduler sending data on php7
+            //Use part of securexsskey() to check. securexsskey() would die if server has encoding_translation disabled,
+            $matches = array();
+            preg_match('/[\'"<>]/', $k, $matches);
+            if(!empty($matches))
+                continue;
+            //END CORE MODIFICATION
+
             //ensure the keys are safe as well.  If mbstring encoding translation is on, the post keys don't
             //get translated, so scrub the data but don't die
             if ( ini_get( 'mbstring.encoding_translation' ) === '1' ) {

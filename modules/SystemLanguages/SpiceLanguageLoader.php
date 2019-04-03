@@ -33,7 +33,9 @@
  * get language labels and translations from reference database
  * Database credentials are located in config.php
  */
-require_once 'modules/SystemUI/SpiceUILoader.php';
+
+namespace SpiceCRM\modules\SystemLanguages;
+// require_once 'modules/SystemUI/SpiceUILoader.php';
 
 class SpiceLanguageLoader{
 
@@ -42,7 +44,7 @@ class SpiceLanguageLoader{
     public $release = true;
 
     public function __construct($endpoint = null){
-        $this->loader = new SpiceUILoader($endpoint);
+        $this->loader = new \SpiceCRM\modules\SystemUI\SpiceUILoader($endpoint);
         $this->routebase = $this->getRouteBase();
 
         if(empty($endpoint)){
@@ -71,7 +73,7 @@ class SpiceLanguageLoader{
      * Display load language form in SpiceCRM Backend Administration
      */
     public function displayDefaultConfForm($params, $possibleparams, $obsoleteprams){
-        $sm = new Sugar_Smarty();
+        $sm = new \Sugar_Smarty();
         //current config
         if(!empty($params['languages'])) $sm->assign('currentlanguages', $params['languages']);
         if(!empty($params['packages'])) $sm->assign('currentpackages', $params['packages']);
@@ -151,13 +153,12 @@ class SpiceLanguageLoader{
             if(!class_exists('Configurator', false)){
                 require_once 'modules/Configurator/Configurator.php';
             }
-            $configurator = new Configurator();
+            $configurator = new \Configurator();
             $configurator->loadConfig();
             $configurator->config['syslanguages']['spiceuisource'] = 'db';
             $configurator->saveConfig();
         }
         //END
-
         return $results;
     }
 
@@ -186,11 +187,11 @@ class SpiceLanguageLoader{
         $success = false;
 
         if($checkopen && $this->loader->hasOpenChangeRequest())
-            throw new Exception("Open Change Requests found! They would be erased...");
+            throw new \Exception("Open Change Requests found! They would be erased...");
 
         if(!$response = $this->loader->callMethod("GET", $route)){
             //die("REST Call error somewhere... Action aborted");
-            throw new Exception("REST Call error somewhere... Action aborted");
+            throw new \Exception("REST Call error somewhere... Action aborted");
         }
 
         // reponse looks like
@@ -245,7 +246,7 @@ class SpiceLanguageLoader{
         //if no inserts where created => abort
         if(count($inserts) < 1){
             //die("No inserts found. Action aborted.");
-            throw new Exception("REST Call error somewhere... Action aborted");
+            throw new \Exception("REST Call error somewhere... Action aborted");
         }
 
         $queries = array_merge($truncates, $inserts);
@@ -315,7 +316,7 @@ class SpiceLanguageLoader{
         //get data
         $route = $this->getRouteBaseConfig();
         if(!$response = $this->loader->callMethod("GET", $route)) {
-            throw new Exception("REST Call error somewhere... Action aborted");
+            throw new \Exception("REST Call error somewhere... Action aborted");
         }
 
         //check if release and force unique version number

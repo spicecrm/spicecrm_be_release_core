@@ -31,6 +31,19 @@ require_once 'modules/UserPreferences/UserPreference.php';
  */
 class SugarBean
 {
+    /**
+     * introduced in spicecrm 201903001
+     * CR1000154
+     * catch and handle bean action state
+     * @var
+     */
+    private $_bean_action;
+    const BEAN_ACTION_CREATE = 1;
+    const BEAN_ACTION_UPDATE = 2;
+    const BEAN_ACTION_DELETE = 4;
+   // const BEAN_ACTION_DUPLICATE = 8;
+    const BEAN_ACTIONS =[self::BEAN_ACTION_CREATE, self::BEAN_ACTION_UPDATE, self::BEAN_ACTION_DELETE];
+    //
 
     /**
      * Blowfish encryption key
@@ -265,6 +278,13 @@ class SugarBean
      */
     protected $is_updated_dependent_fields = false;
 
+
+    /**
+     * maretval 2019-03-13. additional property
+     * save data changes to be able to look up audited fields in after_save logic
+     */
+    public $auditDataChanges = array();
+
     /**
      * Constructor for the bean, it performs following tasks:
      *
@@ -348,6 +368,37 @@ class SugarBean
             $this->acl_fields = (isset($dictionary[$this->object_name]['acl_fields']) && $dictionary[$this->object_name]['acl_fields'] === false) ? false : true;
         }
         $this->populateDefaultValues();
+    }
+
+    /**
+     * introduced in spicecrm 201903001
+     * CR1000154
+     * set current action applied on bean
+     * only create || update for now
+     * @param null $action
+     */
+    private function set_bean_action($action = null){
+        if($action && !in_array($action, self::BEAN_ACTIONS))
+            return;
+        $this->_bean_action = $action;
+    }
+
+    /**
+     * introduced in spicecrm 201903001
+     * CR1000154
+     * @return mixed
+     */
+    public function get_bean_action(){
+       return $this->_bean_action;
+    }
+
+    /**
+     * introduced in spicecrm 201903001
+     * CR1000154
+     * @return bool
+     */
+    public function isNew(){
+        return ($this->_bean_action == self::BEAN_ACTION_CREATE);
     }
 
     /**
@@ -1406,6 +1457,14 @@ class SugarBean
         if ($this->new_with_id == true) {
             $isUpdate = false;
         }
+
+        //set current bean_action
+        if($isUpdate){
+            $this->set_bean_action(self::BEAN_ACTION_UPDATE);
+        }else{
+            $this->set_bean_action(self::BEAN_ACTION_CREATE);
+        }
+
         if (empty($this->date_modified) || $this->update_date_modified) {
             $this->date_modified = $GLOBALS['timedate']->nowDb();
         }
@@ -1489,6 +1548,10 @@ class SugarBean
             }
         }
 
+        //maretval 2019-03-13: remember changes in after_save logic
+        $this->auditDataChanges = $auditDataChanges;
+        //END
+
         $this->_sendNotifications($check_notify);
 
         if ($isUpdate) {
@@ -1529,7 +1592,7 @@ class SugarBean
 
         // call fts manager to index the bean
         if ($fts_index_bean) {
-            $spiceFTSHandler = new SpiceFTSHandler();
+            $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
             $spiceFTSHandler->indexBean($this);
         }
 
@@ -1541,6 +1604,8 @@ class SugarBean
         //Now that the record has been saved, we don't want to insert again on further saves
         $this->new_with_id = false;
         $this->in_save = false;
+        //unset current bean_action
+        $this->set_bean_action(null);
         return $this->id;
     }
 
@@ -4689,7 +4754,7 @@ class SugarBean
             $this->deleteFiles();
 
             // delete from the index
-            $spiceFTSHandler = new SpiceFTSHandler();
+            $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
             $spiceFTSHandler->deleteBean($this);
 
             // call the custom business logic
@@ -4715,7 +4780,7 @@ class SugarBean
         $this->restoreFiles();
 
         // reindex the bean
-        $spiceFTSHandler = new SpiceFTSHandler();
+        $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
         $spiceFTSHandler->indexBean($this);
 
         // call the custom business logic
@@ -5793,7 +5858,7 @@ class SugarBean
         global $current_user, $beanList;
         $module = array_search(get_class($this), $beanList);
 
-        $spiceFTSHandler = new SpiceFTSHandler();
+        $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
         $duplicates = $spiceFTSHandler->checkDuplicates($this);
 
         $dupRet = array();

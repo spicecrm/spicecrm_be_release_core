@@ -45,7 +45,7 @@ require_once('include/Dashlets/DashletGeneric.php');
 class MyTasksDashlet extends DashletGeneric { 
     function __construct($id, $def = null) {
         global $current_user, $app_strings;
-		require('modules/Tasks/Dashlets/MyTasksDashlet/MyTasksDashlet.data.php');
+		require(get_custom_file_if_exists('modules/Tasks/Dashlets/MyTasksDashlet/MyTasksDashlet.data.php'));
 		
         parent::__construct($id, $def);
         

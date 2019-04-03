@@ -38,8 +38,8 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 global $sugar_config;
 if (!empty($sugar_config['fts']['server'])) {
-    require_once('include/SpiceFTSManager/SpiceFTSearch.php');
-    $searchHandler = new SpiceFTSearch();
+    //require_once('include/SpiceFTSManager/SpiceFTSearch.php');
+    $searchHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSearch();
     $searchHandler->search($_REQUEST['query_string']);
 } else {
     require_once('modules/Home/UnifiedSearchAdvanced.php');

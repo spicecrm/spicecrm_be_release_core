@@ -182,6 +182,28 @@ class Email extends SugarBean
         }
     }
 
+    /**
+     * sets the proper date either date_entered, date_start or date_
+     */
+    public function add_fts_fields()
+    {
+        global $timedate;
+
+        if($this->date_sent){
+            if ($GLOBALS['disable_date_format'] !== true)
+                $retvalue = $timedate->to_db($this->date_sent) ?: $this->date_sent;
+            else
+                $retvalue = $this->date_sent;
+        } else {
+            if ($GLOBALS['disable_date_format'] !== true)
+                $retvalue = $timedate->to_db($this->date_entered) ?: $this->date_entered;
+            else
+                $retvalue = $this->date_entered;
+        }
+
+        return ['date_activity' => $retvalue];
+    }
+
     function email2init()
     {
         require_once('modules/Emails/EmailUI.php');

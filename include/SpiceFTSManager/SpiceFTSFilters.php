@@ -1,4 +1,5 @@
 <?php
+namespace SpiceCRM\includes\SpiceFTSManager;
 
 class SpiceFTSFilters
 {

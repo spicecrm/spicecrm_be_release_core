@@ -149,8 +149,7 @@ class CalendarRestHandler
                 }
 
                 if (!empty($moduleFilter)) {
-                    require_once('include/SysModuleFilters/SysModuleFilters.php');
-                    $sysModuleFilters = new SysModuleFilters();
+                    $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
                     $filterWhere = $sysModuleFilters->generareWhereClauseForFilterId($moduleFilter);
                     if ($filterWhere) {
                         $where .= ' AND ('. $filterWhere .')';

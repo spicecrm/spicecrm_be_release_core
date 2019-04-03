@@ -103,7 +103,7 @@ class DetailView2 extends EditView
 
         // check if we should add a guide as header
         if($GLOBALS['db']->fetchByAssoc($GLOBALS['db']->query("SELECT id FROM spicebeanguides WHERE module='$module'")))
-            $viewdefs[$this->module][$this->view]['templateMeta']['headerPanel'] = 'include/SpiceBeanGuide/SpiceBeanGuidePanel.php';
+            $viewdefs[$this->module][$this->view]['templateMeta']['headerPanel'] = 'include/SpiceBeanGuides/SpiceBeanGuidePanel.php';
 
 
         $this->defs = $viewdefs[$this->module][$this->view];

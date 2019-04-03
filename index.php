@@ -39,8 +39,6 @@ if(!defined('sugarEntry'))define('sugarEntry', true);
 include ('include/MVC/preDispatch.php');
 $startTime = microtime(true);
 
-require_once dirname(__FILE__).'/vendor/autoload.php';
-
 require_once('include/entryPoint.php');
 
 // set a global transactionid

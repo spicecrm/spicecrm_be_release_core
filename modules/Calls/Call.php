@@ -315,7 +315,11 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
     {
         // First, get the list of IDs.
         $query = "SELECT contact_id as id from calls_contacts where call_id='$this->id' AND deleted=0";
-
+        if(!empty($params)){
+            if(isset($params['order_by']) && !empty($params['order_by'])){
+                $query.= " ORDER BY ".$params['order_by']." ";
+            }
+        }
         return $this->build_related_list($query, new Contact());
     }
 
@@ -911,7 +915,7 @@ class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleC
 
     public function mark_deleted($id)
     {
-        require_once("modules/Calendar/CalendarUtils.php");
+        require_once(get_custom_file_if_exists("modules/Calendar/CalendarUtils.php"));
         CalendarUtils::correctRecurrences($this, $id);
 
         parent::mark_deleted($id);

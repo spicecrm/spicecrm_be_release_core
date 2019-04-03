@@ -92,7 +92,7 @@ class KRESTManager {
                 $accessLog = BeanFactory::getBean('UserAccessLogs');
                 $accessLog->addRecord();
             } else
-                $this->authenticationError();
+                $this->authenticationError('', $_SERVER['PHP_AUTH_USER'] );
         } elseif (!empty($_GET['PHP_AUTH_DIGEST_RAW'])) {
             // handling for CLI
             $auth = explode(':', base64_decode($_GET['PHP_AUTH_DIGEST_RAW']));
@@ -108,22 +108,22 @@ class KRESTManager {
                 $accessLog = BeanFactory::getBean('UserAccessLogs');
                 $accessLog->addRecord();
             } else
-                $this->authenticationError();
+                $this->authenticationError('', $auth[0] );
         } elseif (!empty($this->requestParams['user_name']) && !empty($this->requestParams['password'])) {
             $loginData = $this->login([
                 'user_name' => $this->requestParams['user_name'],
                 'password' => $this->requestParams['password'],
                 'encryption' => $this->requestParams['encryption'],
-            ]);
+            ]); echo $this->requestParams['user_name'];exit;
             if ($loginData !== false) {
                 $this->sessionId = $loginData;
                 $this->tmpSessionId = $loginData;
             } else
-                $this->authenticationError();
+                $this->authenticationError( '', $this->requestParams['user_name'] );
 
-        } elseif (!empty($headers['OAuth-Token'])) {
+        } elseif (!empty($headers['OAuth-Token']) || !empty($headers['Oauth-Token'])) {
 
-            $startedSession = $this->startSession($headers['OAuth-Token']);
+            $startedSession = $this->startSession($headers['OAuth-Token'] ?: $headers['Oauth-Token']);
             if ($startedSession !== false)
                 $this->sessionId = $startedSession;
             else
@@ -156,9 +156,9 @@ class KRESTManager {
         }
     }
 
-    public function authenticationError($message = '') {
+    public function authenticationError($message = '', $loginName = null ) {
         $accessLog = BeanFactory::getBean('UserAccessLogs');
-        $accessLog->addRecord('loginfail');
+        $accessLog->addRecord('loginfail', $loginName );
 
         // set for cors
         // header("Access-Control-Allow-Origin: *");

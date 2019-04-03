@@ -376,6 +376,13 @@ $app_list_strings = array(
         'r' => 'verweigert',
         'g' => 'zugestimmt'
     ),
+    'uom_unit_dimensions_dom' => array(
+        '' => '',
+        'none' => 'none',
+        'weight' => 'Gewicht',
+        'volume' => 'Volume',
+        'area' => 'Gebiet',
+    ),
     'personalinterests_dom' => array(
         'sports' => 'Sport',
         'food' => 'Essen',
@@ -2025,8 +2032,10 @@ $app_strings = array(
     'LBL_LISTVIEW_OPTION_ENTIRE' => 'Gesamte Liste',
     'LBL_LISTVIEW_OPTION_SELECTED' => 'Ausgewählte Datensätze',
     'LBL_LISTVIEW_SELECTED_OBJECTS' => 'Ausgewählt:',
+    'LBL_LISTVIEW_MERGE_N_MAX' => "Max. %s Objekte können pro Verschmelzung herangezogen werden!",
 
-    'LBL_LOCALE_NAME_EXAMPLE_FIRST' => 'Hans',
+
+'LBL_LOCALE_NAME_EXAMPLE_FIRST' => 'Hans',
     'LBL_LOCALE_NAME_EXAMPLE_LAST' => 'Muster',
     'LBL_LOCALE_NAME_EXAMPLE_SALUTATION' => 'Hr.',
     'LBL_LOCALE_NAME_EXAMPLE_TITLE' => 'Vorstandsvorsitzender',
@@ -4106,7 +4115,7 @@ if (file_exists('modules/ServiceFeedbacks/ServiceFeedback.php')) {
         'ServiceCalls' => 'Service Anrufe',
     );
 }
-include('include/SpiceBeanGuide/SpiceBeanGuideLanguage.php');
+include('include/SpiceBeanGuides/SpiceBeanGuideLanguage.php');
 
 $app_list_strings['mailboxes_transport_dom'] = array(
     'imap' => 'IMAP/SMTP',

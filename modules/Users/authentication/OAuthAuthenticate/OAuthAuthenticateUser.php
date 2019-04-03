@@ -20,7 +20,7 @@ class OAuthAuthenticateUser
 
         $user_id = $PARAMS['userId'];
         if (empty($user_id)) {
-            $GLOBALS['log']->fatal('SECURITY: User authentication for '.$name.' failed');
+            $GLOBALS['log']->login('SECURITY: User authentication for '.$name.' failed.');
             return false;
         }
         $this->loadUserOnSession($user_id);

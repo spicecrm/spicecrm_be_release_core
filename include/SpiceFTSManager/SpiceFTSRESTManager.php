@@ -1,8 +1,9 @@
 <?php
 
-require_once('include/SpiceFTSManager/SpiceFTSUtils.php');
-require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
-require_once('include/SpiceFTSManager/ElasticHandler.php');
+namespace SpiceCRM\includes\SpiceFTSManager;
+
+
+// require_once('include/SpiceFTSManager/ElasticHandler.php');
 
 class SpiceFTSRESTManager
 {
@@ -45,7 +46,7 @@ class SpiceFTSRESTManager
     {
         $this->checkAdmin();
 
-        $scheduler = BeanFactory::getBean('Schedulers');
+        $scheduler = \BeanFactory::getBean('Schedulers');
         $scheduler->retrieve_by_string_fields(array('job' => 'function::fullTextIndex', 'deleted' => 0));
         if($scheduler && isset($scheduler->id)) {
             $scheduler->status = "Active";
@@ -53,7 +54,7 @@ class SpiceFTSRESTManager
         }
         else{
             if(!function_exists('create_date')) require_once 'install/install_utils.php';
-            $scheduler = BeanFactory::newBean('Schedulers');
+            $scheduler = \BeanFactory::newBean('Schedulers');
             $scheduler->name = (!empty($mod_strings['LBL_OOTB_FTS_INDEX']) ? $mod_strings['LBL_OOTB_FTS_INDEX'] : "SpiceCRM Full Text Indexing");
             $scheduler->date_time_start = create_date(date('Y'),date('n'),date('d')) . ' ' . create_time(0,0,1);
             $scheduler->job = "function::fullTextIndex";
@@ -96,7 +97,7 @@ class SpiceFTSRESTManager
 
         $this->checkAdmin();
 
-        $seed = BeanFactory::getBean($module);
+        $seed = \BeanFactory::getBean($module);
 
         // check if we have a mapping
         $mapping = json_decode($this->elasticHandler->getMapping($module));
@@ -159,7 +160,7 @@ class SpiceFTSRESTManager
 
         // check if we have a CR set
         if ($_SESSION['SystemDeploymentCRsActiveCR'])
-            $cr = BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
+            $cr = \BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
 
 
         $record = $db->fetchByAssoc($db->query("SELECT * FROM sysfts WHERE module = '$module'"));
@@ -211,7 +212,7 @@ class SpiceFTSRESTManager
             return $this->buildFieldArray($nodeArray['1']);
         }
         if ($nodeArray[0] == 'link') {
-            $nodeModule = BeanFactory::getBean($nodeArray['1']);
+            $nodeModule = \BeanFactory::getBean($nodeArray['1']);
             $nodeModule->load_relationship($nodeArray['2']);
 
             //PHP7 - 5.6 COMPAT
@@ -224,14 +225,14 @@ class SpiceFTSRESTManager
         //2013-01-09 add support for Studio Relate Fields
         if ($nodeArray[0] == 'relate') {
             require_once($beanFiles[$beanList[$nodeArray['1']]]);
-            $nodeModule = new $beanList[$nodeArray['1']];
+            $nodeModule = \BeanFactory::getBean($nodeArray['1']); //new $beanList[$nodeArray['1']];
 
             $returnArray = $this->buildFieldArray($nodeModule->field_defs[$nodeArray[2]]['module']);
         }
 
         if ($nodeArray[0] == 'relationship') {
             require_once($beanFiles[$beanList[$nodeArray['1']]]);
-            $nodeModule = new $beanList[$nodeArray['1']];
+            $nodeModule = \BeanFactory::getBean($nodeArray['1']); //new $beanList[$nodeArray['1']];
             $nodeModule->load_relationship($nodeArray['2']);
 
             //PHP7 - 5.6 COMPAT
@@ -269,7 +270,7 @@ class SpiceFTSRESTManager
 
         if ($nodeArray[0] == 'link') {
             require_once($beanFiles[$beanList[$nodeArray['1']]]);
-            $nodeModule = new $beanList[$nodeArray['1']];
+            $nodeModule = \BeanFactory::getBean($nodeArray['1']); //new $beanList[$nodeArray['1']];
             $nodeModule->load_relationship($nodeArray['2']);
             //PHP7 - 5.6 COMPAT
             //ORIGINAL $returnArray = return $this->buildNodeArray($nodeModule->$nodeArray['2']->getRelatedModuleName(), $nodeModule->{$nodeArray['2']});
@@ -281,7 +282,7 @@ class SpiceFTSRESTManager
         //2013-01-09 add support for Studio Relate Fields
         if ($nodeArray[0] == 'relate') {
             require_once($beanFiles[$beanList[$nodeArray['1']]]);
-            $nodeModule = new $beanList[$nodeArray['1']];
+            $nodeModule =  \BeanFactory::getBean($nodeArray['1']); //new $beanList[$nodeArray['1']];
 
             return $this->buildNodeArray($nodeModule->field_defs[$nodeArray[2]]['module']);
         }
@@ -306,7 +307,7 @@ class SpiceFTSRESTManager
         $functionsArray = array();
 
         if (file_exists($beanFiles[$beanList[$module]])) {
-            $nodeModule = BeanFactory::getBean($module);
+            $nodeModule = \BeanFactory::getBean($module);
 
             $nodeModule->load_relationships();
             // print_r($GLOBALS['dictionary']);//
@@ -428,7 +429,7 @@ class SpiceFTSRESTManager
         $returnArray = array();
         if ($module != '' && $module != 'undefined' && file_exists($beanFiles[$beanList [$module]])) {
             require_once($beanFiles[$beanList[$module]]);
-            $nodeModule = new $beanList[$module];
+            $nodeModule =  \BeanFactory::getBean($module); //new $beanList[$module];
 
             foreach ($nodeModule->field_name_map as $field_name => $field_defs) {
                 if ($field_defs['type'] != 'link' && (!array_key_exists('source', $field_defs) || (array_key_exists('source', $field_defs)))) {

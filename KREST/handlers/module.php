@@ -245,8 +245,7 @@ class KRESTModuleHandler
         }
 
         if (!empty($searchParams['modulefilter'])) {
-            require_once('include/SysModuleFilters/SysModuleFilters.php');
-            $sysModuleFilters = new SysModuleFilters();
+            $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
             $filterWhere = $sysModuleFilters->generareWhereClauseForFilterId($searchParams['modulefilter']);
             if ($filterWhere) {
                 if ($searchParams['whereclause'] != '')
@@ -430,16 +429,6 @@ class KRESTModuleHandler
     {
         global $db, $current_user, $sugar_config, $dictionary;
 
-        // shift in term
-        if (isset($searchParams['searchmyitems']))
-            $searchParams['owner'] = $searchParams['searchmyitems'];
-
-        // handle true and false
-        if ($searchParams['owner'] === '0') $searchParams['owner'] = false;
-        if ($searchParams['owner'] === '1') $searchParams['owner'] = true;
-        if ($searchParams['creator'] === '0') $searchParams['creator'] = false;
-        if ($searchParams['creator'] === '1') $searchParams['creator'] = true;
-
         // whitelist currencies modules
         $aclWhitelist = array(
             'Currencies'
@@ -458,9 +447,9 @@ class KRESTModuleHandler
             foreach ($thisBean->field_name_map as $field) {
                 $returnFields[] = $field['name'];
             }
+        } elseif (is_array($searchParams['fields'])) {
+            $returnFields = $searchParams['fields'];
         } elseif (is_array(json_decode(html_entity_decode($searchParams['fields']), true))) {
-            // {"name","global"} <--- no valid json!
-            // ["name","global"] <--- valid!
             $returnFields = json_decode(html_entity_decode($searchParams['fields']), true);
         } else {
             $returnFields = array();
@@ -469,96 +458,129 @@ class KRESTModuleHandler
                 $returnFields[] = $thisField['name'];
         }
 
-        $beanData = array();
-
-
-        // handle the listid
-        $listDef = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulelists WHERE id = '" . $searchParams['listid'] . "'"));
-        if ($listDef['basefilter'] == 'own')
-            $searchParams['owner'] = true;
-        $filterdefs = json_decode(html_entity_decode(base64_decode($listDef['filterdefs'])), true);
-        if ($filterdefs) {
-            $listWhereClause = $this->buildFilerdefsWhereClause($thisBean, $filterdefs, $addJoins);
-            if ($listWhereClause) {
-                if ($searchParams['whereclause'] != '')
-                    $searchParams['whereclause'] .= ' AND ';
-
-                $searchParams['whereclause'] .= '(' . $listWhereClause . ')';
-            }
-        }
-
-        // set the favorite as mandatory if search by favortes is set
-        if (isset($searchParams['owner']) || isset($searchParams['creator'])) {
-            $ownerclause = '';
-
-            if ($searchParams['owner'] && $searchParams['creator']) {
-                $ownerclause .= "($thisBean->table_name.assigned_user_id='$current_user->id' OR $thisBean->table_name.created_by='$current_user->id')";
-            } else if ($searchParams['owner']) {
-                $ownerclause .= "$thisBean->table_name.assigned_user_id='$current_user->id'";
-            } else if ($searchParams['creator']) {
-                $ownerclause .= "$thisBean->table_name.created_by='$current_user->id'";
-            }
-
-            // if owner is explicitly set to false
-            if ($searchParams['owner'] === false) {
-                if ($ownerclause != '')
-                    $ownerclause .= ' AND ';
-                $ownerclause .= "$thisBean->table_name.assigned_user_id <> '$current_user->id'";
-            }
-            // if creator is explicitly set to false
-            if ($searchParams['creator'] === false) {
-                if ($ownerclause != '')
-                    $ownerclause .= ' AND ';
-                $ownerclause .= "$thisBean->table_name.created_by <> '$current_user->id'";
-            }
-
-            if ($ownerclause) {
-                if ($searchParams['whereclause'] != '')
-                    $searchParams['whereclause'] .= ' AND ';
-
-                $searchParams['whereclause'] .= $ownerclause;
-            }
-        }
-
-        //  addd a sort criteria
-        if (!empty($searchParams['sortfield'])) {
-            if (!json_decode(html_entity_decode($searchParams['sortfield']))) {
-                $searchParams['orderby'] = '';
-                $searchParams['orderby'] .= /* $thisBean->table_name . '.' . */
-                    $searchParams['sortfield'] . ' ' . ($searchParams['sortdirection'] ? strtoupper($searchParams['sortdirection']) : 'ASC');
-            } else {
-                $sortObject = json_decode(html_entity_decode($searchParams['sortfield']));
-                $searchParams['orderby'] = $this->sort_object_handler($thisBean->table_name, $sortObject) . ' ' . ($searchParams['sortdirection'] ? strtoupper($searchParams['sortdirection']) : 'ASC');
-            }
-        }
-
+        // set filter fields for the bean query
         $filterFields = array();
         foreach ($returnFields as $returnField) {
             $filterFields[$returnField] = true;
         }
-        // $beanList = $thisBean->get_list($searchParams['orderby'], $searchParams['whereclause'], $searchParams['offset'], $searchParams['limit']);
-        $queryArray = $thisBean->create_new_list_query($searchParams['orderby'], $searchParams['whereclause'], $filterFields, array(), false, '', true, $thisBean, true);
 
-        // any additional joins we might have gotten
-        $queryArray['from'] .= ' ' . $addJoins;
-        $queryArray['secondary_from'] .= ' ' . $addJoins;
+        // determine if we have selected ids to export or we export all
+        if(isset($searchParams['ids']) && count($searchParams['ids']) > 0){
+
+            $searchParams['whereclause'] = "$thisBean->table_name.id in ('".join("','", $searchParams['ids'])."')";
+
+            $queryArray = $thisBean->create_new_list_query($searchParams['orderby'], $searchParams['whereclause'], $filterFields, array(), false, '', true, $thisBean, true);
+        } else {
+
+            // shift in term
+            if (isset($searchParams['searchmyitems']))
+                $searchParams['owner'] = $searchParams['searchmyitems'];
+
+            // handle true and false
+            if ($searchParams['owner'] === '0') $searchParams['owner'] = false;
+            if ($searchParams['owner'] === '1') $searchParams['owner'] = true;
+            if ($searchParams['creator'] === '0') $searchParams['creator'] = false;
+            if ($searchParams['creator'] === '1') $searchParams['creator'] = true;
+
+
+            $beanData = array();
+
+            // handle the listid
+            $listDef = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulelists WHERE id = '" . $searchParams['listid'] . "'"));
+            if ($listDef['basefilter'] == 'own')
+                $searchParams['owner'] = true;
+            $filterdefs = json_decode(html_entity_decode(base64_decode($listDef['filterdefs'])), true);
+            if ($filterdefs) {
+                $listWhereClause = $this->buildFilerdefsWhereClause($thisBean, $filterdefs, $addJoins);
+                if ($listWhereClause) {
+                    if ($searchParams['whereclause'] != '')
+                        $searchParams['whereclause'] .= ' AND ';
+
+                    $searchParams['whereclause'] .= '(' . $listWhereClause . ')';
+                }
+            }
+
+            // set the favorite as mandatory if search by favortes is set
+            if (isset($searchParams['owner']) || isset($searchParams['creator'])) {
+                $ownerclause = '';
+
+                if ($searchParams['owner'] && $searchParams['creator']) {
+                    $ownerclause .= "($thisBean->table_name.assigned_user_id='$current_user->id' OR $thisBean->table_name.created_by='$current_user->id')";
+                } else if ($searchParams['owner']) {
+                    $ownerclause .= "$thisBean->table_name.assigned_user_id='$current_user->id'";
+                } else if ($searchParams['creator']) {
+                    $ownerclause .= "$thisBean->table_name.created_by='$current_user->id'";
+                }
+
+                // if owner is explicitly set to false
+                if ($searchParams['owner'] === false) {
+                    if ($ownerclause != '')
+                        $ownerclause .= ' AND ';
+                    $ownerclause .= "$thisBean->table_name.assigned_user_id <> '$current_user->id'";
+                }
+                // if creator is explicitly set to false
+                if ($searchParams['creator'] === false) {
+                    if ($ownerclause != '')
+                        $ownerclause .= ' AND ';
+                    $ownerclause .= "$thisBean->table_name.created_by <> '$current_user->id'";
+                }
+
+                if ($ownerclause) {
+                    if ($searchParams['whereclause'] != '')
+                        $searchParams['whereclause'] .= ' AND ';
+
+                    $searchParams['whereclause'] .= $ownerclause;
+                }
+            }
+
+            //  addd a sort criteria
+            if (!empty($searchParams['sortfield'])) {
+                if (!json_decode(html_entity_decode($searchParams['sortfield']))) {
+                    $searchParams['orderby'] = '';
+                    $searchParams['orderby'] .= /* $thisBean->table_name . '.' . */
+                        $searchParams['sortfield'] . ' ' . ($searchParams['sortdirection'] ? strtoupper($searchParams['sortdirection']) : 'ASC');
+                } else {
+                    $sortObject = json_decode(html_entity_decode($searchParams['sortfield']));
+                    $searchParams['orderby'] = $this->sort_object_handler($thisBean->table_name, $sortObject) . ' ' . ($searchParams['sortdirection'] ? strtoupper($searchParams['sortdirection']) : 'ASC');
+                }
+            }
+
+            // $beanList = $thisBean->get_list($searchParams['orderby'], $searchParams['whereclause'], $searchParams['offset'], $searchParams['limit']);
+            $queryArray = $thisBean->create_new_list_query($searchParams['orderby'], $searchParams['whereclause'], $filterFields, array(), false, '', true, $thisBean, true);
+
+            // any additional joins we might have gotten
+            $queryArray['from'] .= ' ' . $addJoins;
+            $queryArray['secondary_from'] .= ' ' . $addJoins;
+        }
 
         // build the query
         $query = $queryArray['select'] . $queryArray['from'] . $queryArray['where'] . $queryArray['order_by'];
-
-        // process the query
-
         $beanList = $thisBean->process_list_query($query, 0, 1000, 1000);
 
+        // determine the delimiter
+        $delimiter = \UserPreference::getDefaultPreference('export_delimiter');
+        if ( !empty( $GLOBALS['current_user']->getPreference('export_delimiter'))) $delimiter = $GLOBALS['current_user']->getPreference('export_delimiter');
+
+        // determine the charset
+        $supportedCharsets = mb_list_encodings();
+        $charsetTo = \UserPreference::getDefaultPreference('default_charset');
+        if ( !empty( $postBody['charset'] )) {
+            if ( in_array( $postBody['charset'], $supportedCharsets ) ) $charsetTo = $postBody['charset'];
+        } else {
+            if ( in_array( $GLOBALS['current_user']->getPreference('default_export_charset'), $supportedCharsets ) ) $charsetTo = $GLOBALS['current_user']->getPreference('default_export_charset');
+        }
+
         $fh = @fopen('php://output', 'w');
-        fputcsv($fh, $returnFields, ';');
+        fputcsv($fh, $returnFields, $delimiter );
         foreach ($beanList['list'] as $thisBean) {
             $entryArray = [];
             foreach ($returnFields as $returnField)
-                $entryArray[] = $thisBean->$returnField;
-            fputcsv($fh, $entryArray, ';');
+                $entryArray[] = !empty( $charsetTo ) ? mb_convert_encoding ( $thisBean->$returnField, $charsetTo ) : $thisBean->$returnField;
+            fputcsv( $fh, $entryArray, $delimiter );
         }
         fclose($fh);
+
+        return $charsetTo;
     }
 
     public function buildFilerdefsWhereClause($bean, $filterdefs, &$addJoins)
@@ -917,7 +939,7 @@ class KRESTModuleHandler
         }
     }
 
-    private
+    public
     function get_acl_actions($bean)
     {
         $aclArray = [];
@@ -944,18 +966,28 @@ class KRESTModuleHandler
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
+        if ( isset( $thisBean->field_defs[$linkName]['sequence_field']{0} )) {
+            $sortBySequenceField = $isSequenced = true;
+            $sequenceField = $thisBean->field_defs[$linkName]['sequence_field'];
+        }
+
+        if ( $params['modulefilter'] ) {
+            $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+            $addWhere =  $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter']);
+            $sortBySequenceField = false;
+        }
+
+        $sortingDefinition = json_decode( $params['sort'], true) ?: array();
+        if ( $sortingDefinition ) $sortBySequenceField = false;
+
+        if ( $sortBySequenceField ) $sortingDefinition = ['sortfield' => $sequenceField, 'sortdirection' => 'ASC'];
+
         if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
             throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
-        if($params['modulefilter']){
-            require_once('include/SysModuleFilters/SysModuleFilters.php');
-            $sysModuleFilters = new SysModuleFilters();
-            $addWhere =  $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter']);
-        }
-
         // get related beans and related module
         // get_linked_beans($field_name, $bean_name, $sort_array = array(), $begin_index = 0, $end_index = -1, $deleted = 0, $optional_where = "")
-        $relBeans = $thisBean->get_linked_beans($linkName, $GLOBALS['beanList'][$beanModule], json_decode($params['sort'], true) ?: array(), $params['offset'] ?: 0, $params['limit'] ?: 5, 0, $addWhere);
+        $relBeans = $thisBean->get_linked_beans($linkName, $GLOBALS['beanList'][$beanModule], $sortingDefinition, $params['offset'] ?: 0, $params['limit'] ?: 5, 0, $addWhere);
 
         $retArray = array();
         foreach ($relBeans as $relBean) {
@@ -974,6 +1006,7 @@ class KRESTModuleHandler
             }
         }
 
+        // wtf? retrieve all the related data and at the end, ignore all this and count it new? (╯°□°)╯︵ ┻━┻
         if ($params['getcount']) {
             $relCount = $thisBean->get_linked_beans_count($linkName, $GLOBALS['beanList'][$beanModule], 0, $addWhere);
             return array(
@@ -1256,8 +1289,8 @@ class KRESTModuleHandler
         }
 
         // index the bean now
-        if (class_exists('SpiceFTSHandler', false)) {
-            $spiceFTSHandler = new SpiceFTSHandler();
+        if (class_exists('\SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler', false)) {
+            $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
             $spiceFTSHandler->indexBean($thisBean);
         }
 
@@ -1291,11 +1324,11 @@ class KRESTModuleHandler
         if ($this->spiceFavoritesClass === null) {
             if ($sugar_flavor === 'PRO' && file_exists('include/SpiceFavorites/SpiceFavoritesSugarFavoritesWrapper.php')) {
                 require_once 'include/SpiceFavorites/SpiceFavoritesSugarFavoritesWrapper.php';
-                $this->spiceFavoritesClass = 'SpiceFavoritesSugarFavoritesWrapper';
+                $this->spiceFavoritesClass = '\SpiceCRM\includes\SpiceFavorites\SpiceFavoritesSugarFavoritesWrapper';
             } else {
                 if ($dictionary['spicefavorites'] && file_exists('include/SpiceFavorites/SpiceFavorites.php')) {
-                    require_once 'include/SpiceFavorites/SpiceFavorites.php';
-                    $this->spiceFavoritesClass = 'SpiceFavorites';
+                    // require_once 'include/SpiceFavorites/SpiceFavorites.php';
+                    $this->spiceFavoritesClass = '\SpiceCRM\includes\SpiceFavorites\SpiceFavorites';
                 }
             }
         }
@@ -1589,7 +1622,7 @@ class KRESTModuleHandler
             }
 
             $beanDataArray['acl_fieldcontrol'] = $controlArray;
-        } else {
+        } /* else {
             //workaround to unset edit icon when bean edit is prohibited until we have our ACLController
             //build fake $beanDataArray['acl_fieldcontrol']['edit']
             if (!$beanDataArray['acl']['edit']) {
@@ -1597,7 +1630,7 @@ class KRESTModuleHandler
                     $beanDataArray['acl_fieldcontrol'][$def['name']] = 1;
                 }
             }
-        }
+        } */
         return $beanDataArray;
     }
 

@@ -505,7 +505,14 @@ class M2MRelationship extends SugarRelationship
             $joinTable = $params['join_table_link_alias'];
         }
 
-        $where = "$startingTable.$startingKey=$joinTable.$startingJoinKey AND $joinTable.$joinKey='{$link->getFocus()->$targetKey}'";
+        //BEGIN maretval 2019-03-13: missing relationship_role_column for n-2-n
+        $addRoleColumnWhere = "";
+        if(!empty($this->def['relationship_role_column']) && !empty($this->def['relationship_role_value'])){
+            $addRoleColumnWhere = " AND ".$joinTable.".".$this->def['relationship_role_column']." = '".$this->def['relationship_role_value']."'";
+        }
+        //END
+
+        $where = "$startingTable.$startingKey=$joinTable.$startingJoinKey AND $joinTable.$joinKey='{$link->getFocus()->$targetKey}' $addRoleColumnWhere"; //added maretval $addRoleColumnWhere
 
         //Check if we should ignore the role filter.
         $ignoreRole = !empty($params['ignore_role']);

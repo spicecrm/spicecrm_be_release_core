@@ -253,7 +253,7 @@ require_once('include/EditView/EditView2.php');
         $this->th->ss->assign('HAS_ADVANCED_SEARCH', !empty($this->searchdefs['layout']['advanced_search']));
 
         // spiceCRM Full text Search
-        $this->th->ss->assign('HAS_FULLTEXT_SEARCH', SpiceFTSHandler::checkModule($this->module));
+        $this->th->ss->assign('HAS_FULLTEXT_SEARCH', \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler::checkModule($this->module));
 
         $this->th->ss->assign('displayType', $this->displayType);
         // return the form of the shown tab only
@@ -1037,7 +1037,17 @@ require_once('include/EditView/EditView2.php');
                                      if(!empty($parms['subquery'])){
                                          $selectCol = $this->getSelectCol($parms['subquery']);
                                      }
-                                    $where .= "{$db_field} $in (select $selectCol from ({$parms['subquery']} ".$this->seed->db->quoted($field_value.'%').") {$field}_derived)";
+
+                                     //BEGIN maretval 2019-03-08 introduced in spicecrm 201903001: parse $field_value in subquery
+                                     if($parms['subquery_parse_searchfield']){
+                                         $where .= "{$db_field} $in (select $selectCol from (".sprintf($parms['subquery'], $field_value).") {$field}_derived)";
+                                     }
+                                     else{
+                                         //END
+                                         $where .= "{$db_field} $in (select $selectCol from ({$parms['subquery']} ".$this->seed->db->quoted($field_value.'%').") {$field}_derived)";
+                                         //BEGIN
+                                     }
+                                     //END
                                  }
 
                                  break;

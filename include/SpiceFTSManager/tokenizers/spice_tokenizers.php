@@ -20,6 +20,6 @@ $elasticTokenizers = array(
     ),
     "spice_email" => array(
         "type" => "uax_url_email",
-        "max_token_length" => "5"
+        "max_token_length" => 5
     )
 );

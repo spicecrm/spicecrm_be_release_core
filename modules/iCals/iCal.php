@@ -38,7 +38,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 
 require_once('include/utils.php');
-require_once('modules/Calendar/Calendar.php');
+require_once(get_custom_file_if_exists('modules/Calendar/Calendar.php'));
 require_once('modules/vCals/vCal.php');
 
 /**

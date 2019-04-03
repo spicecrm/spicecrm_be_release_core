@@ -424,6 +424,13 @@ $app_list_strings = array(
         'r' => 'refused',
         'g' => 'granted',
     ),
+    'uom_unit_dimensions_dom' => array(
+        '' => '',
+        'none' => 'none',
+        'weight' => 'Weight',
+        'volume' => 'Volume',
+        'area' => 'Area',
+    ),
     'contacts_title_dom' => array(
         '' => '',
         'ceo' => 'CEO',
@@ -2147,6 +2154,7 @@ $app_strings = array(
     'LBL_LISTVIEW_OPTION_ENTIRE' => 'Select All',
     'LBL_LISTVIEW_OPTION_SELECTED' => 'Selected Records',
     'LBL_LISTVIEW_SELECTED_OBJECTS' => 'Selected: ',
+    'LBL_LISTVIEW_MERGE_N_MAX' => "You may merge only %s objects at a time!",
 
     'LBL_LOCALE_NAME_EXAMPLE_FIRST' => 'David',
     'LBL_LOCALE_NAME_EXAMPLE_LAST' => 'Livingstone',
@@ -4218,7 +4226,8 @@ $app_list_strings['crstatus_dom'] = array(
     '0' => 'created',
     '1' => 'in progress',
     '2' => 'in test',
-    '3' => 'completed'
+    '3' => 'completed',
+    '4' => 'canceled/deferred'
 );
 
 $app_list_strings['crtype_dom'] = array(
@@ -4457,7 +4466,7 @@ $app_list_strings['mailboxes_outbound_comm'] = [
     'mass' => 'Single and Mass Emails',
 ];
 
-include('include/SpiceBeanGuide/SpiceBeanGuideLanguage.php');
+include('include/SpiceBeanGuides/SpiceBeanGuideLanguage.php');
 
 $app_list_strings['output_template_types'] = [
     '' => '',

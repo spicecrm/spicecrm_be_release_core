@@ -72,9 +72,10 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
 
 
     $app->group('/{beanName}', function() use ($app, $KRESTModuleHandler) {
-        $app->get('/export', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
-            $searchParams = $_GET;
-            $KRESTModuleHandler->export_bean_list($args['beanName'], $searchParams);
+        $app->post('/export', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
+            $searchParams = $req->getParsedBody();
+            $charset = $KRESTModuleHandler->export_bean_list($args['beanName'], $searchParams);
+            return $res->withHeader('Content-Type','text/csv; charset='.$charset);
         });
         $app->post('/duplicates', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
             $postBody = $req->getParsedBody();
@@ -134,38 +135,31 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
                 $app->post('', function($req, $res, $args) use ($app) {
                     $postBody = $body = $req->getParsedBody();
                     $postParams = $_GET;
-                    require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    echo SpiceAttachments::saveAttachmentHashFiles($args['beanName'], $args['beanId'], array_merge($postBody, $postParams));
+                    echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveAttachmentHashFiles($args['beanName'], $args['beanId'], array_merge($postBody, $postParams));
                 });
                 $app->get('', function($req, $res, $args) use ($app) {
-                    require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    echo SpiceAttachments::getAttachmentsForBeanHashFiles($args['beanName'], $args['beanId']);
+                    echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsForBeanHashFiles($args['beanName'], $args['beanId']);
                 });
                 $app->delete('/{attachmentId}', function($req, $res, $args) use ($app) {
-                    require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    echo SpiceAttachments::deleteAttachment($args['attachmentId']);
+                    echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::deleteAttachment($args['attachmentId']);
                 });
                 $app->post('/ui', function($req, $res, $args) use ($app) {
                     /* for fielupload over $_FILE. used by theme */
                     $postBody = $body = $req->getParsedBody();
                     $postParams = $_GET;
-                    require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    echo SpiceAttachments::saveAttachment($args['beanName'], $args['beanId'], array_merge($postBody, $postParams));
+                    echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveAttachment($args['beanName'], $args['beanId'], array_merge($postBody, $postParams));
                 });
                 $app->get('/ui', function($req, $res, $args) use ($app) {
                     /* for get file url for theme, not file in base64 */
-                    require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    echo SpiceAttachments::getAttachmentsForBean($args['beanName'], $args['beanId']);
+                    echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsForBean($args['beanName'], $args['beanId']);
                 });
                 $app->get('/{attachmentId}', function($req, $res, $args) use ($app) {
                     /* for get file url for theme, not file in base64 */
-                    require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    echo SpiceAttachments::getAttachment($args['attachmentId']);
+                    echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachment($args['attachmentId']);
                 });
                 $app->get('/{attachmentId}/download', function($req, $res, $args) use ($app) {
                     /* for get file url for theme, not file in base64 */
-                    require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    echo SpiceAttachments::downloadAttachment($args['attachmentId']);
+                    echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::downloadAttachment($args['attachmentId']);
                 });
             });
             $app->group('/checklist', function () use ($app, $KRESTModuleHandler) {

@@ -150,8 +150,21 @@ class json_config {
 		else if ( $module == 'Calls') {
 			$users = $focus->get_call_users();
 		}
+        //BEGIN maretval 2019-03-08 introduced in spicecrm 201903001:
+        else if ( $module == 'Tasks') {
+            $taskAssignedUser = new User();
+            $taskAssignedUser->retrieve($focus->assigned_user_id);
+            $users = array($taskAssignedUser);
+        }
+        //END
 
 		$module_arr['users_arr'] = array();
+
+        //BEGIN maretval 2019-03-08 introduced in spicecrm 201903001: set current user when no user selected yet
+        if(empty($users)){
+            array_push($module_arr['users_arr'],  $this->populateBean($GLOBALS['current_user']));
+        }
+        //END
 
 		foreach($users as $user) {
 			array_push($module_arr['users_arr'],  $this->populateBean($user));
@@ -164,6 +177,13 @@ class json_config {
 		}
 
 		$module_arr['contacts_arr'] = array();
+
+        //BEGIN maretval 2019-03-08 introduced in spicecrm 201903001: set related contact
+        if(isset($_REQUEST['contact_id']) && !empty($_REQUEST['contact_id'])){
+            $requestContact = BeanFactory::getBean('Contacts', $_REQUEST['contact_id']);
+            array_push($module_arr['users_arr'],  $this->populateBean($requestContact));
+        }
+        //END
 
 		$focus->load_relationships('contacts');
 		$contacts=$focus->get_linked_beans('contacts','Contact');

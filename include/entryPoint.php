@@ -148,6 +148,9 @@ require_once('include/TimeDate.php');
 require_once('include/modules.php'); // provides $moduleList, $beanList, $beanFiles, $modInvisList, $adminOnlyList, $modInvisListActivities
 
 require('include/utils/autoloader.php');
+
+require_once dirname(__FILE__).'/../vendor/autoload.php';
+
 spl_autoload_register(array('SugarAutoLoader', 'autoload'));
 require_once('data/SugarBean.php');
 require_once('include/utils/mvc_utils.php');
@@ -182,7 +185,7 @@ require_once('modules/KDeploymentMWs/KDeploymentMW.php');
 require_once('include/SpiceNumberRanges/SpiceNumberRanges.php');
 
 // include the FTS Handler
-require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
+//require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
 
 // the trashcan handler
 require_once ('include/SysTrashCan/SysTrashCan.php');

@@ -1,6 +1,8 @@
 <?php
-require_once 'modules/SystemUI/SpiceUIConfLoader.php';
-require_once 'modules/SystemLanguages/SpiceLanguageLoader.php';
+// require_once 'modules/SystemUI/SpiceUIConfLoader.php';
+// require_once 'modules/SystemLanguages/SpiceLanguageLoader.php';
+
+use SpiceCRM\modules\SystemUI\SpiceUIConfLoader;
 
 class PackageController {
 
@@ -17,8 +19,8 @@ class PackageController {
         }
         */
 
-        $this->confloader = new SpiceUIConfLoader();
-        $this->langloader = new SpiceLanguageLoader();
+        $this->confloader = new SpiceCRM\modules\SystemUI\SpiceUIConfLoader();
+        $this->langloader = new SpiceCRM\modules\SystemLanguages\SpiceLanguageLoader();
     }
 
     function getRepoUrl($repoid){
@@ -59,7 +61,16 @@ class PackageController {
         $this->checkAdmin();
 
         $repourl = $this->getRepoUrl($args['repository']);
-        $getJSONcontent = file_get_contents("{$repourl}/config");
+        // switched to curl
+        // $getJSONcontent = file_get_contents("{$repourl}/config");
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($curl, CURLOPT_URL, $repourl .'/config');
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($curl, CURLOPT_ENCODING, "UTF-8");
+        $getJSONcontent = curl_exec($curl);
 
         $content = json_decode($getJSONcontent);
         if ($this->confloader->release === true) {
@@ -75,7 +86,7 @@ class PackageController {
     function loadPackage($req, $res, $args)
     {
         $this->checkAdmin();
-        $confloader = new SpiceUIConfLoader($this->getRepoUrl($args['repository']));
+        $confloader = new SpiceCRM\modules\SystemUI\SpiceUIConfLoader($this->getRepoUrl($args['repository']));
         return $res->write(json_encode(['response' => $confloader->loadPackage($args['package'], '*')]));
     }
 
@@ -88,7 +99,7 @@ class PackageController {
     function loadLanguage($req, $res, $args)
     {
         $this->checkAdmin();
-        $langloader = new SpiceLanguageLoader($this->getRepoUrl($args['repository']));
+        $langloader = new SpiceCRM\modules\SystemLanguages\SpiceLanguageLoader($this->getRepoUrl($args['repository']));
         return $res->write(json_encode($langloader->loadLanguage($args['language'])));
     }
 

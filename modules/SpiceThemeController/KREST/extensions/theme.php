@@ -95,12 +95,19 @@ $app->group('/theme', function () use ($app) {
         $tracker = new Tracker();
         $getParams = $_GET;
         $history = $tracker->get_recently_viewed($current_user->id, $getParams['module'] ? array($getParams['module']) : '', $getParams['limit'] ?: 10);
+        $module_icons = array(); //CR1000149
         foreach ($history as $key => $row) {
             if(empty($history[$key]['module_name'])) {
                 unset($history[$key]);
                 continue;
             }
             $history[$key]['item_summary_short'] = to_html(getTrackerSubstring($history[$key]['item_summary'])); //bug 56373 - need to re-HTML-encode
+            //BEGIN CR1000149
+            if(!isset($module_icons[$history[$key]['module_name']])){
+                $module_icons[$history[$key]['module_name']] = \SugarThemeRegistry::current()->getImageURL($history[$key]['module_name'].'.gif');
+            }
+            $history[$key]['module_icon'] = $module_icons[$history[$key]['module_name']];
+            //END
         }
         $recentRecords = $history;
         echo json_encode($recentRecords);
@@ -136,23 +143,23 @@ $app->group('/theme', function () use ($app) {
     });
     $app->group('/Favorites', function () use ($app) {
         $app->get('', function () use ($app) {
-            require_once('include/SpiceFavorites/SpiceFavorites.php');
-            $favorites = SpiceFavorites::getFavoritesRaw();
+            //require_once('include/SpiceFavorites/SpiceFavorites.php');
+            $favorites = \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::getFavoritesRaw();
             echo json_encode($favorites);
         });
         $app->group('/{module}/{beanId}', function () use ($app) {
             $app->get('', function($req, $res, $args) use ($app) {
-                require_once('include/SpiceFavorites/SpiceFavorites.php');
-                $isFavorite = SpiceFavorites::get_favorite($args['module'],$args['beanId']);
+                //require_once('include/SpiceFavorites/SpiceFavorites.php');
+                $isFavorite = \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::get_favorite($args['module'],$args['beanId']);
                 echo json_encode(array('isFavorite' => $isFavorite));
             });
             $app->post('', function($req, $res, $args) use ($app) {
-                require_once('include/SpiceFavorites/SpiceFavorites.php');
-                $favorite = SpiceFavorites::set_favorite($args['module'],$args['beanId']);
+                //require_once('include/SpiceFavorites/SpiceFavorites.php');
+                $favorite = \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::set_favorite($args['module'],$args['beanId']);
             });
             $app->delete('', function($req, $res, $args) use ($app) {
-                require_once('include/SpiceFavorites/SpiceFavorites.php');
-                $favorite = SpiceFavorites::delete_favorite($args['module'],$args['beanId']);
+                //require_once('include/SpiceFavorites/SpiceFavorites.php');
+                $favorite = \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::delete_favorite($args['module'],$args['beanId']);
             });
         });
     });

@@ -1,4 +1,5 @@
 <?php
+
 if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
@@ -97,8 +98,13 @@ class ACLController {
      * @param String $module_name
      * @return true if they are allowed.  false otherwise.
      */
-    public function checkModuleAllowed($module_name, $actions)
+    public function checkModuleAllowed($module_name, $actions = array())
     {
+        //begin CR1000141
+        if(empty($actions))
+            return true;
+        //end
+
         if (!empty($actions[$module_name]['module']['access']['aclaccess']) &&
             ACL_ALLOW_ENABLED == $actions[$module_name]['module']['access']['aclaccess']
         ) {

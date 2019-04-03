@@ -2582,8 +2582,8 @@ class KRESTSpiceCRMMobileHandler {
                 require_once 'include/SpiceFavorites/SpiceFavoritesSugarFavoritesWrapper.php';
                 $this->spiceFavoritesClass = 'SpiceFavoritesSugarFavoritesWrapper';
             } else {
-                require_once 'include/SpiceFavorites/SpiceFavorites.php';
-                $this->spiceFavoritesClass = 'SpiceFavorites';
+//                require_once 'include/SpiceFavorites/SpiceFavorites.php';
+                $this->spiceFavoritesClass = '\SpiceCRM\includes\SpiceFavorites\SpiceFavorites';
             }
         }
         return $this->spiceFavoritesClass;        

@@ -1,6 +1,11 @@
 <?php
 
+$app->group('/module/Activities', function (){
+    $this->post('/fts/{parentmodule}/{parentid}', 'SpiceCRM\modules\Activities\KREST\controllers\ActivitiesKRESTController::loadFTSActivities');
+    $this->get('/{parentmodule}/{parentid}', 'SpiceCRM\modules\Activities\KREST\controllers\ActivitiesKRESTController::loadHistory');
+});
 
+/*
 $app->group('/module/Activities', function () use ($app) {
     $app->get('/{parentmodule}/{parentid}', function($req, $res, $args) use ($app) {
         global $db;
@@ -75,3 +80,5 @@ $app->group('/module/Activities', function () use ($app) {
     });
 
 });
+
+*/

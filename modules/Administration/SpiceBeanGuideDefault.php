@@ -31,8 +31,8 @@
  * delete current entries for selected module
  *
  */
-require_once 'include/SpiceBeanGuide/SpiceBeanGuideCreator.php';
-$guide = new SpiceBeanGuideCreator();
+
+$guide = new SpiceCRM\includes\SpiceBeanGuides\SpiceBeanGuideCreator();
 $displayForm = true;
 
 if($_POST['spicebeanguidedefault_process'] > 0){

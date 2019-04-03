@@ -188,7 +188,7 @@ class ImapHandler extends TransportHandler
 
 
                 foreach ($structure->getAttachments() as $attachment) {
-                    \SpiceAttachments::saveEmailAttachment('Emails', $email->id, $attachment);
+                    \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveEmailAttachment('Emails', $email->id, $attachment);
                 }
 
                 $email->processEmail();
@@ -487,7 +487,7 @@ class ImapHandler extends TransportHandler
             $message->setReplyTo($this->mailbox->reply_to);
         }
 
-        foreach (json_decode(\SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {
+        foreach (json_decode (\SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {
             $message->attach(
                 \Swift_Attachment::fromPath('upload://' . $att->filemd5)->setFilename($att->filename)
             );

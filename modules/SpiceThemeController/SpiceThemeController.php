@@ -190,8 +190,8 @@ class SpiceThemeController {
             }
             $lvStr .= '</ul>';
         }
-        require_once('include/SpiceFavorites/SpiceFavorites.php');
-        $favStr = SpiceFavorites::getFavorites($currentModule);
+//        require_once('include/SpiceFavorites/SpiceFavorites.php');
+        $favStr = \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::getFavorites($currentModule);
 
 
         return json_encode(array('menu' => $menuStr, 'lastviewed' => $lvStr, 'favorites' => $favStr));
@@ -223,8 +223,8 @@ class SpiceThemeController {
     }
 
     public function removeReminder($beanName, $beanId) {
-        require_once('include/SpiceReminders/SpiceReminders.php');
-        $reminderclass = new SpiceReminders();
+        //require_once('include/SpiceReminders/SpiceReminders.php');
+        $reminderclass = new \SpiceCRM\includes\SpiceReminders\SpiceReminders();
         $reminderclass->removeReminder($beanId);
 
         require_once('modules/SpiceThemeController/SpiceSideBarWidgets/SpiceSideBarWidgetReminders.php');
@@ -245,8 +245,8 @@ class SpiceThemeController {
     }
 
     public function setReminder($beanName, $beanId, $data) {
-        require_once('include/SpiceReminders/SpiceReminders.php');
-        $reminderclass = new SpiceReminders();
+//        require_once('include/SpiceReminders/SpiceReminders.php');
+        $reminderclass = new \SpiceCRM\includes\SpiceReminders\SpiceReminders();
         $newReminders = $reminderclass->setReminder($beanId, $beanName, $data['reminderDate']);
 
         require_once('modules/SpiceThemeController/SpiceSideBarWidgets/SpiceSideBarWidgetReminders.php');

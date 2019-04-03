@@ -450,6 +450,14 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'module' => 'ServiceCalls',
             'relationship' => 'servicecalls_contacts',
             'source' => 'non-db'
+        ),
+        'manufactured_products' => array(
+            'vname' => 'LBL_MANUFACTURED_PRODUCTS',
+            'name' => 'manufactured_products',
+            'type' => 'link',
+            'module' => 'Products',
+            'relationship' => 'manufacturer_products',
+            'source' => 'non-db'
         )
     ),
     'indices' => array(
@@ -537,8 +545,16 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'rhs_table' => 'accountkpis',
             'rhs_key' => 'account_id',
             'relationship_type' => 'one-to-many'
+        ),
+        'manufacturer_products' => array(
+            'lhs_module' => 'Accounts',
+            'lhs_table' => 'accounts',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Products',
+            'rhs_table' => 'products',
+            'rhs_key' => 'manufacturer_id',
+            'relationship_type' => 'one-to-many'
         )
-
     ),
     //This enables optimistic locking for Saves From EditView
     'optimistic_locking' => true,

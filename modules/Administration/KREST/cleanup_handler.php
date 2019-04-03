@@ -187,7 +187,7 @@ class CleanUpHandler
             'description' => 'Adminnavigationitem with an invalid component',
         ];
         // COPYRULEs
-        $sql = "SELECT target.id, CONCAT(target.formmodule, ' to ', target.tomodule, ': ', target.tofield) name 
+        $sql = "SELECT target.id, CONCAT(target.frommodule, ' to ', target.tomodule, ': ', target.tofield) name 
                 FROM sysuicopyrules target 
                 LEFT JOIN sysmodules rel ON(target.frommodule = rel.module OR target.tomodule = rel.module)
                 WHERE rel.id IS NULL";

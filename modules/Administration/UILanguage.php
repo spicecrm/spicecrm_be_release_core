@@ -34,7 +34,7 @@ if (! defined ( 'sugarEntry' ) || ! sugarEntry)
  */
 if ($current_user->is_admin) {
     require_once 'modules/SystemLanguages/SpiceLanguageLoader.php';
-    $loader = new SpiceLanguageLoader();
+    $loader = new \SpiceCRM\modules\SystemLanguages\SpiceLanguageLoader();
 
     if ($_POST['uilanguageconf_process'] > 0) {
 

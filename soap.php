@@ -61,13 +61,13 @@ $server->configureWSDL('sugarsoap', $NAMESPACE, $sugar_config['site_url'].'/soap
 
 //New API is in these files
 if(!empty($administrator->settings['portal_on'])) {
-	require_once('soap/SoapPortalUsers.php');
+	require_once(get_custom_file_if_exists('soap/SoapPortalUsers.php'));
 }
 
-require_once('soap/SoapSugarUsers.php');
+require_once(get_custom_file_if_exists('soap/SoapSugarUsers.php'));
 //require_once('soap/SoapSugarUsers_version2.php');
-require_once('soap/SoapData.php');
-require_once('soap/SoapDeprecated.php');
+require_once(get_custom_file_if_exists('soap/SoapData.php'));
+require_once(get_custom_file_if_exists('soap/SoapDeprecated.php'));
 
 
 

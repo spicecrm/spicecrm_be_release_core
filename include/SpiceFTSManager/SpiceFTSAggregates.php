@@ -1,14 +1,19 @@
 <?php
+namespace SpiceCRM\includes\SpiceFTSManager;
 
-require_once('include/SpiceFTSManager/SpiceFTSFilters.php');
-
+/**
+ * Class SpiceFTSAggregates
+ * @package SpiceCRM\includes\SpiceFTSManager
+ *
+ * handles the aggregates for teh FTS Queries to Elastic
+ */
 class SpiceFTSAggregates
 {
 
     var $aggregateFields = array();
     var $aggregatesFilters = array();
 
-    function __construct($indexProperties, $aggregatesFilters)
+    function __construct($indexProperties, $aggregatesFilters, $indexSettings = [])
     {
         foreach ($indexProperties as $indexProperty) {
             if ($indexProperty['index'] == 'analyzed' && $indexProperty['search']) {
@@ -21,6 +26,7 @@ class SpiceFTSAggregates
                 $this->aggregateFields[str_replace('->', '-', $indexProperty['indexfieldname'])] = array(
                     'indexfieldname' => $indexProperty['indexfieldname'],
                     'fieldname' => $indexProperty['fieldname'],
+                    'fielddetails' => SpiceFTSUtils::getDetailsForField($indexProperty['path']),
                     'field' => $indexProperty['indexfieldname'] . '.raw',
                     'name' => $indexProperty['name'],
                     'type' => $indexProperty['aggregate'],
@@ -38,6 +44,8 @@ class SpiceFTSAggregates
             }
         }
 
+
+
         $this->aggregatesFilters = $aggregatesFilters;
     }
 
@@ -45,7 +53,7 @@ class SpiceFTSAggregates
     {
         $postFilter = array();
         foreach ($this->aggregatesFilters as $aggregatesFilter => $aggregatesFilterValues) {
-            $postFilter['bool']['must'][] = SpiceFTSFilters::buildFiltersFromAggregate($this->aggregateFields[$aggregatesFilter]['indexfieldname'], $aggregatesFilterValues);
+            $postFilter['bool']['must'][] = SpiceFTSFilters::buildFiltersFromAggregate($this->aggregateFields[$aggregatesFilter]['indexfieldname'] ?: $aggregatesFilter, $aggregatesFilterValues);
         }
 
         return count($postFilter) > 0 ? $postFilter : false;
@@ -125,6 +133,31 @@ class SpiceFTSAggregates
             }
         }
 
+        // add tags
+        $tagAggregator = [
+            'terms' => [
+                'field' => 'tags.raw',
+                'size' => 25
+            ]
+        ];
+
+        $aggFilters = array();
+        foreach ($this->aggregatesFilters as $aggregatesFilter => $aggregatesFilterValues) {
+            if ($aggregatesFilter != 'tags') {
+                $aggFilters['bool']['must'][] = SpiceFTSFilters::buildFiltersFromAggregate('tags', $aggregatesFilterValues);
+            }
+        }
+        if (count($aggFilters) > 0) {
+            $aggs{'tags'} = array(
+                'filter' => $aggFilters,
+                'aggs' => array(
+                    'tags' => $tagAggregator
+                )
+            );
+        } else {
+            $aggs{'tags'} = $tagAggregator;
+        }
+
         // add the field info so we can later on enrich thje reponse
         /*
         $aggregates[$aggregateName] = array(
@@ -143,36 +176,41 @@ class SpiceFTSAggregates
 
         foreach ($aggregations as $aggField => $aggData) {
 
-            if (!isset($aggData['buckets']) && isset($aggData[$aggField]) && isset($aggData[$aggField]['buckets'])) {
-                $aggregations[$aggField]['buckets'] = $aggData[$aggField]['buckets'];
-                unset($aggregations[$aggField][$aggField]);
-            }
-
             $aggregations[$aggField]['aggregateindex'] = $aggField;
             $aggregations[$aggField]['aggregatepriority'] = $this->aggregateFields[$aggField]['aggregatepriority'];;
             $aggregations[$aggField]['fieldname'] = $this->aggregateFields[$aggField]['fieldname'];
+            $aggregations[$aggField]['fielddetails'] = $this->aggregateFields[$aggField]['fielddetails'];
             $aggregations[$aggField]['name'] = $this->aggregateFields[$aggField]['name'];
+            $aggregations[$aggField]['type'] = $this->aggregateFields[$aggField]['type'];
 
-            foreach ($aggregations[$aggField]['buckets'] as $aggItemIndex => $aggItemData) {
+            foreach ($aggregations[$aggField]['buckets'] as $aggItemIndex => &$aggItemData) {
+
+
+                if($aggItemData['doc_count'] == 0) {
+                    unset($aggregations[$aggField]['buckets'][$aggItemIndex]);
+                    //continue;
+                }
+
+
                 switch ($this->aggregateFields[$aggField]['type']) {
                     case 'datew':
                     case 'datem':
-                        $aggregations[$aggField]['buckets'][$aggItemIndex]['displayName'] = $aggItemData['key_as_string'];
+                    $aggItemData['displayName'] = $aggItemData['key_as_string'];
                         $keyArr = explode('/', $aggItemData['key_as_string']);
-                        $fromDate = new DateTime($keyArr[1] . '-' . $keyArr[0] . '-01 00:00:00');
+                        $fromDate = new \DateTime($keyArr[1] . '-' . $keyArr[0] . '-01 00:00:00');
                         $aggItemData['from'] = $fromDate->format('Y-m-d') . ' 00:00:00';
                         $aggItemData['to'] = $fromDate->format('Y-m-t') . ' 23:59:59';
-                        $aggregations[$aggField]['buckets'][$aggItemIndex]['aggdata'] = $this->getAggItemData($aggItemData);
+                    $aggItemData['aggdata'] = $this->getAggItemData($aggItemData);
                         break;
                     case 'datey':
-                        $aggregations[$aggField]['buckets'][$aggItemIndex]['displayName'] = $aggItemData['key_as_string'];
+                        $aggItemData['displayName'] = $aggItemData['key_as_string'];
                         $aggItemData['from'] = $aggItemData['key_as_string'] . '-01-01 00:00:00';
                         $aggItemData['to'] = $aggItemData['key_as_string'] . '-12-31 23:59:59';
-                        $aggregations[$aggField]['buckets'][$aggItemIndex]['aggdata'] = $this->getAggItemData($aggItemData);
+                        $aggItemData['aggdata'] = $this->getAggItemData($aggItemData);
                         break;
                     case 'dateq':
                         $dateArray = explode('/', $aggItemData['key_as_string']);
-                        $aggregations[$aggField]['buckets'][$aggItemIndex]['displayName'] = 'Q' . ceil($dateArray[0] / 3) . '/' . $dateArray[1];
+                        $aggItemData['displayName'] = 'Q' . ceil($dateArray[0] / 3) . '/' . $dateArray[1];
 
                         switch (ceil($dateArray[0] / 3)) {
                             case 1:
@@ -192,35 +230,42 @@ class SpiceFTSAggregates
                                 $aggItemData['to'] = $dateArray[1] . '-12-31 23:59:59';
                                 break;
                         }
-                        $aggregations[$aggField]['buckets'][$aggItemIndex]['aggdata'] = $this->getAggItemData($aggItemData);
+                        $aggItemData['aggdata'] = $this->getAggItemData($aggItemData);
                         break;
                     default:
                         switch ($this->aggregateFields[$aggField]['metadata']['type']) {
                             case 'multienum':
                             case 'enum':
-                                $aggregations[$aggField]['buckets'][$aggItemIndex]['displayName'] = $appListStrings[$this->aggregateFields[$aggField]['metadata']['options']][$aggItemData['key']] ?: $aggItemData['key'];
-                                $aggregations[$aggField]['buckets'][$aggItemIndex]['aggdata'] = $this->getAggItemData($aggItemData);
+                                $aggItemData['displayName'] = $appListStrings[$this->aggregateFields[$aggField]['metadata']['options']][$aggItemData['key']] ?: $aggItemData['key'];
+                                $aggItemData['aggdata'] = $this->getAggItemData($aggItemData);
                                 break;
                             case 'bool':
-                                $aggregations[$aggField]['buckets'][$aggItemIndex]['displayName'] = $appListStrings['dom_int_bool'][$aggItemData['key']];
-                                $aggregations[$aggField]['buckets'][$aggItemIndex]['aggdata'] = $this->getAggItemData($aggItemData);
+                                $aggItemData['displayName'] = $appListStrings['dom_int_bool'][$aggItemData['key']];
+                                $aggItemData['aggdata'] = $this->getAggItemData($aggItemData);
                                 break;
                             default:
-                                $aggregations[$aggField]['buckets'][$aggItemIndex]['displayName'] = $aggItemData['key'];
-                                $aggregations[$aggField]['buckets'][$aggItemIndex]['aggdata'] = $this->getAggItemData($aggItemData);
+                                $aggItemData['displayName'] = $aggItemData['key'];
+                                $aggItemData['aggdata'] = $this->getAggItemData($aggItemData);
                                 break;
                         }
                         break;
                 }
 
                 // see if we need to check the box
+                /*
                 foreach ($this->aggregatesFilters[$aggField] as $aggregatesFilterValue) {
                     $filterData = json_decode(html_entity_decode(base64_decode($aggregatesFilterValue)), true);
                     if ($aggItemData['key'] == $filterData['key'])
                         $aggregations[$aggField]['buckets'][$aggItemIndex]['checked'] = true;
                 }
+                */
             }
+
+            // nasty trick to get this array reshuffled - if not seuenced angular will not iterate over it
+            // ToDo: find a nice way to handle this
+            $aggregations[$aggField]['buckets'] = array_merge($aggregations[$aggField]['buckets'], []);
         }
+        return $aggregations;
     }
 
     private function getAggItemData($aggItemData){

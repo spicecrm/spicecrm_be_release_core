@@ -124,8 +124,8 @@ class ListViewData
 
         if ($params['fts']) {
             if(!isset($params['fts_rows'])){
-                require_once ('include/SpiceFTSManager/SpiceFTSHandler.php');
-                $ftsHandler = new SpiceFTSHandler();
+//                require_once ('include/SpiceFTSManager/SpiceFTSHandler.php');
+                $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
                 $params = array_merge($params, $ftsHandler->getRawSearchResultsForListView($seed->module_name));
                 if($params['fts_aggregates'])
                     $pageData['aggregates'] = $params['fts_aggregates'];

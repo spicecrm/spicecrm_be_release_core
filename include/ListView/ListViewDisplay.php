@@ -407,7 +407,7 @@ class ListViewDisplay
 	 */
 	protected function buildMergeDuplicatesLink($loc = 'top')
 	{
-        global $app_strings, $dictionary;
+        global $app_strings, $dictionary, $sugar_config;
 
         $return_string='';
         $return_string.= isset($_REQUEST['module']) ? "&return_module={$_REQUEST['module']}" : "";
@@ -419,10 +419,22 @@ class ListViewDisplay
 		}
 
         if (isset($dictionary[$this->seed->object_name]['duplicate_merge']) && $dictionary[$this->seed->object_name]['duplicate_merge']==true ) {
-            return "<a href='javascript:void(0)' ".
-                            "id='mergeduplicates_listview_". $loc ."'".
-                            "onclick='if (sugarListView.get_checks_count()> 1) {sListView.send_form(true, \"MergeRecords\", \"index.php\", \"{$app_strings['LBL_LISTVIEW_NO_SELECTED']}\", \"{$this->seed->module_dir}\",\"$return_string\");} else {alert(\"{$app_strings['LBL_LISTVIEW_TWO_REQUIRED']}\");return false;}'>".
-                            $app_strings['LBL_MERGE_DUPLICATES'].'</a>';
+            //BEGIN CR000164: set number of records mergeable at the same time. Unlimited is default.
+            if(!isset($sugar_config['default_max_mergeable_records']) || $sugar_config['default_max_mergeable_records'] < 0) {
+                //this is original code
+                return "<a href='javascript:void(0)' " .
+                    "id='mergeduplicates_listview_" . $loc . "'" .
+                    "onclick='if (sugarListView.get_checks_count()> 1) {sListView.send_form(true, \"MergeRecords\", \"index.php\", \"{$app_strings['LBL_LISTVIEW_NO_SELECTED']}\", \"{$this->seed->module_dir}\",\"$return_string\");} else {alert(\"{$app_strings['LBL_LISTVIEW_TWO_REQUIRED']}\");return false;}'>" .
+                    $app_strings['LBL_MERGE_DUPLICATES'] . '</a>';
+            }else{
+                // Merge only n beans at a time
+                return "<a href='javascript:void(0)' ".
+                    "id='mergeduplicates_listview_". $loc ."'".
+                    "onclick='if (sugarListView.get_checks_count()> 1 && sugarListView.get_checks_count() < ".($sugar_config['default_max_mergeable_records'] + 1).") {sListView.send_form(true, \"MergeRecords\", \"index.php\", \"{$app_strings['LBL_LISTVIEW_NO_SELECTED']}\", \"{$this->seed->module_dir}\",\"$return_string\");} else {alert(\"{$app_strings['LBL_LISTVIEW_TWO_REQUIRED']} - ".sprintf($app_strings['LBL_LISTVIEW_MERGE_N_MAX'], $sugar_config['default_max_mergeable_records'])."\");return false;}'>".
+                    $app_strings['LBL_MERGE_DUPLICATES'].'</a>';
+
+            }
+            //END
         }
 
         return "";

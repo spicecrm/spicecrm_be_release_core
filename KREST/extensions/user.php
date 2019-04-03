@@ -55,6 +55,7 @@ $app->group('/user', function () use ($app, $KRESTUserHandler) {
 
     });
 
+    /*
     $app->group('/preferences', function () use ( $app, $KRESTUserHandler ) {
 
         $this->get('/{category}', function ($req, $res, $args) use ($KRESTUserHandler) {
@@ -76,6 +77,7 @@ $app->group('/user', function () use ($app, $KRESTUserHandler) {
         });
 
     });
+    */
 
     $this->get('/preferencesformats', function ($req, $res, $args) {
         return $res->withJson([

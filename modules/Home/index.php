@@ -217,7 +217,7 @@ if($theme == 'SpiceTheme'){
 $divPages[] = $activePage;
 // SpiceTheme
 if (sugar_is_file('modules/SpiceThemePages/SpiceThemePage.php')) {
-    require_once('modules/SpiceThemePages/SpiceThemePage.php');
+    require_once($beanFiles['SpiceThemePage']);
     SpiceThemePage::mergePages($pages, $dashlets, $activePage);
     if ($pages[$activePage]['isReference'] == true) {
         $sugar_smarty->assign('lock_homepage', true);

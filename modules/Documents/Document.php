@@ -158,6 +158,8 @@ class Document extends SugarBean
             $createRevision = false;
             //Move file saved during populatefrompost to match the revision id rather than document id
             if (!empty($_FILES['filename_file'])) {
+                //make sure we have a filename
+                if(empty($Revision->filename)) $Revision->filename = $_FILES['filename_file']['name'];
                 rename("upload://{$this->id}", "upload://{$Revision->id}");
                 $createRevision = true;
             } else if ( $isDuplicate && ( empty($this->doc_type) || $this->doc_type == 'Sugar' ) ) {

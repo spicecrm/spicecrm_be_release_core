@@ -127,7 +127,7 @@ class OutputTemplate extends SugarBean
     {
         $file = $this->saveAsTmpFile();
         require_once('include/SpiceAttachments/SpiceAttachments.php');
-        return SpiceAttachments::saveAttachmentLocalFile($this->module_name, $this->bean_id, $file);
+        return \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveAttachmentLocalFile($this->module_name, $this->bean_id, $file);
     }
 
     private function retrieveBean()

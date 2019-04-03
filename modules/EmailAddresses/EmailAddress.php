@@ -70,8 +70,8 @@ class EmailAddress extends SugarEmailAddress
         $emailAddresses = [];
 
         // get an FTS manager
-        require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
-        $ftsManager = new SpiceFTSHandler();
+//        require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
+        $ftsManager = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
 
         // determine the modules
         $modules = $db->query("SELECT * FROM sysfts");

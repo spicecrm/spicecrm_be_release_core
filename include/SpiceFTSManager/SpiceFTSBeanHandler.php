@@ -1,21 +1,34 @@
 <?php
 
-require_once('include/SpiceFTSManager/SpiceFTSUtils.php');
+namespace SpiceCRM\includes\SpiceFTSManager;
 
 class SpiceFTSBeanHandler
 {
     var $seed = null;
+    var $seedModule = null;
     var $indexProperties = array();
+    var $indexSettings = array();
     var $relatedIds = array();
+    var $parentIds = array();
 
     function __construct($bean)
     {
         global $beanList;
 
-        $beanModule = array_search(get_class($bean), $beanList);
-        $this->indexProperties = SpiceFTSUtils::getBeanIndexProperties($beanModule);
+        // check if we have a beanname or a bean object being passed in
+        if (!is_string($bean)) {
+            $beanModule = array_search(get_class($bean), $beanList);
+            $this->seed = $bean;
+            $this->seedModule = $beanModule;
+        } else {
+            $beanModule = $bean;
+            $this->seedModule = $bean;
+        }
 
-        $this->seed = $bean;
+        $this->indexProperties = SpiceFTSUtils::getBeanIndexProperties($beanModule);
+        $this->indexSettings = SpiceFTSUtils::getBeanIndexSettings($beanModule);
+
+
     }
 
     function normalizeBean()
@@ -24,21 +37,29 @@ class SpiceFTSBeanHandler
         foreach ($this->indexProperties as $indexProperty) {
             $indexValue = $this->getFieldValue($indexProperty);
             if ($indexValue['fieldvalue'] == '0' || !empty($indexValue['fieldvalue'])) {
-                $indexArray[$indexValue['fieldname']] = from_html($indexValue['fieldvalue']); //use from_html to avoid things like ' being translated to &#039 on bean::save()
+                switch ($indexProperty['indextype']) {
+                    case 'activitydate':
+                        $indexArray['date_activity'] = from_html($indexValue['fieldvalue']);
+                        break;
+                    default:
+                        $indexArray[$indexValue['fieldname']] = from_html($indexValue['fieldvalue']); //use from_html to avoid things like ' being translated to &#039 on bean::save()
+                        break;
+                }
             }
 
-            if(isset($indexValue['fields'])) {
+            if (isset($indexValue['fields'])) {
                 foreach ($indexValue['fields'] as $subFieldName => $subFieldValue)
                     $indexArray[$indexValue['fieldname'] . '_' . $subFieldName] = $subFieldValue;
             }
         }
 
-        // push the related IDs
+        // push the related IDs & parent IDs
         $indexArray['related_ids'] = $this->relatedIds;
+        $indexArray['parent_ids'] = $this->parentIds;
 
         // add Standard Fields
         foreach (SpiceFTSUtils::$standardFields as $standardField => $standardFieldData) {
-            if (isset($this->seed->field_name_map[$standardField]) &&  isset( $this->seed->$standardField ) and ( $this->seed->$standardField == '0' || !empty($this->seed->$standardField))) {
+            if (isset($this->seed->field_name_map[$standardField]) && isset($this->seed->$standardField) and ($this->seed->$standardField == '0' || !empty($this->seed->$standardField))) {
                 $indexArray[$standardField] = $this->mapDataType($this->seed->field_name_map[$standardField]['type'], $this->seed->$standardField);
             }
         }
@@ -46,7 +67,7 @@ class SpiceFTSBeanHandler
         // ACL Controller handling
         if ($GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'addFTSData')) {
             $addIndexArray = $GLOBALS['ACLController']->addFTSData($this->seed);
-            foreach($addIndexArray as $indexfield => $indexValue)
+            foreach ($addIndexArray as $indexfield => $indexValue)
                 $indexArray[$indexfield] = $indexValue;
         }
 
@@ -54,14 +75,97 @@ class SpiceFTSBeanHandler
         $indexArray['summary_text'] = from_html($this->seed->get_summary_text()); //use from_html to avoid things like ' being translated to &#039 on bean::save()
 
         // call module funtion
-        if(method_exists($this->seed, 'add_fts_fields')){
+        if (method_exists($this->seed, 'add_fts_fields')) {
             $addFields = $this->seed->add_fts_fields();
-            if(is_array($addFields) && count($addFields) > 0){
+            if (is_array($addFields) && count($addFields) > 0) {
                 $indexArray = array_merge($indexArray, $addFields);
             }
         }
 
         return $indexArray;
+    }
+
+    public function getModuleSearchQuery($searchterm, $addFilters = [])
+    {
+        global $current_user;
+
+        $searchFields = array();
+
+        // $aggregateFields = array();
+        foreach ($this->indexProperties as $indexProperty) {
+            if ($indexProperty['index'] == 'analyzed' && $indexProperty['search']) {
+                if ($indexProperty['boost'])
+                    $searchFields[] = $indexProperty['indexfieldname'] . '^' . $indexProperty['boost'];
+                else
+                    $searchFields[] = $indexProperty['indexfieldname'];
+            }
+        }
+
+
+        if (count($searchFields) == 0)
+            return array();
+
+        if (!empty($searchterm)) {
+            $moduleQuery = array(
+                'bool' => array(
+                    'must' => array(
+                        "multi_match" => array(
+                            "query" => "$searchterm",
+                            'analyzer' => 'standard',
+                            'fields' => $searchFields,
+                        )
+
+                    )
+                )
+            );
+
+
+            if ($this->indexSettings['minimum_should_match'])
+                $moduleQuery['bool']['must']['multi_match']['minimum_should_match'] = $this->indexSettings['minimum_should_match'] . '%';
+
+            if ($this->indexSettings['fuzziness'])
+                $moduleQuery['bool']['must']['multi_match']['fuzziness'] = $this->indexSettings['fuzziness'];
+
+
+            if ($this->indexSettings['operator'])
+                $moduleQuery['bool']['must']['multi_match']['operator'] = $this->indexSettings['operator'];
+
+            if ($this->indexSettings['multimatch_type'])
+                $moduleQuery['bool']['must']['multi_match']['type'] = $this->indexSettings['multimatch_type'];
+
+
+        }
+
+        // add ACL Check filters
+        if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFTSQuery')) {
+            $aclFilters = $GLOBALS['ACLController']->getFTSQuery($this->seedModule);
+            if (count($aclFilters) > 0) {
+                // do not write empty entries
+                if (isset($aclFilters['should']) && count($aclFilters['should']) >= 1) {
+                    $moduleQuery['bool']['filter']['bool']['should'] = $aclFilters['should'];
+                    $moduleQuery['bool']['filter']['bool']['minimum_should_match'] = 1;
+                }
+                if (isset($aclFilters['must_not']) && count($aclFilters['must_not']) >= 1) {
+                    $moduleQuery['bool']['filter']['bool']['must_not'] = $aclFilters['must_not'];
+                }
+                if (isset($aclFilters['must']) && count($aclFilters['must']) >= 1) {
+                    $moduleQuery['bool']['filter']['bool']['must'] = $aclFilters['must'];
+                }
+
+            }
+        }
+
+        // process additional filters
+        if (is_array($addFilters) && count($addFilters) > 0) {
+            if (is_array($moduleQuery['bool']['filter']['bool']['must'])) {
+                foreach ($addFilters as $addFilter)
+                    $moduleQuery['bool']['filter']['bool']['must'][] = $addFilter;
+            } else {
+                $moduleQuery['bool']['filter']['bool']['must'] = $addFilters;
+            }
+        }
+
+        return $moduleQuery;
     }
 
     private function getFieldValue($indexproperty)
@@ -81,7 +185,7 @@ class SpiceFTSBeanHandler
                     $valueBean = $this->seed;
                     break;
                 case 'link':
-                    $fieldName = isset( $indexproperty['indexedname'] ) ?: (!empty($fieldName) ? $fieldName . '->' . $pathRecordDetails[2] : $pathRecordDetails[2]);
+                    $fieldName = isset($indexproperty['indexedname']) ?: (!empty($fieldName) ? $fieldName . '->' . $pathRecordDetails[2] : $pathRecordDetails[2]);
                     $beans = array();
                     if (is_array($valueBean)) {
                         foreach ($valueBean as $thisValueBean) {
@@ -101,50 +205,52 @@ class SpiceFTSBeanHandler
                     if (count($beans) > 1) {
                         $valueBean = $beans;
                         foreach ($beans as $bean) {
-                            $this->addRelated($bean->id);
+                            switch ($indexproperty['indextype']) {
+                                case 'parentid':
+                                    break;
+                                default:
+                                    $this->addRelated($bean->id);
+                                    break;
+                            }
+
                         }
                     } else {
                         $valueBean = reset($beans);
-                        $this->addRelated($valueBean->id);
+                        switch ($indexproperty['indextype']) {
+                            case 'parentid':
+                                break;
+                            default:
+                                $this->addRelated($valueBean->id);
+                                break;
+                        }
                     }
                     break;
                 case 'field':
                     $fieldName = isset($indexproperty['indexedname']) ? $indexproperty['indexedname'] : (!empty($fieldName) ? $fieldName . '->' . $pathRecordDetails[1] : $pathRecordDetails[1]);
                     if (is_array($valueBean)) {
-                        $valArray = array();
-                        foreach ($valueBean as $thisValueBean) {
-                            $valArray[] = $this->mapDataType($thisValueBean->field_name_map[$pathRecordDetails[1]]['type'], $thisValueBean->{$pathRecordDetails[1]});
-                        }
-                        $fieldValue = $valArray;
-                        /*
-                        // type specific handling
-                        switch ($valueBean->field_name_map[$pathRecordDetails[1]]['type']) {
-                            case 'enum':
-                                foreach ($sugar_config['languages'] as $langkey => $langvalue) {
-                                    $appListStrings = return_app_list_strings_language($langkey);
-                                    foreach ($valArray as $val)
-                                        $fields[$langkey][] = $appListStrings[$valueBean->field_name_map[$pathRecordDetails[1]]]['options'][$val];
+                        switch ($indexproperty['indextype']) {
+                            case 'parentid':
+                                foreach ($valueBean as $thisValueBean) {
+                                    $this->addParent($thisValueBean->{$pathRecordDetails[1]});
                                 }
                                 break;
+                            default:
+                                $valArray = array();
+                                foreach ($valueBean as $thisValueBean) {
+                                    $valArray[] = $this->mapDataType($thisValueBean->field_name_map[$pathRecordDetails[1]]['type'], $thisValueBean->{$pathRecordDetails[1]});
+                                }
+                                $fieldValue = $valArray;
+                                break;
                         }
-                        */
-
                     } else {
-                        $fieldValue = $this->mapDataType($valueBean->field_name_map[$pathRecordDetails[1]]['type'], $valueBean->{$pathRecordDetails[1]});
-
-                        /*
-                        if ($fieldValue != '') {
-                            // type specific handling
-                            switch ($valueBean->field_name_map[$pathRecordDetails[1]]['type']) {
-                                case 'enum':
-                                    foreach ($sugar_config['languages'] as $langkey => $langvalue) {
-                                        $appListStrings = return_app_list_strings_language($langkey);
-                                        $fields[$langkey] = $appListStrings[$valueBean->field_name_map[$pathRecordDetails[1]]['options']][$fieldValue];
-                                    }
-                                    break;
-                            }
+                        switch ($indexproperty['indextype']) {
+                            case 'parentid':
+                                $this->addParent($valueBean->{$pathRecordDetails[1]});
+                                break;
+                            default:
+                                $fieldValue = $this->mapDataType($valueBean->field_name_map[$pathRecordDetails[1]]['type'], $valueBean->{$pathRecordDetails[1]});
+                                break;
                         }
-                        */
                     }
 
                     // see if we have a related id for the field
@@ -181,6 +287,9 @@ class SpiceFTSBeanHandler
                 if ($GLOBALS['disable_date_format'] !== true)
                     $retvalue = $timedate->to_db($value) ?: $value;
                 break;
+            case'tags':
+                $retvalue = json_decode(html_entity_decode($value), true) ?: [];
+                break;
             case 'datetime':
             case 'datetimecombo':
                 if ($GLOBALS['disable_date_format'] !== true)
@@ -197,10 +306,17 @@ class SpiceFTSBeanHandler
         }
     }
 
+    private function addParent($id)
+    {
+        if (!empty($id) && array_search($id, $this->parentIds) === false) {
+            $this->parentIds[] = $id;
+        }
+    }
+
     static function mapModule($module)
     {
         global $sugar_config;
-        $indexProperties = SpiceFTSUtils::getBeanIndexProperties($module);
+        $indexProperties = SpiceFTSUtils::getBeanIndexProperties($module, true);
         $properties = array();
 
         foreach (SpiceFTSUtils::$standardFields as $standardField => $standardFieldData) {
@@ -211,9 +327,37 @@ class SpiceFTSBeanHandler
 
             if ($standardFieldData['format'])
                 $properties[$standardField]['format'] = $standardFieldData['format'];
+
+            if ($standardFieldData['analyzer']) {
+                $properties[$standardField]['analyzer'] = $standardFieldData['analyzer'];
+                $properties[$standardField]['search_analyzer'] = $standardFieldData['search_analyzer'] ?: 'standard';
+            }
+
+            if (!empty($standardFieldData['aggregate']) || $standardFieldData['enablesort'] || $standardFieldData['suggest'] || ($standardFieldData['duplicatecheck'] && $standardFieldData['duplicatequery'] == 'term')) {
+                $properties[$standardField]['fields']['raw'] = array(
+                    'type' => ($standardFieldData['indextype'] == 'string' ? 'keyword' : $standardFieldData['indextype']) ?: 'keyword',
+                    'normalizer' => 'spice_lowercase',
+                    'index' => true
+                );
+
+                // add a sepoarate field for the suggester to have an autocomplete
+                if($standardFieldData['suggest']){
+                    $properties[$standardField]['fields']['suggester'] = array(
+                        'type' =>  'completion'
+                    );
+                }
+
+                if ($properties[$standardField]['fields']['raw']['type'] == 'date')
+                    $properties[$standardField]['fields']['raw']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
+            }
         }
 
         foreach ($indexProperties as $indexProperty) {
+
+            // special type for parentids collector
+            if ($indexProperty['indextype'] == 'parentid' || $indexProperty['indextype'] == 'activitydate') {
+                break;
+            }
 
             //$fieldParams = SpiceFTSUtils::getFieldIndexParams(BeanFactory::getBean($module), $indexProperty['path']);
 
@@ -239,6 +383,7 @@ class SpiceFTSBeanHandler
 
             if ($indexProperty['analyzer']) {
                 $properties[$indexProperty['indexfieldname']]['analyzer'] = $indexProperty['analyzer'];
+                $properties[$indexProperty['indexfieldname']]['search_analyzer'] = $indexProperty['search_analyzer'] ?: 'standard';
                 // $properties[$indexProperty['indexfieldname']]['search_analyzer'] = 'standard';
             }
 
@@ -253,32 +398,47 @@ class SpiceFTSBeanHandler
                 $properties[$indexProperty['indexfieldname']]['boost'] = $indexProperty['boost'];
             */
 
-            if (!empty($indexProperty['aggregate']) || $indexProperty['enablesort']) {
+            if ($indexProperty['suggest']) {
+                $properties[$indexProperty['indexfieldname']]['fields']['suggest'] = array(
+                    'type' => 'completion'
+                );
+            }
+
+            if (!empty($indexProperty['aggregate']) || $indexProperty['enablesort'] || $indexProperty['suggest'] || ($indexProperty['duplicatecheck'] && $indexProperty['duplicatequery'] == 'term')) {
                 $properties[$indexProperty['indexfieldname']]['fields']['raw'] = array(
                     'type' => ($indexProperty['indextype'] == 'string' ? 'keyword' : $indexProperty['indextype']) ?: 'keyword',
                     // 'type' =>  'keyword',
+                    'normalizer' => 'spice_lowercase',
                     'index' => true
                 );
+
+                // add a sepoarate field for the suggester to have an autocomplete
+                if($indexProperty['suggest']){
+                    $properties[$indexProperty['indexfieldname']]['fields']['suggester'] = array(
+                        'type' =>  'completion'
+                    );
+                }
 
                 if ($properties[$indexProperty['indexfieldname']]['fields']['raw']['type'] == 'date')
                     $properties[$indexProperty['indexfieldname']]['fields']['raw']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
             }
         }
 
-        $seed = BeanFactory::getBean($module);
-        if(method_exists($seed, 'add_fts_metadata')){
+        $seed = \BeanFactory::getBean($module);
+        if (method_exists($seed, 'add_fts_metadata')) {
             $addFields = $seed->add_fts_metadata();
-            if(is_array($addFields) && count($addFields) > 0){
-                foreach($addFields as $addFieldName => $addField){
+            if (is_array($addFields) && count($addFields) > 0) {
+                foreach ($addFields as $addFieldName => $addField) {
                     $properties[$addFieldName] = array(
-                        'type' =>  $addField['type'] ,
-                        'index' =>  $addField['index']
+                        'type' => $addField['type'],
+                        'index' => $addField['index']
                     );
 
                     if (!empty($addField['aggregate']) || $addField['enablesort']) {
                         $properties[$addFieldName]['fields']['raw'] = array(
-                            'type' => ($addField['type'] == 'string' ? 'keyword' : $addField['type'] ) ?: 'keyword',
+                            'type' => ($addField['type'] == 'string' ? 'keyword' : $addField['type']) ?: 'keyword',
                             //'type' =>  'keyword',
+                            'normalizer' => 'spice_lowercase',
                             'index' => true
                         );
 

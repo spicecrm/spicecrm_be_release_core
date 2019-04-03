@@ -1,8 +1,6 @@
 <?php
+namespace SpiceCRM\includes\SpiceFTSManager;
 
-require_once('include/SpiceFTSManager/SpiceFTSUtils.php');
-require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
-require_once('include/SpiceFTSManager/ElasticHandler.php');
 
 class SpiceFTSearch
 {

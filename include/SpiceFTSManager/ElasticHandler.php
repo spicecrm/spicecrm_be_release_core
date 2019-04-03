@@ -1,5 +1,7 @@
 <?php
 
+namespace SpiceCRM\includes\SpiceFTSManager;
+
 class ElasticHandler
 {
     var $indexName = 'spicecrm';
@@ -41,6 +43,14 @@ class ElasticHandler
         else
             include 'include/SpiceFTSManager/analyzers/spice_analyzers.php';
         $this->standardSettings['analysis']['analyzer'] = $elasticAnalyzers;
+
+        $elasticNormalizers = array();
+        if (file_exists('custom/include/SpiceFTSManager/normalizers/spice_normalizers.php'))
+            include 'custom/include/SpiceFTSManager/normalizers/spice_normalizers.php';
+        else
+            include 'include/SpiceFTSManager/normalizers/spice_normalizers.php';
+        $this->standardSettings['analysis']['normalizer'] = $elasticNormalizers;
+
 
         $elasticTokenizers = array();
         if (file_exists('custom/include/SpiceFTSManager/tokenizers/spice_tokenizers.php'))
@@ -218,7 +228,7 @@ class ElasticHandler
             ),
             'properties' => $properties
         );
-        $response = $this->query('PUT', $this->indexPrefix . strtolower($module), array(), array(
+        $response = $this->query('PUT', SpiceFTSUtils::getIndexNameForModule($module), array(), array(
                 'settings' => $this->standardSettings,
                 'mappings' => array(
                     $module => $mapping

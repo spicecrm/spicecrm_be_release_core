@@ -34,8 +34,7 @@ class CampaignTask extends SugarBean
     {
         global $db;
         $thisId = $db->quote($this->id);
-        require_once('include/SysModuleFilters/SysModuleFilters.php');
-        $sysModuleFilters = new SysModuleFilters();
+        $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();;
 
         $delete_query = "DELETE FROM campaign_log WHERE campaign_id='" . $this->campaign_id . "' AND campaigntask_id='" . $this->id . "' AND activity_type='$status'";
         $this->db->query($delete_query);

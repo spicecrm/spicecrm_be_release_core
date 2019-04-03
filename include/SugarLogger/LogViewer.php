@@ -45,6 +45,7 @@ class LogViewer {
         'info'       => 70,
         'warn'       => 50,
         'deprecated' => 40,
+        'login'      => 30,
         'error'      => 25,
         'fatal'      => 10,
         'security'   => 5

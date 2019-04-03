@@ -197,8 +197,17 @@ if(document.DetailView != null &&
 </script>
 <?php
         // BEGIN KReporter Reporter as Subpanels
-        // include js files here to support first load as well as load on click => showSubPanel() 
-        if (file_exists('modules/KReports/Plugins/Integration/kpublishing/kpublishing.php')) {
+        // include js files here to support first load as well as load on click => showSubPanel()
+        $loadKReporterPublishing = false; //load only when necessary
+        $subpaneldefsKeys = array_keys($this->subpanel_definitions->layout_defs['subpanel_setup']);
+        foreach($subpaneldefsKeys as $subpanelKey) {
+            if (preg_match("/kreporter/", $subpanelKey)) {
+                $loadKReporterPublishing = true;
+                break;
+            }
+        }
+        if (file_exists('modules/KReports/Plugins/Integration/kpublishing/kpublishing.php')
+                && $loadKReporterPublishing) {
             echo '<script type="text/javascript" src="vendor/extjs6/ext-all.js"></script>
             <script type="text/javascript" src="modules/KReports/js/KReporterCommon.js"></script>
             <script type="text/javascript" src="modules/KReports/Plugins/Integration/kpublishing/kpublishingview.js"></script>

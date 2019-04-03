@@ -27,8 +27,34 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 
+namespace SpiceCRM\includes\SysModuleFilters;
+
 class SysModuleFilters
 {
+
+    /**
+     * static function used in teh systemui rest extension to load all module filters and return to the UI
+     *
+     * @return array
+     */
+    static function getAllModuleFilters() {
+        global $db;
+
+        // load module filters list
+        $moduleFilters = [];
+        $filters = "SELECT 'global' As `type`, `id`, `name`, `module` FROM `sysmodulefilters` UNION ";
+        $filters .= "SELECT 'custom' As `type`, `id`, `name`, `module` FROM `syscustommodulefilters`";
+        $filters = $db->query($filters);
+        while ($filter = $db->fetchByAssoc($filters)) {
+            $moduleFilters[$filter['id']] = array(
+                'id' => $filter['id'],
+                'name' => $filter['name'],
+                'module' => $filter['module'],
+                'type' => $filter['type']
+            );
+        }
+        return $moduleFilters;
+    }
 
     public function getCountForFilterId($filterId){
         global $db;
@@ -36,7 +62,7 @@ class SysModuleFilters
         $filter = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulefilters WHERE id='$filterId'"));
         if (!$filter) return 0;
 
-        $seed = BeanFactory::getBean($filter['module']);
+        $seed = \BeanFactory::getBean($filter['module']);
         $whereClause = $this->generareWhereClauseForFilterId($filterId);
         $result = $db->fetchByAssoc($db->query("SELECT count(*) entry_count FROM {$seed->table_name} WHERE deleted = 0 AND $whereClause"));
         return $result['entry_count'] ?: 0;
@@ -51,7 +77,7 @@ class SysModuleFilters
         if (!$filter) return '';
 
         if (!$tablename) {
-            $seed = BeanFactory::getBean($filter['module']);
+            $seed = \BeanFactory::getBean($filter['module']);
             $tablename = $seed->table_name;
         }
 
@@ -92,7 +118,7 @@ class SysModuleFilters
                 return "{$tablename}.{$condition->field} = '{$condition->filtervalue}'";
                 break;
             case 'oneof':
-                $valArray = explode(',',$condition->filtervalue);
+                $valArray = is_array($condition->filtervalue) ? $condition->filtervalue : explode(',',$condition->filtervalue);
                 return "{$tablename}.{$condition->field} IN ('".implode("','", $valArray)."')";
                 break;
             case 'true':

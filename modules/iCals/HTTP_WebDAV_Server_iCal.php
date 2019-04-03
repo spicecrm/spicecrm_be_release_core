@@ -37,7 +37,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 
 
-require_once 'modules/Calendar/Calendar.php';
+require_once get_custom_file_if_exists('modules/Calendar/Calendar.php');
 require_once 'modules/iCals/iCal.php';
 require_once 'modules/vCals/HTTP_WebDAV_Server_vCal.php';
 

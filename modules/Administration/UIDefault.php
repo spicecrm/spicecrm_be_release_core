@@ -34,7 +34,8 @@
 
 if ($current_user->is_admin) {
     require_once 'modules/SystemUI/SpiceUIConfLoader.php';
-    $loader = new SpiceUIConfLoader();
+//    $loader = new SpiceUIConfLoader();
+    $loader = new \SpiceCRM\modules\SystemUI\SpiceUIConfLoader();
     if ($_POST['uidefaultconf_process'] > 0) {
         if(empty($_POST['packages']) || empty($_POST['versions'])){
             die('Missing Parameters. Please Check Package and version.');
@@ -46,14 +47,19 @@ if ($current_user->is_admin) {
 
         //BEGIN CR1000133 multiple packageloader sources
         global $sugar_config;
-        //ensure backward compatibility
-        if(!isset($sugar_config['packageloader']['sources']) || empty($sugar_config['packageloader']['sources'])) {
-            $routebase = $loader->routebase;
-            $routeparams = implode("/", array($routebase, implode(",", $packages), implode(",", $versions)));
-        }
-        else {
-            $routeparams = implode("/", array(implode(",", $packages), implode(",", $versions)));
-        }
+//        //ensure backward compatibility
+//        $routebase = $loader->routebase;
+//        if(!isset($sugar_config['packageloader']['sources']) || empty($sugar_config['packageloader']['sources'])) {
+//            $routebase = $loader->routebase;
+//            $routeparams = implode("/", array($routebase, implode(",", $packages), implode(",", $versions)));
+//        }
+//        else {
+//            $routeparams = implode("/", array($routebase, implode(",", $packages), implode(",", $versions)));
+//        }
+        //UNDO CR1000133: route is caught somewhere else
+        $routebase = $loader->routebase;
+        $routeparams = implode("/", array($routebase, implode(",", $packages), implode(",", $versions)));
+
         //END
 
         $results = $loader->loadDefaultConf($routeparams, array('packages' => $packages, 'versions' => $versions));

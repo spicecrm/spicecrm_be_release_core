@@ -332,7 +332,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
     // this is for calendar
 	function mark_deleted($id) {
 
-		require_once("modules/Calendar/CalendarUtils.php");
+		require_once(get_custom_file_if_exists("modules/Calendar/CalendarUtils.php"));
 		CalendarUtils::correctRecurrences($this, $id);
 		
 		global $current_user;
@@ -360,7 +360,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
         $query = "SELECT contact_id as id from meetings_contacts where meeting_id='$this->id' AND deleted=0 ";
         if(!empty($params)){
             if(isset($params['order_by']) && !empty($params['order_by'])){
-                $query.= " ".$params['order_by']." ";
+                $query.= " ORDER BY ".$params['order_by']." ";
             }
         }
         return $this->build_related_list($query, new Contact());

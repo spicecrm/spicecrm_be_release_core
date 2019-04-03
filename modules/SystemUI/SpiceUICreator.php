@@ -34,6 +34,7 @@
  * load SQLs containing SYSUI configuration located in file
  * delete current one listed in $sysuitables
  */
+namespace SpiceCRM\modules\SystemUI;
 
 class SpiceUICreator {
 

@@ -143,7 +143,16 @@ class SubPanelTilesTabs extends SubPanelTiles
         }
         
         // BEGIN KReporter Reporter as Subpanels
-        if (file_exists('modules/KReports/Plugins/Integration/kpublishing/kpublishing.php')) {
+        $loadKReporterPublishing = false; //load only when necessary
+        $subpaneldefsKeys = array_keys($moduleNames);
+        foreach($subpaneldefsKeys as $subpanelKey) {
+            if (preg_match("/kreporter/", $subpanelKey)) {
+                $loadKReporterPublishing = true;
+                break;
+            }
+        }
+        if (file_exists('modules/KReports/Plugins/Integration/kpublishing/kpublishing.php')
+                && $loadKReporterPublishing) {
             require_once('modules/KReports/Plugins/Integration/kpublishing/kpublishing.php');
             kpublishing::addToTabs($tabs, $groups, $found, $GLOBALS['tabStructure']);
         }

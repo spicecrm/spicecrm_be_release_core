@@ -44,7 +44,7 @@ require_once('modules/Calendar/CalendarUtils.php');
 require_once('modules/Calendar/CalendarActivity.php');
 
 
-class Calendar extends SugarBean {
+class Calendar {
 
 	public $view = 'week'; // current view
 	public $style; // calendar style (basic or advanced)
@@ -82,10 +82,10 @@ class Calendar extends SugarBean {
 	 * @param array $time_arr
 	 */
 	function __construct($view = "day", $time_arr = array()){
-        //BEGIN SPICEUI-200: Workaround for installation process
-        //Since modules/Calendar/moduledefs.php introduction for release 201902001
-        //Calendar contructor is called at a time when there is no current_user
-        //Calling constructor will end up in PHP Fatal error:  Uncaught Error: Call to a member function getPreference() on null
+		//BEGIN SPICEUI-200: Workaround for installation process
+		//Since modules/Calendar/moduledefs.php introduction for release 201902001
+		//Calendar contructor is called at a time when there is no current_user
+		//Calling constructor will end up in PHP Fatal error:  Uncaught Error: Call to a member function getPreference() on null
         if($GLOBALS['installing'])
             return true;
         //END

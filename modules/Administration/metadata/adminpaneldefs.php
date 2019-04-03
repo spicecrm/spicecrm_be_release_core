@@ -178,7 +178,7 @@ $admin_option_defs['Bugs']['bug_tracker']= array('Releases','LBL_MANAGE_RELEASES
 $admin_group_header[]= array('LBL_BUG_TITLE','',false,$admin_option_defs, 'LBL_BUG_DESC');
 
 
-//$links = array();
+$links = array();
 
 //$links['SpiceThemeConfig']['link1'] = array(
 //    'icon_AdminThemes',
@@ -187,22 +187,22 @@ $admin_group_header[]= array('LBL_BUG_TITLE','',false,$admin_option_defs, 'LBL_B
 //    './index.php?module=SpiceThemeController&action=SpiceThemeConfig&config_section=1',
 //);
 
-/*
+
 $links['SpiceThemeConfig']['link2'] = array(
 		'SpiceThemePages',
 		'LBL_SPICETHEMECONFIG_LINK2_TITLE',
 		'LBL_SPICETHEMECONFIG_LINK2_DESCRIPTION',
 		'./index.php?module=SpiceThemePages',
 );
-*/
 
-//$admin_group_header []= array(
-//    'SpiceTheme Theme Configuration',
-//    '',
-//    false,
-//    $links,
-//    'Configuration for the SpiceTheme Theme'
-//);
+
+$admin_group_header []= array(
+    'SpiceTheme Theme Configuration',
+    '',
+    false,
+    $links,
+    'Configuration for the SpiceTheme Theme'
+);
 
 $admin_option_defs=array();
 $admin_option_defs['FTS']['FulltextSearchManager']= array('FTSManager','FTS Manager','Full Text Search Configuration','./index.php?module=Administration&action=FTSManager');

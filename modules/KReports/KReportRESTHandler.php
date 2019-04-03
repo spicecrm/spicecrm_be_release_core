@@ -1510,6 +1510,9 @@ class KReporterRESTHandler
         //remoteFiter
         if(isset($params['filter'])){
             $filter = json_decode($params['filter'], true);
+        }else{ //CR1000157
+            $filter = array();
+            $filter[] = array('value' => $fieldvalue);
         }
         //remoteSort
         if(isset($params['sort'])){
@@ -1552,14 +1555,42 @@ class KReporterRESTHandler
                     }
                 }
 
+                //check how to sort: sort on key or label
+                $sortOnKey = false;
+                if(!empty($sort[0]['property'])){
+                    switch($sort[0]['property']){
+                        case 'mappingvalue':
+                            $sortOnKey = true;
+                            break;
+                    }
+                }
                 //sort
                 if(!empty($sort[0]['direction'])){
                     switch($sort[0]['direction']){
                         case 'DESC':
-                            arsort($useArray);
+                            //BEGIN CR1000157: sort case insensitive
+                            if($sortOnKey) {
+                                ksort($useArray);
+                                $useArray = array_reverse($useArray);
+                            }
+                            else{
+                                //arsort($useArray); //not working with any sort_flag
+                                natcasesort($useArray); //make it case insensitive with natcasesort
+                                $useArray = array_reverse($useArray);
+                            }
+                            //END
+
                             break;
                         case 'ASC':
-                            asort($useArray);
+                            //BEGIN CR1000157: sort case insensitive
+                            if($sortOnKey){
+                                ksort($useArray);
+                            }
+                            else{
+                                //asort($useArray); //not working with any sort_flag
+                                natcasesort($useArray); //make it case insensitive with natcasesort
+                            }
+                            //END
                             break;
                     }
                 }

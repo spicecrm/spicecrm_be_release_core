@@ -31,11 +31,11 @@ require_once('modules/SpiceThemeController/SpiceSideBarWidgets/SpiceSideBarWidge
 class SpiceSideBarWidgetReminders extends SpiceSideBarWidget {
 	var $widget_name = "Reminders";
 	public function display($closed = true){
-		require_once('include/SpiceReminders/SpiceReminders.php');
+//		require_once('include/SpiceReminders/SpiceReminders.php');
 
                 $ss = new Sugar_Smarty();
                 $ss->assign('closed', $closed);
-                $ss->assign('reminders', SpiceReminders::getReminders(5));
+                $ss->assign('reminders', SpiceCRM\includes\SpiceReminders\SpiceReminders::getReminders(5));
                 return $ss->fetch('modules/SpiceThemeController/SpiceSideBarWidgets/tpls/SpiceSideBarWidgetReminders.tpl');
 
 	}
@@ -45,8 +45,8 @@ class SpiceSideBarWidgetReminders extends SpiceSideBarWidget {
 	}
 
 	public static function getCount(){
-		require_once('include/SpiceReminders/SpiceReminders.php');
-		$remindersCount = SpiceReminders::getReminderCount(5);
+//		require_once('include/SpiceReminders/SpiceReminders.php');
+		$remindersCount = \SpiceCRM\includes\SpiceReminders\SpiceReminders::getReminderCount(5);
 		return $remindersCount;
 	}
 

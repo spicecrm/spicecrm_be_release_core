@@ -160,6 +160,16 @@ class MySugar
                     $lvsParams = $dashlets[$id]['sort_options'];
                 }
                 $dashlet->process($lvsParams);
+
+                //begin maretval 2019-03-19 introduced in spicecrm 201903001: make sure dashlet remains not editable after reload triggered by sorting
+                if($dashlets[$id]['options']['isReference']){
+                    $dashlet->isConfigurable = false;
+                    $dashlet->isRefreshable = false;
+                    global $sugar_config;
+                    $sugar_config['lock_homepage'] = true;
+                }
+                //end
+
                 $contents =  $dashlet->display();
                 // Many dashlets expect to be able to initialize in the display() function, so we have to create the header second
                 echo $dashlet->getHeader();
@@ -394,6 +404,10 @@ EOJS;
             $newLayout = explode('|', $_REQUEST['layout']);
 
             $pages = $current_user->getPreference('pages', $this->type);
+
+            //begin maretval 2019-03-19 introduced in spicecrm 201903001: correct Index of selected page. If current_user has SpiceThemePages, prePageArray will corromp selectPage index
+            $_REQUEST['selectedPage']-= $_SESSION['trthemepages_prePageArray'];
+            //end
 
             $newColumns = $pages[$_REQUEST['selectedPage']]['columns'];
             foreach($newLayout as $col => $ids) {

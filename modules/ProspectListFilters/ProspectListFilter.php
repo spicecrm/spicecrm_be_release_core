@@ -33,8 +33,7 @@ class ProspectListFilter extends SugarBean {
     function fill_in_additional_detail_fields()
     {
         parent::fill_in_additional_detail_fields();
-        require_once('include/SysModuleFilters/SysModuleFilters.php');
-        $sysModuleFilters = new SysModuleFilters();
+        $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
         $this->entry_count = $sysModuleFilters->getCountForFilterId($this->module_filter);
     }
 }

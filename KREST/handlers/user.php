@@ -145,6 +145,12 @@ class KRESTUserHandler
         }
     }
 
+    /**
+     * @deprecated
+     *
+     * @param $category
+     * @return mixed
+     */
     public function get_all_user_preferences( $category)
     {
         global $current_user;
@@ -158,6 +164,13 @@ class KRESTUserHandler
         return $_SESSION[$current_user->user_name . '_PREFERENCES'][$category];
     }
 
+    /**
+     * @deprecated
+     *
+     * @param $category
+     * @param $names
+     * @return array
+     */
     public function get_user_preferences( $category, $names)
     {
         global $current_user;
@@ -176,6 +189,13 @@ class KRESTUserHandler
         return $prefArray;
     }
 
+    /**
+     * @deprecated
+     *
+     * @param $category
+     * @param $preferences
+     * @return array
+     */
     public function set_user_preferences($category, $preferences)
     {
         global $current_user;

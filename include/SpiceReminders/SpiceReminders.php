@@ -1,5 +1,7 @@
 <?php
 
+namespace SpiceCRM\includes\SpiceReminders;
+
 class SpiceReminders
 {
 
@@ -18,7 +20,7 @@ class SpiceReminders
                 $db->query("INSERT INTO spicereminders (user_id, bean, bean_id, reminder_date) VALUES ('$current_user->id','$beanModule', '$beanId', '$dbReminderDate' )");
         }
         //$thisDate = $reminderDate;
-        return SpiceReminders::getReminders(5);
+        return \SpiceCRM\includes\SpiceReminders\SpiceReminders::getReminders(5);
     }
 
     public static function setReminderRaw($beanId, $beanModule, $reminderDate)
@@ -64,6 +66,10 @@ class SpiceReminders
         $db->query("DELETE FROM spicereminders WHERE user_id='$current_user->id' AND bean_id='$beanId'");
     }
 
+    public static function loadReminders(){
+        return SpiceReminders::getRemindersRaw(50);
+    }
+
     public static function getRemindersRaw($lastN = 10)
     {
         global $current_user, $db;
@@ -79,7 +85,7 @@ class SpiceReminders
             if ($GLOBALS['db']->dbType == 'mssql')
                 $lastNRow['reminder_date'] = str_replace('.000', '', $lastNRow['reminder_date']);
 
-            $thisBean = BeanFactory::getBean($lastNRow['bean'], $lastNRow['bean_id']);
+            $thisBean = \BeanFactory::getBean($lastNRow['bean'], $lastNRow['bean_id']);
             $summary = $thisBean ? $thisBean->get_summary_text() : '';
             $favArray[] = array(
                 'item_id' => $lastNRow['bean_id'],
@@ -103,14 +109,14 @@ class SpiceReminders
             if ($GLOBALS['db']->dbType == 'mssql')
                 $lastNRow['reminder_date'] = str_replace('.000', '', $lastNRow['reminder_date']);
 
-            $thisBean = BeanFactory::getBean($lastNRow['bean'], $lastNRow['bean_id']);
+            $thisBean = \BeanFactory::getBean($lastNRow['bean'], $lastNRow['bean_id']);
             $summaryText = $thisBean ? $thisBean->get_summary_text() : '';
             $favArray[] = array(
                 'bean_id' => $lastNRow['bean_id'],
                 'bean' => $lastNRow['bean'],
                 'summary' => (strlen($summaryText) > 15 ? substr($summaryText, 0, 13) . '...' : $summaryText),
                 'reminder_date' => $GLOBALS['timedate']->to_display_date($lastNRow['reminder_date'], false),
-                'icon' => SugarThemeRegistry::current()->getImage($lastNRow['bean'])
+                'icon' => \SugarThemeRegistry::current()->getImage($lastNRow['bean'])
             );
             $thisBean = null;
             unset($thisBean);

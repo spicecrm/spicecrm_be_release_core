@@ -34,9 +34,7 @@ class SpiceSideBarWidgetFavorites extends SpiceSideBarWidget {
     var $widget_name = "Favorites";
 
     public function display($closed = true) {
-        require_once('include/SpiceFavorites/SpiceFavorites.php');
-
-        $favorites = SpiceFavorites::getFavoritesRaw();
+        $favorites = \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::getFavoritesRaw();
 
         $ss = new Sugar_Smarty();
         $ss->assign('closed', $closed);
@@ -51,8 +49,7 @@ class SpiceSideBarWidgetFavorites extends SpiceSideBarWidget {
 
     public static function getCount() {
         return 1;
-        require_once('include/SpiceFavorites/SpiceFavorites.php');
-        $return = SpiceFavorites::getFavoritesCountForSideBar(10);
+        $return = \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::getFavoritesCountForSideBar(10);
         return $return;
     }
 

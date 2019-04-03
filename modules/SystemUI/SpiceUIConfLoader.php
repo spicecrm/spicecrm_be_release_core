@@ -31,7 +31,8 @@
  * Class SpiceUIConfLoader
  * load UI reference config
  */
-require_once 'modules/SystemUI/SpiceUILoader.php';
+
+namespace SpiceCRM\modules\SystemUI;
 
 class SpiceUIConfLoader
 {
@@ -76,13 +77,14 @@ class SpiceUIConfLoader
 
 //BEGIN CR1000133 multiple packageloader sources:
 // routebase not needed anymore but keep a while for BWC
+        $this->routebase = $this->getRouteBase();
+
         if(empty($endpoint)){
-            $this->routebase = $this->getRouteBase();
             if (!preg_match('/release/', $this->routebase))
                 $this->release = false;
 
         }else{
-            if (!preg_match('/packages.spicecrm.io/', $this->endpoint))
+            if (!preg_match('/packages.spicecrm.io/', $this->endpoint.$this->routebase))
                 $this->release = false;
         }
 //END
@@ -106,7 +108,7 @@ class SpiceUIConfLoader
      */
     public function displayDefaultConfForm($params, $possibleparams, $obsoleteparams)
     {
-        $sm = new Sugar_Smarty();
+        $sm = new \Sugar_Smarty();
 
         if (!empty($params['packages'])) $sm->assign('currentpackages', $params['packages']);
         if (!empty($params['versions'])) $sm->assign('currentversions', array_unique($params['versions']));
@@ -148,7 +150,7 @@ class SpiceUIConfLoader
         //get data
         if (!$response = $this->loader->callMethod("GET", $this->routebase)) {
             die('<pre>' . print_r($response, true));
-            throw new Exception("REST Call error somewhere... Action aborted");
+            throw new \Exception("REST Call error somewhere... Action aborted");
         }
 
         //check if release and force unique version number
@@ -186,7 +188,6 @@ class SpiceUIConfLoader
      */
     public function loadDefaultConf($routeparams, $params, $checkopen = true)
     {
-//        echo '<pre>'. print_r($params, true);die();
         global $sugar_config;
         $tables = array();
         $truncates = array();
@@ -194,12 +195,12 @@ class SpiceUIConfLoader
 
         if ($checkopen && $this->loader->hasOpenChangeRequest()) {
             $errormsg = "Open Change Requests found! They would be erased...";
-            throw new Exception($errormsg);
+            throw new \Exception($errormsg);
         }
         //get data
         if (!$response = $this->loader->callMethod("GET", $routeparams)) {
             $errormsg = "REST Call error somewhere... Action aborted";
-            throw new Exception($errormsg);
+            throw new \Exception($errormsg);
         }
 
         $this->sysuitables = array_keys($response);
@@ -264,7 +265,7 @@ class SpiceUIConfLoader
 
         //if no inserts where created => abort
         if (count($inserts) < 1) {
-            throw new Exception("No inserts found. Action aborted.");
+            throw new \Exception("No inserts found. Action aborted.");
         }
 
         $queries = array_merge($truncates, $inserts);
@@ -275,7 +276,7 @@ class SpiceUIConfLoader
             $errors = array();
             foreach ($queries as $q) {
                 if (!$GLOBALS['db']->query($q))
-                    $errors[] = "Error: " . $GLOBALS['db']->last_error;
+                    $errors[] = "Error: " . $GLOBALS['db']->last_error. (preg_match("/Duplicate entry/", $GLOBALS['db']->last_error) ? " PACKAGE NAME might have changed. Delete duplicate entries manually and reload config." : "");
             }
         }
 
@@ -304,9 +305,9 @@ class SpiceUIConfLoader
         };
 
         // process
-        if (isset($GLOBALS['beanList']) && !empty($GLOBALS['beanList'])) {
+        if (isset($GLOBALS['moduleList'])) {
             foreach ($sysmodules as $sysmodule) {
-                if (!isset($GLOBALS['beanList'][$sysmodule])) {
+                if (!in_array($sysmodule, $GLOBALS['moduleList'])) {
                     $db->query("DELETE FROM sysmodules WHERE module='" . $sysmodule . "'");
                 }
             }

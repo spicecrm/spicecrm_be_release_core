@@ -47,6 +47,16 @@ class SugarWidgetField extends SugarWidget {
         parent::__construct($layout_manager);
     }
 
+    //BEGIN CORE MOIFICATION MARETVAL 2019-03-08
+    //Migrating from PRO to CE triggers following problem: Dashlets containg reports /charts based on PRO reports module cannot be displayed anymore
+    //method queryFilterone_of() belongs to methods that are called in such a case and is not always defined. We catch up this error.
+    public function __call($method, $args){
+        if($method == 'queryFilterone_of') {
+            return;
+        }
+    }
+    //END
+
 	function display($layout_def) {
 		//print $layout_def['start_link_wrapper']."===";
 		$context = $this->layout_manager->getAttribute('context'); //_ppd($context);

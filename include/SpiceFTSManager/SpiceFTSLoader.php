@@ -31,14 +31,14 @@
  * Class SpiceFTSLoader
  * load FTS reference config
  */
-require_once 'modules/SystemUI/SpiceUILoader.php';
+namespace SpiceCRM\includes\SpiceFTSManager;
 
 class SpiceFTSLoader{
 
     public $loader;
 
     public function __construct(){
-        $this->loader = new SpiceUILoader();
+        $this->loader = new \SpiceCRM\modules\SystemUI\SpiceUILoader();
     }
 
 
@@ -49,7 +49,7 @@ class SpiceFTSLoader{
      * @return string
      */
     public function displayDefaultConfForm($params){
-        $sm = new Sugar_Smarty();
+        $sm = new \Sugar_Smarty();
 
         if(!empty($params['packages'])) $sm->assign('currentpackages', $params['packages']);
         if(!empty($params['versions'])) $sm->assign('currentversions', $params['versions']);

@@ -26,6 +26,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+namespace SpiceCRM\includes\SpiceFTSManager;
 
 class SpiceFTSCreator {
 
@@ -36,7 +37,7 @@ class SpiceFTSCreator {
     }
 
     public function displayDefaultConfForm(){
-        $sm = new Sugar_Smarty();
+        $sm = new \Sugar_Smarty();
         return $sm->display("modules/Administration/templates/FTSDefault.tpl");
     }
 
@@ -90,7 +91,7 @@ class SpiceFTSCreator {
             $listkeys = array_keys($listViewDefs[$module]);
 
 
-        $bean = BeanFactory::getBean($module);
+        $bean = \BeanFactory::getBean($module);
         if($bean){
             foreach($bean->field_name_map as $fieldname => $field){
                 if( (in_array(strtoupper($field['name']), $listkeys) && !isset($field['usage'])) || $useVardefs){

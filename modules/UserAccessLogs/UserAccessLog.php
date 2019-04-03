@@ -70,11 +70,12 @@ class UserAccessLog extends SugarBean
         return $ipaddress;
     }
 
-    public function addRecord($action = 'loginsuccess')
+    public function addRecord( $action = 'loginsuccess', $loginName = null )
     {
         $this->ipaddress = $this->getRemoteAddress();
         $this->assigned_user_id = $GLOBALS['current_user']->id;
         $this->action = $action;
+        $this->login_name = $loginName;
         $this->save();
     }
 }

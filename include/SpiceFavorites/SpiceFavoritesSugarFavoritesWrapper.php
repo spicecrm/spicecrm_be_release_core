@@ -1,20 +1,20 @@
 <?php
 
-require_once 'modules/SugarFavorites/SugarFavorites.php';
+namespace SpiceCRM\includes\SpiceFavorites;
 
 class SpiceFavoritesSugarFavoritesWrapper {
 
     public static function get_favorite($beanModule, $beanId) {
         global $current_user;
 
-        return SugarFavorites::isUserFavorite($beanModule, $beanId, $current_user->id);
+        return \SugarFavorites::isUserFavorite($beanModule, $beanId, $current_user->id);
     }
 
     public static function set_favorite($beanModule, $beanId) {
         global $current_user;
         
-        $record = SugarFavorites::generateGUID($beanModule, $beanId);
-        $thisBean = new SugarFavorites();
+        $record = \SugarFavorites::generateGUID($beanModule, $beanId);
+        $thisBean = new \SugarFavorites();
 
         if(!$thisBean->retrieve($record, true, false)){
             $thisBean->new_with_id = true;
@@ -35,7 +35,7 @@ class SpiceFavoritesSugarFavoritesWrapper {
     public static function delete_favorite($beanModule, $beanId) {
         global $current_user;        
         $date_modified = $GLOBALS['timedate']->nowDb();
-        SugarFavorites::markRecordDeletedInFavorites($beanId, $date_modified, $current_user->id);
+        \SugarFavorites::markRecordDeletedInFavorites($beanId, $date_modified, $current_user->id);
     }
     
     public static function getBeanListQueryParts($thisBean, $favoritesOnly) {

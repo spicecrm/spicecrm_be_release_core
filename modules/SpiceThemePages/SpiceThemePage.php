@@ -31,7 +31,7 @@ require_once('data/SugarBean.php');
 require_once('include/utils.php');
 
 // ProductTemplate is used to store customer information.
-class SpiceThemePage extends SugarBean {
+class SpiceThemePage extends \SugarBean {
 
     var $new_schema = true;
     var $module_dir = 'SpiceThemePages';

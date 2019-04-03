@@ -46,7 +46,7 @@ class MyMeetingsDashlet extends DashletGeneric
 {
     public function __construct($id, $def = null) {
         global $current_user, $app_strings;
-		require('modules/Meetings/Dashlets/MyMeetingsDashlet/MyMeetingsDashlet.data.php');
+		require(get_custom_file_if_exists('modules/Meetings/Dashlets/MyMeetingsDashlet/MyMeetingsDashlet.data.php'));
 
         parent::__construct($id, $def);
 

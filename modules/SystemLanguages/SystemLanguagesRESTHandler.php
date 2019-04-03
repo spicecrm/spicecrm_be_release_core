@@ -1,5 +1,7 @@
 <?php
 
+namespace SpiceCRM\modules\SystemLanguages;
+
 class SystemLanguagesRESTHandler
 {
     private $db;
@@ -16,7 +18,7 @@ class SystemLanguagesRESTHandler
 
         // check if we have a CR set
         if ($_SESSION['SystemDeploymentCRsActiveCR'])
-            $cr = BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
+            $cr = \BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
 
         foreach ($labels as $label) {
             switch ($label['scope']) {
@@ -198,4 +200,27 @@ class SystemLanguagesRESTHandler
             throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
         # header("Access-Control-Allow-Origin: *");
     }
+
+    public function getUntranslatedLabels($language, $scope) {
+        global $db;
+        $language = $db->quote($language);
+        $untranslatedLabels = [];
+        $tableTranslations = $scope == 'global' ? 'syslanguagetranslations' : 'syslanguagecustomtranslations';
+        $tableLabels = $scope == 'global' ? 'syslanguagelabels' : 'syslanguagecustomlabels';
+        $query = "SELECT sl.id, sl.name FROM $tableLabels sl";
+        $query .= " WHERE NOT EXISTS (SELECT id FROM $tableTranslations slt";
+        $query .= " WHERE slt.syslanguagelabel_id = sl.id AND slt.syslanguage = '$language') ORDER BY sl.name;";
+        $query = $db->query($query);
+
+        while ($row = $this->db->fetchByAssoc($query)) {
+            $untranslatedLabels[] = $row;
+        }
+
+        return $untranslatedLabels;
+    }
+
+    public function transferFromFilesToDB() {
+        return ( new SpiceLanguageFilesToDB() )->transferFromFilesToDB();
+    }
+
 }
