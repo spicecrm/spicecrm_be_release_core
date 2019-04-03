@@ -118,6 +118,12 @@ class SpiceFTSUtils
 
     static function getBeanIndexSettings($module)
     {
+        //BEGIN CR1000190
+        if($GLOBALS['installing']){
+            return false;
+        }
+        //END
+
         global $db;
 
         if (isset($_SESSION['SpiceFTS']['indexes'][$module]['settings'])) {
