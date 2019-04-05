@@ -83,16 +83,16 @@ class googleAPIRestHandler
             $addrArray = array();
             foreach ($responseObject->result->address_components as $resultItem) {
                 foreach ($resultItem->types as $resultType) {
-                    $addrArray[$resultType] = $resultItem->short_name;
+                    $addrArray[$resultType] = ['long' => $resultItem->long_name,'short' => $resultItem->short_name];
                 }
             }
             $results['status'] = 'OK';
             $results['address'] = array(
-                'street' => $addrArray['route'] . ' ' . $addrArray['street_number'],
-                'city' => $addrArray['locality'],
-                'state' => $addrArray['administrative_area_level_1'],
-                'postalcode' => $addrArray['postal_code'],
-                'country' => $addrArray['country'],
+                'street' => $addrArray['route']['long'] . ' ' . $addrArray['street_number']['long'],
+                'city' => $addrArray['locality']['long'],
+                'state' => $addrArray['administrative_area_level_1']['short'],
+                'postalcode' => $addrArray['postal_code']['short'],
+                'country' => $addrArray['country']['short'],
                 'location' => $responseObject->result->geometry->location
             );
             $results['formatted_phone_number'] = $responseObject->result->formatted_phone_number;

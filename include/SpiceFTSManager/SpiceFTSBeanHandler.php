@@ -336,9 +336,12 @@ class SpiceFTSBeanHandler
             if (!empty($standardFieldData['aggregate']) || $standardFieldData['enablesort'] || $standardFieldData['suggest'] || ($standardFieldData['duplicatecheck'] && $standardFieldData['duplicatequery'] == 'term')) {
                 $properties[$standardField]['fields']['raw'] = array(
                     'type' => ($standardFieldData['indextype'] == 'string' ? 'keyword' : $standardFieldData['indextype']) ?: 'keyword',
-                    'normalizer' => 'spice_lowercase',
+//                    'normalizer' => 'spice_lowercase',
                     'index' => true
                 );
+                if($standardFieldData['indextype'] == 'string' || $standardFieldData['indextype'] == 'keyword'){
+                    $properties[$standardField]['fields']['raw']['normalizer'] = 'spice_lowercase';
+                }
 
                 // add a sepoarate field for the suggester to have an autocomplete
                 if($standardFieldData['suggest']){
@@ -408,9 +411,12 @@ class SpiceFTSBeanHandler
                 $properties[$indexProperty['indexfieldname']]['fields']['raw'] = array(
                     'type' => ($indexProperty['indextype'] == 'string' ? 'keyword' : $indexProperty['indextype']) ?: 'keyword',
                     // 'type' =>  'keyword',
-                    'normalizer' => 'spice_lowercase',
+                    //'normalizer' => 'spice_lowercase',
                     'index' => true
                 );
+                if($indexProperty['indextype'] == 'string' || $indexProperty['indextype'] == 'keyword'){
+                    $properties[$indexProperty['indexfieldname']]['fields']['raw']['normalizer'] = 'spice_lowercase';
+                }
 
                 // add a sepoarate field for the suggester to have an autocomplete
                 if($indexProperty['suggest']){
@@ -438,9 +444,12 @@ class SpiceFTSBeanHandler
                         $properties[$addFieldName]['fields']['raw'] = array(
                             'type' => ($addField['type'] == 'string' ? 'keyword' : $addField['type']) ?: 'keyword',
                             //'type' =>  'keyword',
-                            'normalizer' => 'spice_lowercase',
+                            //'normalizer' => 'spice_lowercase',
                             'index' => true
                         );
+                        if($addField['type'] == 'string' || $addField['type'] == 'keyword'){
+                            $properties[$addFieldName]['fields']['raw']['normalizer'] = 'spice_lowercase';
+                        }
 
                         if ($properties[$addFieldName]['fields']['raw']['type'] == 'date')
                             $properties[$addFieldName]['fields']['raw']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
