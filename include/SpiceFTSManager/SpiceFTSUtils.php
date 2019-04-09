@@ -123,7 +123,6 @@ class SpiceFTSUtils
             return false;
         }
         //END
-
         global $db;
 
         if (isset($_SESSION['SpiceFTS']['indexes'][$module]['settings'])) {
