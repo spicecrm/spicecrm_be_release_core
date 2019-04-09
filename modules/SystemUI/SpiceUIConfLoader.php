@@ -45,6 +45,7 @@ class SpiceUIConfLoader
 
     private $conftables = array(
         'sysmodules',
+        'sysmodulefilters',
         'sysuiactionsetitems',
         'sysuiactionsets',
         'sysuiadmincomponents',
@@ -58,6 +59,8 @@ class SpiceUIConfLoader
         'sysuifieldsetsitems',
         'sysuifieldtypemapping',
         'sysuilibs',
+        'sysuiloadtasks',
+        'sysuiloadtaskitems',
         'sysuimodulerepository',
         'sysuiobjectrepository',
         'sysuirolemodules',
@@ -215,13 +218,14 @@ class SpiceUIConfLoader
             $thisCols = $this->getTableColumns($tb);
             switch ($tb) {
                 case 'syslangs':
+                case 'sysfts':
                     $delQ = "DELETE FROM $tb WHERE 1=1";//$GLOBALS['db']->truncateTableSQL($tb);
                     break;
                 default:
                     if(array_search('package', $thisCols) !== false) {
                         $delQ = "DELETE FROM $tb WHERE package IN('" . implode("','", $params['packages']) . "') ";
-                        if (in_array('core', $params['packages']))
-                            $delQ .= "OR package IS NULL OR package=''";
+                        //if (in_array($params['packages'][0], $params['packages']))
+                        $delQ .= "OR package IS NULL OR package=''";
                     }
             }
 
@@ -233,13 +237,6 @@ class SpiceUIConfLoader
                     die("Error decoding data: " . json_last_error_msg() .
                         "<br/>Reference table = $tb" .
                         "<br/>Action aborted");
-
-                //prcess only selected packages and empty package values
-                if (isset($decodeData['package']) && empty($decodeData['package']) && !in_array('core', $params['packages'])) {
-                    continue;
-                } elseif (isset($decodeData['package']) && !empty($decodeData['package']) && !in_array($decodeData['package'], $params['packages'])) {
-                    continue;
-                }
 
                 //compare table column names
                 if (!$tbColCheck) {
