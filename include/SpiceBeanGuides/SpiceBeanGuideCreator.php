@@ -47,7 +47,7 @@ class SpiceBeanGuideCreator {
 
 
     public function displayDefaultConfForm($displayForm, $displayResults = ""){
-        $sm = new Sugar_Smarty();
+        $sm = new \Sugar_Smarty();
         $sm->assign("displayForm", $displayForm);
         $sm->assign("displayResults", $displayResults);
         $sm->assign("spicebeanguidemodules", $this->spicebeanguidemodules);
