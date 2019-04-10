@@ -218,8 +218,12 @@ class SpiceUIConfLoader
             $thisCols = $this->getTableColumns($tb);
             switch ($tb) {
                 case 'syslangs':
-                case 'sysfts':
                     $delQ = "DELETE FROM $tb WHERE 1=1";//$GLOBALS['db']->truncateTableSQL($tb);
+                    break;
+                case 'sysfts': //don't do anything.
+                    // Since we have no custom fts table, delete the whole thing might delete custom entries.
+                    //therefore no action here
+                    // each reference entry will be deleted before insert. See below.
                     break;
                 default:
                     if(array_search('package', $thisCols) !== false) {
@@ -254,6 +258,9 @@ class SpiceUIConfLoader
                 foreach ($decodeData as $key => $value) {
                     $decodeData[$key] = (is_null($value) || $value === "" ? "NULL" : "'" . $GLOBALS['db']->quote($value) . "'");
                 }
+                //delete before insert
+                $truncates[] = "DELETE FROM $tb WHERE id=".$decodeData['id'];
+
                 //insert command
                 $inserts[] = "INSERT INTO $tb (" . implode(",", $referenceCols) . ") " .
                     "VALUES(" . implode(",", array_values($decodeData)) . ")";
