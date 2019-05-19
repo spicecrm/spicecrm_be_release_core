@@ -39,6 +39,8 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 require_once('include/SugarPHPMailer.php');
 require_once 'include/upload_file.php';
 
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+
 class Email extends SugarBean
 {
     /* SugarBean schema */
@@ -1326,7 +1328,7 @@ class Email extends SugarBean
                 //check if relationship exists.... linkEmailToAddress() might have been called before this (happens during installation when loading demo data)
                 if($doUpdate){
                     $this->db->query(
-                        "UPDATE emails_email_addr_rel SET 
+                        "UPDATE emails_email_addr_rel SET
                             email_id = '{$this->id}',
                             address_type = '{$recipient_address['address_type']}',
                             email_address_id = '{$recipient_address['email_address_id']}',
@@ -1340,12 +1342,12 @@ class Email extends SugarBean
                 else {
                     $this->db->query(
                         "INSERT INTO emails_email_addr_rel (
-                            id, 
-                            email_id, 
-                            address_type, 
-                            email_address_id, 
-                            parent_type, 
-                            parent_id, 
+                            id,
+                            email_id,
+                            address_type,
+                            email_address_id,
+                            parent_type,
+                            parent_id,
                             deleted
                         ) VALUES(
                             '{$recipient_address['id']}',
@@ -3769,18 +3771,38 @@ eoq;
      *
      * Assigns a Bean to Email
      *
-     * @param $bean_id
+     * @param $bean the bean or a string with te bean id
      * @param $bean_module
      * @return bool
      */
-    public function assignBeanToEmail($bean_id, $bean_module)
+    public function assignBeanToEmail($bean, $bean_module)
     {
-        if (empty($bean_id) || empty($bean_module)) {
+        // if no bean is passed in we assume it is an id and load the bean
+        if(is_string($bean)){
+            $bean = \BeanFactory::getBean($bean_module, $bean);
+        }
+
+        // if no bean is passed in or it copuld nto be retrieved .. do nothing
+        if (!$bean) {
             return false;
         }
 
         global $db;
+        // check if assignment exists already
 
+        // try to find a relationship between Emails and the module
+        $rels = $db->query("SELECT relationship_name FROM relationships WHERE lhs_module = 'Emails' AND rhs_module = '$bean_module'");
+        while($rel = $db->fetchByAssoc($rels)){
+            foreach($this->field_name_map as $field => $fieldDetails){
+                if($fieldDetails['type'] == 'link' && $fieldDetails['relationship'] == $rel['relationship_name']){
+                    $this->load_relationship($field);
+                    $this->{$field}->add($bean->id);
+                    return;
+                }
+            }
+        }
+
+        /*
         $query = "INSERT INTO emails_beans (
                       id,
                       email_id,
@@ -3799,7 +3821,31 @@ eoq;
                       0
                     )";
 
-        $db->query($query);
+        return $db->query($query);*/
+    }
+
+    /**
+     * removeBeanFromEmail
+     *
+     * Removes the relation between Email and Bean.
+     *
+     * @param $bean_id
+     * @param $bean_module
+     * @return bool|resource
+     */
+    public function removeBeanFromEmail($bean_id, $bean_module) {
+        if (empty($bean_id) || empty($bean_module)) {
+            return false;
+        }
+
+        global $db;
+
+        $query = "DELETE FROM emails_beans
+                  WHERE bean_id = '" . filter_var($bean_id, FILTER_SANITIZE_STRING) . "'
+                  AND bean_module = '" . filter_var($bean_module, FILTER_SANITIZE_STRING) . "'
+                  AND email_id = '" . $this->id . "'";
+
+        return $db->query($query);
     }
 
     /**
@@ -3865,6 +3911,11 @@ eoq;
         parent::save();
     }
 
+
+    public function getExternalAttachments() {
+        return SpiceAttachments::getAttachmentsForBean('Emails', $this->id, 10, false);
+    }
+
     /**
      * retrieves all related emails to a given bean
      * should be static I know...
@@ -3881,5 +3932,5 @@ eoq;
             $emails[] = $this->retrieve($row['email_id']);
         }
         return $emails;
-    }
+      }
 } // end class def

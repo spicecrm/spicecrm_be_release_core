@@ -760,7 +760,8 @@ class EmailTemplate extends SugarBean {
 
     public function parseField($field, $parentbean = null, $additionalValues = null )
     {
-        $html = SpiceCRM\includes\SpiceTemplateCompiler\Compiler::compile($this->$field, $parentbean, $this->language, $additionalValues );
+        $templateCompiler = new \SpiceCRM\includes\SpiceTemplateCompiler\Compiler();
+        $html = $templateCompiler->compile($this->$field, $parentbean, $this->language, $additionalValues );
         return html_entity_decode($html);
     }
 

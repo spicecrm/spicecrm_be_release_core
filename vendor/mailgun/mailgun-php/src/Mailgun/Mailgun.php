@@ -11,6 +11,7 @@ namespace Mailgun;
 
 use Http\Client\Common\HttpMethodsClient;
 use Http\Client\HttpClient;
+use Mailgun\Api\MailingList;
 use Mailgun\Connection\RestClient;
 use Mailgun\Constants\ExceptionMessages;
 use Mailgun\HttpClient\Plugin\History;
@@ -99,17 +100,20 @@ class Mailgun
     ) {
         $httpClient = $configurator->createConfiguredClient();
 
-        return new self($configurator->getApiKey(), $httpClient, 'api.mailgun.net', $hydrator, $requestBuilder);
+        return new self($configurator->getApiKey(), $httpClient, $configurator->getEndpoint(), $hydrator, $requestBuilder);
     }
 
     /**
      * @param string $apiKey
+     * @param string $endpoint URL to mailgun servers
      *
      * @return Mailgun
      */
-    public static function create($apiKey)
+    public static function create($apiKey, $endpoint = 'https://api.mailgun.net')
     {
-        $httpClientConfigurator = (new HttpClientConfigurator())->setApiKey($apiKey);
+        $httpClientConfigurator = (new HttpClientConfigurator())
+            ->setApiKey($apiKey)
+            ->setEndpoint($endpoint);
 
         return self::configure($httpClientConfigurator);
     }
@@ -285,7 +289,7 @@ class Mailgun
     /**
      * @return MessageBuilder
      *
-     * @deprecated Will be removed in 3.0
+     * @deprecated Will be removed in 3.0.
      */
     public function MessageBuilder()
     {
@@ -308,7 +312,7 @@ class Mailgun
      *
      * @return BatchMessage
      *
-     * @deprecated Will be removed in 3.0
+     * @deprecated Will be removed in 3.0. Use Mailgun::messages()::getBatchMessage().
      */
     public function BatchMessage($workingDomain, $autoSend = true)
     {
@@ -321,6 +325,14 @@ class Mailgun
     public function stats()
     {
         return new Api\Stats($this->httpClient, $this->requestBuilder, $this->hydrator);
+    }
+
+    /**
+     * @return Api\Attachment
+     */
+    public function attachment()
+    {
+        return new Api\Attachment($this->httpClient, $this->requestBuilder, $this->hydrator);
     }
 
     /**
@@ -372,10 +384,26 @@ class Mailgun
     }
 
     /**
+     * @return MailingList
+     */
+    public function mailingList()
+    {
+        return new MailingList($this->httpClient, $this->requestBuilder, $this->hydrator);
+    }
+
+    /**
      * @return Api\Suppression
      */
     public function suppressions()
     {
         return new Api\Suppression($this->httpClient, $this->requestBuilder, $this->hydrator);
+    }
+
+    /**
+     * @return Api\Ip
+     */
+    public function ips()
+    {
+        return new Api\Ip($this->httpClient, $this->requestBuilder, $this->hydrator);
     }
 }

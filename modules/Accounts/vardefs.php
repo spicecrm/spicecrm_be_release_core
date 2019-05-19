@@ -458,7 +458,38 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'module' => 'Products',
             'relationship' => 'manufacturer_products',
             'source' => 'non-db'
-        )
+        ),
+        'events_account_role' => array(
+            'name' => 'events_account_role',
+            'vname' => 'LBL_ROLE',
+            'type' => 'enum',
+            'source' => 'non-db',
+            'options' => 'events_account_roles_dom'
+        ),
+        'location_events' =>
+            array(
+                'name' => 'location_events',
+                'type' => 'link',
+                'relationship' => 'account_events',
+                'module' => 'Events',
+                'bean_name' => 'Event',
+                'source' => 'non-db',
+                'vname' => 'LBL_EVENT_LOCATION',
+            ),
+        'events' => array(
+            'name' => 'events',
+            'type' => 'link',
+            'relationship' => 'events_accounts',
+            'module' => 'Events',
+            'bean_name' => 'Event',
+            'source' => 'non-db',
+            'vname' => 'LBL_EVENT',
+            'rel_fields' => [
+                'account_role' => [
+                    'map' => 'events_account_role'
+                ]
+            ]
+        ),
     ),
     'indices' => array(
         array('name' => 'idx_accnt_id_del', 'type' => 'index', 'fields' => array('id', 'deleted')),
@@ -553,6 +584,17 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'rhs_module' => 'Products',
             'rhs_table' => 'products',
             'rhs_key' => 'manufacturer_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'account_events' => array(
+            'lhs_module' => 'Accounts',
+            'lhs_table' => 'accounts',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Events',
+            'rhs_table' => 'events',
+            'rhs_key' => 'location_id',
+            'relationship_role_column' => 'location_type',
+            'relationship_role_column_value' => 'Accounts',
             'relationship_type' => 'one-to-many'
         )
     ),

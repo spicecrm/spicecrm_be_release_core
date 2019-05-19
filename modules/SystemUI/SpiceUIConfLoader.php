@@ -223,7 +223,7 @@ class SpiceUIConfLoader
                 case 'sysfts': //don't do anything.
                     // Since we have no custom fts table, delete the whole thing might delete custom entries.
                     //therefore no action here
-                    // each reference entry will be deleted before insert. See below.
+                    // each reference entry will be deleted before insert. See below 'delete before insert'.
                     break;
                 default:
                     if(array_search('package', $thisCols) !== false) {

@@ -2,6 +2,7 @@
 namespace SpiceCRM\modules\OutputTemplates\handlers\pdf;
 
 use Dompdf\Dompdf;
+use Dompdf\Options;
 
 /**
  *  Attention: this class is not finished yet... nor tested...
@@ -10,28 +11,46 @@ use Dompdf\Dompdf;
  */
 class DomPdfHandler extends LibPdfHandler
 {
-    
+
+    protected $class_instance;
+
     protected function createInstance()
     {
-        return new Dompdf();
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        $contxt = stream_context_create([
+            'ssl' => [
+                'verify_peer' => FALSE,
+                'verify_peer_name' => FALSE,
+                'allow_self_signed'=> TRUE
+            ]
+        ]);
+        $dompdf->setHttpContext($contxt);
+        return $dompdf;
     }
 
     public function process($html = null, array $options = null)
     {
-        return parent::process($html, $options);
+        parent::process($html, $options);
 
-        $this->createDomPdf($html, $options);
+        $this->createDomPdf($this->html_content, $this->options);
         return true;
     }
 
     private function createDomPdf($html, $options = null)
     {
         $options = (object) $options;
-        
+
         $this->class_instance->loadHtml($html);
-        $this->class_instance->setPaper($options->page_size, $options->page_orientation);
+
+        // set page format
+        $this->class_instance->setPaper($this->template->page_size ?: 'A4', $this->template->page_orientation == 'L' ? 'landscape' : 'portrait');
+
+        // render the PDF
         $this->class_instance->render();
         $this->content = $this->class_instance->output();
+        //var_dump($html); exit;
         return $this->class_instance;
     }
 
@@ -43,7 +62,7 @@ class DomPdfHandler extends LibPdfHandler
         if(!$this->content)
             $this->process();
 
-        return $this->class_instance->stream();
+        return $this->class_instance->stream($file_name);
     }
 
     public function toFile($destination_path, $file_name = null)
@@ -59,5 +78,4 @@ class DomPdfHandler extends LibPdfHandler
 
         return ['name' => $filename, 'path' => $destination_path, 'mime_type' => 'application/pdf'];
     }
-
 }

@@ -539,6 +539,27 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'type' => 'varchar',
                 'len' => 36
             ),
+            'events_contact_role' => array(
+                'name' => 'events_contact_role',
+                'vname' => 'LBL_ROLE',
+                'type' => 'enum',
+                'source' => 'non-db',
+                'options' => 'events_contact_roles_dom'
+            ),
+            'events' => array(
+                'name' => 'events',
+                'type' => 'link',
+                'relationship' => 'events_contacts',
+                'module' => 'Events',
+                'bean_name' => 'Event',
+                'source' => 'non-db',
+                'vname' => 'LBL_EVENT',
+                'rel_fields' => [
+                    'contact_role' => [
+                        'map' => 'events_contact_role'
+                    ]
+                ]
+            ),
             /*
             'portal_user_id' => array(
                 'name' => 'portal_user_id',
@@ -719,7 +740,7 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
             'rhs_module' => 'Meetings', 'rhs_table' => 'meetings', 'rhs_key' => 'parent_id',
             'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
             'relationship_role_column_value' => 'Contacts'
-        ),
+        )
         /*
         'portalusers_contacts' => array (
             'lhs_module' => 'Contacts',

@@ -61,7 +61,7 @@ class OutputTemplate extends SugarBean
     {
         parent::__construct();
         $class = @$GLOBALS['sugar_config']['outputtemplates']['pdf_handler_class'];
-        if(!$class) $class = '\SpiceCRM\modules\OutputTemplates\handlers\pdf\TcpdfHandler';
+        if(!$class) $class = '\SpiceCRM\modules\OutputTemplates\handlers\pdf\DomPdfHandler';
         $this->pdf_handler = new $class($this);
     }
 
@@ -92,7 +92,8 @@ class OutputTemplate extends SugarBean
         if(!$bean)
             throw new Exception("No Bean found, translation aborted!");
 
-        $html = SpiceCRM\includes\SpiceTemplateCompiler\Compiler::compile($this->body, $bean, $this->language);
+        $templateCompiler = new \SpiceCRM\includes\SpiceTemplateCompiler\Compiler();
+        $html = $templateCompiler->compile($this->body, $bean, $this->language);
         $html = '<style>' . $this->getStyle() . '</style><body>' . html_entity_decode($html) . '</body>';
 
         return $html;
@@ -133,7 +134,7 @@ class OutputTemplate extends SugarBean
     private function retrieveBean()
     {
         if ($this->bean_id) {
-            $this->bean = BeanFactory::getBean($this->module_name, $this->bean_id);
+            $this->bean = \BeanFactory::getBean($this->module_name, $this->bean_id);
         }
 
         return $this->bean;

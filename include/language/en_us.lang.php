@@ -232,6 +232,18 @@ $app_list_strings = array(
         'se' => 'Support Engineer',
         'es' => 'Executive Sponsor'
     ),
+    'events_account_roles_dom' =>        array(
+        '' => '',
+        'organizer' => 'Organizer',
+        'sponsor' => 'Sponsor',
+        'caterer' => 'Caterer'
+    ),
+    'events_contact_roles_dom' =>        array(
+        '' => '',
+        'organizer' => 'Organizer',
+        'speaker' => 'Speaker',
+        'moderator' => 'Moderator',
+    ),
     'userabsences_type_dom' =>        array(
         '' => '',
         'Sick leave' => 'Sick leave',
@@ -739,6 +751,7 @@ $app_list_strings = array(
             'ProjectTasks' => 'Project Task',
 
             'Prospects' => 'Target',
+            'Events' => 'Events',
 
         ),
 
@@ -4233,7 +4246,8 @@ $app_list_strings['crstatus_dom'] = array(
 $app_list_strings['crtype_dom'] = array(
     '0' => 'bug',
     '1' => 'feature request',
-    '2' => 'change request'
+    '2' => 'change request',
+    '3' => 'hotfix'
 );
 
 $app_list_strings['moduleList']['KReleasePackages'] = 'K Releasepackages';
@@ -4495,4 +4509,22 @@ $app_list_strings['deploymentrelease_status_dom'] = array(
     'planned' => 'planned',
     'released' => 'released',
     'canceled' => 'canceled'
+);
+
+$app_list_strings['product_status_dom'] = array(
+    'draft' => 'draft',
+    'active' => 'active',
+    'inactive' => 'inactive'
+);
+
+$app_list_strings['event_status_dom'] = array(
+    'planned' => 'planned',
+    'active' => 'active',
+    'canceled' => 'canceled'
+);
+
+$app_list_strings['event_category_dom'] = array(
+    'presentations' => 'Presentations',
+    'seminars' => 'Seminars',
+    'conferences' => 'Conferences'
 );

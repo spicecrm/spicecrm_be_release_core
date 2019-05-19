@@ -154,91 +154,95 @@ $dictionary['spicenotes'] = array(
 
 );
 
-$dictionary['spiceattachments'] = array(
-	'table' => 'spiceattachments',
-	'fields' => array(
-		array(
+$dictionary['spiceattachments'] = [
+	'table'  => 'spiceattachments',
+	'fields' => [
+		[
 			'name' => 'id',
 			'type' => 'varchar',
-			'len' => 36
-		),
-		array(
+			'len'  => 36,
+		],
+		[
 			'name' => 'bean_type',
 			'type' => 'varchar',
-			'len' => 100
-		),
-		array(
+			'len'  => 100,
+		],
+		[
 			'name' => 'bean_id',
 			'type' => 'varchar',
-			'len' => 36
-		),
-		array(
+			'len'  => 36,
+		],
+		[
 			'name' => 'user_id',
 			'type' => 'varchar',
-			'len' => 36
-		),
-		array(
+			'len'  => 36,
+		],
+		[
 			'name' => 'trdate',
-			'type' => 'datetime'
-		),
-		array(
+			'type' => 'datetime',
+		],
+		[
 			'name' => 'filename',
 			'type' => 'varchar',
-			'len' => 150
-		),
-		array(
+			'len'  => 150,
+		],
+		[
 			'name' => 'filesize',
-			'type' => 'ulong'
-		),
-		array(
+			'type' => 'ulong',
+		],
+		[
 			'name' => 'filemd5',
 			'type' => 'varchar',
-            'len' => 32
-		),
-		array(
+            'len'  => 32,
+		],
+		[
 			'name' => 'file_mime_type',
 			'type' => 'varchar',
-			'len' => 150
-		),
-		array(
+			'len'  => 150,
+		],
+		[
 			'name' => 'text',
-			'type' => 'text'
-		),
-		array(
+			'type' => 'text',
+		],
+		[
 			'name' => 'thumbnail',
-			'type' => 'text'
-		),
-		array(
+			'type' => 'text',
+		],
+		[
 			'name' => 'deleted',
-			'type' => 'bool'
-		)
-	),
-	'indices' => array(
-		array(
-		    'name'			=> 'tqn_idx2',
-			'type'			=> 'unique',
-			'fields'		=> array('id'),
-		),
-		array(
-		    'name'			=> 'tatusr_idx',
-			'type'			=> 'index',
-			'fields'		=> array('user_id'),
-		),
-		array(
-		    'name'			=> 'tatusrbean_idx',
-			'type'			=> 'index',
-			'fields'		=> array('bean_type', 'bean_id'),
-		),
-		array(
-		    'name'			=> 'tatselection_idx',
-			'type'			=> 'index',
-			'fields'		=> array('bean_type', 'bean_id', 'user_id', 'deleted'),
-		),
-		array(
-		    'name'			=> 'tatmd5_idx',
-			'type'			=> 'index',
-			'fields'		=> array('filemd5', 'deleted'),
-		)
-	),
-
-);
+			'type' => 'bool',
+		],
+        [
+            'name' => 'external_id',
+            'type' => 'varchar',
+            'len'  => 200,
+        ],
+	],
+	'indices' => [
+		[
+		    'name'	 => 'tqn_idx2',
+			'type'	 => 'unique',
+			'fields' => ['id'],
+		],
+		[
+		    'name'	 => 'tatusr_idx',
+			'type'	 => 'index',
+			'fields' => ['user_id'],
+		],
+		[
+		    'name'	 => 'tatusrbean_idx',
+			'type'	 => 'index',
+			'fields' => ['bean_type', 'bean_id'],
+		],
+		[
+		    'name'	 => 'tatselection_idx',
+			'type'	 => 'index',
+			'fields' => ['bean_type', 'bean_id', 'user_id', 'deleted'],
+		],
+		[
+		    'name'	 => 'tatmd5_idx',
+			'type'	 => 'index',
+			'fields' => ['filemd5', 'deleted'],
+		],
+	],
+];

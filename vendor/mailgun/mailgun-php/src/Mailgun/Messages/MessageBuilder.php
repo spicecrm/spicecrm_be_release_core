@@ -20,6 +20,7 @@ use Mailgun\Messages\Exceptions\TooManyParameters;
  * this class makes the process easier. See the official
  * documentation (link below) for usage instructions.
  *
+ * @deprecated Will be removed in 3.0. Use Mailgun\Message\MessageBuilder
  * @see https://github.com/mailgun/mailgun-php/blob/master/src/Mailgun/Messages/README.md
  */
 class MessageBuilder
@@ -368,9 +369,9 @@ class MessageBuilder
     {
         if ($this->counters['attributes']['campaign_id'] < Api::CAMPAIGN_ID_LIMIT) {
             if (isset($this->message['o:campaign'])) {
-                array_push($this->message['o:campaign'], $campaignId);
+                array_push($this->message['o:campaign'], (string) $campaignId);
             } else {
-                $this->message['o:campaign'] = [$campaignId];
+                $this->message['o:campaign'] = [(string) $campaignId];
             }
             $this->counters['attributes']['campaign_id'] += 1;
 

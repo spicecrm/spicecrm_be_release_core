@@ -27,7 +27,7 @@ class SpiceFTSAggregates
                     'indexfieldname' => $indexProperty['indexfieldname'],
                     'fieldname' => $indexProperty['fieldname'],
                     'fielddetails' => SpiceFTSUtils::getDetailsForField($indexProperty['path']),
-                    'field' => $indexProperty['indexfieldname'] . '.raw',
+                    'field' => $indexProperty['indexfieldname'] . '.agg',
                     'name' => $indexProperty['name'],
                     'type' => $indexProperty['aggregate'],
                     'aggregatesize' => $indexProperty['aggregatesize'],
@@ -38,7 +38,7 @@ class SpiceFTSAggregates
                 // check if we have aggParams
                 if ($indexProperty['aggregateaddparams']) {
                     $addParamsSting = html_entity_decode(base64_decode($indexProperty['aggregateaddparams']));
-                    $addParamsSting = str_replace('$field', $indexProperty['indexfieldname'] . '.raw', $addParamsSting);
+                    $addParamsSting = str_replace('$field', $indexProperty['indexfieldname'] . '.agg', $addParamsSting);
                     $this->aggregateFields[str_replace('->', '-', $indexProperty['indexfieldname'])]['aggParams'] = json_decode($addParamsSting, true);
                 }
             }
@@ -78,28 +78,28 @@ class SpiceFTSAggregates
             switch ($aggregateIndexFieldData['type']) {
                 case 'datem':
                     $aggParams = array('date_histogram' => array(
-                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.raw',
+                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg',
                         "interval" => "month",
                         "format" => 'MM/yyyy'
                     ));
                     break;
                 case 'datew':
                     $aggParams = array('date_histogram' => array(
-                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.raw',
+                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg',
                         "interval" => "week",
                         "format" => 'w/yyyy'
                     ));
                     break;
                 case 'dateq':
                     $aggParams = array('date_histogram' => array(
-                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.raw',
+                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg',
                         "interval" => "quarter",
                         "format" => 'MM/yyyy'
                     ));
                     break;
                 case 'datey':
                     $aggParams = array('date_histogram' => array(
-                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.raw',
+                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg',
                         "interval" => "year",
                         "format" => 'yyyy'
                     ));
@@ -107,7 +107,7 @@ class SpiceFTSAggregates
                 case 'term':
                     $aggParams = array('terms' => array(
                         'size' => isset($aggregateIndexFieldData['aggregatesize']) ? $aggregateIndexFieldData['aggregatesize'] : 10,
-                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.raw'
+                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg'
                     ));
                     break;
                 case 'range':
@@ -116,7 +116,7 @@ class SpiceFTSAggregates
                     break;
                 default:
                     $aggParams = array('terms' => array(
-                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.raw'
+                        'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg'
                     ));
                     break;
             }
@@ -136,7 +136,7 @@ class SpiceFTSAggregates
         // add tags
         $tagAggregator = [
             'terms' => [
-                'field' => 'tags.raw',
+                'field' => 'tags.agg',
                 'size' => 25
             ]
         ];
@@ -161,7 +161,7 @@ class SpiceFTSAggregates
         // add the field info so we can later on enrich thje reponse
         /*
         $aggregates[$aggregateName] = array(
-            'field' => $aggregateIndexFieldData['indexfieldname'] . '.raw',
+            'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg',
             'name' => $aggregateIndexFieldData['name']
         );
         */
@@ -183,11 +183,13 @@ class SpiceFTSAggregates
             $aggregations[$aggField]['name'] = $this->aggregateFields[$aggField]['name'];
             $aggregations[$aggField]['type'] = $this->aggregateFields[$aggField]['type'];
 
-            foreach ($aggregations[$aggField]['buckets'] as $aggItemIndex => &$aggItemData) {
+            $buckets = $aggregations[$aggField]['buckets'] ?: $aggregations[$aggField][$aggField]['buckets'];
+
+            foreach ($buckets as $aggItemIndex => &$aggItemData) {
 
 
                 if($aggItemData['doc_count'] == 0) {
-                    unset($aggregations[$aggField]['buckets'][$aggItemIndex]);
+                    unset($buckets[$aggItemIndex]);
                     //continue;
                 }
 
@@ -263,7 +265,7 @@ class SpiceFTSAggregates
 
             // nasty trick to get this array reshuffled - if not seuenced angular will not iterate over it
             // ToDo: find a nice way to handle this
-            $aggregations[$aggField]['buckets'] = array_merge($aggregations[$aggField]['buckets'], []);
+            $aggregations[$aggField]['buckets'] = array_merge($buckets, []);
         }
         return $aggregations;
     }

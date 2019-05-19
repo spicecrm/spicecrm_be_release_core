@@ -36,7 +36,7 @@ $dictionary['EventRegistration'] = array(
             'name' => 'campaign_name',
             'rname' => 'name',
             'id_name' => 'campaign_id',
-            'vname' => 'LBL_EVENT',
+            'vname' => 'LBL_CAMPAIGN',
             'type' => 'relate',
             'table' => 'campaigns',
             'isnull' => 'true',
@@ -53,6 +53,36 @@ $dictionary['EventRegistration'] = array(
             'relationship' => 'eventregistration_campaign_rel',
             'source' => 'non-db',
         ),
+        'event_id' => array(
+            'name' => 'event_id',
+            'vname' => 'LBL_EVENT_ID',
+            'type' => 'varchar',
+            'len' => 36,
+            'reportable' => false,
+            'required' => true,
+        ),
+        'event_name' => array(
+            'name' => 'event_name',
+            'rname' => 'name',
+            'id_name' => 'event_id',
+            'vname' => 'LBL_EVENT',
+            'type' => 'relate',
+            'table' => 'events',
+            'isnull' => 'true',
+            'module' => 'Events',
+            'dbType' => 'varchar',
+            'link' => 'events',
+            'len' => '255',
+            'source' => 'non-db',
+            'required' => true
+        ),
+        'events' => array(
+            'name' => 'events',
+            'vname' => 'LBL_EVENTS',
+            'type' => 'link',
+            'relationship' => 'events_eventregistrations',
+            'source' => 'non-db',
+        ),
         'campaigntask_id' => array(
             'name' => 'campaigntask_id',
             'vname' => 'LBL_CAMPAIGNtask_ID',
@@ -65,7 +95,7 @@ $dictionary['EventRegistration'] = array(
             'name' => 'campaigntask_name',
             'rname' => 'name',
             'id_name' => 'campaigntask_id',
-            'vname' => 'LBL_EVENT',
+            'vname' => 'LBL_CAMPAIGNTASK',
             'type' => 'relate',
             'table' => 'campaigntasks',
             'isnull' => 'true',
@@ -88,6 +118,7 @@ $dictionary['EventRegistration'] = array(
             'type' => 'id',
             'comment' => 'Contact identifier',
             'reportable' => false,
+            'required' => true,
         ),
         'contact_name' => array(
             'name' => 'contact_name',
@@ -102,6 +133,7 @@ $dictionary['EventRegistration'] = array(
             'link' => 'contact_link',
             'len' => '255',
             'source' => 'non-db',
+            'required' => true,
         ),
         'contact_link' => array(
             'name' => 'contact_link',
@@ -112,6 +144,15 @@ $dictionary['EventRegistration'] = array(
         )
     ),
     'relationships' => array(
+        'events_eventregistrations' => array(
+            'lhs_module' => 'Events',
+            'lhs_table' => 'events',
+            'lhs_key' => 'id',
+            'rhs_module' => 'EventRegistrations',
+            'rhs_table' => 'eventregistrations',
+            'rhs_key' => 'event_id',
+            'relationship_type' => 'one-to-many'
+        ),
         'eventregistration_campaign_rel' => array(
             'lhs_module' => 'Campaigns',
             'lhs_table' => 'campaigns',

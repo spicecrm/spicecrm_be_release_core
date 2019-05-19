@@ -26,6 +26,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+
 namespace SpiceCRM\includes\SysModuleFilters\KREST\controllers;
 
 class SysModuleFiltersController
@@ -40,7 +41,7 @@ class SysModuleFiltersController
     {
         global $current_user;
         if (!$current_user->is_admin) {
-            throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            throw (new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
         }
     }
@@ -71,9 +72,13 @@ class SysModuleFiltersController
         if ($filter) {
             $filterdefs = json_encode($filterdata['filterdefs']);
             $db->query("UPDATE sysmodulefilters SET name='{$filterdata['name']}', filterdefs='$filterdefs', version='{$filterdata['version']}', package='{$filterdata['package']}' WHERE id = '{$args['filter']}'");
+
+            $this->setCR('I', $args['filter'], "{$args['module']}/{$filterdata['name']}");
         } else {
             $filterdefs = json_encode($filterdata['filterdefs']);
             $db->query("INSERT INTO sysmodulefilters (id, created_by_id, module, name, filterdefs, version, package) VALUES('{$args['filter']}', '$current_user->id', '{$args['module']}', '{$filterdata['name']}', '$filterdefs', '{$filterdata['version']}', '{$filterdata['package']}')");
+
+            $this->setCR('I', $args['filter'], "{$args['module']}/{$filterdata['name']}");
         }
     }
 
@@ -83,7 +88,28 @@ class SysModuleFiltersController
         $this->checkAdmin();
         $id = $db->quote($args['filter']);
         $result = $db->query("DELETE FROM sysmodulefilters WHERE id = '$id'");
+
+        $this->setCR('D', $id);
+
         return $res->withJson($result);
+    }
+
+    /**
+     * adds the filter to the CR if a CR is active
+     *
+     * @param $action
+     * @param $id
+     * @param $name
+     */
+    private function setCR($action, $id, $name = '')
+    {
+        // check if we have a CR set
+        if ($_SESSION['SystemDeploymentCRsActiveCR'])
+            $cr = \BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
+
+        if ($cr) {
+            $cr->addDBEntry('sysmodulefilters', $id, $action, $name);
+        }
     }
 }
 

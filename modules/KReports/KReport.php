@@ -18,6 +18,7 @@ if (!defined('sugarEntry') || !sugarEntry)
 
 require_once('modules/KReports/utils.php');
 require_once('modules/KReports/KReportQuery.php');
+require_once('modules/KReports/KReportUtil.php');
 
 global $dictionary;
 
@@ -615,6 +616,13 @@ class KReport extends SugarBean
             $paramsArray ['exclusiveGrouping'] = $parameters ['exclusiveGrouping'];
 
         if (isset($parameters['start']) && isset($parameters['limit'])) {
+            //handle start not set and start content (added maretval 2019-05-03)
+            if (!KReportUtil::KReportValueIsIntegerOnly($parameters['start']))
+                $parameters['start'] = 0;
+            //handle limit not set and limit content (added maretval 2019-05-03)
+            if (!KReportUtil::KReportValueIsIntegerOnly($parameters['limit']))
+                $parameters['limit'] = 0;
+
             $paramsArray['start'] = $parameters['start'];
             $paramsArray['limit'] = $parameters['limit'];
         }
@@ -1193,6 +1201,14 @@ class KReport extends SugarBean
         $query = '';
 //        file_put_contents("sugarcrm.log", "------". print_r($this->whereOverride, true)."\n", FILE_APPEND);
 
+        //handle start not set and start content (added maretval 2019-05-03)
+        if (isset($parameters['start']) || !KReportUtil::KReportValueIsIntegerOnly($parameters['start']))
+            $parameters['start'] = 0;
+        //handle limit not set and limit content (added maretval 2019-05-03)
+        if (isset($parameters['limit']) || !KReportUtil::KReportValueIsIntegerOnly($parameters['limit']))
+            $parameters['limit'] = 0;
+
+
         if (!empty($GLOBALS['sugar_config']['k_dbconfig_clone'])) {
             $db = new $GLOBALS['sugar_config']['k_dbconfig_clone']['db_manager']();
 
@@ -1395,6 +1411,17 @@ class KReport extends SugarBean
         // return an empty array if we have nothing else
         $retArray = array();
 
+        //handle start not set and start content (added maretval 2019-05-03)
+        if (!isset($parameters['start']) || !KReportUtil::KReportValueIsIntegerOnly($parameters['start']))
+            $parameters['start'] = 0;
+        //handle limit not set and limit content (added maretval 2019-05-03)
+        if (!isset($parameters['limit']) || !KReportUtil::KReportValueIsIntegerOnly($parameters['limit']))
+            $parameters['limit'] = 0;
+        //handle snapshot_id content (added maretval 2019-05-03)
+        if ($snapshotid != '0' && !KReportUtil::ValueIsAnId($snapshotid))
+            $snapshotid = '0';
+
+
         // get the sql array or retrieve from snapshot if set
         if ($snapshotid == '0' || $snapshotid == 'current') {
             $retArray = $this->getContextselectionResult($parameters, $getcount, $additionalFilter, $additionalGroupBy);
@@ -1415,14 +1442,11 @@ class KReport extends SugarBean
             }
 
             $query .= ' ORDER BY record_id ASC';
-            file_put_contents("sugarcrm.log", print_r(__LINE__, true)."\n", FILE_APPEND);
 
             $snapshotResults = $db->query($query);
-            file_put_contents("sugarcrm.log", print_r('here', true)."\n", FILE_APPEND);
 
             // still need to process this to have all teh setting for theformat
             $sqlArray = $this->get_report_main_sql_query('', true, '');
-            file_put_contents("sugarcrm.log", print_r($sqlArray, true)."\n", FILE_APPEND);
 
             //2017-06-28 bug fix load snapshot queryArray and overwrite current one
             $query = 'SELECT data FROM kreportsnapshots WHERE id = \'' . $snapshotid . '\'';

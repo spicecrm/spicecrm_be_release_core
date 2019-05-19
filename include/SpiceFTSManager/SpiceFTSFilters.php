@@ -28,7 +28,7 @@ class SpiceFTSFilters
             case 'terms';
                 return array(
                     'terms' => array(
-                        $aggregatesFilter . '.raw' => $aggregateFilterKeys
+                        $aggregatesFilter . '.agg' => $aggregateFilterKeys
                     )
                 );
                 break;

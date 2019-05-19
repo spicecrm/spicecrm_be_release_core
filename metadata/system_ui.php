@@ -381,8 +381,8 @@ $dictionary['sysuicalendars'] = array(
                 'type' => 'varchar',
                 'len' => 50
             ),
-            'default' => array(
-                'name' => 'default',
+            'is_default' => array(
+                'name' => 'is_default',
                 'type' => 'int',
                 'len' => 1
             ),

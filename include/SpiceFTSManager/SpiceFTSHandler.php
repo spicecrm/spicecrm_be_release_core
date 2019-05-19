@@ -273,6 +273,7 @@ class SpiceFTSHandler
         $indexProperties = SpiceFTSUtils::getBeanIndexProperties($beanModule);
         if ($indexProperties) {
             $this->elasticHandler->document_delete($beanModule, $bean->id);
+            $bean->db->query("UPDATE " . $bean->table_name . " SET date_indexed = NULL WHERE id = '" . $bean->id . "'");
         }
 
         return true;
@@ -928,7 +929,7 @@ class SpiceFTSHandler
             //in case of module mispelling, no bean will be found. Catch here
             if (!$seed) continue;
 
-            $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)", 0, $packagesize - $beanCounter);
+            $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL OR date_indexed <> ''))", 0, $packagesize - $beanCounter);
 
             $counterIndexed = $counterDeleted = 0;
             while ($indexBean = $db->fetchByAssoc($indexBeans)) {

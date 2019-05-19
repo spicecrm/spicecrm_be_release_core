@@ -2,49 +2,53 @@
 
 namespace SpiceCRM\includes\SpiceAttachments;
 use Slim\Http\UploadedFile;
+use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachment;
 
-class SpiceAttachments
-{
+class SpiceAttachments {
     const UPLOAD_DESTINATION = 'upload://';
 
-    public static function getAttachmentsForBean($beanName, $beanId, $lastN = 10, $json_encode = true)
-    {
+    public static function getAttachmentsForBean($beanName, $beanId, $lastN = 10, $json_encode = true) {
         global $current_user, $db, $beanFiles, $beanList;
         $attachments = array();
 
         if ($GLOBALS['db']->dbType == 'mssql') {
-            $attachmentsRes = $db->query("SELECT TOP $lastN qn.*,u.user_name FROM spiceattachments AS qn LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}' AND qn.deleted = 0 ORDER BY qn.trdate DESC");
+            $attachmentsRes = $db->query("SELECT TOP $lastN qn.*,u.user_name FROM spiceattachments AS qn 
+                LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}'
+                AND qn.deleted = 0 ORDER BY qn.trdate DESC");
         } else {
-            $attachmentsRes = $db->limitQuery("SELECT qn.*,u.user_name FROM spiceattachments AS qn LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}' AND qn.deleted = 0 ORDER BY qn.trdate DESC", 0, $lastN);
+            $attachmentsRes = $db->limitQuery("SELECT qn.*,u.user_name FROM spiceattachments AS qn
+                LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}'
+                AND qn.deleted = 0 ORDER BY qn.trdate DESC", 0, $lastN);
         }
 
         if ($GLOBALS['db']->dbType == 'mssql' || $db->getRowCount($attachmentsRes) > 0) {
             while ($thisAttachment = $db->fetchByAssoc($attachmentsRes)) {
 
-                $attachments[] = array(
-                    'id' => $thisAttachment['id'],
-                    'user_id' => $thisAttachment['user_id'],
-                    'user_name' => $thisAttachment['user_name'],
-                    'date' => $GLOBALS['timedate']->to_display_date_time($thisAttachment['trdate']),
-                    'text' => nl2br($thisAttachment['text']),
-                    'filename' => $thisAttachment['filename'],
-                    'filepath' => self::UPLOAD_DESTINATION.$thisAttachment['filemd5'],
-                    'filesize' => $thisAttachment['filesize'],
-                    'filemd5' => $thisAttachment['filemd5'],
+                $attachments[$thisAttachment['external_id']] = [
+                    'id'             => $thisAttachment['id'],
+                    'user_id'        => $thisAttachment['user_id'],
+                    'user_name'      => $thisAttachment['user_name'],
+                    'date'           => $GLOBALS['timedate']->to_display_date_time($thisAttachment['trdate']),
+                    'text'           => nl2br($thisAttachment['text']),
+                    'filename'       => $thisAttachment['filename'],
+                    'filepath'       => self::UPLOAD_DESTINATION . $thisAttachment['filemd5'],
+                    'filesize'       => $thisAttachment['filesize'],
+                    'filemd5'        => $thisAttachment['filemd5'],
                     'file_mime_type' => $thisAttachment['file_mime_type'],
-                    'url' => "index.php?module=SpiceThemeController&action=attachment_download&id=" . $thisAttachment['id'],
-                    'thumbnail' => $thisAttachment['thumbnail']
-                );
+                    'thumbnail'      => $thisAttachment['thumbnail'],
+                    'external_id'    => $thisAttachment['external_id'],
+                    'url'            => "index.php?module=SpiceThemeController&action=attachment_download&id="
+                                        . $thisAttachment['id'],
+                ];
             }
         }
-        if($json_encode)
+        if ($json_encode)
             return json_encode($attachments);
         else
             return $attachments;
     }
 
-    public static function getAttachmentsForBeanHashFiles($beanName, $beanId, $lastN = 10)
-    {
+    public static function getAttachmentsForBeanHashFiles($beanName, $beanId, $lastN = 10) {
         global $current_user, $db, $beanFiles, $beanList;
         $attachments = array();
 
@@ -74,16 +78,14 @@ class SpiceAttachments
         return json_encode($attachments);
     }
 
-    public static function getAttachmentsCount($lastN = 10)
-    {
+    public static function getAttachmentsCount($lastN = 10) {
         global $current_user, $db;
         $attachmentsRec = $db->fetchByAssoc($db->query("SELECT count(*) AS noteCount FROM spiceattachments WHERE bean_id='{$_REQUEST['record']}' AND bean_type='{$_REQUEST['module']}'  AND deleted = 0"));
 
         return $attachmentsRec['noteCount'];
     }
 
-    public static function saveAttachment($beanName, $beanId, $post)
-    {
+    public static function saveAttachment($beanName, $beanId, $post) {
         global $current_user, $db;
         $guid = create_guid();
 
@@ -117,8 +119,7 @@ class SpiceAttachments
         return json_encode($attachments);
     }
 
-    public static function saveAttachmentHashFiles($beanName, $beanId, $post)
-    {
+    public static function saveAttachmentHashFiles($beanName, $beanId, $post) {
         global $current_user, $db, $sugar_config;
         $guid = create_guid();
 
@@ -170,24 +171,23 @@ class SpiceAttachments
      * @param array $file = [name, path]
      * @return string
      */
-    public static function saveAttachmentLocalFile($module_name, $bean_id, array $file)
-    {
+    public static function saveAttachmentLocalFile($module_name, $bean_id, array $file) {
         global $current_user, $db, $sugar_config;
         $guid = create_guid();
 
-        $ext_pos = strrpos($file['name'],".");
-        $file['file_ext'] = substr($file['name'],$ext_pos + 1);
-        if(in_array($file['file_ext'], $sugar_config['upload_badext'])) {
+        $ext_pos = strrpos($file['name'], ".");
+        $file['file_ext'] = substr($file['name'], $ext_pos + 1);
+        if (in_array($file['file_ext'], $sugar_config['upload_badext'])) {
             $file['name'] .= ".txt";
             $file['file_ext'] = "txt";
         }
 
         $file_name = $file['name'];
         $file_mime_type = $file['mime_type'];
-        if(!$file_mime_type)
-            $file_mime_type = mime_content_type($file['path'].$file['name']);
-        $file_size = filesize($file['path'].$file['name']);
-        $file_content = file_get_contents($file['path'].$file['name']);
+        if (!$file_mime_type)
+            $file_mime_type = mime_content_type($file['path'] . $file['name']);
+        $file_size = filesize($file['path'] . $file['name']);
+        $file_content = file_get_contents($file['path'] . $file['name']);
         $file_name_md5 = md5($file_content);    // warning: possibility to produce duplicate md5 key for different contents...
 
         $bytes = file_put_contents(self::UPLOAD_DESTINATION.$file_name_md5, $file_content);
@@ -196,7 +196,7 @@ class SpiceAttachments
 
         $thumbnail = self::createThumbnail($file_name_md5, $file_mime_type);
 
-        $sql = "INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, thumbnail, deleted, file_mime_type) 
+        $sql = "INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, thumbnail, deleted, file_mime_type)
                 VALUES ('{$guid}', '{$module_name}', '{$bean_id}', '" . $current_user->id . "', '" . gmdate('Y-m-d H:i:s') . "', '{$file_name}', '{$file_size}', '{$file_name_md5}', '$thumbnail', 0, '{$file_mime_type}')";
         $db->query($sql);
 
@@ -214,16 +214,15 @@ class SpiceAttachments
         return $attachments;
     }
 
-    public static function saveEmailAttachment($beanName, $beanId, $payload)
-    {
+    public static function saveEmailAttachment($beanName, $beanId, $payload) {
         global $current_user, $db;
         $guid = create_guid();
 
         // if we have an image create a thumbnail
         $thumbnail = self::createThumbnail($payload->filemd5, $payload->mime_type);
 
-        $db->query("INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, text, thumbnail, deleted, file_mime_type) 
-                        VALUES ('{$guid}', '{$beanName}', '{$beanId}', '" . $current_user->id . "', '" . gmdate('Y-m-d H:i:s') . "', 
+        $db->query("INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, text, thumbnail, deleted, file_mime_type)
+                        VALUES ('{$guid}', '{$beanName}', '{$beanId}', '" . $current_user->id . "', '" . gmdate('Y-m-d H:i:s') . "',
                         '{$payload->filename}', '{$payload->filesize}', '{$payload->filemd5}', '{$_POST['text']}', '{$thumbnail}', 0, '{$payload->mime_type}')");
         $attachments[] = array(
             'id' => $guid,
@@ -240,8 +239,68 @@ class SpiceAttachments
         return json_encode($attachments);
     }
 
-    public static function saveRestAttachment($beanName, $beanId, UploadedFile $uploaded_file)
-    {
+    public static function saveEmailAttachmentFromGmail($beanName, $beanId, $payload) {
+        global $current_user, $db;
+        $guid = create_guid();
+
+        $filename = $payload['filename'];
+        $filesize = $payload['filesize'];
+        $md5 = md5($payload['md5_encoded']);
+        $content = $payload['content'];
+        $byte_content = self::toByteContent($content);
+
+        // if we have an image create a thumbnail
+        $mime_type = $payload['mimetype'];
+        //$mime_type = self::experimentalMimeType($filename);
+        $thumbnail = self::createThumbnail($md5, $mime_type);
+
+        $query = "INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, text, thumbnail, deleted, file_mime_type)" .
+            " VALUES ('{$guid}', '{$beanName}', '{$beanId}', '" . $current_user->id . "', '" . gmdate('Y-m-d H:i:s') .
+            " ', '{$filename}', {$filesize}, '{$md5}', '', '{$thumbnail}', 0, '{$mime_type}')";
+        $db->query($query);
+
+        $filepath = 'upload://' . $md5;
+        touch($filepath);
+        file_put_contents($filepath, $byte_content);
+
+        $attachments[] = array(
+            'id' => $guid,
+            'user_id' => $current_user->id,
+            'user_name' => $current_user->user_name,
+            'date' => $GLOBALS['timedate']->to_display_date_time(gmdate('Y-m-d H:i:s')),
+            'text' => $payload['content'],
+            'filename' => $payload['filename'],
+            'filesize' => $payload['filesize'],
+            'file_mime_type' => $payload['mimetype'],
+            'thumbnail' => $thumbnail,
+            'url' => "index.php?module=SpiceThemeController&action=attachment_download&id=" . $guid
+        );
+        return json_encode($attachments);
+    }
+
+    public static function saveEmailAttachmentFromOutlook(\Email $email, OutlookAttachment $attachment) {
+        $filepath = 'upload://' . $attachment->fileMd5;
+        touch($filepath);
+
+        $byteContent = self::toByteContent($attachment->content);
+        file_put_contents($filepath, $byteContent);
+
+        // if we have an image create a thumbnail
+        $attachment->thumbnail = self::createThumbnail($attachment->fileMd5, $attachment->fileMimeType);
+
+
+        return $attachment->save();
+    }
+
+    private static function toByteContent($content) {
+        return base64_decode($content);
+    }
+
+    private static function experimentalMimeType($filename) {
+        return strrchr($filename, ".");
+    }
+
+    public static function saveRestAttachment($beanName, $beanId, UploadedFile $uploaded_file) {
         global $current_user, $db;
         $guid = create_guid();
         $directory = '';
@@ -255,12 +314,11 @@ class SpiceAttachments
             } else {
                 die('file ' . $uploaded_file->file . ' doesnt exist');
             }
-            $filemd5  = md5_file($uploaded_file->file);
+            $filemd5 = md5_file($uploaded_file->file);
 
             // todo generate thumbnail
             $filetypearray = explode('/', $uploaded_file->getClientMediaType());
             if (count($filetypearray) == 2 && $filetypearray[0] == 'image' && array_search($filetypearray[1], $supportedimagetypes) >= 0) {
-
 
 
                 if (list($width, $height) = getimagesize($uploaded_file->file)) {
@@ -287,7 +345,6 @@ class SpiceAttachments
                 }
 
 
-
             }
         }
 
@@ -304,28 +361,28 @@ class SpiceAttachments
 
         $db->query(
             "INSERT INTO spiceattachments (
-                  id, 
-                  bean_type, 
-                  bean_id, 
-                  user_id, 
-                  trdate, 
-                  filename, 
-                  filesize, 
-                  filemd5, 
-                  thumbnail, 
-                  deleted, 
+                  id,
+                  bean_type,
+                  bean_id,
+                  user_id,
+                  trdate,
+                  filename,
+                  filesize,
+                  filemd5,
+                  thumbnail,
+                  deleted,
                   file_mime_type
                   ) VALUES (
-                  '{$guid}', 
-                  '{$beanName}', 
-                  '{$beanId}', 
-                  '" . $current_user->id . "', 
-                  '" . gmdate('Y-m-d H:i:s') . "', 
-                  '" . $uploaded_file->getClientFilename() . "', 
-                  '" . $uploaded_file->getSize() . "', 
-                  '{$filemd5}', 
-                  '{$thumbnail}', 
-                  0, 
+                  '{$guid}',
+                  '{$beanName}',
+                  '{$beanId}',
+                  '" . $current_user->id . "',
+                  '" . gmdate('Y-m-d H:i:s') . "',
+                  '" . $uploaded_file->getClientFilename() . "',
+                  '" . $uploaded_file->getSize() . "',
+                  '{$filemd5}',
+                  '{$thumbnail}',
+                  0,
                   '" . $uploaded_file->getClientMediaType() . "'
                 )"
         );
@@ -344,16 +401,14 @@ class SpiceAttachments
         return json_encode($attachments);
     }
 
-    public static function deleteAttachment($attachmentId)
-    {
+    public static function deleteAttachment($attachmentId) {
         global $current_user, $db;
         $db->query("UPDATE spiceattachments SET deleted = 1 WHERE id='{$attachmentId}'" . (!$current_user->is_admin ? " AND user_id='" . $current_user->id . "'" : ""));
 
         // todo: delete also file if MD5 is no longer used anywhere
     }
 
-    public static function getAttachment($attachmentId)
-    {
+    public static function getAttachment($attachmentId) {
         global $current_user, $db, $beanFiles, $beanList;
         $attachment = array();
 
@@ -377,8 +432,7 @@ class SpiceAttachments
         return json_encode($attachment);
     }
 
-    public static function downloadAttachment($attachmentId)
-    {
+    public static function downloadAttachment($attachmentId) {
         global $db;
 
         $query = "SELECT filename, file_mime_type, filemd5, filesize FROM spiceattachments ";
@@ -395,7 +449,7 @@ class SpiceAttachments
         header("Pragma: public");
         header("Cache-Control: maxage=1, post-check=0, pre-check=0");
         header('Content-type: ' . $row['file_mime_type']);
-        header("Content-Disposition: attachment; filename=\"".$row['filename']."\";");
+        header("Content-Disposition: attachment; filename=\"" . $row['filename'] . "\";");
         header("X-Content-Type-Options: nosniff");
         header("Content-Length: " . filesize($download_location));
         header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + 2592000));
@@ -410,8 +464,7 @@ class SpiceAttachments
      * @param UploadedFile $uploaded file uploaded file to move
      * @return string filename of moved file
      */
-    public static function moveUploadedFile($directory, UploadedFile $uploadedFile)
-    {
+    public static function moveUploadedFile($directory, UploadedFile $uploadedFile) {
         $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
         $basename = bin2hex(random_bytes(8)); // see http://php.net/manual/en/function.random-bytes.php
         $filename = sprintf('%s.%0.8s', $basename, $extension);
@@ -421,11 +474,12 @@ class SpiceAttachments
         return $filename;
     }
 
-    private static function createThumbnail($filename, $mime_type)
-    {
+    public static function createThumbnail($filename, $mime_type) {
         $supportedimagetypes = ['jpeg', 'png', 'gif'];
         $filetypearray = explode('/', $mime_type);
-        if (count($filetypearray) == 2 && strtolower($filetypearray[0]) == 'image' && array_search(strtolower($filetypearray[1]), $supportedimagetypes) >= 0) {
+        if (count($filetypearray) == 2
+            && strtolower($filetypearray[0]) == 'image'
+            && array_search(strtolower($filetypearray[1]), $supportedimagetypes) >= 0) {
             if (list($width, $height) = getimagesize(self::UPLOAD_DESTINATION . $filename)) {
                 if ($width > $height) {
                     $newwidth = 30;

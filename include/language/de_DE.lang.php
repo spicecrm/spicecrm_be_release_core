@@ -201,8 +201,20 @@ $app_list_strings = array(
     'account_user_roles_dom' => array(
         '' => '',
         'am' => 'Betreuer Vertrieb',
-        'se' => 'Betreuer Supportr',
+        'se' => 'Betreuer Support',
         'es' => 'Executive Sponsor'
+    ),
+    'events_account_roles_dom' =>        array(
+        '' => '',
+        'organizer' => 'Veranstalter',
+        'sponsor' => 'Sponsor',
+        'caterer' => 'Caterer'
+    ),
+    'events_contact_roles_dom' =>        array(
+        '' => '',
+        'organizer' => 'Veranstalter',
+        'speaker' => 'Sprecher',
+        'moderator' => 'Moderator',
     ),
     'userabsences_type_dom' =>        array(
         '' => '',
@@ -655,6 +667,7 @@ $app_list_strings = array(
         'ProjectTasks' => 'Projektaufgabe',
 
         'Prospects' => 'Zielkontakte',
+        'Events' => 'Events',
 
     ),
 
@@ -4156,4 +4169,22 @@ $app_list_strings['deploymentrelease_status_dom'] = array(
   'planned' => 'planned',
   'released' => 'released',
   'canceled' => 'canceled'
+);
+
+$app_list_strings['product_status_dom'] = array(
+    'draft' => 'Entwurf',
+    'active' => 'Aktiv',
+    'inactive' => 'Inaktiv'
+);
+
+$app_list_strings['event_status_dom'] = array(
+    'planned' => 'geplant',
+    'active' => 'aktiv',
+    'canceled' => 'storniert'
+);
+
+$app_list_strings['event_category_dom'] = array(
+    'presentations' => 'Präsentationen',
+    'seminars' => 'Seminare',
+    'conferences' => 'Konferenzen'
 );

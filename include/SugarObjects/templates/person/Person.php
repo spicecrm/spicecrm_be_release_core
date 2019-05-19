@@ -314,10 +314,13 @@ class Person extends Basic
      **/
     function getGDPRRelease()
     {
+        global $db;
+
         $gdprReleases = array(
             'gdpr_data_agreement' => $this->gdpr_data_agreement,
             'gdpr_marketing_agreement' => $this->gdpr_marketing_agreement,
-            'related' => array()
+            'related' => array(),
+            'audit' => array()
         );
 
         foreach ($this->field_defs as $field) {
@@ -349,6 +352,24 @@ class Person extends Basic
         usort($gdprReleases['related'], function($a, $b){
             return $a['date_modified'] > $b['date_modified'] ? -1 : 1;
         });
+
+        // get audit fields
+        if($this->is_AuditEnabled()){
+            $audittablename = $this->get_audit_table_name();
+            $auditFields = $db->query("SELECT * FROM $audittablename WHERE field_name like 'gdpr_%' ORDER BY date_created DESC");
+            while($auditField = $db->fetchByAssoc($auditFields)){
+                $createdUser = BeanFactory::getBean('Users', $auditField['created_by']);
+                $createdUser->_create_proper_name_field();
+                $gdprReleases['audit'][]= [
+                    'date_created' => $auditField['date_created'],
+                    'field_name' => $auditField['field_name'],
+                    'value' => $auditField['after_value_string'],
+                    'created_by' => $auditField['created_by'],
+                    'created_by_name' => $createdUser->full_name
+                ];
+            }
+        }
+
 
         return $gdprReleases;
     }

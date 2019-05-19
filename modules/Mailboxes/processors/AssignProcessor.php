@@ -18,7 +18,10 @@ class AssignProcessor extends Processor
                 $query2 = "SELECT * FROM email_addr_bean_rel WHERE email_address_id='" . $email_address['id'] . "' AND deleted = 0";
                 $q2 = $db->query($query2);
                 while ($bean = $db->fetchByAssoc($q2)) {
-                    $this->email->assignBeanToEmail($bean["bean_id"], $bean["bean_module"]);
+                    $seed = \BeanFactory::getBean($bean['bean_module'], $bean['bean_id']);
+                    if($seed) {
+                        $this->email->assignBeanToEmail($seed, $bean["bean_module"]);
+                    }
                 }
             }
         }
@@ -49,7 +52,10 @@ class AssignProcessor extends Processor
                 $query2 = "SELECT * FROM email_addr_bean_rel WHERE email_address_id='" . $email_address['id'] . "' AND deleted = 0";
                 $q2 = $db->query($query2);
                 while ($bean = $db->fetchByAssoc($q2)) {
-                    $this->email->assignBeanToEmail($bean["bean_id"], $bean["bean_module"]);
+                    $seed = \BeanFactory::getBean($bean['bean_module'], $bean['bean_id']);
+                    if($seed) {
+                        $this->email->assignBeanToEmail($seed, $bean["bean_module"]);
+                    }
                 }
             }
         }

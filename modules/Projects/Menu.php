@@ -66,7 +66,7 @@ if($GLOBALS['ACLController']->checkAccess('Projects', 'list', true)) {
 	
 	
 // Project Tasks
-if($GLOBALS['ACLController']->checkAccess('ProjectTask', 'list', true)) {
+if($GLOBALS['ACLController']->checkAccess('ProjectTasks', 'list', true)) {
     $module_menu[] = array(
         'index.php?module=ProjectTasks&action=index',
         isset($mod_strings['LNK_PROJECT_TASK_LIST']) ? $mod_strings['LNK_PROJECT_TASK_LIST'] : '',

@@ -333,10 +333,9 @@ class SpiceFTSBeanHandler
                 $properties[$standardField]['search_analyzer'] = $standardFieldData['search_analyzer'] ?: 'standard';
             }
 
-            if (!empty($standardFieldData['aggregate']) || $standardFieldData['enablesort'] || $standardFieldData['suggest'] || ($standardFieldData['duplicatecheck'] && $standardFieldData['duplicatequery'] == 'term')) {
+            if ($standardFieldData['enablesort'] || $standardFieldData['suggest'] || ($standardFieldData['duplicatecheck'] && $standardFieldData['duplicatequery'] == 'term')) {
                 $properties[$standardField]['fields']['raw'] = array(
                     'type' => ($standardFieldData['indextype'] == 'string' ? 'keyword' : $standardFieldData['indextype']) ?: 'keyword',
-//                    'normalizer' => 'spice_lowercase',
                     'index' => true
                 );
                 if($standardFieldData['indextype'] == 'string' || $standardFieldData['indextype'] == 'keyword'){
@@ -353,6 +352,17 @@ class SpiceFTSBeanHandler
                 if ($properties[$standardField]['fields']['raw']['type'] == 'date')
                     $properties[$standardField]['fields']['raw']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
             }
+
+            // add separate field for the aggregates
+            if (!empty($standardFieldData['aggregate'])) {
+                $properties[$standardField]['fields']['agg'] = array(
+                    'type' => ($standardFieldData['indextype'] == 'string' ? 'keyword' : $standardFieldData['indextype']) ?: 'keyword',
+                    'index' => true
+                );
+
+                if ($properties[$standardField]['fields']['agg']['type'] == 'date')
+                    $properties[$standardField]['fields']['agg']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
+            }
         }
 
         foreach ($indexProperties as $indexProperty) {
@@ -364,22 +374,12 @@ class SpiceFTSBeanHandler
 
             //$fieldParams = SpiceFTSUtils::getFieldIndexParams(BeanFactory::getBean($module), $indexProperty['path']);
 
+            $fieldParams = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getFieldIndexParams(\BeanFactory::getBean($module), $indexProperty['path']);
+
+
             $properties[$indexProperty['indexfieldname']] = array(
                 'type' => $indexProperty['indextype'] ?: 'text',
             );
-
-            /*
-            switch ($fieldParams['type']) {
-                case 'enum':
-                    $properties[$indexProperty['indexfieldname']]['index'] = 'not_analyzed';
-                    foreach ($sugar_config['languages'] as $langkey => $langname)
-                        $properties[$indexProperty['indexfieldname' . '_' . $langkey]] = array(
-                            'type' => 'text',
-                            'index' => 'analyzed'
-                        );
-                    break;
-            }
-            */
 
             if ($properties[$indexProperty['indexfieldname']]['type'] == 'date')
                 $properties[$indexProperty['indexfieldname']]['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
@@ -407,14 +407,15 @@ class SpiceFTSBeanHandler
                 );
             }
 
-            if (!empty($indexProperty['aggregate']) || $indexProperty['enablesort'] || $indexProperty['suggest'] || ($indexProperty['duplicatecheck'] && $indexProperty['duplicatequery'] == 'term')) {
+            if ($indexProperty['enablesort'] || $indexProperty['suggest'] || ($indexProperty['duplicatecheck'] && $indexProperty['duplicatequery'] == 'term')) {
                 $properties[$indexProperty['indexfieldname']]['fields']['raw'] = array(
                     'type' => ($indexProperty['indextype'] == 'string' ? 'keyword' : $indexProperty['indextype']) ?: 'keyword',
                     // 'type' =>  'keyword',
                     //'normalizer' => 'spice_lowercase',
                     'index' => true
                 );
-                if($indexProperty['indextype'] == 'string' || $indexProperty['indextype'] == 'keyword'){
+
+                if($fieldParams['type'] != 'enum' && $fieldParams['type'] != 'multienum' && ($indexProperty['indextype'] == 'string' || $indexProperty['indextype'] == 'keyword')){
                     $properties[$indexProperty['indexfieldname']]['fields']['raw']['normalizer'] = 'spice_lowercase';
                 }
 
@@ -428,6 +429,18 @@ class SpiceFTSBeanHandler
                 if ($properties[$indexProperty['indexfieldname']]['fields']['raw']['type'] == 'date')
                     $properties[$indexProperty['indexfieldname']]['fields']['raw']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
             }
+
+
+            // separate handling for the aggregates
+            if (!empty($indexProperty['aggregate'])) {
+                $properties[$indexProperty['indexfieldname']]['fields']['agg'] = array(
+                    'type' => ($indexProperty['indextype'] == 'string' ? 'keyword' : $indexProperty['indextype']) ?: 'keyword',
+                    'index' => true
+                );
+
+                if ($properties[$indexProperty['indexfieldname']]['fields']['agg']['type'] == 'date')
+                    $properties[$indexProperty['indexfieldname']]['fields']['agg']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
+            }
         }
 
         $seed = \BeanFactory::getBean($module);
@@ -440,7 +453,7 @@ class SpiceFTSBeanHandler
                         'index' => $addField['index']
                     );
 
-                    if (!empty($addField['aggregate']) || $addField['enablesort']) {
+                    if ($addField['enablesort']) {
                         $properties[$addFieldName]['fields']['raw'] = array(
                             'type' => ($addField['type'] == 'string' ? 'keyword' : $addField['type']) ?: 'keyword',
                             //'type' =>  'keyword',
@@ -453,6 +466,18 @@ class SpiceFTSBeanHandler
 
                         if ($properties[$addFieldName]['fields']['raw']['type'] == 'date')
                             $properties[$addFieldName]['fields']['raw']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
+                    }
+
+                    // separate handling for the aggregates
+                    if (!empty($addField['aggregate'])) {
+                        $properties[$indexProperty['indexfieldname']]['fields']['agg'] = array(
+                            'type' => ($addField['type'] == 'string' ? 'keyword' : $addField['type']) ?: 'keyword',
+                            'index' => true
+                        );
+
+                        if ($properties[$addFieldName]['fields']['agg']['type'] == 'date')
+                            $properties[$addFieldName]['fields']['agg']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
+
                     }
                 }
             }

@@ -1506,8 +1506,11 @@ class SugarBean
             $this->save_relationship_changes($isUpdate);
             $GLOBALS['saving_relationships'] = false;
         }
-        if ($isUpdate && !$this->update_date_entered) {
-            unset($this->date_entered);
+
+        // keep date entered and do not delete it .. otherwise we will remove id from fts indexer
+        if ($isUpdate && !$this->update_date_entered && $this->date_entered != $this->fetched_row['date_entered']) {
+            //unset($this->date_entered);
+            $this->date_entered = $this->fetched_row['date_entered'];
         }
         // call the custom business logic
         $custom_logic_arguments['check_notify'] = $check_notify;

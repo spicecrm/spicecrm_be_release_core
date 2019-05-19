@@ -96,6 +96,14 @@ final class HttpClientConfigurator
     }
 
     /**
+     * @return string
+     */
+    public function getEndpoint()
+    {
+        return parse_url($this->endpoint)['host'];
+    }
+
+    /**
      * @param string $endpoint
      *
      * @return HttpClientConfigurator
