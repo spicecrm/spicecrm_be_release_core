@@ -369,7 +369,7 @@ class SpiceFTSBeanHandler
 
             // special type for parentids collector
             if ($indexProperty['indextype'] == 'parentid' || $indexProperty['indextype'] == 'activitydate') {
-                break;
+                continue;
             }
 
             //$fieldParams = SpiceFTSUtils::getFieldIndexParams(BeanFactory::getBean($module), $indexProperty['path']);
