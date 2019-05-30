@@ -33,7 +33,15 @@ class SystemLanguagesRESTHandler
             $data = $label;
 
             unset($data['scope'], $data['global_translations'], $data['custom_translations']);
-            $id = $this->db->upsertQuery($table, ['id' => $label['id']], $data);
+
+            //check insert/update
+            $id = $this->db->fetchByAssoc($this->db->query("SELECT * FROM $table WHERE id='{$label['id']}'"));
+            if($id){
+                $id = $this->db->updateQuery($table, ['id' => $label['id']], $data);
+            }else {
+                $id = $this->db->insertQuery($table, ['id' => $label['id']], $data);
+            }
+            // $id = $this->db->upsertQuery($table, ['id' => $label['id']], $data);
 
             // add to the CR
             if($cr){
@@ -53,7 +61,16 @@ class SystemLanguagesRESTHandler
                                 break;
                         }
                         $data = $trans;
-                        $this->db->upsertQuery($table, ['id' => $trans['id']], $data);
+
+                        //check insert/update
+                        $id = $this->db->fetchByAssoc($this->db->query("SELECT * FROM $table WHERE id='{$trans['id']}'"));
+                        if($id){
+                            $id = $this->db->updateQuery($table, ['id' => $trans['id']], $data);
+                        }else {
+                            $id = $this->db->insertQuery($table, ['id' => $trans['id']], $data);
+                        }
+
+                        //$this->db->upsertQuery($table, ['id' => $trans['id']], $data);
 
                         // add to the CR
                         if($cr){
