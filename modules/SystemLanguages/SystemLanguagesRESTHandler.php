@@ -35,11 +35,11 @@ class SystemLanguagesRESTHandler
             unset($data['scope'], $data['global_translations'], $data['custom_translations']);
 
             //check insert/update
-            $id = $this->db->fetchByAssoc($this->db->query("SELECT * FROM $table WHERE id='{$label['id']}'"));
-            if($id){
+            $row = $this->db->fetchByAssoc($this->db->query("SELECT * FROM $table WHERE id='{$label['id']}'"));
+            if($row['id']){
                 $id = $this->db->updateQuery($table, ['id' => $label['id']], $data);
             }else {
-                $id = $this->db->insertQuery($table, ['id' => $label['id']], $data);
+                $id = $this->db->insertQuery($table, $data);
             }
             // $id = $this->db->upsertQuery($table, ['id' => $label['id']], $data);
 
@@ -63,14 +63,14 @@ class SystemLanguagesRESTHandler
                         $data = $trans;
 
                         //check insert/update
-                        $id = $this->db->fetchByAssoc($this->db->query("SELECT * FROM $table WHERE id='{$trans['id']}'"));
-                        if($id){
+                        $row = $this->db->fetchByAssoc($this->db->query("SELECT * FROM $table WHERE id='{$trans['id']}'"));
+                        if(!empty($row['id'])){
                             $id = $this->db->updateQuery($table, ['id' => $trans['id']], $data);
                         }else {
-                            $id = $this->db->insertQuery($table, ['id' => $trans['id']], $data);
+                            $id = $this->db->insertQuery($table, $data);
                         }
 
-                        //$this->db->upsertQuery($table, ['id' => $trans['id']], $data);
+                        // $id = $this->db->upsertQuery($table, ['id' => $trans['id']], $data);
 
                         // add to the CR
                         if($cr){
