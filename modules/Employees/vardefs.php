@@ -54,4 +54,13 @@ $dictionary['Employee']['fields']['email_addresses_primary']['required']=false;
 // bugs 47553 & 49716
 $dictionary['Employee']['fields']['status']['studio']=false;
 $dictionary['Employee']['fields']['status']['required']=false;
+$dictionary['Employee']['fields']['bonuscards'] = [
+	'name' => 'bonuscards',
+	'type' => 'link',
+	'relationship' => 'bonuscards_employees',
+	'module' => 'BonusCards',
+	'bean_name' => 'BonusCard',
+	'source' => 'non-db',
+	'vname' => 'LBL_BONUSCARDS',
+];
 ?>

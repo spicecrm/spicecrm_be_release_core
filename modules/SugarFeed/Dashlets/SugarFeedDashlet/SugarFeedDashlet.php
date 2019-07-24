@@ -288,7 +288,9 @@ var $selectedCategories = array();
             $resortQueue[] = $normalMessage;
         }
 
-        usort($resortQueue,create_function('$a,$b','return $a["sort_key"]<$b["sort_key"];'));
+        usort($resortQueue, function ($a,$b){
+            return $a["sort_key"]<$b["sort_key"];
+        });
 
         // Trim it down to the necessary number of records
         $numRecords = count($resortQueue);
@@ -432,10 +434,15 @@ enableQS(false);
 
 		$listview = parent::display();
 		$GLOBALS['current_sugarfeed'] = $this;
-		$listview = preg_replace_callback('/\{([^\^ }]+)\.([^\}]+)\}/', create_function(
-            '$matches',
-            'if($matches[1] == "this"){$var = $matches[2]; return $GLOBALS[\'current_sugarfeed\']->$var;}else{return translate($matches[2], $matches[1]);}'
-        ),$listview);
+
+		$listview = preg_replace_callback('/\{([^\^ }]+)\.([^\}]+)\}/', function ($matches){
+            if($matches[1] == "this"){
+                $var = $matches[2];
+                return $GLOBALS['current_sugarfeed']->$var;
+            } else {
+                return translate($matches[2], $matches[1]);
+            }
+        }, $listview);
 
         //grab each token and store the module for later processing
         preg_match_all('/\[(\w+)\:/', $listview, $alt_modules);

@@ -1,0 +1,366 @@
+<!--
+/*********************************************************************************
+ * The contents of this file are subject to the SugarCRM Master Subscription
+ * Agreement ("License") which can be viewed at
+ * http://www.sugarcrm.com/crm/en/msa/master_subscription_agreement_11_April_2011.pdf
+ * By installing or using this file, You have unconditionally agreed to the
+ * terms and conditions of the License, and You may not use this file except in
+ * compliance with the License.  Under the terms of the license, You shall not,
+ * among other things: 1) sublicense, resell, rent, lease, redistribute, assign
+ * or otherwise transfer Your rights to the Software, and 2) use the Software
+ * for timesharing or service bureau purposes such as hosting the Software for
+ * commercial gain and/or for the benefit of a third party.  Use of the Software
+ * may be subject to applicable fees and any use of the Software without first
+ * paying applicable fees is strictly prohibited.  You do not have the right to
+ * remove SugarCRM copyrights from the source code or user interface.
+ *
+ * All copies of the Covered Code must include on each user interface screen:
+ *  (i) the "Powered by SugarCRM" logo and
+ *  (ii) the SugarCRM copyright notice
+ * in the same form as they appear in the distribution.  See full license for
+ * requirements.
+ *
+ * Your Warranty, Limitations of liability and Indemnity are expressly stated
+ * in the License.  Please refer to the License for the specific language
+ * governing these rights and limitations under the License.  Portions created
+ * by SugarCRM are Copyright (C) 2004-2011 SugarCRM, Inc.; All Rights Reserved.
+ ********************************************************************************/
+
+
+/*********************************************************************************
+
+ ********************************************************************************/
+-->
+
+<!-- BEGIN: Quote_Subject -->
+SugarCRM Devis - {QUOTE_SUBJECT}
+<!-- END: Quote_Subject -->
+<!-- BEGIN: Quote -->
+{ASSIGNER} a assigné un Devis à {ASSIGNED_USER}.
+
+Sujet: {QUOTE_SUBJECT}
+Statut: {QUOTE_STATUS}
+Date de clôture attendue: {QUOTE_CLOSEDATE}
+Description: {QUOTE_DESCRIPTION}
+
+Vous pouvez consulter ce Devis ici:
+<{URL}>
+<!-- END: Quote -->
+
+
+<!-- BEGIN: Account_Subject -->
+SugarCRM Compte - {ACCOUNT_NAME}
+<!-- END: Account_Subject -->
+<!-- BEGIN: Account -->
+{ASSIGNER} a assigné un Compte à {ASSIGNED_USER}.
+
+Nom: {ACCOUNT_NAME}
+Type: {ACCOUNT_TYPE}
+Description: {ACCOUNT_DESCRIPTION}
+
+Vous pouvez consulter ce Compte ici:
+<{URL}>
+<!-- END: Account -->
+
+
+<!-- BEGIN: Case_Subject -->
+SugarCRM Ticket - {CASE_SUBJECT}
+<!-- END: Case_Subject -->
+<!-- BEGIN: Case -->
+{ASSIGNER} a assigné un Ticket à {ASSIGNED_USER}.
+
+Sujet: {CASE_SUBJECT}
+Priorité: {CASE_PRIORITY}
+Statut: {CASE_STATUS}
+Description: {CASE_DESCRIPTION}
+
+Vous pouvez consulter ce Ticket ici:
+<{URL}>
+<!-- END: Case -->
+
+
+<!-- BEGIN: Task_Subject -->
+SugarCRM Tâche - {TASK_SUBJECT}
+<!-- END: Task_Subject -->
+<!-- BEGIN: Task -->
+{ASSIGNER} a assigné une Tâche à {ASSIGNED_USER}.
+
+Sujet: {TASK_SUBJECT}
+Priorité: {TASK_PRIORITY}
+Echéance: {TASK_DUEDATE}
+Statut: {TASK_STATUS}
+Description: {TASK_DESCRIPTION}
+
+Vous pouvez consulter cette Tâche ici:
+<{URL}>
+<!-- END: Task -->
+
+
+<!-- BEGIN: Meeting_Subject -->
+SugarCRM Réunions - {MEETING_SUBJECT}
+<!-- END: Meeting_Subject -->
+<!-- BEGIN: Meeting -->
+{MEETING_TO},
+
+{ASSIGNER} vous a convié à une Réunion.
+
+Sujet: {MEETING_SUBJECT}
+Statut: {MEETING_STATUS}
+Date de début: {MEETING_STARTDATE}
+Durée: {MEETING_HOURS}h, {MEETING_MINUTES}m
+<!-- BEGIN: Meeting_External_API -->
+URL de la Réunion : {MEETING_URL}
+<!-- END: Meeting_External_API -->
+Description: {MEETING_DESCRIPTION}
+
+Vous acceptez de participer:
+<{ACCEPT_URL}&accept_status=accept>
+
+Vous tenterez de vous libérer pour y participer:
+<{ACCEPT_URL}&accept_status=tentative>
+
+Vous déclinez cette invitation:
+<{ACCEPT_URL}&accept_status=decline>
+
+<!-- END: Meeting -->
+
+<!-- BEGIN: MeetingSpecial_Subject -->
+SugarCRM Réunion - {MEETING_SUBJECT}
+<!-- END: MeetingSpecial_Subject -->
+<!-- BEGIN: MeetingSpecial -->
+{ASSIGNER} à assigné une Réunion à {ASSIGNED_USER}.
+
+Sujet: {MEETING_SUBJECT}
+Statut: {MEETING_STATUS}
+Date de début: {MEETING_STARTDATE}
+Durée: {MEETING_HOURS}h, {MEETING_MINUTES}m
+Description: {MEETING_DESCRIPTION}
+
+Vous pouvez consulter cette Réunion ici:
+<{URL}>
+<!-- END: MeetingSpecial -->
+
+<!-- BEGIN: Email_Subject -->
+SugarCRM Email - {EMAIL_SUBJECT}
+<!-- END: Email_Subject -->
+<!-- BEGIN: Email -->
+{ASSIGNER} a assigné un Email à {ASSIGNED_USER}.
+
+Sujet: {EMAIL_SUBJECT}
+Date d'envoi: {EMAIL_DATESENT}
+
+Vous pouvez consulter cet Email ici:
+<{URL}>
+<!-- END: Email -->
+
+
+
+
+
+
+<!-- BEGIN: Contact_Subject -->
+SugarCRM Contact - {CONTACT_NAME}
+<!-- END: Contact_Subject -->
+<!-- BEGIN: Contact -->
+{ASSIGNER} a assigné un Contact à {ASSIGNED_USER}.
+
+Nom: {CONTACT_NAME}
+Description: {CONTACT_DESCRIPTION}
+
+Vous pouvez consulter la fiche de ce Contact ici:
+<{URL}>
+<!-- END: Contact -->
+
+
+<!-- BEGIN: Lead_Subject -->
+SugarCRM Lead - {LEAD_NAME}
+<!-- END: Lead_Subject -->
+<!-- BEGIN: Lead -->
+{ASSIGNER} a assigné un Lead à {ASSIGNED_USER}.
+
+Nom: {LEAD_NAME}
+Origine principale: {LEAD_SOURCE}
+Statut: {LEAD_STATUS}
+Description: {LEAD_DESCRIPTION}
+
+Vous pouvez consulter la fiche de ce Lead ici:
+<{URL}>
+<!-- END: Lead -->
+
+
+<!-- BEGIN: Opportunity_Subject -->
+SugarCRM Affaire - {OPPORTUNITY_NAME}
+<!-- END: Opportunity_Subject -->
+<!-- BEGIN: Opportunity -->
+{ASSIGNER} a assigné une Affaire à {ASSIGNED_USER}.
+
+Nom: {OPPORTUNITY_NAME}
+Montant: {OPPORTUNITY_AMOUNT}
+Date de clôture attendue: {OPPORTUNITY_CLOSEDATE}
+Phase de vente: {OPPORTUNITY_STAGE}
+Description: {OPPORTUNITY_DESCRIPTION}
+
+Vous pouvez consulter cette Affaire ici:
+<{URL}>
+<!-- END: Opportunity -->
+
+
+<!-- BEGIN: Bug_Subject -->
+SugarCRM Bug - {BUG_SUBJECT}
+<!-- END: Bug_Subject -->
+<!-- BEGIN: Bug -->
+{ASSIGNER} a assigné un Bug à {ASSIGNED_USER}.
+
+Numéro de Bug: {BUG_BUG_NUMBER}
+Sujet: {BUG_SUBJECT}
+Type: {BUG_TYPE}
+Priorité: {BUG_PRIORITY}
+Statut: {BUG_STATUS}
+Etat: {BUG_RESOLUTION}
+Release: {BUG_RELEASE}
+Description: {BUG_DESCRIPTION}
+Log de travail: {BUG_WORK_LOG}
+
+Vous pouvez consulter ce Bug ici:
+<{URL}>
+<!-- END: Bug -->
+
+
+<!-- BEGIN: Default_Subject -->
+SugarCRM - {OBJECT} Assigné
+<!-- END: Default_Subject -->
+<!-- BEGIN: Default -->
+{ASSIGNER} a assigné un(e) {OBJECT} à {ASSIGNED_USER}.
+
+Vous pouvez consulter votre {OBJECT} ici:
+<{URL}>
+<!-- END: Default -->
+
+<!-- BEGIN: Call_Subject -->
+SugarCRM Appel - {CALL_SUBJECT}
+<!-- END: Call_Subject -->
+<!-- BEGIN: Call -->
+{CALL_TO},
+{ASSIGNER} vous a convié à un Rendez-Vous Téléphonique.
+Sujet: {CALL_SUBJECT}
+Statut: {CALL_STATUS}
+Date de début: {CALL_STARTDATE}
+Durée: {CALL_HOURS}h, {CALL_MINUTES}m
+Description: {CALL_DESCRIPTION}
+
+Vous acceptez de participer:
+<{ACCEPT_URL}&accept_status=accept>
+
+Vous tenterez de vous libérer pour y participer:
+<{ACCEPT_URL}&accept_status=tentative>
+
+Vous déclinez cette invitation:
+<{ACCEPT_URL}&accept_status=decline>
+
+<!-- END: Call -->
+
+<!-- BEGIN: CallSpecial_Subject -->
+SugarCRM Appel - {CALL_SUBJECT}
+<!-- END: CallSpecial_Subject -->
+<!-- BEGIN: CallSpecial -->
+{ASSIGNER} a assigné  un Appel à {ASSIGNED_USER}.
+
+Sujet: {CALL_SUBJECT}
+Statut: {CALL_STATUS}
+Date de début: {CALL_STARTDATE}
+Durée: {CALL_HOURS}h, {CALL_MINUTES}m
+Description: {CALL_DESCRIPTION}
+
+Vous pouvez visualiser cet Appel ici:
+<{URL}>
+<!-- END: CallSpecial -->
+
+
+<!-- BEGIN: Campaign_Subject -->
+Campagne SugarCRM  - {CAMPAIGN_NAME}
+<!-- END: Campaign_Subject -->
+<!-- BEGIN: Campaign -->
+{ASSIGNER} a assigné une campagne à {ASSIGNED_USER}.
+
+Sujet: {CAMPAIGN_NAME}
+Montant: {CAMPAIGN_AMOUNT}
+Date de clôture: {CAMPAIGN_CLOSEDATE}
+Statut: {CAMPAIGN_STATUS}
+Description: {CAMPAIGN_DESCRIPTION}
+
+Vous pouvez visualiser cette Campagne ici:
+<{URL}>
+<!-- END: Campaign -->
+
+<!-- BEGIN: Quota_Subject -->
+Objectifs SugarCRM - Vos Objectifs pour {QUOTA_TIMEPERIOD}
+<!-- END: Quota_Subject -->
+<!-- BEGIN: Quota -->
+{ASSIGNER} a assigné un Objectif à {ASSIGNED_USER}.
+
+Montant: {QUOTA_AMOUNT}
+Période: {QUOTA_TIMEPERIOD}
+
+Vous pouvez visualiser cet Objectif ici:
+<{QUOTA_URL}>
+<!-- END: Quota -->
+
+<!-- BEGIN: KBDocument_Subject -->
+SugarCRM Document - {KBDOCUMENT_NAME}
+<!-- END: KBDocument_Subject -->
+<!-- BEGIN: KBDocument -->
+
+{NOTIFICATION_MESSAGE}
+
+Nom: {KBDOCUMENT_NAME}
+Date de Création: {KBDOCUMENT_DATE_CREATED}
+Créé par: {KBDOCUMENT_CREATED_BY}
+Statut: {KBDOCUMENT_STATUS}
+Description: {KBDOCUMENT_DESCRIPTION}
+
+Vous pouvez visualiser ce Document ici:
+<{URL}>
+<!-- END: KBDocument -->
+
+<!-- BEGIN: Contract_Subject -->
+SugarCRM Contrat - {CONTRACT_NAME}
+<!-- END: Contract_Subject -->
+<!-- BEGIN: Contract-->
+
+{ASSIGNER} a assigné un Contrat à {ASSIGNED_USER}.
+
+Vous pouvez visualiser ce Contrat ici:
+<{URL}>
+<!-- END:Contract-->
+
+<!-- BEGIN: ContractSpecial_Subject -->
+SugarCRM Contrat - {CONTRACT_NAME}
+<!-- END: ContractSpecial_Subject -->
+<!-- BEGIN: ContractSpecial -->
+
+Votre Contrat: {CONTRACT_NAME} va expirer le {CONTRACT_END_DATE}.
+
+Vous pouvez visualiser ce Contrat ici:
+<{URL}>
+<!-- END:ContractSpecial-->
+
+<!-- BEGIN: MeetingReminder_Subject -->
+Rappel de réunion - {MEETING_SUBJECT}
+<!-- END: MeetingSpecial_Subject -->
+<!-- BEGIN: MeetingReminder -->
+Sujet: {MEETING_SUBJECT}
+Date de début: {MEETING_STARTDATE}
+Lieu: {MEETING_LOCATION}
+Créé par: {MEETING_CREATED_BY}
+Description: {MEETING_DESCRIPTION}
+<!-- END: MeetingReminder -->
+
+<!-- BEGIN: CallReminder_Subject -->
+Rappel de rendez-vous téléphonique - {CALL_SUBJECT}
+<!-- END: CallReminder_Subject -->
+<!-- BEGIN: CallReminder -->
+Sujet: {CALL_SUBJECT}
+Date de début: {CALL_STARTDATE}
+Créé par: {CALL_CREATED_BY}
+Description: {CALL_DESCRIPTION}
+<!-- END: CallReminder -->

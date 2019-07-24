@@ -93,8 +93,7 @@ $dictionary['Document'] = array('table' => 'documents',
                 'massupdate' => false,
                 'studio' => 'false',
             ),
-        'filename' =>
-            array(
+        'filename' =>            array(
                 'name' => 'filename',
                 'vname' => 'LBL_FILENAME',
                 'type' => 'file',
@@ -108,9 +107,14 @@ $dictionary['Document'] = array('table' => 'documents',
                 'docUrl' => 'doc_url',
                 'docId' => 'doc_id',
             ),
+        'file_mime_type' =>            array(
+                'name' => 'file_mime_type',
+                'vname' => 'LBL_FILE_MIME_TYPE',
+                'type' => 'varchar',
+                'source' => 'non-db'
+            ),
 
-        'active_date' =>
-            array(
+        'active_date' =>            array(
                 'name' => 'active_date',
                 'vname' => 'LBL_ACTIVE_DATE',
                 'type' => 'date',
@@ -119,15 +123,13 @@ $dictionary['Document'] = array('table' => 'documents',
                 'display_default' => 'now',
             ),
 
-        'exp_date' =>
-            array(
+        'exp_date' =>            array(
                 'name' => 'exp_date',
                 'vname' => 'LBL_EXP_DATE',
                 'type' => 'date',
             ),
 
-        'category_id' =>
-            array(
+        'category_id' =>            array(
                 'name' => 'category_id',
                 'vname' => 'LBL_CATEGORY',
                 'type' => 'enum',

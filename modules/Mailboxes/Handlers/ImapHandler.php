@@ -448,8 +448,10 @@ class ImapHandler extends TransportHandler
      * @param \Email $email
      * @return \Swift_Message
      */
-    protected function composeEmail(\Email $email)
+    protected function composeEmail($email)
     {
+        $this->checkEmailClass($email);
+
         $message = (new \Swift_Message($email->name))
             ->setFrom([$this->mailbox->imap_pop3_username => $this->mailbox->imap_pop3_display_name])
             ->setBody($email->body, 'text/html')

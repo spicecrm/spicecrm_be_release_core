@@ -282,8 +282,15 @@ $dictionary['Call'] = [
             'vname'        => 'LBL_LEADS',
         ],
         // Bug #42619 Missed back-relation from Project module
-        'project' => [
+        'project' => [ //@deprecated project. Use projects
             'name'         => 'project',
+            'type'         => 'link',
+            'relationship' => 'projects_calls',
+            'source'       => 'non-db',
+            'vname'        => 'LBL_PROJECTS_DEPRECATED',
+        ],
+        'projects' => [
+            'name'         => 'projects',
             'type'         => 'link',
             'relationship' => 'projects_calls',
             'source'       => 'non-db',

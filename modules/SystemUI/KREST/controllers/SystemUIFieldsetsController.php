@@ -15,6 +15,7 @@ class SystemUIFieldsetsController
 
             if (!isset($retArray[$fieldset['fid']])) {
                 $retArray[$fieldset['fid']] = array(
+                    'fid' => $fieldset['fid'],
                     'name' => $fieldset['name'],
                     'package' => $fieldset['fieldsetpackage'],
                     'module' => $fieldset['module'] ?: '*',

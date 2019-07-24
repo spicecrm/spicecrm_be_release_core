@@ -141,6 +141,18 @@ $dictionary['ProspectList'] = array (
     		'source'=>'non-db',
 			'vname'=>'LBL_LIST_ENTRIES',
   		),
+        'prospectlists_accounts_quantity' => array(
+            'name' => 'prospectlists_accounts_quantity',
+            'vname' => 'LBL_QUANTITY',
+            'type' => 'varchar',
+            'source' => 'non-db'
+        ),
+        'prospectlists_contacts_quantity' => array(
+            'name' => 'prospectlists_contacts_quantity',
+            'vname' => 'LBL_QUANTITY',
+            'type' => 'varchar',
+            'source' => 'non-db'
+        ),
   		'prospects' =>
   			array (
   			'name' => 'prospects',
@@ -154,6 +166,11 @@ $dictionary['ProspectList'] = array (
     		'type' => 'link',
     		'relationship' => 'prospect_list_contacts',
     		'source'=>'non-db',
+            'rel_fields' => [
+                'quantity' => [
+                    'map' => 'prospectlists_contacts_quantity'
+                ]
+            ]
   		),
   		'leads' =>
   			array (
@@ -168,6 +185,11 @@ $dictionary['ProspectList'] = array (
     		'type' => 'link',
     		'relationship' => 'prospect_list_accounts',
     		'source'=>'non-db',
+            'rel_fields' => [
+                'quantity' => [
+                    'map' => 'prospectlists_accounts_quantity'
+                ]
+            ]
   		),
   		'campaigns'=> array (
   			'name' => 'campaigns',

@@ -45,7 +45,6 @@ $dictionary['Prospect'] = array(
 		'vname' => 'LBL_TRACKER_KEY',
 		'type' => 'int',
 		'len' => '11',
-		'required'=>true,
 		'auto_increment' => true,
 		'importable' => 'false',
 		'studio' => array('editview' => false),

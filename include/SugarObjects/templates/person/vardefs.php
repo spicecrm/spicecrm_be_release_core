@@ -374,6 +374,17 @@ $vardefs = array(
                 'merge_filter' => 'enabled',
 
             ),
+        'primary_address_pobox' =>
+            array(
+                'name' => 'primary_address_pobox',
+                'vname' => 'LBL_PRIMARY_ADDRESS_POBOX',
+                'type' => 'varchar',
+                'len' => '20',
+                'group' => 'primary_address',
+                'comment' => 'pobox for primary address',
+                'merge_filter' => 'enabled',
+
+            ),
         'primary_address_country' =>
             array(
                 'name' => 'primary_address_country',
@@ -459,6 +470,16 @@ $vardefs = array(
                 'len' => '20',
                 'group' => 'alt_address',
                 'comment' => 'Postal code for alternate address',
+                'merge_filter' => 'enabled',
+            ),
+        'alt_address_pobox' =>
+            array(
+                'name' => 'alt_address_pobox',
+                'vname' => 'LBL_ALT_ADDRESS_POBOX',
+                'type' => 'varchar',
+                'len' => '20',
+                'group' => 'alt_address',
+                'comment' => 'pobox for alternate address',
                 'merge_filter' => 'enabled',
             ),
         'alt_address_country' =>

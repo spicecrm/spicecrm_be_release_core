@@ -465,9 +465,9 @@ class KRESTModuleHandler
         }
 
         // determine if we have selected ids to export or we export all
-        if(isset($searchParams['ids']) && count($searchParams['ids']) > 0){
+        if (isset($searchParams['ids']) && count($searchParams['ids']) > 0) {
 
-            $searchParams['whereclause'] = "$thisBean->table_name.id in ('".join("','", $searchParams['ids'])."')";
+            $searchParams['whereclause'] = "$thisBean->table_name.id in ('" . join("','", $searchParams['ids']) . "')";
 
             $queryArray = $thisBean->create_new_list_query($searchParams['orderby'], $searchParams['whereclause'], $filterFields, array(), false, '', true, $thisBean, true);
         } else {
@@ -559,24 +559,24 @@ class KRESTModuleHandler
 
         // determine the delimiter
         $delimiter = \UserPreference::getDefaultPreference('export_delimiter');
-        if ( !empty( $GLOBALS['current_user']->getPreference('export_delimiter'))) $delimiter = $GLOBALS['current_user']->getPreference('export_delimiter');
+        if (!empty($GLOBALS['current_user']->getPreference('export_delimiter'))) $delimiter = $GLOBALS['current_user']->getPreference('export_delimiter');
 
         // determine the charset
         $supportedCharsets = mb_list_encodings();
         $charsetTo = \UserPreference::getDefaultPreference('default_charset');
-        if ( !empty( $postBody['charset'] )) {
-            if ( in_array( $postBody['charset'], $supportedCharsets ) ) $charsetTo = $postBody['charset'];
+        if (!empty($postBody['charset'])) {
+            if (in_array($postBody['charset'], $supportedCharsets)) $charsetTo = $postBody['charset'];
         } else {
-            if ( in_array( $GLOBALS['current_user']->getPreference('default_export_charset'), $supportedCharsets ) ) $charsetTo = $GLOBALS['current_user']->getPreference('default_export_charset');
+            if (in_array($GLOBALS['current_user']->getPreference('default_export_charset'), $supportedCharsets)) $charsetTo = $GLOBALS['current_user']->getPreference('default_export_charset');
         }
 
         $fh = @fopen('php://output', 'w');
-        fputcsv($fh, $returnFields, $delimiter );
+        fputcsv($fh, $returnFields, $delimiter);
         foreach ($beanList['list'] as $thisBean) {
             $entryArray = [];
             foreach ($returnFields as $returnField)
-                $entryArray[] = !empty( $charsetTo ) ? mb_convert_encoding ( $thisBean->$returnField, $charsetTo ) : $thisBean->$returnField;
-            fputcsv( $fh, $entryArray, $delimiter );
+                $entryArray[] = !empty($charsetTo) ? mb_convert_encoding($thisBean->$returnField, $charsetTo) : $thisBean->$returnField;
+            fputcsv($fh, $entryArray, $delimiter);
         }
         fclose($fh);
 
@@ -907,7 +907,7 @@ class KRESTModuleHandler
         global $sugar_config;
         require_once('include/upload_file.php');
         $upload_file = new UploadFile('file');
-        if($post['file']){
+        if ($post['file']) {
             $decodedFile = base64_decode($post['file']);
             $upload_file->set_for_soap($beanId, $decodedFile);
             $upload_file->final_move($beanId, true);
@@ -963,24 +963,49 @@ class KRESTModuleHandler
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
         if (!isset($thisBean)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
-        $thisBean->load_relationship($linkName);
-        $relModule = $thisBean->{$linkName}->getRelatedModuleName();
-
-        if ( isset( $thisBean->field_defs[$linkName]['sequence_field']{0} )) {
+        if($thisBean->load_relationship($linkName)) {
+            $relModule = $thisBean->{$linkName}->getRelatedModuleName();
+        }
+        else{
+            $GLOBALS['log']->fatal("Error trying to load relationship using link name = ".$linkName." in bean ".$beanModule);
+        }
+        if (isset($thisBean->field_defs[$linkName]['sequence_field']{0})) {
             $sortBySequenceField = $isSequenced = true;
             $sequenceField = $thisBean->field_defs[$linkName]['sequence_field'];
         }
 
-        if ( $params['modulefilter'] ) {
+        // apply module filter if one is set
+        if ($params['modulefilter']) {
             $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
-            $addWhere =  $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter']);
+            $addWhere = $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter']);
             $sortBySequenceField = false;
         }
 
-        $sortingDefinition = json_decode( $params['sort'], true) ?: array();
-        if ( $sortingDefinition ) $sortBySequenceField = false;
+        // apply field filter ..
+        // ToDo: prevent SQL Injection
+        if ($params['fieldfilters']) {
+            $valuewhere = [];
 
-        if ( $sortBySequenceField ) $sortingDefinition = ['sortfield' => $sequenceField, 'sortdirection' => 'ASC'];
+            // decode the array and go for it
+            $fieldFilters = json_decode($params['fieldfilters'], true);
+            if (count($fieldFilters) > 0 && $relModule) {
+                $relSeed = \BeanFactory::getBean($relModule);
+                foreach ($fieldFilters as $field => $value) {
+                    $valuewhere[] = "{$relSeed->table_name}.$field = '$value'";
+                }
+                $valuewhere = join(' AND ', $valuewhere);
+                if ($addWhere != '') {
+                    $addWhere = "($addWhere) AND ($valuewhere)";
+                } else {
+                    $addWhere = $valuewhere;
+                }
+            }
+        }
+
+        $sortingDefinition = json_decode($params['sort'], true) ?: array();
+        if ($sortingDefinition) $sortBySequenceField = false;
+
+        if ($sortBySequenceField) $sortingDefinition = ['sortfield' => $sequenceField, 'sortdirection' => 'ASC'];
 
         if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
             throw (new KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
@@ -1083,7 +1108,7 @@ class KRESTModuleHandler
             if ($relid) {
                 $valArray = Array();
                 foreach ($relFields as $relfield => $relmapdata) {
-                    if( isset( $postparams[$relmapdata['map']] )) {
+                    if (isset($postparams[$relmapdata['map']])) {
                         $valArray[] = "$relfield = '{$postparams[$relmapdata['map']]}'";
                     }
                 }

@@ -24,7 +24,7 @@ class SpiceAttachments {
         if ($GLOBALS['db']->dbType == 'mssql' || $db->getRowCount($attachmentsRes) > 0) {
             while ($thisAttachment = $db->fetchByAssoc($attachmentsRes)) {
 
-                $attachments[$thisAttachment['external_id']] = [
+                $attachments[] = [
                     'id'             => $thisAttachment['id'],
                     'user_id'        => $thisAttachment['user_id'],
                     'user_name'      => $thisAttachment['user_name'],

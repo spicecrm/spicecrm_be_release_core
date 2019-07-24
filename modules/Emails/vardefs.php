@@ -302,10 +302,10 @@ $dictionary['Email'] = [
             'comment' => 'Sentiment magnitude of the Email based on the result from the Google Cloud Natural Language API',
         ],
         'to_be_sent' => [
-            'name' => 'to_be_sent',
-            'vname' => 'LBL_TO_BE_SENT',
-            'source' => 'non-db',
-            'type' => 'bool',
+            'name'    => 'to_be_sent',
+            'vname'   => 'LBL_TO_BE_SENT',
+            'source'  => 'non-db',
+            'type'    => 'bool',
             'default' => false,
         ],
 
@@ -365,8 +365,8 @@ $dictionary['Email'] = [
             'bean_name'    => 'Opportunity',
             'source'       => 'non-db',
         ],
-        'project' => [
-            'name'         => 'project',
+        'projects' => [
+            'name'         => 'projects',
             'vname'        => 'LBL_EMAILS_PROJECT_REL',
             'type'         => 'link',
             'relationship' => 'emails_projects_rel',
@@ -374,8 +374,8 @@ $dictionary['Email'] = [
             'bean_name'    => 'Project',
             'source'       => 'non-db',
         ],
-        'projecttask' => [
-            'name'         => 'projecttask',
+        'projecttasks' => [
+            'name'         => 'projecttasks',
             'vname'        => 'LBL_EMAILS_PROJECT_TASK_REL',
             'type'         => 'link',
             'relationship' => 'emails_project_task_rel',

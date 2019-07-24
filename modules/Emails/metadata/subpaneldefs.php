@@ -156,13 +156,13 @@ $layout_defs['Emails'] = array(
 		),
 
 
-        'project' => array(
+        'projects' => array(
 			'order' => 80,
 			'module' => 'Projects',
 			'sort_order' => 'asc',
 			'sort_by' => 'name',
 			'subpanel_name' => 'ForEmails',
-			'get_subpanel_data' => 'project',
+			'get_subpanel_data' => 'projects', //@deprecated project. Use projects
 			'add_subpanel_data' => 'project_id',
 			'title_key' => 'LBL_PROJECT_SUBPANEL_TITLE',
 			'top_buttons' => array(

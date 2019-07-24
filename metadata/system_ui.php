@@ -633,6 +633,11 @@ $dictionary['sysuiobjectrepository'] = array(
             'type' => 'varchar',
             'len' => 100
         ),
+        'deprecated' => array(
+            'name' => 'deprecated',
+            'type' => 'bool',
+            'default' => 0
+        ),
         'description' => array(
             'name' => 'description',
             'type' => 'text'
@@ -694,6 +699,11 @@ $dictionary['sysuicustomobjectrepository'] = array(
         'componentconfig' => array(
             'name' => 'componentconfig',
             'type' => 'text'
+        ),
+        'deprecated' => array(
+            'name' => 'deprecated',
+            'type' => 'bool',
+            'default' => 0
         ),
         'version' => array(
             'name' => 'version',
@@ -1181,6 +1191,11 @@ $dictionary['sysuiactionsetitems'] = array(
             'name' => 'actionconfig',
             'type' => 'text'
         ),
+        'singlebutton' => array(
+            'name' => 'singlebutton',
+            'type' => 'bool',
+            'default' => 0
+        ),
         'requiredmodelstate' => array(
             'name' => 'requiredmodelstate',
             'type' => 'varchar',
@@ -1233,6 +1248,11 @@ $dictionary['sysuicustomactionsetitems'] = array(
         'actionconfig' => array(
             'name' => 'actionconfig',
             'type' => 'text'
+        ),
+        'singlebutton' => array(
+            'name' => 'singlebutton',
+            'type' => 'bool',
+            'default' => 0
         ),
         'requiredmodelstate' => array(
             'name' => 'requiredmodelstate',

@@ -32,6 +32,7 @@ class SystemUIRepositoryController
                 'path' => $component['path'],
                 'component' => $component['component'],
                 'module' => $component['module'],
+                'deprecated' => $component['deprecated'],
                 'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($component['componentconfig'])), true) ?: array()
             );
         }

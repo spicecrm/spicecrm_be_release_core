@@ -68,6 +68,12 @@ class SpiceFTSUtils
         )
     );
 
+    static function checkElastic(){
+        $handler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
+        $response = $handler->query('GET', '');
+        return json_decode($response);
+    }
+
     static function getBeanIndexProperties($module, $overrideCache = false)
     {
         global $db;

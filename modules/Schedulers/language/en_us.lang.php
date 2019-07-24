@@ -180,4 +180,5 @@ $mod_strings = array(
     'LBL_PROCESSSPICEIMPORTS' => 'Process Spice Imports',
     'LBL_CLEANSYSLOGS' => 'Clean up SysLogs',
     'LBL_SYNCGOOGLECALENDAR' => 'Sync Google Calendar',
+    'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
 );

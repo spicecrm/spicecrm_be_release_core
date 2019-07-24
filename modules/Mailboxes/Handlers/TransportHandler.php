@@ -22,7 +22,7 @@ abstract class TransportHandler
 
     abstract public function testConnection($testEmail);
 
-    public function sendMail(\Email $email)
+    public function sendMail($email)
     {
         if ($this->mailbox->active == false) {
             return [
@@ -48,7 +48,7 @@ abstract class TransportHandler
         return $this->dispatch($message);
     }
 
-    abstract protected function composeEmail(\Email $email);
+    abstract protected function composeEmail($email);
 
     abstract protected function dispatch($message);
 
@@ -75,5 +75,17 @@ abstract class TransportHandler
         }
 
         return $response;
+    }
+
+    protected function checkEmailClass($object) {
+        if (!($object instanceof \Email)) {
+            throw new \Exception('Email is not of Email class.');
+        }
+    }
+
+    protected function checkTextMessageClass($object) {
+        if (!($object instanceof \TextMessage)) {
+            throw new \Exception('TextMessage is not of TextMessage class.');
+        }
     }
 }

@@ -63,6 +63,7 @@ $app->get('/sysinfo', function () use ($KRESTManager) {
         ],
         'extensions' => $KRESTManager->extensions,
         'languages' => $languages,
+        'elastic' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::checkElastic(),
         'loginSidebarUrl' => isset ($sugar_config['uiLoginSidebarUrl']{0}) ? $sugar_config['uiLoginSidebarUrl'] : false,
         'ChangeRequestRequired' => isset($GLOBALS['sugar_config']['change_request_required']) ? (boolean)$GLOBALS['sugar_config']['change_request_required'] : false,
         'sessionMaxLifetime' => (int)ini_get('session.gc_maxlifetime')

@@ -192,14 +192,22 @@ $dictionary['Case'] = array('table' => 'cases','audited'=>true, 'unified_search'
     'source'=>'non-db',
 		'vname'=>'LBL_ACCOUNT',
   ),
-	'project' =>
+	'project' => //@deprecated project. Use projects
 	array (
 	    'name' => 'project',
 	    'type' => 'link',
 	    'relationship' => 'projects_cases',
 	    'source'=>'non-db',
-	    'vname'=>'LBL_PROJECTS',
+	    'vname'=>'LBL_PROJECTS_DEPRECATED',
 	),
+    'projects' => //@deprecated project. Use projects
+        array (
+            'name' => 'projects',
+            'type' => 'link',
+            'relationship' => 'projects_cases',
+            'source'=>'non-db',
+            'vname'=>'LBL_PROJECTS',
+        ),
 
   ), 'indices' => array (
        array('name' =>'case_number' , 'type'=>'index' , 'fields'=>array('case_number')),

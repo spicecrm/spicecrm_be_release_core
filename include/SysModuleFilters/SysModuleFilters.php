@@ -28,6 +28,8 @@
 ********************************************************************************/
 
 namespace SpiceCRM\includes\SysModuleFilters;
+use DateTime;
+use DateInterval;
 
 class SysModuleFilters
 {
@@ -56,6 +58,12 @@ class SysModuleFilters
         return $moduleFilters;
     }
 
+    /**
+     * returns teh number of beans matching a given filter id
+     *
+     * @param $filterId the filter id
+     * @return int the numberof matched records
+     */
     public function getCountForFilterId($filterId){
         global $db;
 
@@ -69,6 +77,13 @@ class SysModuleFilters
 
     }
 
+    /**
+     * generates a where clause of a given filter id
+     *
+     * @param $filterId the filter id
+     * @param string $tablename the name of the table. this is optiopnal. if not set the table name from teh bean will be taken
+     * @return string the filter wehere clause
+     */
     public function generareWhereClauseForFilterId($filterId, $tablename = '')
     {
         global $db;
@@ -83,11 +98,36 @@ class SysModuleFilters
 
         $conditions = json_decode(html_entity_decode($filter['filterdefs']));
 
-        return $this->buildSQLWhereClauseForGroup($conditions, $tablename);
+        $whereClause =  $this->buildSQLWhereClauseForGroup($conditions, $tablename);
+
+        // if we have a filter method, that method shoudl return an array of IDs
+        if(!empty($filter['filtermethod'])){
+            $filterMethodArray = explode('->', $filter['filtermethod']);
+            $class = $filterMethodArray[0];
+            $method = $filterMethodArray[1];
+            if(class_exists($class)){
+                $focus = new $class();
+                if(method_exists($focus, $method)){
+                    $ids = $focus->$method();
+                    if(count($ids) > 0){
+                        $whereClause = "($whereClause) AND ($tablename.id IN ('".implode("','", $ids)."'))";
+                    }
+                }
+            }
+        }
+
+        return $whereClause;
 
     }
 
-    private function buildSQLWhereClauseForGroup($group, $tablename)
+    /**
+     * buiolds the filter query for one group in the vondition
+     *
+     * @param $group
+     * @param $tablename
+     * @return string
+     */
+    public function buildSQLWhereClauseForGroup($group, $tablename)
     {
         global $current_user;
         $filterConditionArray = [];
@@ -103,6 +143,11 @@ class SysModuleFilters
         $filterCondition = '(' . implode(' ' . $group->logicaloperator . ' ', $filterConditionArray) . ')';
         if ($group->groupscope == 'own') {
             $filterCondition = "({$tablename}.assigned_user_id = '{$current_user->id}' AND ($filterCondition))";
+        }
+
+        // added an option for the creator
+        if ($group->groupscope == 'creator') {
+            $filterCondition = "({$tablename}.created_by = '{$current_user->id}' AND ($filterCondition))";
         }
 
         return $filterCondition;
@@ -149,35 +194,45 @@ class SysModuleFilters
                 return "{$tablename}.{$condition->field} <= '{$condition->filtervalue}'";
                 break;
             case 'today':
-                $today = date_format(new DateTime(), 'Y-m-d');
+                $today = date_format(new \DateTime(), 'Y-m-d');
                 return "({$tablename}.{$condition->field} >= '$today 00:00:00' AND {$tablename}.{$condition->field} <= '$today 23:59:59')";
                 break;
             case 'past':
-                $now = date_format(new DateTime(), 'Y-m-d H:i:s');
+                $now = date_format(new \DateTime(), 'Y-m-d H:i:s');
                 return "{$tablename}.{$condition->field} < '$now'";
                 break;
             case 'future':
-                $now = date_format(new DateTime(), 'Y-m-d H:i:s');
+                $now = date_format(new \DateTime(), 'Y-m-d H:i:s');
                 return "{$tablename}.{$condition->field} > '$now'";
                 break;
             case 'thismonth':
-                $from = date_format(new DateTime(), 'Y-m-01 00:00:00');
-                $to = date_format(new DateTime(), 'Y-m-t 23:59:00');
+                $from = date_format(new \DateTime(), 'Y-m-01 00:00:00');
+                $to = date_format(new \DateTime(), 'Y-m-t 23:59:00');
                 return "({$tablename}.{$condition->field} > '$from' AND {$tablename}.{$condition->field} <= '$to')";
                 break;
             case 'nextmonth':
-                $date = new DateTime();
-                $date->add(new DateInterval('P1M'));
+                $date = new \DateTime();
+                $date->add(new \DateInterval('P1M'));
                 return "({$tablename}.{$condition->field} >= '".$date->format('Y-m-01 00:00:00')."' AND {$tablename}.{$condition->field} <= '".$date->format('Y-m-t 23:59:59')."')";
                 break;
             case 'thisyear':
-                $date = new DateTime();
+                $date = new \DateTime();
                 return "({$tablename}.{$condition->field} >= '" . $date->format('Y') . "-01-01 00:00:00' AND {$tablename}.{$condition->field} <= '" . $date->format('Y') . "-12-31 23:59:59')";
                 break;
             case 'nextyear':
-                $date = new DateTime();
-                $date->add(new DateInterval('P1Y'));
+                $date = new \DateTime();
+                $date->add(new \DateInterval('P1Y'));
                 return "({$tablename}.{$condition->field} >= '" . $date->format('Y') . "-01-01 00:00:00' AND {$tablename}.{$condition->field} <= '" . $date->format('Y') . "-12-31 23:59:59')";
+                break;
+            case 'inndays':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                return "({$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 00:00:00' AND {$tablename}.{$condition->field} <= '" . $date->format('Y-m-d') . " 23:59:59')";
+                break;
+            case 'inlessthanndays':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                return "{$tablename}.{$condition->field} <= '" . $date->format('Y-m-d') . " 23:59:59'";
                 break;
         }
     }
@@ -237,7 +292,11 @@ class SysModuleFilters
                 return ['term' => [$condition->field . '.raw' => $condition->filtervalue]];
                 break;
             case 'oneof':
-                $valArray = explode(',',$condition->filtervalue);
+                if(is_array($condition->filtervalue)){
+                    $valArray = $condition->filtervalue;
+                } else {
+                    $valArray = explode(',', $condition->filtervalue);
+                }
                 return ['terms' => [$condition->field . '.raw' => $valArray]];
                 break;
             case 'true':
@@ -298,6 +357,151 @@ class SysModuleFilters
                 $date->add(new DateInterval('P1Y'));
                 return ['range' => [$condition->field => ['gte' => $date->format('Y') . '-01-01 00:00:00', "lte" => $date->format('Y') . '-12-31 23:59:59']]];
                 break;
+            case 'inndays':
+                $today = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                return ['range' => [$condition->field => ['gte' => $date->format('Y-m-d') . '-01-01 00:00:00', "lte" => $date->format('Y-m-d') . ' 23:59:59']]];
+                break;
+            case 'inlessthanndays':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                return ['range' => [$condition->field => ["lte" => $date->format('Y-m-d') . ' 23:59:59']]];
+                break;
         }
     }
+
+
+    /**
+     * checks is a bean matches a filter
+     *
+     * @param $filterId the filter id
+     * @param SugarBean $bean the bean that shoudl be checked if the filter matches
+     * @return boolean true if the criteria of the filter are matcehd
+     */
+    public function checkBeanForFilterIdMatch($filterId, $bean)
+    {
+        global $db;
+
+        $filter = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulefilters WHERE id='$filterId'"));
+        if (!$filter) return '';
+
+        $conditions = json_decode(html_entity_decode($filter['filterdefs']));
+
+        return $this->checkBeanForFilterMatchGroup($conditions, $bean);
+
+    }
+
+    public function checkBeanForFilterMatchGroup($group, $bean)
+    {
+        global $current_user;
+        $filterConditionArray = [];
+
+        // if the criteria is won and the user does not match return false
+        if ($group->groupscope == 'own' && $bean->assigned_user_id  != $current_user->id) return false;
+
+        $conditionmet = false;
+        foreach ($group->conditions as $condition) {
+            if ($condition->conditions) {
+                $conditionmet = $this->checkBeanForFilterMatchGroup($condition, $bean);
+            } else {
+                $conditionmet = $this->checkBeanForFilterMatchCondition($condition, $bean);
+            }
+
+            // in case of AND .. one negative is all negative
+            if($group->logicaloperator == 'AND' && !$conditionmet) {
+                return false;
+            } else if($conditionmet){
+                return true;
+            }
+        }
+
+        return $conditionmet;
+    }
+
+    private function checkBeanForFilterMatchCondition($condition, $bean)
+    {
+        switch($condition->operator){
+            case 'empty':
+                return is_empty($bean->{$condition->field});
+                break;
+            case 'equals':
+                return $bean->{$condition->field} == $condition->filtervalue;
+                break;
+            case 'oneof':
+                $valArray = is_array($condition->filtervalue) ? $condition->filtervalue : explode(',',$condition->filtervalue);
+                return array_search($bean->{$condition->field}, $valArray) !== false;
+                break;
+            case 'true':
+                return $bean->{$condition->field};
+                break;
+            case 'false':
+                return !$bean->{$condition->field};
+                break;
+            case 'starts':
+                return strpos($bean->{$condition->field}, $condition->filtervalue) === 0;
+                break;
+            case 'contains':
+                return strpos($bean->{$condition->field}, $condition->filtervalue) !== false;
+                break;
+            case 'ncontains':
+                return strpos($bean->{$condition->field}, $condition->filtervalue) === false;
+                break;
+            case 'greater':
+                return $bean->{$condition->field} > $condition->filtervalue;
+                break;
+            case 'gequal':
+                return $bean->{$condition->field} >= $condition->filtervalue;
+                break;
+            case 'less':
+                return $bean->{$condition->field} < $condition->filtervalue;
+                break;
+            case 'lequal':
+                return $bean->{$condition->field} <= $condition->filtervalue;
+                break;
+            case 'today':
+                $today = date_format(new DateTime(), 'Y-m-d');
+                return substr($bean->{$condition->field}, 0, 10) == $today;
+                break;
+            case 'past':
+                $beanData = new DateTime($bean->{$condition->field});
+                $now = new DateTime();
+                return $beanData < $now;
+                break;
+            case 'future':
+                $beanData = new DateTime($bean->{$condition->field});
+                $now = new DateTime();
+                return $beanData > $now;
+                break;
+            case 'thismonth':
+                $month = date_format(new DateTime(), 'Y-m');
+                return substr($bean->{$condition->field}, 0, 7) == $month;
+                break;
+            case 'nextmonth':
+                $date = new DateTime();
+                $date->add(new DateInterval('P1M'));
+                $month = date_format($date, 'Y-m');
+                return substr($bean->{$condition->field}, 0, 7) == $month;
+                break;
+            case 'thisyear':
+                $year = date_format(new DateTime(), 'Y');
+                return substr($bean->{$condition->field}, 0, 4) == $year;
+                break;
+            case 'nextyear':
+                $date = new DateTime();
+                $date->add(new DateInterval('P1Y'));
+                $year = date_format($date, 'Y');
+                return substr($bean->{$condition->field}, 0, 4) == $year;
+                break;
+            case 'inndays':
+                // todo implement
+                return false;
+                break;
+            case 'inlessthanndays':
+                // todo implement
+                return false;
+                break;
+        }
+    }
+
 }

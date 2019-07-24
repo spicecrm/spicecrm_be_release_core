@@ -128,7 +128,7 @@ class Account extends Company {
 	var $relationship_fields = Array('opportunity_id'=>'opportunities', 'bug_id' => 'bugs', 'case_id'=>'cases',
 									'contact_id'=>'contacts', 'task_id'=>'tasks', 'note_id'=>'notes',
 									'meeting_id'=>'meetings', 'call_id'=>'calls', 'email_id'=>'emails','member_id'=>'members',
-									'project_id'=>'project',
+									'project_id'=>'projects',
 									);
 
     //Meta-Data Framework fields

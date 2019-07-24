@@ -202,10 +202,10 @@ $layout_defs['Opportunities'] = array(
                 array('widget_class' => 'SubPanelTopCreateProposalButton')
             ),
         ),
-        'project' => array(
+        'projects' => array(
             'order' => 70,
             'module' => 'Projects',
-            'get_subpanel_data' => 'project',
+            'get_subpanel_data' => 'projects', //@deprecated project. Use projects
             'sort_order' => 'asc',
             'sort_by' => 'name',
             'subpanel_name' => 'default',

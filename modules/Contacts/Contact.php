@@ -559,4 +559,21 @@ class Contact extends Person {
 			}
 		}
 	}
+
+	public static function findByPhoneNumber($phoneNo) {
+        global $db;
+
+        $query = "SELECT id FROM contacts WHERE phone_mobile_e164='" . $phoneNo . "'";
+        $q = $db->query($query);
+
+        while($row = $db->fetchRow($q)) {
+            $contact = BeanFactory::getBean('Contacts', $row['id']);
+        }
+
+        if (!isset($contact)) {
+            throw new Exception('Cannot find Contact.');
+        } else {
+            return $contact;
+        }
+    }
 }

@@ -135,6 +135,16 @@ $vardefs = array(
                 'comment' => 'The postal code used for billing address',
                 'merge_filter' => 'enabled',
             ),
+        'billing_address_pobox' =>
+            array(
+                'name' => 'billing_address_pobox',
+                'vname' => 'LBL_BILLING_ADDRESS_POBOX',
+                'type' => 'varchar',
+                'len' => '20',
+                'group' => 'billing_address',
+                'comment' => 'The pobox used for billing address',
+                'merge_filter' => 'enabled',
+            ),
         'billing_address_country' =>
             array(
                 'name' => 'billing_address_country',
@@ -298,6 +308,16 @@ $vardefs = array(
                 'len' => 20,
                 'group' => 'shipping_address',
                 'comment' => 'The zip code used for the shipping address',
+                'merge_filter' => 'enabled',
+            ),
+        'shipping_address_pobox' =>
+            array(
+                'name' => 'shipping_address_pobox',
+                'vname' => 'LBL_SHIPPING_ADDRESS_POBOX',
+                'type' => 'varchar',
+                'len' => 20,
+                'group' => 'shipping_address',
+                'comment' => 'PO Box for the address',
                 'merge_filter' => 'enabled',
             ),
         'shipping_address_country' =>

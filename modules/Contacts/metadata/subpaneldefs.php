@@ -235,12 +235,12 @@ $layout_defs['Contacts'] = array(
 				array('widget_class' => 'SubPanelTopSelectButton', 'mode'=>'MultiSelect')
 			),
 		),
-		'project' => array(
+		'projects' => array(
 			'order' => 110,
 			'module' => 'Projects',
 			'sort_order' => 'asc',
 			'sort_by' => 'name',
-			'get_subpanel_data' => 'project',
+			'get_subpanel_data' => 'projects', //@deprecated project. Use projects
 			'subpanel_name' => 'default',
 			'title_key' => 'LBL_PROJECTS_SUBPANEL_TITLE',
 			'top_buttons' => array(

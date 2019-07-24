@@ -7,9 +7,9 @@ class SpiceNotes {
         $quicknotes = array();
 
         if ($GLOBALS['db']->dbType == 'mssql'){
-            $quicknotesRes = $db->query("SELECT TOP $lastN qn.*,u.user_name FROM spicenotes AS qn LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}' AND (qn.user_id = '".$current_user->id."' OR qn.trglobal = '1') AND qn.deleted = 0 ORDER BY qn.trdate DESC");
+            $quicknotesRes = $db->query("SELECT TOP $lastN qn.*,u.user_name, u.user_image FROM spicenotes AS qn LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}' AND (qn.user_id = '".$current_user->id."' OR qn.trglobal = '1') AND qn.deleted = 0 ORDER BY qn.trdate DESC");
         }else{
-            $quicknotesRes = $db->limitQuery("SELECT qn.*,u.user_name FROM spicenotes AS qn LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}' AND (qn.user_id = '".$current_user->id."' OR qn.trglobal = '1') AND qn.deleted = 0 ORDER BY qn.trdate DESC", 0, $lastN);
+            $quicknotesRes = $db->limitQuery("SELECT qn.*,u.user_name, u.user_image FROM spicenotes AS qn LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}' AND (qn.user_id = '".$current_user->id."' OR qn.trglobal = '1') AND qn.deleted = 0 ORDER BY qn.trdate DESC", 0, $lastN);
         }
 
         if ($GLOBALS['db']->dbType == 'mssql' || $db->getRowCount($quicknotesRes) > 0) {
@@ -18,6 +18,7 @@ class SpiceNotes {
 							'id' => $thisQuickNote['id'],
 							'user_id' => $thisQuickNote['user_id'],
 							'user_name' => $thisQuickNote['user_name'],
+							'user_image' => $thisQuickNote['user_image'],
 							'own' => ($thisQuickNote['user_id']==$current_user->id || $current_user->is_admin) ? '1' : '0',
 							'date' => $GLOBALS['timedate']->to_display_date_time($thisQuickNote['trdate']),
 							'text' => nl2br($thisQuickNote['text']),
@@ -44,6 +45,7 @@ class SpiceNotes {
 				'id' => $guid,
 				'user_id' => $current_user->id,
 				'user_name' => $current_user->user_name,
+				'user_image' => $current_user->user_image,
 				'date' => $GLOBALS['timedate']->to_display_date_time(gmdate('Y-m-d H:i:s')),
 				'text' => nl2br($data['text']),
 				'global' => $data['global'] ? true : false

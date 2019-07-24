@@ -284,7 +284,11 @@ class Compiler
                  *              name = attribute -> return value;
                  */
                 $loopThroughParts = function ($obj, $level = 0) use (&$parts, &$loopThroughParts) {
-                    global $app_list_strings;
+                    global $app_list_strings, $userDateFormat, $userTimeFormat, $userDateTimeFormat;
+                    //get user preferences for date and time format
+                    $userDateFormat = $GLOBALS['current_user']->getPreference("datef");
+                    $userTimeFormat = $GLOBALS['current_user']->getPreference("timef");
+                    $userDateTimeFormat = $userDateFormat." ".$userTimeFormat;
 
                     $part = $parts[$level];
                     if (is_callable([$obj, $part])) {
@@ -313,6 +317,19 @@ class Compiler
                                 $value = implode(', ', $values);
                                 // unencodeMultienum can't be used because of a different language...
                                 //$value = implode(', ', unencodeMultienum($obj->{$parts[$level]}));
+                                break;
+                            case 'date':
+                                //set to user preferences format
+                                $value = date($userDateFormat, strtotime($obj->{$part}));
+                                break;
+                            case 'datetime':
+                            case 'datetimecombo':
+                                //set to user preferences format
+                                $value = date($userDateTimeFormat, strtotime($obj->{$part}));
+                                break;
+                            case 'time':
+                                //set to user preferences format
+                                $value = date($userTimeFormat, strtotime($obj->{$part}));
                                 break;
                             default:
                                 $value = $obj->{$part};

@@ -107,7 +107,7 @@ class Opportunity extends SugarBean {
 		'meeting_id'=>'meetings',
         'call_id'=>'calls',
         'email_id'=>'emails',
-        'project_id'=>'project',
+        'project_id'=>'projects', //@deprecated project. use projects
 		// Bug 38529 & 40938
 		'currency_id' => 'currencies',
     );

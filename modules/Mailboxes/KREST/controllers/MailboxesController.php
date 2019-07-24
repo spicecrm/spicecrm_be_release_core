@@ -7,6 +7,9 @@ class MailboxesController
 {
     private $db;
 
+    const TYPE_SMS   = 'sms';
+    const TYPE_EMAIL = 'email';
+
     function __construct()
     {
         global $db;
@@ -52,24 +55,23 @@ class MailboxesController
     public function getMailboxesForDashlet($req, $res, $args) {
         $mailboxes = [];
 
-        $sql = "SELECT ";
-        $sql .= "mailboxes.id, ";
-        $sql .= "mailboxes.name, ";
-        $sql .= "sum(if(emails.status ='unread', 1, 0)) emailsunread, ";
-        $sql .= "sum(if(emails.status ='read', 1, 0)) emailsread, ";
-        $sql .= "sum(if(emails.status ='closed', 1, 0)) emailsclosed ";
-        $sql .= "FROM mailboxes LEFT JOIN emails ON mailboxes.id=emails.mailbox_id ";
-        $sql .= "WHERE mailboxes.deleted = 0 ";
-        $sql .= "AND mailboxes.inbound_comm = 1 ";
-        $sql .= "AND mailboxes.active = 1 ";
-        $sql .= "AND mailboxes.hidden <> 1 ";
-        $sql .= "GROUP BY mailboxes.id ";
-        $sql .= "ORDER BY emailsunread DESC ";
+        $type = $args['type'];
 
-        $response = $this->db->query($sql);
+        $mboxes = \BeanFactory::getBean('Mailboxes');
 
-        while ($row = $this->db->fetchByAssoc($response)) {
-            $mailboxes[] = $row;
+        foreach ($mboxes->get_full_list("", "inbound_comm = 1 AND active = 1
+        AND hidden <> 1") as $mbox) {
+            if ($type != '' && $mbox->getType() != $type) {
+                continue;
+            }
+
+            $mailboxes[] = [
+                'id'           => $mbox->id,
+                'name'         => $mbox->name,
+                'emailsunread' => $mbox->getUnreadEmailsCount(),
+                'emailsread'   => $mbox->getReadEmailsCount(),
+                'emailsclosed' => $mbox->getClosedEmailsCount(),
+            ];
         }
 
         return $res->write(json_encode($mailboxes));
@@ -100,12 +102,12 @@ class MailboxesController
                 'errors' => 'No test email selected',
             ]));
         }
-        if (!filter_var($params['test_email'], FILTER_VALIDATE_EMAIL)) {
-            return $res->write(json_encode([
-                'result' => false,
-                'errors' => $params['test_email'] . ' is not a valid email address.',
-            ]));
-        }
+//        if (!filter_var($params['test_email'], FILTER_VALIDATE_EMAIL)) {
+//            return $res->write(json_encode([
+//                'result' => false,
+//                'errors' => $params['test_email'] . ' is not a valid email address.',
+//            ]));
+//        }
         $result = false;
 
         $mailbox = \BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
@@ -162,6 +164,15 @@ class MailboxesController
             case 'outboundmass':
                 $where .= ' AND outbound_comm="mass"';
                 break;
+            case 'inbound_sms':
+                $where .= ' AND (outbound_comm="single_sms" OR outbound_comm="mass_sms")';
+                break;
+            case 'outboundsingle_sms':
+                $where .= ' AND outbound_comm="single_sms"';
+                break;
+            case 'outboundmass_sms':
+                $where .= ' AND outbound_comm="mass_sms"';
+                break;
         }
 
         $mailboxes = \BeanFactory::getBean('Mailboxes')
@@ -171,13 +182,17 @@ class MailboxesController
             );
 
         foreach ($mailboxes as $mailbox) {
-            array_push($result,
-                [
-                    'value' => $mailbox->id,
-                    'display' => $mailbox->name . ' <' . $mailbox->imap_pop3_username . '>',
+            $type = self::TYPE_EMAIL;
+            if ($mailbox->outbund_comm == 'mass_sms' || $mailbox->outbound_comm == 'single_sms') {
+                $type = self::TYPE_SMS;
+            }
+
+            array_push($result, [
+                    'value'     => $mailbox->id,
+                    'display'   => $mailbox->name,
                     'actionset' => $mailbox->actionset,
-                ]
-            );
+                    'type'      => $type,
+            ]);
         }
 
         return $res->write(json_encode($result));

@@ -183,7 +183,7 @@ switch ($_REQUEST['view']) {
 								'customqueries' => array(array('name' => 'Reports')),
 								'quotas' => array(array('name' => 'Forecasts')),
 								'projecttask' => array(array('name' => 'Projects')),
-								'project' => array(array('name' => 'Projects'), array('name' => 'Dashboard', 'action' => 'dashboard'), ),
+								'projects' => array(array('name' => 'Projects'), array('name' => 'Dashboard', 'action' => 'dashboard'), ),
 								'projecttemplate' => array(array('name' => 'Projects')),
 								'datasets' => array(array('name' => 'Reports')),
 								'dataformat' => array(array('name' => 'Reports')),

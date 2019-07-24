@@ -719,7 +719,7 @@ class SpiceFTSHandler
 
             // check for modulefilter
             if (!empty($params['modulefilter'])) {
-                $sysFilter = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+                $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
                 $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter']);
             }
 

@@ -76,8 +76,18 @@ $job_strings = [
     25 => 'processSpiceImports',
     26 => 'cleanSysLogs',
     27 => 'cleanSysFTSLogs',
+    28 => 'workflowHandler'
 
 ];
+
+function workflowHandler(){
+    $schedulerHandler = new \SpiceCRM\modules\WorkflowTasks\WorkflowTaskScheduler();
+    $schedulerHandler->runScheduledTasks();
+
+    $workflowHandler = new \SpiceCRM\modules\Workflows\WorkflowScheduler();
+    $workflowHandler->rundScheduledWorkflows();
+    return true;
+}
 
 /**
  * Job 0 refreshes all job schedulers at midnight

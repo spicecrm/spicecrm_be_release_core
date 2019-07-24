@@ -357,7 +357,7 @@ class M2MRelationship extends SugarRelationship
         //Add any optional where clause
         if (!empty($params['where'])){
             $add_where = is_string($params['where']) ? $params['where'] : "$whereTable." . $this->getOptionalWhereClause($params['where']);
-            if (!empty($add_where))
+            if (!empty($add_where) && $add_where != "()")
                 $where .= " AND $rel_table.$targetKey=$whereTable.id AND $add_where";
         }
 
@@ -398,6 +398,13 @@ class M2MRelationship extends SugarRelationship
             // 20reasons add the relid to the query
             // $query = "SELECT $targetKey id FROM $from WHERE $where AND $rel_table.deleted=$deleted";
             $query = "SELECT $rel_table.id relid, $targetKey id $relFieldsSelect FROM $from WHERE $where AND $rel_table.deleted=$deleted $sort";
+
+            // BEGIN Exception SpiceACL
+            if($rel_table == 'spiceaclterritories_hash'){
+                $query = "SELECT $rel_table.hash_id relid, $targetKey id $relFieldsSelect FROM $from WHERE $where AND $rel_table.deleted=$deleted $sort";
+            }
+            // END
+
             //Limit is not compatible with return_as_array
             if (!empty($params['limit']) && $params['limit'] > 0) {
                 $offset = isset($params['offset']) ? $params['offset'] : 0;

@@ -7,7 +7,7 @@ $app->group('/configurator', function () use ($app) {
             # header("Access-Control-Allow-Origin: *");
             if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
-            $retArray = $sugar_config[$args['category']] ?: [];
+            $retArray = $sugar_config[$args['category']] ?: new stdClass();
 
             /*
             $entries = $db->query("SELECT * FROM config WHERE category = '{$args['category']}'");

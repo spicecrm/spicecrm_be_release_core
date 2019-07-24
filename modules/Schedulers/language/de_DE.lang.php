@@ -152,5 +152,6 @@ $mod_strings = array(
     'LBL_PROCESSSPICEIMPORTS' => 'Process Spice Imports',
     'LBL_CLEANSYSLOGS' => 'Clean up SysLogs',
     'LBL_SYNCGOOGLECALENDAR' => 'Sync Google Calendar',
-    'LBL_SENDCAMPAIGNTASKEMAILS' => 'Send CampaignTask Emails'
+    'LBL_SENDCAMPAIGNTASKEMAILS' => 'Send CampaignTask Emails',
+    'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
 );

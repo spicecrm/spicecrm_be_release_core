@@ -582,7 +582,7 @@ class Task extends SugarBean
     public function mark_deleted($id)
     {
         // Remove the Google Task
-        if (isset($_SESSION['google_oauth'])) {
+        if (isset($_SESSION['google_oauth']) && $this->external_id != '') {
             $tasks = new \SpiceCRM\modules\GoogleTasks\GoogleTasks();
             $tasks->removeTask($this->external_id);
 

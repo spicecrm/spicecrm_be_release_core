@@ -368,9 +368,12 @@ class SpiceFTSBeanHandler
         foreach ($indexProperties as $indexProperty) {
 
             // special type for parentids collector
-            if ($indexProperty['indextype'] == 'parentid' || $indexProperty['indextype'] == 'activitydate') {
+
+            //if ($indexProperty['indextype'] == 'parentid' || $indexProperty['indextype'] == 'activitydate') {
+            if ($indexProperty['indextype'] == 'parentid' ) {
                 continue;
             }
+
 
             //$fieldParams = SpiceFTSUtils::getFieldIndexParams(BeanFactory::getBean($module), $indexProperty['path']);
 
@@ -381,7 +384,7 @@ class SpiceFTSBeanHandler
                 'type' => $indexProperty['indextype'] ?: 'text',
             );
 
-            if ($properties[$indexProperty['indexfieldname']]['type'] == 'date')
+            if ($properties[$indexProperty['indexfieldname']]['type'] == 'date' || $indexProperty['indextype'] == 'activitydate')
                 $properties[$indexProperty['indexfieldname']]['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
 
             if ($indexProperty['analyzer']) {

@@ -130,16 +130,43 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
                 'relationship' => 'campaign_opportunities',
                 'source' => 'non-db',
             ),
-        'lead_source' =>
+        'potentials' =>
             array(
-                'name' => 'lead_source',
-                'vname' => 'LBL_LEAD_SOURCE',
-                'type' => 'enum',
-                'options' => 'lead_source_dom',
-                'len' => '50',
-                'comment' => 'Source of the opportunity',
-                'merge_filter' => 'enabled',
+                'name' => 'potentials',
+                'type' => 'link',
+                'vname' => 'LBL_POTENTIALS',
+                'relationship' => 'opportunities_potential',
+                'source' => 'non-db',
             ),
+        'potential_id' => array(
+            'name' => 'potential_id',
+            'vname' => 'LBL_POTENTIAL_ID',
+            'rname' => 'id',
+            'type' => 'varchar',
+            'len' => 36,
+            'table' => 'potentials',
+            'module' => 'Potentials'
+        ),
+        'potential_name' => array(
+            'name' => 'potential_name',
+            'rname' => 'name',
+            'id_name' => 'potential_id',
+            'vname' => 'LBL_POTENTIAL',
+            'type' => 'relate',
+            'link' => 'potentials',
+            'table' => 'potentials',
+            'module' => 'Potentials',
+            'source' => 'non-db'
+        ),
+        'lead_source' => array(
+            'name' => 'lead_source',
+            'vname' => 'LBL_LEAD_SOURCE',
+            'type' => 'enum',
+            'options' => 'lead_source_dom',
+            'len' => '50',
+            'comment' => 'Source of the opportunity',
+            'merge_filter' => 'enabled',
+        ),
         'amount' =>
             array(
                 'name' => 'amount',
@@ -401,8 +428,16 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
             'source' => 'non-db',
             'vname' => 'LBL_DOCUMENTS_SUBPANEL_TITLE',
         ),
+        //@deprecated project. Use projects
         'project' => array(
             'name' => 'project',
+            'type' => 'link',
+            'relationship' => 'projects_opportunities',
+            'source' => 'non-db',
+            'vname' => 'LBL_PROJECTS_DEPRECATED',
+        ),
+        'projects' => array(
+            'name' => 'projects',
             'type' => 'link',
             'relationship' => 'projects_opportunities',
             'source' => 'non-db',
@@ -472,6 +507,25 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
             'bean_name' => 'OpportunityStage',
             'vname' => 'LBL_OPPORTUNITYSTAGES',
         ),
+        'opportunityrevenuesplit' => array(
+            'name' => 'opportunityrevenuesplit',
+            'type' => 'enum',
+            'len' => 10,
+            'default' => 'none',
+            'options' => 'opportunityrevenuesplit_dom',
+            'vname' => 'LBL_SPLITTYPE'
+        ),
+        'opportunityrevenuelines' => array(
+            'name' => 'opportunityrevenuelines',
+            'type' => 'link',
+            'relationship' => 'opportunity_opportunityrevenuelines',
+            'source' => 'non-db',
+            'link_type' => 'one',
+            'module' => 'OpportunityRevenueLines',
+            'bean_name' => 'OpportunityRevenueLine',
+            'vname' => 'LBL_OPPORTUNITYREVENUELINES',
+            'default' => true
+        ),
         'salesdocs' => array(
             'name' => 'salesdocs',
             'type' => 'link',
@@ -479,8 +533,7 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
             'relationship' => 'opportunities_salesdocs',
             'source' => 'non-db',
             'module' => 'SalesDocs'
-        ),
-
+        )
     ),
     'indices' => array(
         array(
@@ -531,25 +584,52 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
             'relationship_type' => 'one-to-many')
     , 'opportunity_currencies' => array('lhs_module' => 'Opportunities', 'lhs_table' => 'opportunities', 'lhs_key' => 'currency_id',
             'rhs_module' => 'Currencies', 'rhs_table' => 'currencies', 'rhs_key' => 'id',
-            'relationship_type' => 'one-to-many')
-    , 'opportunities_assigned_user' =>
-            array('lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
-                'rhs_module' => 'Opportunities', 'rhs_table' => 'opportunities', 'rhs_key' => 'assigned_user_id',
-                'relationship_type' => 'one-to-many')
-
-    , 'opportunities_modified_user' =>
-            array('lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
-                'rhs_module' => 'Opportunities', 'rhs_table' => 'opportunities', 'rhs_key' => 'modified_user_id',
-                'relationship_type' => 'one-to-many')
-
-    , 'opportunities_created_by' =>
-            array('lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
-                'rhs_module' => 'Opportunities', 'rhs_table' => 'opportunities', 'rhs_key' => 'created_by',
-                'relationship_type' => 'one-to-many'),
-        'opportunities_campaign' =>
-            array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
-                'rhs_module' => 'Opportunities', 'rhs_table' => 'opportunities', 'rhs_key' => 'campaign_id',
-                'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'),
+        'opportunities_assigned_user' => array(
+            'lhs_module' => 'Users',
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Opportunities',
+            'rhs_table' => 'opportunities',
+            'rhs_key' => 'assigned_user_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'opportunities_modified_user' => array(
+            'lhs_module' => 'Users',
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Opportunities',
+            'rhs_table' => 'opportunities',
+            'rhs_key' => 'modified_user_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'opportunities_created_by' => array(
+            'lhs_module' => 'Users',
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Opportunities',
+            'rhs_table' => 'opportunities',
+            'rhs_key' => 'created_by',
+            'relationship_type' => 'one-to-many'
+        ),
+        'opportunities_campaign' => array(
+            'lhs_module' => 'Campaigns',
+            'lhs_table' => 'campaigns',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Opportunities',
+            'rhs_table' => 'opportunities',
+            'rhs_key' => 'campaign_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'opportunities_potential' => array(
+            'lhs_module' => 'Potentials',
+            'lhs_table' => 'potentials',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Opportunities',
+            'rhs_table' => 'opportunities',
+            'rhs_key' => 'potential_id',
+            'relationship_type' => 'one-to-many'
+        ),
     )
 //This enables optimistic locking for Saves From EditView
 , 'optimistic_locking' => true,

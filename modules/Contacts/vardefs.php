@@ -319,8 +319,16 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'source' => 'non-db',
                 'vname' => 'LBL_NOTES',
             ),
+            //@deprecated name project. Use projects
             'project' => array(
                 'name' => 'project',
+                'type' => 'link',
+                'relationship' => 'projects_contacts',
+                'source' => 'non-db',
+                'vname' => 'LBL_PROJECTS_DEPRECATED',
+            ),
+            'projects' => array(
+                'name' => 'projects',
                 'type' => 'link',
                 'relationship' => 'projects_contacts',
                 'source' => 'non-db',
@@ -510,6 +518,11 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'module' => 'ProspectLists',
                 'source' => 'non-db',
                 'vname' => 'LBL_PROSPECT_LIST',
+                'rel_fields' => [
+                    'quantity' => [
+                        'map' => 'prospectlists_contacts_quantity'
+                    ]
+                ]
             ),
             'sync_contact' => array(
                 'massupdate' => false,
@@ -560,6 +573,21 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                     ]
                 ]
             ),
+            'bonuscards' => [
+                'name' => 'bonuscards',
+                'type' => 'link',
+                'relationship' => 'bonuscards_contacts',
+                'module' => 'BonusCards',
+                'bean_name' => 'BonusCard',
+                'source' => 'non-db',
+                'vname' => 'LBL_BONUSCARDS',
+            ],
+            'prospectlists_contacts_quantity' => array(
+                'name' => 'prospectlists_contacts_quantity',
+                'vname' => 'LBL_QUANTITY',
+                'type' => 'varchar',
+                'source' => 'non-db'
+            )
             /*
             'portal_user_id' => array(
                 'name' => 'portal_user_id',
@@ -670,6 +698,15 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
             'rhs_table' => 'notes',
             'rhs_key' => 'contact_id',
             'relationship_type' => 'one-to-many'),
+        'contact_textmessages' => [
+            'lhs_module'        => 'Contacts',
+            'lhs_table'         => 'contacts',
+            'lhs_key'           => 'id',
+            'rhs_module'        => 'TextMessages',
+            'rhs_table'         => 'textmessages',
+            'rhs_key'           => 'contact_id',
+            'relationship_type' => 'one-to-many',
+        ],
         'contact_tasks' => array('lhs_module' => 'Contacts',
             'lhs_table' => 'contacts',
             'lhs_key' => 'id',

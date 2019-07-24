@@ -142,6 +142,7 @@ $app_list_strings = array(
             'MediaCategories' => 'Media Categories',
             'SystemDeploymentCRs' => 'Change Requests',
             'SystemDeploymentReleases' => 'Releases',
+            'Potentials' => 'Potentials',
         ),
 
     'moduleListSingular' =>
@@ -204,6 +205,7 @@ $app_list_strings = array(
             'MediaCategories' => 'Media Category',
             'SystemDeploymentCRs' => 'Change Request',
             'SystemDeploymentReleases' => 'Release',
+            'Potentials' => 'Potential',
     ),
 
     'checkbox_dom' => array(
@@ -366,6 +368,11 @@ $app_list_strings = array(
         'Closed Lost' => 'Closed Lost',
         'Closed Discontinued' => 'Closed Discontinued'
     ),
+    'opportunityrevenuesplit_dom' => array(
+        'none' => 'None',
+        'split' => 'Split',
+        'rampup' => 'Rampup'
+    ),
     'opportunity_relationship_buying_center_dom' => array(
         '++' => 'very positive',
         '+' => 'positive',
@@ -482,7 +489,8 @@ $app_list_strings = array(
         'single' => 'Single Choice',
         'multi' => 'Multiple Choice',
         'text' => 'Text Input',
-        'ist' => 'IST'
+        'ist' => 'IST',
+        'nps' => 'NPS (Net Promoter Score)'
     ),
     'evaluationtypes_dom' => array(
         'default' => 'Standard',
@@ -1015,10 +1023,25 @@ $app_list_strings = array(
         'send_error' => 'Send Error',
         'unread' => 'Unread',
     ),
+    'dom_textmessage_status' => array(
+        'archived' => 'Archived',
+        'closed' => 'Closed',
+        'draft' => 'In Draft',
+        'read' => 'Read',
+        'replied' => 'Replied',
+        'sent' => 'Sent',
+        'send_error' => 'Send Error',
+        'unread' => 'Unread',
+    ),
     'dom_email_archived_status' => array(
         'archived' => 'Archived',
     ),
     'dom_email_openness' => array(
+        'open' => 'Open',
+        'user_closed' => 'Closed by user',
+        'system_closed' => 'Closed by system'
+    ),
+    'dom_textmessage_openness' => array(
         'open' => 'Open',
         'user_closed' => 'Closed by user',
         'system_closed' => 'Closed by system'
@@ -1412,6 +1435,7 @@ $app_list_strings = array(
         'active' => 'active',
         'active_once' => 'active (run once)',
         'active_scheduled' => 'active scheduled',
+        'active_scheduled_once' => 'active scheduled (run once)',
         'inactive' => 'inactive'
     ),
     'workflowdefinition_precondition' => array(
@@ -4468,28 +4492,32 @@ if (file_exists('modules/ServiceFeedbacks/ServiceFeedback.php')) {
     );
 }
 
-$app_list_strings['mailboxes_transport_dom'] = array(
-    'imap' => 'IMAP/SMTP',
-    'mailgun' => 'Mailgun',
+$app_list_strings['mailboxes_transport_dom'] = [
+    'imap'     => 'IMAP/SMTP',
+    'mailgun'  => 'Mailgun',
     'sendgrid' => 'Sendgrid',
-);
+    'twillio'  => 'Twillio',
+    'a1'       => 'A1 SMS Gateway',
+];
 
 $app_list_strings['mailboxes_outbound_comm'] = [
-    'no' => 'Not Allowed',
-    'single' => 'Only Single Emails',
-    'mass' => 'Single and Mass Emails',
+    'no'         => 'Not Allowed',
+    'single'     => 'Only Single Emails',
+    'mass'       => 'Single and Mass Emails',
+    'single_sms' => 'Only Single Text Messages (SMS)',
+    'mass_sms'   => 'Single and Mass Text Messages (SMS)',
 ];
 
 include('include/SpiceBeanGuides/SpiceBeanGuideLanguage.php');
 
 $app_list_strings['output_template_types'] = [
-    '' => '',
+    ''      => '',
     'email' => 'email',
-    'pdf' => 'PDF',
+    'pdf'   => 'PDF',
 ];
 
 $app_list_strings['languages'] = [
-    '' => '',
+    ''   => '',
     'de' => 'german',
     'en' => 'english',
 ];
@@ -4504,18 +4532,29 @@ $app_list_strings['spiceaclobjects_types_dom'] = [
     //'5' => 'exclude (profile)'
 ];
 
-$app_list_strings['deploymentrelease_status_dom'] = array(
-    '' => '',
-    'planned' => 'planned',
+$app_list_strings['deploymentrelease_status_dom'] = [
+    ''         => '',
+    'planned'  => 'planned',
     'released' => 'released',
-    'canceled' => 'canceled'
-);
+    'canceled' => 'canceled',
+];
 
-$app_list_strings['product_status_dom'] = array(
-    'draft' => 'draft',
-    'active' => 'active',
-    'inactive' => 'inactive'
-);
+$app_list_strings['product_status_dom'] = [
+    'draft'    => 'draft',
+    'active'   => 'active',
+    'inactive' => 'inactive',
+];
+
+$app_list_strings['textmessage_direction'] = [
+    'i' => 'Inbound',
+    'o' => 'Outbound',
+];
+
+$app_list_strings['textmessage_delivery_status'] = [
+    'draft'  => 'Draft',
+    'sent'   => 'Sent',
+    'failed' => 'Failed',
+];
 
 $app_list_strings['event_status_dom'] = array(
     'planned' => 'planned',

@@ -793,6 +793,18 @@ $app_list_strings = array (
     ),
 
 
+    'dom_textmessage_status' => array(
+        'archived'                                         => 'Archivado',
+        'closed'                                           => 'Cerrado',
+        'draft'                                            => 'Borrador',
+        'read'                                             => 'Leído',
+        'replied'                                          => 'Respondido',
+        'sent'                                             => 'Enviado',
+        'send_error'                                       => 'Error de Envío',
+        'unread'                                           => 'No leído',
+    ),
+
+
     'dom_email_archived_status' => array(
         'archived'                                         => 'Archivado',
     ),
@@ -2977,3 +2989,14 @@ Esta operación no puede hacerse atrás.',
     'LBL_DASHLET_CONFIGURE_TITLE'                      => 'Título',
     'LBL_DASHLET_CONFIGURE_DISPLAY_ROWS'               => 'Mostrar Filas',
 );
+
+$app_list_strings['textmessage_direction'] = [
+    'i' => 'Entrante',
+    'o' => 'Saliente',
+];
+
+$app_list_strings['textmessage_delivery_status'] = [
+    'draft'  => 'Borrador',
+    'sent'   => 'Enviado',
+    'failed' => 'Fallado',
+];

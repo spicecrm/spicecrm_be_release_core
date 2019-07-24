@@ -563,7 +563,35 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
         'checks' => array(
             'name' => 'checks',
             'type' => 'text'
-        )
+        ),
+        'potentials' =>
+            array(
+                'name' => 'potentials',
+                'type' => 'link',
+                'vname' => 'LBL_POTENTIALS',
+                'relationship' => 'leads_potential',
+                'source' => 'non-db',
+            ),
+        'potential_id' => array(
+            'name' => 'potential_id',
+            'vname' => 'LBL_POTENTIAL_ID',
+            'rname' => 'id',
+            'type' => 'varchar',
+            'len' => 36,
+            'table' => 'potentials',
+            'module' => 'Potentials'
+        ),
+        'potential_name' => array(
+            'name' => 'potential_name',
+            'rname' => 'name',
+            'id_name' => 'potential_id',
+            'vname' => 'LBL_POTENTIAL',
+            'type' => 'relate',
+            'link' => 'potentials',
+            'table' => 'potentials',
+            'module' => 'Potentials',
+            'source' => 'non-db'
+        ),
 
     )
 , 'indices' => array(
@@ -617,6 +645,15 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
             'relationship_type' => 'one-to-many',
             'relationship_role_column' => 'target_type',
             'relationship_role_column_value' => 'Leads'
+        ),
+        'leads_potential' => array(
+            'lhs_module' => 'Potentials',
+            'lhs_table' => 'potentials',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Leads',
+            'rhs_table' => 'leads',
+            'rhs_key' => 'potential_id',
+            'relationship_type' => 'one-to-many'
         )
 
     )

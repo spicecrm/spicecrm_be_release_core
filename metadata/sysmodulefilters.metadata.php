@@ -25,6 +25,11 @@ $dictionary['sysmodulefilters'] = array(
             'name' => 'filterdefs',
             'type' => 'text'
         ),
+        'filtermethod' => array(
+            'name' => 'filtermethod',
+            'type' => 'varchar',
+            'len' => 255
+        ),
         'version' => array(
             'name' => 'version',
             'type' => 'varchar',
@@ -68,6 +73,11 @@ $dictionary['syscustommodulefilters'] = array(
         'filterdefs' => array(
             'name' => 'filterdefs',
             'type' => 'text'
+        ),
+        'filtermethod' => array(
+            'name' => 'filtermethod',
+            'type' => 'varchar',
+            'len' => 255
         ),
         'version' => array(
             'name' => 'version',

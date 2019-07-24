@@ -51,7 +51,7 @@ global $app_strings;
 //we don't want the parent module's string file, but rather the string file specifc to this subpanel
 global $current_language;
 $current_module_strings = return_module_language($current_language, 'Opportunities');
-$project_module_strings = return_module_language($current_language, 'Project');
+$project_module_strings = return_module_language($current_language, 'Projects'); //@deprecated Project. Use Projects
 
 global $currentModule;
 

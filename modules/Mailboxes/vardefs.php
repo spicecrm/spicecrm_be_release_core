@@ -208,7 +208,7 @@ $dictionary['Mailbox'] = [
             'rhs_key' => 'mailbox_id',
             'relationship_type' => 'one-to-many',
         ],
-        'users' => array(
+        'users' => [
             'vname' => 'LBL_USERS',
             'name' => 'users',
             'type' => 'link',
@@ -216,7 +216,7 @@ $dictionary['Mailbox'] = [
             'bean_name' => 'User',
             'relationship' => 'mailboxes_users',
             'source' => 'non-db'
-        )
+        ],
     ],
 
     'indices' => [],

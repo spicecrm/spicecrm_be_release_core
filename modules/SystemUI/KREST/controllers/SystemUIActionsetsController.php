@@ -28,6 +28,7 @@ class SystemUIActionsetsController
                 'id' => $actionset['id'],
                 'action' => $actionset['action'],
                 'component' => $actionset['component'],
+                'singlebutton' => $actionset['singlebutton'],
                 'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new \stdClass()
             );
         }
@@ -41,6 +42,7 @@ class SystemUIActionsetsController
                     'name' => $actionset['name'],
                     'module' => $actionset['module'],
                     'type' => 'custom',
+                    '' => '',
                     'actions' => array()
                 );
             }
@@ -50,6 +52,7 @@ class SystemUIActionsetsController
                 'id' => $actionset['id'],
                 'action' => $actionset['action'],
                 'component' => $actionset['component'],
+                'singlebutton' => $actionset['singlebutton'],
                 'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new \stdClass()
             );
         }

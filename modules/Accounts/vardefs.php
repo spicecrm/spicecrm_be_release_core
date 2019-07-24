@@ -387,6 +387,11 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
                 'module' => 'ProspectLists',
                 'source' => 'non-db',
                 'vname' => 'LBL_PROSPECT_LIST',
+                'rel_fields' => [
+                    'quantity' => [
+                        'map' => 'prospectlists_accounts_quantity'
+                    ]
+                ]
             ),
 
         'proposals' => array(
@@ -490,6 +495,53 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
                 ]
             ]
         ),
+        'bonuscards' => [
+            'name' => 'bonuscards',
+            'type' => 'link',
+            'relationship' => 'bonuscards_accounts',
+            'module' => 'BonusCards',
+            'bean_name' => 'BonusCard',
+            'source' => 'non-db',
+            'vname' => 'LBL_BONUSCARDS',
+        ],
+        'prospectlists_accounts_quantity' => array(
+            'name' => 'prospectlists_accounts_quantity',
+            'vname' => 'LBL_QUANTITY',
+            'type' => 'varchar',
+            'source' => 'non-db'
+        ),
+        'potentials' => array(
+            'name' => 'potentials',
+            'vname' => 'LBL_POTENTIALS',
+            'type' => 'link',
+            'relationship' => 'account_potentials',
+            'module' => 'Accounts',
+            'source' => 'non-db'
+        ),
+        'resellerpotentials' => array(
+            'name' => 'resellerpotentials',
+            'vname' => 'LBL_RESELLERPOTENTIALS',
+            'type' => 'link',
+            'relationship' => 'accounts_potentials_resellers',
+            'module' => 'Accounts',
+            'source' => 'non-db'
+        ),
+        'maincompetitorpotentials' => array(
+            'name' => 'maincompetitorpotentials',
+            'vname' => 'LBL_MAINCOMPETITORPOTENTIALS',
+            'type' => 'link',
+            'relationship' => 'potential_maincompetitor',
+            'module' => 'Accounts',
+            'source' => 'non-db'
+        ),
+        'ompetitorpotentials' => array(
+            'name' => 'ompetitorpotentials',
+            'vname' => 'LBL_COMPETITORPOTENTIALS',
+            'type' => 'link',
+            'relationship' => 'accounts_potentials_competitors',
+            'module' => 'Accounts',
+            'source' => 'non-db'
+        )
     ),
     'indices' => array(
         array('name' => 'idx_accnt_id_del', 'type' => 'index', 'fields' => array('id', 'deleted')),

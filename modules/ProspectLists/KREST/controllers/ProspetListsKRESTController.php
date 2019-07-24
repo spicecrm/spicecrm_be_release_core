@@ -68,19 +68,19 @@ class ProspetListsKRESTController
         $seed = \BeanFactory::getBean($postBody['module']);
 
         if($postBody['ids'] && is_array($postBody['ids']) && count($postBody['ids']) > 0){
-            $query = "INSERT INTO prospect_lists_prospects (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 FROM {$seed->table_name} WHERE id IN ('" . join("','", $postBody['ids']) . "'))";
+            $query = "INSERT INTO prospect_lists_prospects (id, prospect_list_id, related_id, related_type, date_modified, deleted) (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 FROM {$seed->table_name} WHERE id IN ('" . join("','", $postBody['ids']) . "'))";
             $db->query($query);
         } else {
             switch ($postBody['listtype']) {
                 case 'all':
                 case 'owner':
                     $ftshandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
-                    $rawResults = $ftshandler->getRawSearchResults($postBody['module'], $postBody['searchterm'], $postBody, $postBody['aggregates'], 1000, 0, $postBody['sort'], [], false);
+                    $rawResults = $ftshandler->getRawSearchResults($postBody['module'], $postBody['searchterm'], $postBody, [$postBody['module'] =>  $postBody['aggregates']], 1000, 0, $postBody['sort'], [], false);
                     $prospectids = [];
                     foreach ($rawResults['hits']['hits'] as &$hit) {
                         $prospectids[] = $hit['_id'];
                     }
-                    $query = "INSERT INTO prospect_lists_prospects (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 FROM {$seed->table_name} WHERE id IN ('" . join("','", $prospectids) . "'))";
+                    $query = "INSERT INTO prospect_lists_prospects (id, prospect_list_id, related_id, related_type, date_modified, deleted) (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 FROM {$seed->table_name} WHERE id IN ('" . join("','", $prospectids) . "'))";
                     $db->query($query);
                     break;
                 default:
@@ -100,7 +100,7 @@ class ProspetListsKRESTController
                     }
 
                     $queryArray = $seed->create_new_list_query('', $listWhereClause, array(), array(), false, '', true, $seed, true);
-                    $query = "INSERT INTO prospect_lists_prospects (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 {$queryArray['from']} {$queryArray['where']})";
+                    $query = "INSERT INTO prospect_lists_prospects (id, prospect_list_id, related_id, related_type, date_modified, deleted) (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 {$queryArray['from']} {$queryArray['where']})";
                     $db->query($query);
                     break;
             }

@@ -21,6 +21,10 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
     );
 
     public static $prefixLengthsPsr4 = array (
+        'l' => 
+        array (
+            'libphonenumber\\' => 15,
+        ),
         'W' => 
         array (
             'Webmozart\\Assert\\' => 17,
@@ -59,6 +63,7 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
+            'Giggsey\\Locale\\' => 15,
         ),
         'F' => 
         array (
@@ -76,6 +81,10 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
     );
 
     public static $prefixDirsPsr4 = array (
+        'libphonenumber\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/giggsey/libphonenumber-for-php/src',
+        ),
         'Webmozart\\Assert\\' => 
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
@@ -160,6 +169,10 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         'GuzzleHttp\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
+        ),
+        'Giggsey\\Locale\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/giggsey/locale/src',
         ),
         'FontLib\\' => 
         array (

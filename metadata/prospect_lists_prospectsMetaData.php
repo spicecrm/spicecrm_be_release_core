@@ -35,7 +35,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['prospect_lists_prospects'] = array ( 
+$dictionary['prospect_lists_prospects'] = array (
 
 	'table' => 'prospect_lists_prospects',
 
@@ -60,6 +60,12 @@ $dictionary['prospect_lists_prospects'] = array (
 			'type' => 'varchar',
 			'len' => '25',  //valid values are Prospect, Contact, Lead, User
 		),
+		array (
+			'name' => 'quantity',
+			'type' => 'varchar',
+			'len' => '25',
+			'default' => '0'
+		),
         array (
 			'name' => 'date_modified',
 			'type' => 'datetime'
@@ -71,7 +77,7 @@ $dictionary['prospect_lists_prospects'] = array (
 			'default' => '0'
 		),
 	),
-	
+
 	'indices' => array (
 		array (
 			'name' => 'prospect_lists_prospectspk',
@@ -92,78 +98,78 @@ $dictionary['prospect_lists_prospects'] = array (
 						)
 		),
 	),
-	
+
  	'relationships' => array (
-		'prospect_list_contacts' => array(	'lhs_module'=> 'ProspectLists', 
-											'lhs_table'=> 'prospect_lists', 
+		'prospect_list_contacts' => array(	'lhs_module'=> 'ProspectLists',
+											'lhs_table'=> 'prospect_lists',
 											'lhs_key' => 'id',
-											'rhs_module'=> 'Contacts', 
-											'rhs_table'=> 'contacts', 
+											'rhs_module'=> 'Contacts',
+											'rhs_table'=> 'contacts',
 											'rhs_key' => 'id',
 											'relationship_type'=>'many-to-many',
-											'join_table'=> 'prospect_lists_prospects', 
-											'join_key_lhs'=>'prospect_list_id', 
+											'join_table'=> 'prospect_lists_prospects',
+											'join_key_lhs'=>'prospect_list_id',
 											'join_key_rhs'=>'related_id',
 											'relationship_role_column'=>'related_type',
 											'relationship_role_column_value'=>'Contacts'
 									),
 
-		'prospect_list_prospects' =>array(	'lhs_module'=> 'ProspectLists', 
-											'lhs_table'=> 'prospect_lists', 
+		'prospect_list_prospects' =>array(	'lhs_module'=> 'ProspectLists',
+											'lhs_table'=> 'prospect_lists',
 											'lhs_key' => 'id',
-											'rhs_module'=> 'Prospects', 
-											'rhs_table'=> 'prospects', 
+											'rhs_module'=> 'Prospects',
+											'rhs_table'=> 'prospects',
 											'rhs_key' => 'id',
 											'relationship_type'=>'many-to-many',
-											'join_table'=> 'prospect_lists_prospects', 
-											'join_key_lhs'=>'prospect_list_id', 
+											'join_table'=> 'prospect_lists_prospects',
+											'join_key_lhs'=>'prospect_list_id',
 											'join_key_rhs'=>'related_id',
 											'relationship_role_column'=>'related_type',
 											'relationship_role_column_value'=>'Prospects'
 									),
 
-		'prospect_list_leads' =>array(	'lhs_module'=> 'ProspectLists', 
-										'lhs_table'=> 'prospect_lists', 
+		'prospect_list_leads' =>array(	'lhs_module'=> 'ProspectLists',
+										'lhs_table'=> 'prospect_lists',
 										'lhs_key' => 'id',
-										'rhs_module'=> 'Leads', 
-										'rhs_table'=> 'leads', 
+										'rhs_module'=> 'Leads',
+										'rhs_table'=> 'leads',
 										'rhs_key' => 'id',
 										'relationship_type'=>'many-to-many',
-										'join_table'=> 'prospect_lists_prospects', 
-										'join_key_lhs'=>'prospect_list_id', 
+										'join_table'=> 'prospect_lists_prospects',
+										'join_key_lhs'=>'prospect_list_id',
 										'join_key_rhs'=>'related_id',
 										'relationship_role_column'=>'related_type',
 										'relationship_role_column_value'=>'Leads',
 								),
 
-		'prospect_list_users' =>array(	'lhs_module'=> 'ProspectLists', 
-										'lhs_table'=> 'prospect_lists', 
+		'prospect_list_users' =>array(	'lhs_module'=> 'ProspectLists',
+										'lhs_table'=> 'prospect_lists',
 										'lhs_key' => 'id',
-										'rhs_module'=> 'Users', 
-										'rhs_table'=> 'users', 
+										'rhs_module'=> 'Users',
+										'rhs_table'=> 'users',
 										'rhs_key' => 'id',
 										'relationship_type'=>'many-to-many',
-										'join_table'=> 'prospect_lists_prospects', 
-										'join_key_lhs'=>'prospect_list_id', 
+										'join_table'=> 'prospect_lists_prospects',
+										'join_key_lhs'=>'prospect_list_id',
 										'join_key_rhs'=>'related_id',
 										'relationship_role_column'=>'related_type',
 										'relationship_role_column_value'=>'Users',
 								),
 
-		'prospect_list_accounts' =>array(	'lhs_module'=> 'ProspectLists', 
-											'lhs_table'=> 'prospect_lists', 
+		'prospect_list_accounts' =>array(	'lhs_module'=> 'ProspectLists',
+											'lhs_table'=> 'prospect_lists',
 											'lhs_key' => 'id',
-											'rhs_module'=> 'Accounts', 
-											'rhs_table'=> 'accounts', 
+											'rhs_module'=> 'Accounts',
+											'rhs_table'=> 'accounts',
 											'rhs_key' => 'id',
 											'relationship_type'=>'many-to-many',
-											'join_table'=> 'prospect_lists_prospects', 
-											'join_key_lhs'=>'prospect_list_id', 
+											'join_table'=> 'prospect_lists_prospects',
+											'join_key_lhs'=>'prospect_list_id',
 											'join_key_rhs'=>'related_id',
 											'relationship_role_column'=>'related_type',
 											'relationship_role_column_value'=>'Accounts',
 								)
 	)
-	
+
 )
 ?>

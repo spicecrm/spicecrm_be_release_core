@@ -82,8 +82,8 @@ class ProjectWBS extends SugarBean
         $mywbss = array();
 
         $sql = "SELECT pw.id pwid, pa.id paid 
-                FROM projectwbss pw, projectplannedactivities pa 
-                WHERE pw.id = pa.projectwbs_id AND pa.assigned_user_id = '$current_user->id' AND pw.deleted = 0 AND pa.deleted = 0 AND pw.wbs_status < 2
+                FROM projects pr, projectwbss pw, projectplannedactivities pa 
+                WHERE pr.id = pw.project_id AND pw.id = pa.projectwbs_id AND pa.assigned_user_id = '$current_user->id' AND pw.deleted = 0 AND pa.deleted = 0 AND pw.wbs_status < 2 AND pr.status in ('active', 'Published')
                 ORDER BY pw.project_id ASC, pw.name";
         $plannedActivities = $this->db->query($sql);
         while($plannedActivity = $this->db->fetchByAssoc($plannedActivities)){

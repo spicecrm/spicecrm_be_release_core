@@ -99,6 +99,11 @@ $dictionary['spicebeanguidestages'] = array(
         'stage_add_data' => array(
             'name' => 'stage_add_data',
             'type' => 'text'
+        ),
+        'stage_label' => array(
+            'name' => 'stage_label',
+            'type' => 'varchar',
+            'len' => 50
         )
     ),
    'indices' => array(
@@ -182,6 +187,11 @@ $dictionary['spicebeanguidestages_checks'] = array(
             'name' => 'check_method',
             'type' => 'varchar',
             'len' => '80'
+        ),
+        'check_label' => array(
+            'name' => 'check_label',
+            'type' => 'varchar',
+            'len' => 50
         )
     ),
     'indices' => array(

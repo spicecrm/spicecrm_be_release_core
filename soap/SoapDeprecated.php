@@ -298,10 +298,10 @@ function add_contacts_matching_email_address(&$output_list, $email_address, &$se
 			$output_list[] = get_bean_array($bug, $msi_id, 'Bug');
 		}
 
-		$projects = $contact->get_linked_beans('project','Project');
+		$projects = $contact->get_linked_beans('projects','Projects');
 		foreach($projects as $project)
 		{
-			$output_list[] = get_bean_array($project, $msi_id, 'Project');
+			$output_list[] = get_bean_array($project, $msi_id, 'Projects');
 		}
 
 		$msi_id = $msi_id + 1;
@@ -398,10 +398,10 @@ function get_contact_relationships($user_name, $password, $id)
 			$output_list[] = get_bean_array($bug, $msi_id, 'Bug');
 		}
 
-		$projects = $seed_contact->get_linked_beans('project','Project');
+		$projects = $seed_contact->get_linked_beans('projects','Projects');
 		foreach($projects as $project)
 		{
-			$output_list[] = get_bean_array($project, $msi_id, 'Project');
+			$output_list[] = get_bean_array($project, $msi_id, 'Projects');
 		}
 		return $output_list;
 }

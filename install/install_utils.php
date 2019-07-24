@@ -2065,7 +2065,7 @@ function create_current_date_time()
 function create_time($hr=null,$min=null,$sec=null)
 {
     global $timedate;
-    $date = TimeDate::fromTimestamp(0);
+    $date = $timedate->fromTimestamp(0);
     if ($hr==null) $hr=mt_rand(6,19);
     if ($min==null) $min=(mt_rand(0,3)*15);
     if ($sec==null) $sec=0;

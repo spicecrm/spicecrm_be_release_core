@@ -301,6 +301,7 @@ class SystemUIRESTHandler
                 'id' => $actionset['id'],
                 'action' => $actionset['action'],
                 'component' => $actionset['component'],
+                'singlebutton' => $actionset['singlebutton'],
                 'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new \stdClass()
             );
         }
@@ -323,6 +324,7 @@ class SystemUIRESTHandler
                 'id' => $actionset['id'],
                 'action' => $actionset['action'],
                 'component' => $actionset['component'],
+                'singlebutton' => $actionset['singlebutton'],
                 'actionconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($actionset['actionconfig'])), true) ?: new \stdClass()
             );
         }
@@ -400,7 +402,7 @@ class SystemUIRESTHandler
 
         while ($sysuirole = $this->db->fetchByAssoc($sysuiroles)) {
             if (array_search($sysuirole['id'], $roleids) === false) {
-                $allRoles[] = $sysuirole;
+                $allRoles[] = array_merge( $sysuirole, [ 'custom' => true ]);
                 $roleids[] = $sysuirole['id'];
             }
         }
@@ -423,7 +425,7 @@ class SystemUIRESTHandler
 
                     $retArray = array('status' => 'success', 'roleId' => $sysuirole_id);
                 } else
-                    $retArray = array('status' => 'error', 'message' => 'Role exists');
+                    $retArray = array('status' => 'error', 'message' => 'Role already assigned.');
                 break;
             case 'default':
                 $this->db->query("UPDATE sysuiuserroles  SET defaultrole = 0 WHERE user_id = '$user_id'");
@@ -1040,7 +1042,12 @@ class SystemUIRESTHandler
         global $db;
         $mappingArray = [];
 
-        $mappings = $db->query("SELECT * FROM sysuifieldtypemapping UNION SELECT * FROM sysuicustomfieldtypemapping");
+        $mappings = $db->query("SELECT * FROM sysuifieldtypemapping");
+        while ($mapping = $db->fetchByAssoc($mappings)) {
+            $mappingArray[$mapping['fieldtype']] = $mapping['component'];
+        }
+
+        $mappings = $db->query("SELECT * FROM sysuicustomfieldtypemapping");
         while ($mapping = $db->fetchByAssoc($mappings)) {
             $mappingArray[$mapping['fieldtype']] = $mapping['component'];
         }

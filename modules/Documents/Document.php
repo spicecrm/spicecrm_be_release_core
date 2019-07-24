@@ -246,6 +246,7 @@ class Document extends SugarBean
             }
 
             if(isset($row['filename']))$this->filename = $row['filename'];
+            if(isset($row['file_mime_type']))$this->file_mime_type = $row['file_mime_type'];
             //$this->latest_revision = $row['revision'];
             if(isset($row['revision'])){
                 $this->revision = $row['revision'];

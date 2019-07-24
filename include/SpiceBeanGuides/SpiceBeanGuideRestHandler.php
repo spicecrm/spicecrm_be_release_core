@@ -66,6 +66,7 @@ class SpiceBeanGuideRestHandler
             if (!isset($stages[$stage['stage']]) || $stage['stage'] . $stage['secondary_stage'] == $focus->$statusField) {
                 $stages[$stage['stage']] = $stage;
                 $stages[$stage['stage']]['stage_description'] = html_entity_decode($stage['stage_description']);
+                $stages[$stage['stage']]['stage_label'] = html_entity_decode($stage['stage_label']);
                 $stages[$stage['stage']]['pastactive'] = $stagePassed;
                 $stages[$stage['stage']]['statusfield'] = $object['status_field'];
 
@@ -73,7 +74,7 @@ class SpiceBeanGuideRestHandler
                 $stages[$stage['stage']]['checks'] = array();
                 $stages[$stage['stage']]['checkcontent'] = '';
                 $checks = $db->query("SELECT sc.*, sct.text FROM spicebeanguidestages_checks sc LEFT JOIN spicebeanguidestages_check_texts sct on sc.id = sct.stage_check_id AND sct.language='$current_language' WHERE sc.spicebeanguide_id = '" . $object['id'] . "' AND sc.stage_id = '" . $stage['id'] . "' ORDER BY sc.check_sequence");
-                if (!empty($beanid)) {
+//                if (!empty($beanid)) {
                     while ($check = $db->fetchByAssoc($checks)) {
                         if (file_exists($check['check_include'])) {
                             require_once($check['check_include']);
@@ -83,11 +84,12 @@ class SpiceBeanGuideRestHandler
                             $stages[$stage['stage']]['checks'][] = array(
                                 'checkid' => $check['id'],
                                 'name' => $check['text'],
+                                'label' => $check['check_label'],
                                 'result' => $checkResult
                             );
                         }
                     }
-                }
+//                }
             }
         }
 

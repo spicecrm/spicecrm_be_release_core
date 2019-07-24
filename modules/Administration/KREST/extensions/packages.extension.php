@@ -1,5 +1,5 @@
 <?php
-require_once('modules/Administration/KREST/controller/packages.controller.php');
+require_once('modules/Administration/KREST/controllers/packages.controller.php');
 
 $app->group('/packages', function () {
     $this->get('/repositories', [new PackageController(), 'getRepositories']);

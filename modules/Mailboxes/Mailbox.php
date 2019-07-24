@@ -309,4 +309,87 @@ class Mailbox extends SugarBean {
 
         return $defaultSettings;
     }
+
+    /**
+     * findByPhoneNumber
+     *
+     * Searches for a Mailbox with the given number set as phone_number_from in the JSON settings.
+     * Useful only for SMS Mailboxes.
+     *
+     * @param $phoneNo
+     * @return bool|Mailbox
+     */
+    public static function findByPhoneNumber($phoneNo) {
+        global $db;
+
+        $query = "SELECT id FROM mailboxes WHERE inbound_comm='1' AND (outbound_comm='single_sms' OR outbound_comm='mass_sms')";
+        $q = $db->query($query);
+
+        while($row = $db->fetchRow($q)) {
+            $mailbox = BeanFactory::getBean('Mailboxes', $row['id']);
+            if ($mailbox->settings != '') {
+                $mailbox->initTransportHandler();
+            }
+            if ($mailbox->phone_number_from == $phoneNo) {
+                return $mailbox;
+            }
+        }
+
+        return false;
+    }
+
+    public function getUnreadEmailsCount() {
+        global $db;
+
+        $query = "SELECT COUNT(*) as cnt from " . $this->getMessagesTable() . " WHERE mailbox_id='" . $this->id . "'"
+                . " AND status='unread'";
+        $q = $db->query($query);
+        $result = $db->fetchByAssoc($q);
+
+        return $result['cnt'];
+    }
+
+    public function getReadEmailsCount() {
+        global $db;
+
+        $query = "SELECT COUNT(*) as cnt from " . $this->getMessagesTable() . " WHERE mailbox_id='" . $this->id . "'"
+            . " AND status='read'";
+        $q = $db->query($query);
+        $result = $db->fetchByAssoc($q);
+
+        return $result['cnt'];
+    }
+
+    public function getClosedEmailsCount() {
+        global $db;
+
+        $query = "SELECT COUNT(*) as cnt from " . $this->getMessagesTable() . " WHERE mailbox_id='" . $this->id . "'"
+            . " AND status='closed'";
+        $q = $db->query($query);
+        $result = $db->fetchByAssoc($q);
+
+        return $result['cnt'];
+    }
+
+    // todo just add a type field to the mailbox table, coz this is getting too messy
+    // and won't work for exclusively inbound mailboxes
+    private function getMessagesTable() {
+        if ($this->outbound_comm == 'single_sms' || $this->outbound_comm == 'mass_sms') {
+            return 'textmessages';
+        }
+        if ($this->outbound_comm == 'single' || $this->outbound_comm == 'mass') {
+            return 'emails';
+        }
+        return '';
+    }
+
+    public function getType() {
+        if ($this->outbound_comm == 'single_sms' || $this->outbound_comm == 'mass_sms') {
+            return 'sms';
+        }
+        if ($this->outbound_comm == 'single' || $this->outbound_comm == 'mass') {
+            return 'email';
+        }
+        return '';
+    }
 }

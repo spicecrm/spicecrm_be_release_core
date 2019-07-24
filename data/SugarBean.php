@@ -398,7 +398,9 @@ class SugarBean
      * @return bool
      */
     public function isNew(){
-        return ($this->_bean_action == self::BEAN_ACTION_CREATE);
+        // added check on new_with_id for BW compatibility
+        // return ($this->_bean_action == self::BEAN_ACTION_CREATE);
+        return ($this->_bean_action == self::BEAN_ACTION_CREATE || $this->new_with_id);
     }
 
     /**
@@ -876,7 +878,7 @@ class SugarBean
      *
      *  Internal function, do not override.
      */
-    function createRelationshipMeta($key, $db, $tablename, $dictionary, $module_dir, $iscustom = false)
+    static function createRelationshipMeta($key, $db, $tablename, $dictionary, $module_dir, $iscustom = false)
     {
         //forget relationships if tablename is empty. Will be the case with MergeRecords.
         //avoid unnecessary log line "createRelationshipMeta: Metadata for table  does not exist"
@@ -1600,9 +1602,9 @@ class SugarBean
         }
 
         // workflow handler
-        if($thisWorkflow = BeanFactory::getBean('Workflows')) {
-            $thisWorkflow->WorkflowHandler($this);
-        }
+        //if($thisWorkflow = BeanFactory::getBean('Workflows')) {
+        //    $thisWorkflow->WorkflowHandler($this);
+        //}
 
         //Now that the record has been saved, we don't want to insert again on further saves
         $this->new_with_id = false;
