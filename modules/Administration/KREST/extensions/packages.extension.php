@@ -12,7 +12,7 @@ $app->group('/packages', function () {
     $this->group('/language/{language}', function () {
         $this->get('[/{repository}]', [new PackageController(), 'loadLanguage']);
         $this->put('[/{repository}]', [new PackageController(), 'loadLanguage']);
-        $this->delete('/', [new PackageController(), 'deleteLanguage']);
+        $this->delete('', [new PackageController(), 'deleteLanguage']);
         $this->post('/default', [new PackageController(), 'setDefaultLanguage']);
     });
 });
