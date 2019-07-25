@@ -87,7 +87,7 @@ class Prospect extends Person {
 	var $alt_address_state;
 	var $alt_address_postalcode;
 	var $alt_address_country;
-	var $tracker_key;
+//	var $tracker_key;
 	var $lead_id;
 	var $account_name;
 	var $assigned_real_user_name;

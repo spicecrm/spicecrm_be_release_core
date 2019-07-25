@@ -40,15 +40,16 @@ $dictionary['Prospect'] = array(
 	'table' => 'prospects',
 	'unified_search' => true,
 	'fields' => array (
-	 'tracker_key' => array (
-		'name' => 'tracker_key',
-		'vname' => 'LBL_TRACKER_KEY',
-		'type' => 'int',
-		'len' => '11',
-		'auto_increment' => true,
-		'importable' => 'false',
-		'studio' => array('editview' => false),
-		),
+//removed since release 2019.07.001
+//	 'tracker_key' => array (
+//		'name' => 'tracker_key',
+//		'vname' => 'LBL_TRACKER_KEY',
+//		'type' => 'int',
+//		'len' => '11',
+//		'auto_increment' => true,
+//		'importable' => 'false',
+//		'studio' => array('editview' => false),
+//		),
 	  'birthdate' =>
 	  array (
 	    'name' => 'birthdate',
@@ -186,11 +187,11 @@ $dictionary['Prospect'] = array(
 
 	'indices' =>
 			array (
-				array(
-						'name' => 'prospect_auto_tracker_key' ,
-						'type'=>'index' ,
-						'fields'=>array('tracker_key')
-				),
+//				array(
+//						'name' => 'prospect_auto_tracker_key' ,
+//						'type'=>'index' ,
+//						'fields'=>array('tracker_key')
+//				),
        			array(	'name' 	=>	'idx_prospects_last_first',
 						'type' 	=>	'index',
 						'fields'=>	array(

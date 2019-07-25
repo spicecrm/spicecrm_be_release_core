@@ -114,7 +114,7 @@ $header['content'] = $content;
 $res = json_decode($content);
 if(!is_object($res) || empty($res->version)){
     $sugar_smarty->assign('REWRITE',false);
-    $sugar_smarty->assign('REWRITE_ERROR','<h2 style="color:red">Url rewrite is not working. Please ensure you have enabled and configured url rewriting on this webserver. Check also site_url value in config.php.</h2>');
+    $sugar_smarty->assign('REWRITE_ERROR','<h2 style="color:red">Url rewrite is not working. Please ensure you have enabled and configured url rewriting on this webserver.</h2>');
 }else{
     $sugar_smarty->assign('REWRITE',true);
 }
