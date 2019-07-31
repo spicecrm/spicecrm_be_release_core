@@ -369,8 +369,7 @@ class SpiceFTSBeanHandler
 
             // special type for parentids collector
 
-            //if ($indexProperty['indextype'] == 'parentid' || $indexProperty['indextype'] == 'activitydate') {
-            if ($indexProperty['indextype'] == 'parentid' ) {
+            if ($indexProperty['indextype'] == 'parentid' || $indexProperty['indextype'] == 'activitydate') {
                 continue;
             }
 
