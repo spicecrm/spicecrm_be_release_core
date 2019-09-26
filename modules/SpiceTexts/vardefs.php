@@ -90,7 +90,7 @@ $dictionary['SpiceText'] = array(
         array('name' => 'idx_spicetexts_parentid_del', 'type' => 'index', 'fields' => array('parent_id', 'deleted')),
         array('name' => 'idx_spicetexts_parenttype_del', 'type' => 'index', 'fields' => array('parent_type', 'deleted')),
         array('name' => 'idx_spicetexts_txid_lang_del', 'type' => 'index', 'fields' => array('text_id', 'text_language','deleted')),
-        array('name' => 'idx_spicetexts_txid_lang_del', 'type' => 'index', 'fields' => array('parent_id', 'text_language','deleted')),
+        array('name' => 'idx_spicetexts_parid_lang_del', 'type' => 'index', 'fields' => array('parent_id', 'text_language','deleted')),
 	)
 );
 

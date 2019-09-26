@@ -93,7 +93,7 @@ class SpiceModuleCreator extends SugarBean{
     public function getSpicePath(){
         $path = "";
         $levels = 2;
-        if(preg_match("custom".DIRECTORY_SEPARATOR."modules", dirname(__FILE__))){
+        if(preg_match("|custom".DIRECTORY_SEPARATOR."modules|", dirname(__FILE__))){
             $levels = 3;
         }
 
