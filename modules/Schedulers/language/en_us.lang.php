@@ -170,6 +170,7 @@ $mod_strings = array(
     'LBL_CLEANJOBQUEUE' => 'Cleanup Job Queue',
     'LBL_REMOVEDOCUMENTSFROMFS' => 'Removal of documents from filesystem',
     'LBL_FULLTEXTINDEX' => 'Full Text Indexing',
+    'LBL_FULLTEXTINDEXBULK' => 'Full Text Indexing (bulk)',
     'LBL_KDEPLOYMENTMWNOTIFICATION' => 'Maintenance Window notify Users',
 
     'LBL_RUNCAMPAIGNEMAILSNEW' => 'Send Campaign Emails (new)',
@@ -181,4 +182,6 @@ $mod_strings = array(
     'LBL_CLEANSYSLOGS' => 'Clean up SysLogs',
     'LBL_SYNCGOOGLECALENDAR' => 'Sync Google Calendar',
     'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
+    'LBL_SCHEDULERTEST' => 'Dummy function for testing the scheduler (does nothing)',
+    'LBL_URL_SPECIFIED' => 'URL (to be specified)'
 );

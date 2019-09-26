@@ -2,6 +2,9 @@
 
 namespace SpiceCRM\modules\Users\KREST\controllers;
 
+use KREST\ForbiddenException;
+use KREST\NotFoundException;
+
 class UsersPreferencesKRESTController
 {
 
@@ -13,42 +16,67 @@ class UsersPreferencesKRESTController
      */
     public function getGlobalPreferences()
     {
-        return $this->get_all_user_preferences('global');
+        global $current_user;
+        return $this->get_all_user_preferences('global', $current_user->id );
     }
 
     public function getPreferences($req, $res, $args)
     {
         $names = $req->getParam('names');
         if (!isset($names)) {
-            return $res->withJson($this->get_all_user_preferences($args['category']));
+            return $res->withJson($this->get_all_user_preferences( $args['category'], $args['userId'] ));
         } else {
-            return $res->withJson($this->get_user_preferences($args['category'], $names));
+            return $res->withJson($this->get_user_preferences($args['category'], $names, $args['userId'] ));
         }
     }
 
     public function getUserPreferences($req, $res, $args)
     {
-        return $res->withJson($this->get_user_preferences($args['category'], $args['names']));
+        return $res->withJson($this->get_user_preferences($args['category'], $args['names'], $args['userId']));
     }
 
-    public function get_all_user_preferences($category)
+    public function get_all_user_preferences( $category, $userId )
     {
         global $current_user;
+
+        if ( $current_user->id === $userId ) $user = $current_user;
+        else {
+            if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ) {
+                $user = new \User();
+                $user->retrieve( $userId );
+                if ( empty( $user->id )) throw ( new NotFoundException('User not found.'))->setLookedFor([ 'id'=>$userId, 'module'=>'Users' ]);
+            } else {
+                throw new ForbiddenException('Forbidden to access user preferences of foreign user.');
+            }
+        }
+
         require_once 'modules/UserPreferences/UserPreference.php';
-        $userPreference = new \UserPreference($current_user);
+        $userPreference = new \UserPreference( $user );
 
         $prefArray = array();
 
         $userPreference->loadPreferences($category);
 
-        return $_SESSION[$current_user->user_name . '_PREFERENCES'][$category];
+        return $_SESSION[$user->user_name . '_PREFERENCES'][$category];
     }
 
-    public function get_user_preferences($category, $names)
-    {
+    public function get_user_preferences( $category, $names, $userId ) {
+
         global $current_user;
+
+        if ( $current_user->id === $userId ) $user = $current_user;
+        else {
+            if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ) {
+                $user = new \User();
+                $user->retrieve( $userId );
+                if ( empty( $user->id )) throw ( new NotFoundException( 'User not found.' ) )->setLookedFor( [ 'id' => $userId, 'module' => 'Users' ] );
+            } else {
+                throw new ForbiddenException('Forbidden to access user preferences of foreign user.');
+            }
+        }
+
         require_once 'modules/UserPreferences/UserPreference.php';
-        $userPreference = new \UserPreference($current_user);
+        $userPreference = new \UserPreference( $user );
 
         $prefArray = array();
 
@@ -67,10 +95,22 @@ class UsersPreferencesKRESTController
         global $current_user;
 
         $category = $args['category'];
+        $userId = $args['userId'];
         $preferences = $req->getParsedBody();
 
+        if ( $current_user->id === $userId ) $user = $current_user;
+        else {
+            if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ) {
+                $user = new \User();
+                $user->retrieve( $userId );
+                if ( empty( $user->id )) throw ( new NotFoundException('User not found.'))->setLookedFor([ 'id'=>$userId, 'module'=>'Users' ]);
+            } else {
+                throw new ForbiddenException('Forbidden to change user preferences of foreign user.');
+            }
+        }
+
         require_once 'modules/UserPreferences/UserPreference.php';
-        $userPreference = new \UserPreference($current_user);
+        $userPreference = new \UserPreference( $user );
         $retData = array();
         // do the magic
         foreach ($preferences as $name => $value) {
@@ -81,4 +121,15 @@ class UsersPreferencesKRESTController
 
         return $res->withJson($retData);
     }
+
+    public function getDefaultPreferences()
+    {
+        $prefs = [];
+        $prefNames = [ 'currency', 'datef', 'num_grp_sep', 'timef', 'timezone', 'default_currency_significant_digits', 'default_locale_name_format', 'week_day_start' ];
+        foreach ( $prefNames as $name ) {
+            if ( isset( $GLOBALS['sugar_config'][$name]{0} )) $prefs[$name] = $GLOBALS['sugar_config'][$name];
+        }
+        return $prefs;
+    }
+
 }

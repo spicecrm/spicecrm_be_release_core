@@ -1306,6 +1306,11 @@ $app_list_strings = array(
         'OR' => 'Auftrag',
         'IV' => 'Rechnung'
     ),
+    'salesdoc_doccategories' => array(
+        'QT' => 'Angebot',
+        'OR' => 'Auftrag',
+        'IV' => 'Rechnung'
+    ),
     'salesdoc_docparties' => array(
         'I' => 'Person',
         'B' => 'Unternehmen'
@@ -3195,6 +3200,8 @@ if (file_exists('modules/Products/Product.php')) {
 }
 
 if (file_exists('modules/Questionnaires/Questionnaire.php')) {
+    $app_list_strings['moduleList']['QuestionnaireEvaluationItems'] = 'Fragebogen-Auswertung-Positionen';
+    $app_list_strings['moduleList']['QuestionnaireEvaluations'] = 'Fragebogen-Auswertungen';
     $app_list_strings['moduleList']['QuestionnaireInterpretations'] = 'Fragebogen-Interpretationen';
     $app_list_strings['moduleList']['Questionnaires'] = 'Fragebögen';
     $app_list_strings['moduleList']['Questions'] = 'Fragen';
@@ -3203,6 +3210,8 @@ if (file_exists('modules/Questionnaires/Questionnaire.php')) {
     $app_list_strings['moduleList']['QuestionnaireParticipations'] = 'Fragebogen Teilnahmen';
     $app_list_strings['moduleList']['QuestionOptions'] = 'Frage Optionen';
     $app_list_strings['moduleList']['QuestionOptionCategories'] = 'Frage Option Kategorien';
+    $app_list_strings['moduleListSingular']['QuestionnaireEvaluations'] = 'Fragebogen-Auswertung';
+    $app_list_strings['moduleListSingular']['QuestionnaireEvaluationItems'] = 'Fragebogen-Auswertung-Position';
     $app_list_strings['moduleListSingular']['QuestionnaireInterpretations'] = 'Fragebogen-Interpretation';
     $app_list_strings['moduleListSingular']['Questionnaires'] = 'Fragebogen';
     $app_list_strings['moduleListSingular']['Questions'] = 'Frage';
@@ -4216,14 +4225,29 @@ $app_list_strings['textmessage_delivery_status'] = [
     'failed' => 'Fehlgeschlagen',
 ];
 
-$app_list_strings['event_status_dom'] = array(
+$app_list_strings['event_status_dom'] = [
     'planned' => 'geplant',
     'active' => 'aktiv',
     'canceled' => 'storniert'
-);
+];
 
-$app_list_strings['event_category_dom'] = array(
+$app_list_strings['event_category_dom'] = [
     'presentations' => 'Präsentationen',
     'seminars' => 'Seminare',
     'conferences' => 'Konferenzen'
+];
+
+
+$app_list_strings['incoterms_dom'] = array(
+    'EXW' => 'Ab Werk',
+    'FCA' => 'Frei Frachtführer',
+    'FAS' => 'Frei Längsseite Schiff',
+    'FOB' => 'Frei an Bord',
+    'CFR' => 'Kosten und Fracht',
+    'CIF' => 'Kosten, Versicherung & Fracht',
+    'CPT' => 'Frachtfrei',
+    'CIP' => 'Frachtfrei versichert',
+    'DAT' => 'Geliefert Terminal',
+    'DAP' => 'Geliefert benannter Ort',
+    'DDP' => 'Geliefert verzollt',
 );

@@ -65,31 +65,35 @@ class SpiceFavorites
         $thisBean = null;
         $module_icons = array(); //CR1000149
         while ($thisFav = $db->fetchByAssoc($favoritesRes)) {
-            if (!($thisBean instanceof $beanList[$thisFav['bean']])) {
-                $thisBean = \BeanFactory::getBean($thisFav['bean']);
-            }
+            // in case the module for deleted after an upgrade, check if class does exist
+            if(class_exists($beanList[$thisFav['bean']])) {
 
-            //BEGIN CR1000149
-            if(!isset($module_icons[$thisFav['bean']])){
-                $module_icons[$thisFav['bean']] = \SugarThemeRegistry::current()->getImageURL($thisFav['bean'].'.gif');
-            }
-            //END
+                if (!($thisBean instanceof $beanList[$thisFav['bean']])) {
+                    $thisBean = \BeanFactory::getBean($thisFav['bean']);
+                }
 
-            if($thisBean->retrieve($thisFav['beanid'])) {
-                $favorites[] = array(
-                    'item_id' => $thisFav['beanid'],
-                    'module_name' => $thisFav['bean'],
-                    'item_summary' => $thisBean->name,
-                    'item_summary_short' => substr($thisBean->name, 0, 15),
-                    //BEGIN CR1000149
-                    'module_icon' => \SugarThemeRegistry::current()->getImageURL($thisFav['bean'].'.gif')
-                    //END
-                );
-            } else {
-                self::delete_favorite($thisFav['module'], $thisFav['beanid']);
+                //BEGIN CR1000149
+                if (!isset($module_icons[$thisFav['bean']])) {
+                    $module_icons[$thisFav['bean']] = \SugarThemeRegistry::current()->getImageURL($thisFav['bean'] . '.gif');
+                }
+                //END
+
+                if ($thisBean->retrieve($thisFav['beanid'])) {
+                    $favorites[] = array(
+                        'item_id' => $thisFav['beanid'],
+                        'module_name' => $thisFav['bean'],
+                        'item_summary' => $thisBean->name,
+                        'item_summary_short' => substr($thisBean->name, 0, 15),
+                        //BEGIN CR1000149
+                        'module_icon' => \SugarThemeRegistry::current()->getImageURL($thisFav['bean'] . '.gif')
+                        //END
+                    );
+                } else {
+                    self::delete_favorite($thisFav['module'], $thisFav['beanid']);
+                }
+                $thisBean = null;
+                unset($thisBean);
             }
-            $thisBean = null;
-            unset($thisBean);
         }
 
         return $favorites;

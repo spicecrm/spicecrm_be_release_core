@@ -1,5 +1,16 @@
 <?php
 $elasticTokenizers = array(
+    "spice_standard_all" => array(
+        "type" => "standard",
+        "min_gram" => "3",
+        "token_chars"=> [
+            "letter",
+            "digit",
+            "punctuation",
+            "symbol",
+            "whitespace"
+        ]
+    ),
     "spice_ngram" => array(
         "type" => "nGram",
         "min_gram" => "3",
@@ -7,6 +18,18 @@ $elasticTokenizers = array(
         "token_chars" => [
             "letter",
             "digit"
+        ]
+    ),
+    "spice_ngram_all" => array(
+        "type" => "nGram",
+        "min_gram" => "3",
+        "max_gram" => "20",
+        "token_chars"=> [
+            "letter",
+            "digit",
+            "punctuation",
+            "symbol",
+            "whitespace"
         ]
     ),
     "spice_edgengram" => array(

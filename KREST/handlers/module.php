@@ -427,7 +427,9 @@ class KRESTModuleHandler
 
     public function export_bean_list($beanModule, $searchParams)
     {
-        global $db, $current_user, $sugar_config, $dictionary;
+        global $db, $current_user, $sugar_config, $dictionary, $app_list_strings, $current_language;
+
+        $app_list_strings = return_app_list_strings_language($current_language);
 
         // whitelist currencies modules
         $aclWhitelist = array(
@@ -573,6 +575,10 @@ class KRESTModuleHandler
         $fh = @fopen('php://output', 'w');
         fputcsv($fh, $returnFields, $delimiter);
         foreach ($beanList['list'] as $thisBean) {
+
+            // retrieve the bean to get the full fields
+            $thisBean->retrieve();
+
             $entryArray = [];
             foreach ($returnFields as $returnField)
                 $entryArray[] = !empty($charsetTo) ? mb_convert_encoding($thisBean->$returnField, $charsetTo) : $thisBean->$returnField;
@@ -776,6 +782,10 @@ class KRESTModuleHandler
         $thisBean = BeanFactory::getBean($beanModule, $beanId, array('encode' => false)); //set encode to false to avoid things like ' being translated to &#039;
         if (!$thisBean) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
+        if(!$thisBean->ACLAccess('view')){
+            throw (new KREST\ForbiddenException("not allowed to view this record"))->setErrorCode('noModuleView');
+        }
+
         $app_list_strings = return_app_list_strings_language($current_language);
 
         if ($requestParams['writetracker']) {
@@ -977,7 +987,7 @@ class KRESTModuleHandler
         // apply module filter if one is set
         if ($params['modulefilter']) {
             $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
-            $addWhere = $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter']);
+            $addWhere = $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter'], '', $thisBean);
             $sortBySequenceField = false;
         }
 
@@ -1012,7 +1022,7 @@ class KRESTModuleHandler
 
         // get related beans and related module
         // get_linked_beans($field_name, $bean_name, $sort_array = array(), $begin_index = 0, $end_index = -1, $deleted = 0, $optional_where = "")
-        $relBeans = $thisBean->get_linked_beans($linkName, $GLOBALS['beanList'][$beanModule], $sortingDefinition, $params['offset'] ?: 0, $params['limit'] ?: 5, 0, $addWhere);
+        $relBeans = $thisBean->get_linked_beans($linkName, $GLOBALS['beanList'][$beanModule], $sortingDefinition, $dummy = $params['offset'] ?: 0, $dummy + ( $params['limit'] ?: 5 ), 0, $addWhere);
 
         $retArray = array();
         foreach ($relBeans as $relBean) {
@@ -1091,7 +1101,14 @@ class KRESTModuleHandler
         $relBean = BeanFactory::getBean($relModule, $postparams['id']);
         if (!isset($relBean->id)) throw (new KREST\NotFoundException('Related record not found.'))->setLookedFor(['id' => $postparams['id'], 'module' => $relModule]);
 
-        $beanResponse = $this->add_bean($relModule, $postparams['id'], $postparams);
+        if(!$GLOBALS['ACLController']->checkAccess($relModule, 'edit', true) &&
+            !$GLOBALS['ACLController']->checkAccess($relModule, 'editrelated', true)){
+            throw (new KREST\ForbiddenException("Forbidden to edit in module $relModule."))->setErrorCode('noModuleEdit');
+        }
+
+        if(!$GLOBALS['ACLController']->checkAccess($relModule, 'edit', true)){
+            $beanResponse = $this->add_bean($relModule, $postparams['id'], $postparams);
+        }
 
         $relFields = $thisBean->field_defs[$linkName]['rel_fields'];
         if (is_array($relFields) && count($relFields) > 0) {
@@ -1161,8 +1178,8 @@ class KRESTModuleHandler
     {
         global $current_user, $timedate;
 
-        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true))
-            throw (new KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true) || !$GLOBALS['ACLController']->checkAccess($beanModule, 'create', true))
+            throw (new KREST\ForbiddenException("Forbidden to edit or create in module $beanModule."))->setErrorCode('noModuleEdit');
 
         if ($post_params['deleted']) {
 
@@ -1174,10 +1191,13 @@ class KRESTModuleHandler
         }
 
         $thisBean = BeanFactory::getBean($beanModule);
-        $thisBean->retrieve($beanId);
-
-        if (!$thisBean->ACLAccess('edit'))
-            throw (new KREST\ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
+        if($thisBean->retrieve($beanId)){
+            if (!$thisBean->ACLAccess('edit'))
+                throw (new KREST\ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
+        } else {
+            if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'create', true))
+                throw (new KREST\ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
+        }
 
         if (empty($thisBean->id) && !empty($beanId)) {
             $thisBean->new_with_id = true;

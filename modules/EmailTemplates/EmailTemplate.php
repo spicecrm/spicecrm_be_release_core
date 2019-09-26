@@ -750,21 +750,29 @@ class EmailTemplate extends SugarBean {
         $app_list_strings = return_app_list_strings_language($this->language);
 
         $retArray = array(
-            'subject' => $this->parseField('subject', $bean, $additionalValues ),
-            'body' => $this->parseField('body', $bean, $additionalValues ),
-            'body_html' => '<style>'.$this->getStyle().'</style>'.$this->parseField('body_html', $bean, $additionalValues ),
+            'subject' => $this->parsePlainTextField('subject', $bean, $additionalValues ),
+            'body' => $this->parseHTMLTextField('body', $bean, $additionalValues ),
+            # 'body_html' => '<style>'.$this->getStyle().'</style>'.$this->parseField('body_html', $bean, $additionalValues ),
+            'body_html' => $this->parseHTMLTextField('body_html', $bean, $additionalValues ),
         );
+        $retArray['subject'] = preg_replace('#\s+#', ' ', $retArray['subject'] ); // multiple white spaces -> one
 
         return $retArray;
     }
 
-    public function parseField($field, $parentbean = null, $additionalValues = null )
+    public function parseHTMLTextField( $field, $parentbean = null, $additionalValues = null )
     {
         $templateCompiler = new \SpiceCRM\includes\SpiceTemplateCompiler\Compiler();
         $html = $templateCompiler->compile($this->$field, $parentbean, $this->language, $additionalValues );
         return html_entity_decode($html);
     }
 
+    public function parsePlainTextField($field, $parentbean = null, $additionalValues = null )
+    {
+        $templateCompiler = new \SpiceCRM\includes\SpiceTemplateCompiler\Compiler();
+        $text = $templateCompiler->compileblock($this->$field, [ 'bean' => $parentbean ], $this->language, $additionalValues );
+        return $text;
+    }
 
     private function getStyle(){
         $style= '';

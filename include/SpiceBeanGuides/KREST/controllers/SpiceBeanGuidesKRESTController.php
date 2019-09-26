@@ -16,6 +16,13 @@ class SpiceBeanGuidesKRESTController{
             $retArray[$object['module']] = ['stages' => $restHandler->getStages($object['module']), 'statusfield' => $object['status_field']];
         }
 
+        //CR1000278 overwrite from custom
+        $objects = $db->query("SELECT module, status_field FROM spicebeancustomguides");
+        while($object = $db->fetchByAssoc($objects)){
+            // ToDo .. add ACL Check
+            $retArray[$object['module']] = ['stages' => $restHandler->getStages($object['module']), 'statusfield' => $object['status_field']];
+        }
+
         return $retArray;
     }
 

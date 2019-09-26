@@ -983,7 +983,7 @@ class KReporterRESTHandler
     function getPresentation($reportId, $requestParams)
     {
 
-        global $db, $current_language;
+        global $db, $current_language, $app_list_strings;
         $app_list_strings = return_app_list_strings_language($current_language);
 
         // initialize Return Array
@@ -1234,7 +1234,7 @@ class KReporterRESTHandler
 
         //extractWhereClause conditions
         if (isset($requestParams['whereConditions']) && !empty($requestParams['whereConditions'])) {
-            $thisReport->whereOverride = $requestParams['whereConditions'];
+            $thisReport->whereOverride = json_decode($requestParams['whereConditions'], true);
         }
 
         //catch dynamicoptions in url

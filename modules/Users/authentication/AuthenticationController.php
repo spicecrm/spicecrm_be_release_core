@@ -145,6 +145,14 @@ class AuthenticationController
         $this->loggedIn = true;
 
         if ($this->loginSuccess) {
+
+            // In case the access to the backend is allowed only for admins ("backend_only_for_admins" in config.php):
+            // Check if the user is admin and it is not a REST request:
+            if ( empty( $GLOBALS['isREST'] ) and !empty( $GLOBALS['sugar_config']['backend_only_for_admins'] ) and empty( $GLOBALS['current_user']->is_admin )) {
+                $GLOBALS['login_error'] = true;
+                $_SESSION['login_error'] = translate('ERR_ACCESS_ONLY_FOR_ADMINS');
+            }
+
             //Ensure the user is authorized
             checkAuthUserStatus();
 

@@ -235,6 +235,7 @@ $kreporterWhereOperatorAssignments = array(
     'char' => 'varchar',
     'double' => 'double',
     'int' => 'double',
+    'bigint' => 'double', //CR1000254
     'float' => 'double',
      //2013-04-06 type decimal
     'decimal' => 'double',

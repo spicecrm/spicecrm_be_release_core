@@ -89,6 +89,7 @@ class ElasticHandler
     function getStats()
     {
         $response = json_decode($this->query('GET',$this->indexPrefix . '*/_stats'), true);
+        $response['_prefix'] = $this->indexPrefix;
         return $response;
     }
 
@@ -277,6 +278,45 @@ class ElasticHandler
         }
 
         return $result;
+    }
+
+    function bulk($lines = array())
+    {
+        global $sugar_config;
+
+        $body = implode("\n", $lines) . "\n";
+
+        $cURL = $this->protocol . '://' . $this->server . ':' . $this->port . '/_bulk';
+        $ch = curl_init($cURL);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->ssl_verifyhost);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->ssl_verifypeer);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($body))
+        );
+
+
+        $start = microtime();
+        $result = curl_exec($ch);
+        $end = microtime();
+
+        $rt_local = microtime_diff($start, $end) * 1000;
+        $resultdec = json_decode($result);
+
+        switch ($sugar_config['fts']['loglevel']) {
+            case '2':
+                $this->addLogEntry('POST', $cURL, @$resultdec->status, $body, $result ); # , $rt_local, $resultdec->took);
+                break;
+            case '1':
+                if ( @$resultdec->status > 0 )
+                    $this->addLogEntry('POST', $cURL, @$resultdec->status, $body, $result ); # , $rt_local, $resultdec->took);
+                break;
+        }
+
+        return $resultdec;
     }
 
     private function addLogEntry($method, $url, $status=null, $request, $response ) # , $rtlocal, $rtremote )

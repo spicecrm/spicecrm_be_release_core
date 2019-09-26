@@ -67,7 +67,7 @@ class SysModuleFilters
     public function getCountForFilterId($filterId){
         global $db;
 
-        $filter = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulefilters WHERE id='$filterId'"));
+        $filter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="'.$db->quote( $filterId ).'" UNION SELECT * FROM syscustommodulefilters WHERE id="'.$db->quote( $filterId ).'"'));
         if (!$filter) return 0;
 
         $seed = \BeanFactory::getBean($filter['module']);
@@ -84,11 +84,11 @@ class SysModuleFilters
      * @param string $tablename the name of the table. this is optiopnal. if not set the table name from teh bean will be taken
      * @return string the filter wehere clause
      */
-    public function generareWhereClauseForFilterId($filterId, $tablename = '')
+    public function generareWhereClauseForFilterId($filterId, $tablename = '', $bean = null)
     {
         global $db;
 
-        $filter = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulefilters WHERE id='$filterId'"));
+        $filter = $db->fetchByAssoc( $db->query('SELECT * FROM sysmodulefilters WHERE id="'.$db->quote( $filterId ).'" UNION SELECT * FROM syscustommodulefilters WHERE id="'.$db->quote( $filterId ).'"'));
         if (!$filter) return '';
 
         if (!$tablename) {
@@ -108,9 +108,9 @@ class SysModuleFilters
             if(class_exists($class)){
                 $focus = new $class();
                 if(method_exists($focus, $method)){
-                    $ids = $focus->$method();
+                    $ids = $focus->$method($bean);
                     if(count($ids) > 0){
-                        $whereClause = "($whereClause) AND ($tablename.id IN ('".implode("','", $ids)."'))";
+                        $whereClause = (!empty($whereClause) ? "($whereClause) AND " : "")." ($tablename.id IN ('".implode("','", $ids)."'))";
                     }
                 }
             }
@@ -140,16 +140,18 @@ class SysModuleFilters
             }
         }
 
-        $filterCondition = '(' . implode(' ' . $group->logicaloperator . ' ', $filterConditionArray) . ')';
-        if ($group->groupscope == 'own') {
-            $filterCondition = "({$tablename}.assigned_user_id = '{$current_user->id}' AND ($filterCondition))";
-        }
+        $filterCondition = "";
+        if(!empty($filterConditionArray)){
+            $filterCondition = '(' . implode(' ' . $group->logicaloperator . ' ', $filterConditionArray) . ')';
+            if ($group->groupscope == 'own') {
+                $filterCondition = "({$tablename}.assigned_user_id = '{$current_user->id}' AND ($filterCondition))";
+            }
 
-        // added an option for the creator
-        if ($group->groupscope == 'creator') {
-            $filterCondition = "({$tablename}.created_by = '{$current_user->id}' AND ($filterCondition))";
+            // added an option for the creator
+            if ($group->groupscope == 'creator') {
+                $filterCondition = "({$tablename}.created_by = '{$current_user->id}' AND ($filterCondition))";
+            }
         }
-
         return $filterCondition;
     }
 
@@ -241,7 +243,7 @@ class SysModuleFilters
     {
         global $db;
 
-        $filter = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulefilters WHERE id='$filterId'"));
+        $filter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="'.$db->quote( $filterId ).'" UNION SELECT * FROM syscustommodulefilters WHERE id="'.$db->quote( $filterId ).'"'));
         if (!$filter) return '';
 
         $conditions = json_decode(html_entity_decode($filter['filterdefs']));
@@ -383,7 +385,7 @@ class SysModuleFilters
     {
         global $db;
 
-        $filter = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulefilters WHERE id='$filterId'"));
+        $filter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="'.$db->quote( $filterId ).'" UNION SELECT * FROM syscustommodulefilters WHERE id="'.$db->quote( $filterId ).'"'));
         if (!$filter) return '';
 
         $conditions = json_decode(html_entity_decode($filter['filterdefs']));

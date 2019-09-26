@@ -2,10 +2,10 @@
 
 require_once('include/SugarQueue/SugarJobQueue.php');
 
-$app->get('/module/Scheduler/jobslist', function ($req, $res, $args) use ($app) {
+$app->get('/module/Schedulers/jobslist', function ($req, $res, $args) use ($app) {
     return $res->withJson(Scheduler::getJobsList());
 });
-$app->post('/module/Scheduler/{sid}/runjob', function ($req, $res, $args) use ($app) {
+$app->post('/module/Schedulers/{sid}/runjob', function ($req, $res, $args) use ($app) {
     global $current_user;
     if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
     $scheduler = BeanFactory::getBean('Schedulers', $args['sid']);
@@ -17,7 +17,7 @@ $app->post('/module/Scheduler/{sid}/runjob', function ($req, $res, $args) use ($
     echo(json_encode(array('results' => $result)));
 });
 
-$app->post('module/Scheduler/{sid}/schedulejob', function ($req, $res, $args) use ($app) {
+$app->post('/module/Schedulers/{sid}/schedulejob', function ($req, $res, $args) use ($app) {
     global $current_user, $timedate;
     if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 

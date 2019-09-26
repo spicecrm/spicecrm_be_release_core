@@ -1,5 +1,5 @@
 <?php
-$app->group('/user/preferences/{category}', function () use ( $app ) {
+$app->group('/user/{userId}/preferences/{category}', function () use ( $app ) {
     $this->get('', [new \SpiceCRM\modules\Users\KREST\controllers\UsersPreferencesKRESTController(), 'getPreferences']);
     // route should get deleted soon
     $this->get('/{names}', [new \SpiceCRM\modules\Users\KREST\controllers\UsersPreferencesKRESTController(), 'getUserPreferences']);

@@ -202,6 +202,22 @@ $dictionary['User'] = array(
             'source' => 'non-db',
             'vname' => 'LBL_ACCOUNTS'
         ),
+        'opportunity_role' => array(
+            'name' => 'opportunity_role',
+            'type' => 'enum',
+            'source' => 'non-db',
+            'vname' => 'LBL_ROLE',
+            'options' => 'opportunity_urelationship_type_dom',
+        ),
+        'opportunities' => array(
+            'name' => 'opportunities',
+            'type' => 'link',
+            'relationship' => 'opportunities_users',
+            'source' => 'non-db',
+            'module' => 'Opportunities',
+            'bean_name' => 'Opportunity',
+            'vname' => 'LBL_OPPORTUNITIES',
+        ),
         'name' => array(
             'name' => 'name',
             'rname' => 'name',

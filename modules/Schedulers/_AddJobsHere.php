@@ -76,7 +76,9 @@ $job_strings = [
     25 => 'processSpiceImports',
     26 => 'cleanSysLogs',
     27 => 'cleanSysFTSLogs',
-    28 => 'workflowHandler'
+    28 => 'workflowHandler',
+    29 => 'schedulerTest',
+	30 => 'fullTextIndexBulk'
 
 ];
 
@@ -571,6 +573,24 @@ function fullTextIndex(){
 }
 
 /*
+ * Job 30 (20B) .. run the bulk text indexer
+ */
+
+function fullTextIndexBulk(){
+    // no date formatting
+    global $disable_date_format, $sugar_config;
+    $disable_date_format = true;
+
+    // determine package size
+    $packagesize = $sugar_config['fts']['schedulerpackagesize'] ?: 5000;
+
+//    require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
+    $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
+    $ftsHandler->bulkIndexBeans($packagesize);
+    return true;
+}
+
+/*
  * Job 21 ... send notification before window maintenance starts
  */
 function kdeploymentmwnotification(){
@@ -688,6 +708,17 @@ function cleanSysFTSLogs(){
     $defaultInterval = "14 DAY";
     $q = "DELETE FROM sysftslogs WHERE date_entered < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['fts']['log_clean_interval']) && !empty($GLOBALS['sugar_config']['fts']['clean_interval']) ? $GLOBALS['sugar_config']['fts']['log_clean_interval'] : $defaultInterval).")";
     $GLOBALS['db']->query($q);
+}
+
+/**
+ * Job 29
+ * Test Job, does nothing, for testing of scheduler
+ */
+
+function schedulerTest() {
+    echo "Scheduler Test (function schedulerTest() executed, nothing else is done).\n";
+    $GLOBALS['log']->debug('Scheduler Test');
+    return true;
 }
 
 if($scheduledtaskhandle = opendir('./modules/Schedulers/ScheduledTasks')) {

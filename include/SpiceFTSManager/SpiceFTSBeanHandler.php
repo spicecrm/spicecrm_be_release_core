@@ -294,6 +294,10 @@ class SpiceFTSBeanHandler
             case 'datetimecombo':
                 if ($GLOBALS['disable_date_format'] !== true)
                     $retvalue = $timedate->to_db($value) ?: $value;
+                // catch bad date format like '0000-00-00'
+                if ($retvalue == '0000-00-00' || $retvalue == '0000-00-00 00:00:00'){
+                    $retvalue = null;
+                }
                 break;
         }
         return $retvalue;
@@ -370,6 +374,7 @@ class SpiceFTSBeanHandler
             // special type for parentids collector
 
             if ($indexProperty['indextype'] == 'parentid' || $indexProperty['indextype'] == 'activitydate') {
+            //if ($indexProperty['indextype'] == 'parentid' ) {
                 continue;
             }
 

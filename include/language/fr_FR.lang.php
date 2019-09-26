@@ -4424,14 +4424,28 @@ $app_list_strings['textmessage_delivery_status'] = [
     'failed' => 'erreur',
 ];
 
-$app_list_strings['event_status_dom'] = array(
+$app_list_strings['event_status_dom'] = [
     'planned' => 'planifié',
     'active' => 'actif',
     'canceled' => 'annulé'
-);
+];
 
-$app_list_strings['event_category_dom'] = array(
+$app_list_strings['event_category_dom'] = [
     'presentations' => 'Présentations',
     'seminars' => 'Seminaires',
     'conferences' => 'Conférences'
-);
+];
+
+$app_list_strings['incoterms_dom'] = [
+    'EXW' => 'Ex works',
+    'FCA' => 'Free carrier',
+    'FAS' => 'Free alongside ship',
+    'FOB' => 'Free on board',
+    'CFR' => 'Costs and freight',
+    'CIF' => 'Costs, insurance & freight',
+    'CPT' => 'Carriage paid to',
+    'CIP' => 'Carriage and insurance paid',
+    'DAT' => 'Delivered at Terminal',
+    'DAP' => 'Delivered at Place',
+    'DDP' => 'Delivered duty paid',
+];

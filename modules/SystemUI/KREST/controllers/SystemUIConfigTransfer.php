@@ -2,6 +2,8 @@
 
 namespace SpiceCRM\modules\SystemUI\KREST\controllers;
 
+use KREST\ForbiddenException;
+
 class SystemUIConfigTransfer
 {
 
@@ -73,6 +75,9 @@ class SystemUIConfigTransfer
 
     static function exportFromTables( $req, $res, $args )
     {
+
+        if ( !$GLOBALS['current_user']->is_admin ) throw new ForbiddenException('Forbidden to transfer configuration data for non-admins.');
+
         # Parameter "selectedTables" should be an array of strings.
         if ( is_array( $selectedTables = $req->getParsedBodyParam( 'selectedTables' ))) {
             foreach ( $selectedTables as $k => $v ) {
@@ -143,6 +148,8 @@ class SystemUIConfigTransfer
     static function importToTables( $req, $res, $args )
     {
         global $db;
+
+        if ( !$GLOBALS['current_user']->is_admin ) throw new ForbiddenException('Forbidden to transfer configuration data for non-admins.');
 
         $params = $req->getParsedBody();
 

@@ -47,12 +47,24 @@ $dictionary['OutputTemplate'] = array(
             'importable' => 'required',
             'required' => true
         ),
+        'header' => array(
+            'name' => 'header',
+            'vname' => 'LBL_HEADER',
+            'type' => 'html',
+            'comment' => 'The html template header',
+        ),
         'body' => array(
             'name' => 'body',
             'vname' => 'LBL_CONTENT',
             'type' => 'html',
             'comment' => 'The html template body itself',
             'stylesheet_id_field' => 'stylesheet_id',
+        ),
+        'footer' => array(
+            'name' => 'footer',
+            'vname' => 'LBL_FOOTER',
+            'type' => 'html',
+            'comment' => 'The html template footer'
         ),
         'stylesheet_id' => array(
             'name' => 'stylesheet_id',
@@ -136,6 +148,13 @@ $dictionary['OutputTemplate'] = array(
             'name' => 'margin_bottom',
             'vname' => 'LBL_MARGIN_BOTTOM',
             'type' => 'int'
+        ),
+        'public_name' => array(
+            'name' => 'public_name',
+            'vname' => 'LBL_PUBLIC_NAME',
+            'type' => 'varchar',
+            'len' => '255',
+            'comment' => 'Name of the document, in case it published as file (to foreign persons).'
         )
     ),
     'indices' => array(

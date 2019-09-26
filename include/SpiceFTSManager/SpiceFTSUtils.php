@@ -125,7 +125,7 @@ class SpiceFTSUtils
     static function getBeanIndexSettings($module)
     {
         //BEGIN CR1000190
-        if($GLOBALS['installing']){
+        if( @$GLOBALS['installing'] ) {
             return false;
         }
         //END

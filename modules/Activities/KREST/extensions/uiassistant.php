@@ -36,7 +36,7 @@ $app->group('/assistant', function () use ($app, $KRESTModuleHandler) {
         }
         */
 
-        if(count($objectFilters) == 0 || array_search('Calls', $objectFilters) !== false) {
+        if($GLOBALS['ACLController']->checkAccess('Calls', 'list', true) && (count($objectFilters) == 0 || array_search('Calls', $objectFilters) !== false)) {
             $call = BeanFactory::getBean('Calls');
             $calls = $call->get_user_calls($current_user, $timeFilter);
             foreach ($calls as $call){
@@ -49,7 +49,7 @@ $app->group('/assistant', function () use ($app, $KRESTModuleHandler) {
             }
         }
 
-        if(count($objectFilters) == 0  || array_search('Meetings', $objectFilters) !== false) {
+        if($GLOBALS['ACLController']->checkAccess('Meetings', 'list', true) && (count($objectFilters) == 0  || array_search('Meetings', $objectFilters) !== false)) {
             $meeting = BeanFactory::getBean('Meetings');
             $meetings = $meeting->get_user_meetings($current_user, $timeFilter);
             foreach ($meetings as $meeting){
@@ -62,7 +62,7 @@ $app->group('/assistant', function () use ($app, $KRESTModuleHandler) {
             }
         }
 
-        if(count($objectFilters) == 0  || array_search('Tasks', $objectFilters) !== false) {
+        if($GLOBALS['ACLController']->checkAccess('Tasks', 'list', true) && (count($objectFilters) == 0  || array_search('Tasks', $objectFilters) !== false)) {
             $task = BeanFactory::getBean('Tasks');
             $tasks = $task->get_user_tasks($current_user, $timeFilter);
             foreach ($tasks as $task){

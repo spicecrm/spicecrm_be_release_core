@@ -25,16 +25,40 @@ while ($stage = $db->fetchByAssoc($stagesObj)) {
         $stages[$stage['stage']]['checkcontent'] = '';
         $checks = $db->query("SELECT sc.*, sct.text FROM spicebeanguidestages_checks sc LEFT JOIN spicebeanguidestages_check_texts sct on sc.id = sct.stage_check_id AND sct.language='$current_language' WHERE sc.spicebeanguide_id = '" . $object['id'] . "' AND sc.stage_id = '" . $stage['id'] . "' ORDER BY sc.check_sequence");
         while ($check = $db->fetchByAssoc($checks)) {
-            if (file_exists($check['check_include'])) {
+            // BEGIN CR1000278: implement namespace for class containing stage checks
+            // keep file include for BWC
+            if (!empty($check['check_include']) && file_exists($check['check_include'])) {
                 require_once($check['check_include']);
                 $checkClass = new $check['check_class']();
-                $checkmethod = $check['check_method'];
-                $checkResult = $checkClass->$checkmethod($GLOBALS['FOCUS']);
-                $stages[$stage['stage']]['checks'][$check['id']] = array(
-                    'name' => $check['text'],
-                    'result' => $checkResult
-                );
+                $checkMethod = $check['check_method'];
+                $checkResult = $checkClass->$checkMethod($GLOBALS['FOCUS']);
+
             }
+            // CR1000278 new syntax: namespace class method is is check_method column
+            elseif(!empty($check['check_method'])){
+                $method = $check['check_method'];
+                if(strpos($method, '::') > 0){
+                    try{
+                        $checkResult = $method($params);
+                    } catch(Exception  $e){
+                        $checkResult = false;
+                    }
+                } else if(strpos($method, '->') > 0){
+                    try{
+                        $funcArray = explode('->', $method);
+                        $obj = new $funcArray[0]();
+                        $checkResult = $obj->{$funcArray[1]}($params);
+                    } catch(Exception  $e){
+                        $checkResult = false;
+                    }
+                }
+            }
+
+            $stages[$stage['stage']]['checks'][$check['id']] = array(
+                'name' => $check['text'],
+                'result' => $checkResult
+            );
+            // END
 
             $checkSS = new Sugar_Smarty();
             $checkSS->assign('checkResults', $stages[$stage['stage']]['checks']);

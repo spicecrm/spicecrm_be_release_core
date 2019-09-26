@@ -163,3 +163,22 @@ function isValidDBName($name, $dbType)
     $db = DBManagerFactory::getTypeInstance($dbType);
     return $db->isDatabaseNameValid($name);
 }
+
+/**
+ * Creates a string containing a sorted list of all columns in the @tableName DB table, separated by a comma and a space (e.g. "field 1, field 2, field3").
+ * Useful when unifying two tables in an SQL query with the same columns with possible different ordering of the columns.
+ *
+ * @param string $tableName DB table containing columns to be sorted
+ * @return string
+ */
+
+function getSortedColumnString($tableName) {
+    $db = DBManagerFactory::getInstance();
+    $columns = $db->get_columns($tableName);
+    foreach ($columns as $key => $_) {
+        $columns_names[] = $key;
+    }
+    sort($columns_names);
+    $columns_string = implode(", ", $columns_names);
+    return $columns_string;
+}

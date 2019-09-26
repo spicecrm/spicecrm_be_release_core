@@ -73,7 +73,7 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
                 'source' => 'non-db',
                 'len' => 36,
                 'link' => 'member_of',
-                'unified_search' => true,
+                'unified_search' => false,
                 'importable' => 'true',
             ),
 
@@ -242,7 +242,7 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'source' => 'non-db',
             'vname' => 'LBL_EMAIL_ADDRESSES',
             'reportable' => false,
-            'unified_search' => true,
+            'unified_search' => false,
             'rel_fields' => array('primary_address' => array('type' => 'bool')),
             'studio' => array("formula" => false),
         ),
@@ -666,6 +666,33 @@ if (is_file("modules/SalesDocs/SalesDoc.php")) {
         'relationship' => 'salesdocs_accountsop',
         'module' => 'SalesDocs',
         'source' => 'non-db',
+    );
+    $dictionary['Account']['fields']['salesdocs_accountrp'] = array(
+        'name' => 'salesdocs_accountrp',
+        'type' => 'link',
+        'vname' => 'LBL_SALESDOCS_AS_RP',
+        'relationship' => 'salesdocs_accountsrp',
+        'module' => 'SalesDocs',
+        'source' => 'non-db',
+        'comment' => 'SalesDocs as recipient party'
+    );
+    $dictionary['Account']['fields']['salesdocs_accountpp'] = array(
+        'name' => 'salesdocs_accountpp',
+        'type' => 'link',
+        'vname' => 'LBL_SALESDOCS_AS_PP',
+        'relationship' => 'salesdocs_accountspp',
+        'module' => 'SalesDocs',
+        'source' => 'non-db',
+        'comment' => 'SalesDocs as payer'
+    );
+    $dictionary['Account']['fields']['salesdocs_accountir'] = array(
+        'name' => 'salesdocs_accountir',
+        'type' => 'link',
+        'vname' => 'LBL_SALESDOCS_AS_IR',
+        'relationship' => 'salesdocs_accountsir',
+        'module' => 'SalesDocs',
+        'source' => 'non-db',
+        'comment' => 'SalesDocs as invoice recipient'
     );
 }
 if (is_file("modules/Addresses/Address.php")) {

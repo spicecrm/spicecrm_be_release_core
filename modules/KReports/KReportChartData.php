@@ -74,8 +74,8 @@ class KReportChartData {
          if (is_array($dim0Values) && count($dim0Values) > 0 && $chartParams['showEmptyValues']) {
             $dimensions[0]['values'] = array();
             foreach ($dim0Values as $thisDimensionkey => $thisDimensionValue) {
-               $chartData[$thisDimensionkey] = array();
-               $dimensions[0]['values'][$thisDimensionkey] = $thisDimensionValue;
+               $chartData[$thisDimensionValue] = array();
+               $dimensions[0]['values'][$thisDimensionValue] = $thisDimensionValue;
             }
          }
       }

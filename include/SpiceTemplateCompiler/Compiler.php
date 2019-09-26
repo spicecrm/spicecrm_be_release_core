@@ -39,26 +39,30 @@ class Compiler
 
     public function __construct()
     {
+        $this->initialize();
+    }
+
+    private function initialize(){
         $this->doc = new \DOMDocument('1.0');
-        $this->root = $this->doc->createElement('html');
-        $this->root = $this->doc->appendChild($this->root);
+        $this->root = $this->doc->appendChild( $this->doc->createElement('html') );
     }
 
     public function compile($txt, \SugarBean $bean = null, $lang = 'de_DE', array $additionalValues = null)
     {
+        $this->initialize();
+
         $this->additonal_values = $additionalValues;
         $this->lang = $lang;
 
         $dom = new \DOMDocument();
         $html = preg_replace("/\n|\r|\t/", "", html_entity_decode($txt, ENT_QUOTES));
-        $dom->loadHTML('<?xml encoding="utf-8"?>' . $html);
+        $dom->loadHTML('<?xml encoding="utf-8"?>' . $html );
 
-        foreach($this->parseDom($dom, ['bean' => $bean]) as $newElement){
+        $dummy = $dom->getElementsByTagName('html');
+        foreach( $this->parseDom( $dummy[0], ['bean' => $bean] ) as $newElement ){
             $this->root->appendChild($newElement);
         };
-
         return $this->doc->saveHTML();
-
     }
 
     private function parseDom($thisNode, $beans = []){
@@ -91,10 +95,21 @@ class Compiler
                         $elements[] = $this->createNewElement($node, $beans);
                     }
                     break;
-
                 case 'DOMText':
-                    $newElement = $this->doc->createTextNode($this->compileblock($node->textContent, $beans, $this->lang));
-                    $elements[] = $newElement;
+                    $elementcontent = $this->compileblock($node->textContent, $beans, $this->lang);
+
+                    // check if we have embedded HTML that is returned from the replaceing functions
+                    // ToDo: check if there is not a nice way to do this
+                    if(strip_tags($elementcontent) != $elementcontent) {
+                        $elementdom = new \DOMDocument();
+                        $elementhtml = preg_replace("/\n|\r|\t/", "", html_entity_decode($elementcontent, ENT_QUOTES));
+                        $elementdom->loadHTML('<?xml encoding="utf-8"?><embedded>'.$elementhtml.'</embedded>');
+                        $embeddednode = $elementdom->getElementsByTagName('embedded');
+                        $elements[] = $this->createNewElement($embeddednode[0], $beans);
+                    } else {
+                        $newElement = $this->doc->createTextNode($elementcontent);
+                        $elements[] = $newElement;
+                    }
                     break;
             }
         }
@@ -330,6 +345,10 @@ class Compiler
                             case 'time':
                                 //set to user preferences format
                                 $value = date($userTimeFormat, strtotime($obj->{$part}));
+                                break;
+                            case 'currency':
+                                // $currency = \BeanFactory::getBean('Currencies');
+                                $value = currency_format_number($obj->{$part});
                                 break;
                             default:
                                 $value = $obj->{$part};

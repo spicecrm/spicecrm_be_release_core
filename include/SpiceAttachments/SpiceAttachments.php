@@ -166,10 +166,15 @@ class SpiceAttachments {
     }
 
     /**
+     * saveAttachmentLocalFile
+     *
+     * Adds an attachment that is already a local file to a bean.
+     *
      * @param $module_name {string} the name of the module
      * @param $bean_id {string} the id of the bean
-     * @param array $file = [name, path]
-     * @return string
+     * @param array $file = [name, path, mime_type, file_size, file_md5]
+     * @return array
+     * @throws \Exception
      */
     public static function saveAttachmentLocalFile($module_name, $bean_id, array $file) {
         global $current_user, $db, $sugar_config;
@@ -184,15 +189,29 @@ class SpiceAttachments {
 
         $file_name = $file['name'];
         $file_mime_type = $file['mime_type'];
-        if (!$file_mime_type)
+        if (!$file_mime_type) {
             $file_mime_type = mime_content_type($file['path'] . $file['name']);
-        $file_size = filesize($file['path'] . $file['name']);
-        $file_content = file_get_contents($file['path'] . $file['name']);
-        $file_name_md5 = md5($file_content);    // warning: possibility to produce duplicate md5 key for different contents...
+        }
 
-        $bytes = file_put_contents(self::UPLOAD_DESTINATION.$file_name_md5, $file_content);
-        if(!$bytes)
-            throw new \Exception("Could not save file {$file['name']} to upload://$guid");
+        $file_size = $file['file_size'];
+        if (!$file_size) {
+            $file_size = filesize($file['path'] . $file['name']);
+        }
+
+        $file_content = file_get_contents($file['path'] . $file['name']);
+
+        $file_name_md5 = $file['file_md5'];
+        if (!$file_name_md5) {
+            $file_name_md5 = md5($file_content);    // warning: possibility to produce duplicate md5 key for different contents...
+        }
+
+        $filePath = self::UPLOAD_DESTINATION.$file_name_md5;
+        if (!file_exists($filePath)) {
+            $bytes = file_put_contents($filePath, $file_content);
+            if (!$bytes) {
+                throw new \Exception("Could not save file {$file['name']} to upload://$guid");
+            }
+        }
 
         $thumbnail = self::createThumbnail($file_name_md5, $file_mime_type);
 

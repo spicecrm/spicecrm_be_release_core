@@ -60,6 +60,25 @@ $dictionary['Dashboard'] = array(
                 'vname' => 'LBL_COMPONENTS',
                 'source' => 'non-db'
             ),
+            'dashboardsets_dashboard_sequence' => array(
+                'name' => 'dashboardsets_dashboard_sequence',
+                'vname' => 'LBL_SEQUENCE',
+                'type' => 'integer',
+                'source' => 'non-db'
+            ),
+            'dashboardsets' => [
+                'name' => 'dashboardsets',
+                'type' => 'link',
+                'relationship' => 'dashboards_dashboardsets',
+                'module' => 'DashboardSets',
+                'source' => 'non-db',
+                'vname' => 'LBL_DASHBOARDSETS',
+                'rel_fields' => [
+                    'dashboard_sequence' => [
+                        'map' => 'dashboardsets_dashboard_sequence'
+                    ]
+                ]
+            ],
         ),
     'relationships' => array(
         'dashboard_dashboardcomponents' => array(

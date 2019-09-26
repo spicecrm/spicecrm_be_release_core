@@ -335,6 +335,15 @@ $app_list_strings = array(
             'Project Manager' => 'Project Manager',
             'Other' => 'Other',
         ),
+    'opportunity_urelationship_type_dom' =>
+        array(
+            '' => '',
+            'Account Manager' => 'Account Manager',
+            'Solution Manager' => 'Solution Manager',
+            'Success Manager' => 'Success Manager',
+            'Executive Sponsor' => 'Executive Sponsor',
+            'Other' => 'Other',
+        ),
     //Note:  do not translate case_relationship_type_default_key
 //       it is the key for the default case_relationship_type_dom value
     'case_relationship_type_default_key' => 'Primary Contact',
@@ -1400,6 +1409,11 @@ $app_list_strings = array(
             'donothing' => 'Do Nothing'
         ),
     'salesdoc_doctypes' => array(
+        'QT' => 'Quote',
+        'OR' => 'Order',
+        'IV' => 'Invoice'
+    ),
+    'salesdoc_doccategories' => array(
         'QT' => 'Quote',
         'OR' => 'Order',
         'IV' => 'Invoice'
@@ -3313,6 +3327,8 @@ if (file_exists('modules/Products/Product.php')) {
     $app_list_strings['moduleListSingular']['ProductAttributes'] = 'Product Attribute';
 }
 if (file_exists('modules/Questionnaires/Questionnaire.php')) {
+    $app_list_strings['moduleList']['QuestionnaireEvaluations'] = 'Questionnaire Evaluations';
+    $app_list_strings['moduleList']['QuestionnaireEvaluationItems'] = 'Questionnaire Evaluation Items';
     $app_list_strings['moduleList']['QuestionnaireInterpretations'] = 'Questionnaire Interpretations';
     $app_list_strings['moduleList']['Questionnaires'] = 'Questionnaires';
     $app_list_strings['moduleList']['Questions'] = 'Questions';
@@ -3321,6 +3337,8 @@ if (file_exists('modules/Questionnaires/Questionnaire.php')) {
     $app_list_strings['moduleList']['QuestionnaireParticipations'] = 'Questionnaire Participations';
     $app_list_strings['moduleList']['QuestionOptions'] = 'Question Options';
     $app_list_strings['moduleList']['QuestionOptionCategories'] = 'Question Option Categories';
+    $app_list_strings['moduleListSingular']['QuestionnaireInterpretationItems'] = 'Questionnaire Evaluation Items';
+    $app_list_strings['moduleListSingular']['QuestionnaireInterpretations'] = 'Questionnaire Evaluation';
     $app_list_strings['moduleListSingular']['QuestionnaireInterpretations'] = 'Questionnaire Interpretation';
     $app_list_strings['moduleListSingular']['Questionnaires'] = 'Questionnaire';
     $app_list_strings['moduleListSingular']['Questions'] = 'Question';
@@ -4556,14 +4574,28 @@ $app_list_strings['textmessage_delivery_status'] = [
     'failed' => 'Failed',
 ];
 
-$app_list_strings['event_status_dom'] = array(
+$app_list_strings['event_status_dom'] = [
     'planned' => 'planned',
     'active' => 'active',
     'canceled' => 'canceled'
-);
+];
 
-$app_list_strings['event_category_dom'] = array(
+$app_list_strings['event_category_dom'] = [
     'presentations' => 'Presentations',
     'seminars' => 'Seminars',
     'conferences' => 'Conferences'
-);
+];
+
+$app_list_strings['incoterms_dom'] = [
+    'EXW' => 'Ex works',
+    'FCA' => 'Free carrier',
+    'FAS' => 'Free alongside ship',
+    'FOB' => 'Free on board',
+    'CFR' => 'Costs and freight',
+    'CIF' => 'Costs, insurance & freight',
+    'CPT' => 'Carriage paid to',
+    'CIP' => 'Carriage and insurance paid',
+    'DAT' => 'Delivered at Terminal',
+    'DAP' => 'Delivered at Place',
+    'DDP' => 'Delivered duty paid',
+];

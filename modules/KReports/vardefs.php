@@ -62,7 +62,8 @@ $dictionary['KReport'] = array('table' => 'kreports',
         ),
         'presentation_params' => array(
             'name' => 'presentation_params',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
             'vname' => 'LBL_PRESENTATION_PARAMS',
         ),   
         'visualization_params' => array(

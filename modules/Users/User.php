@@ -354,6 +354,26 @@ class User extends Person
         return $user->_userPreferenceFocus->loadPreferences($category);
     }
 
+
+    /**
+     * CR1000267: additional user prefs like datef... Set default from sugar_config when not set yet
+     * Needed for UI
+     * @param string $category
+     * @return mixed
+     */
+    public function loadEnrichedPreferences(
+        $category = 'global'
+    ) {
+        // for BC
+        if (func_num_args() > 1) {
+            $user = func_get_arg(1);
+            $GLOBALS['log']->deprecated('User::loadEnrichedPreferences() should not be used statically.');
+        } else
+            $user = $this;
+
+        return $user->_userPreferenceFocus->loadEnrichedPreferences($category);
+    }
+
     /**
      * Interface for the User object to calling the UserPreference::setPreference() method in modules/UserPreferences/UserPreference.php
      *
@@ -599,8 +619,15 @@ class User extends Person
         if ($ret) {
             if (isset($_SESSION)) {
                 $this->loadPreferences();
+                // BEGIN CR1000267: additional user prefs like datef... Set default from sugar_config when not set yet
+                // Needed for UI
+                // $this->loadEnrichedPreferences();
+                // END
             }
         }
+
+//        echo '<pre>'.print_r($_SESSION, true);die();
+
         return $ret;
     }
 
@@ -992,6 +1019,7 @@ EOQ;
 
     function create_export_query($order_by, $where) {
         include('modules/Users/field_arrays.php');
+        global $fields_array;
 
         $cols = '';
         foreach ($fields_array['User']['export_fields'] as $field) {

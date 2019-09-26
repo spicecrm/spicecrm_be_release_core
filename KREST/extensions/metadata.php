@@ -21,27 +21,11 @@ $KRESTModuleHandler = new KRESTModuleHandler($app);
 $KRESTManager->registerExtension('metadata', '1.0');
 
 $app->group('/metadata', function () use ($app, $KRESTModuleHandler) {
-    $app->get('/modules', function() use ($app, $KRESTModuleHandler) {
+    $this->get('/modules', function() use ($app, $KRESTModuleHandler) {
         echo json_encode($KRESTModuleHandler->get_modules());
     });
-    $app->post('/beandefs', function($req, $res, $args) use ($app) {
-        $KRESTManager = new KRESTManager($app);
-        $postBody = $req->getParsedBody();
-        $beanArray = $postBody;
-        echo json_encode($KRESTManager->get_beandefs_multiple($beanArray));
-    });
-    $app->group('/{beanName}', function() use ($app) {
-        $app->get('/vardefs', function($req, $res, $args) use ($app) {
-            $KRESTManager = new KRESTManager($app);
-            echo json_encode($KRESTManager->get_bean_vardefs($args['beanName']));
-        });
-        $app->get('/beandefs', function($req, $res, $args) use ($app) {
-            $KRESTManager = new KRESTManager($app);
-            echo json_encode($KRESTManager->get_beandefs($args['beanName']));
-        });
-        $app->get('/language', function($req, $res, $args) use ($app) {
-            $KRESTManager = new KRESTManager($app);
-            echo json_encode($KRESTManager->get_bean_language($args['beanName']));
-        });
+    $this->get('/vardefs/{module}', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
+        $bean = BeanFactory::getBean($args['module']);
+        echo json_encode($bean->field_name_map);
     });
 });

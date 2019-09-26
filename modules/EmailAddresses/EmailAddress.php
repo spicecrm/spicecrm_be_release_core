@@ -165,4 +165,19 @@ class EmailAddress extends SugarEmailAddress
         $emailAddressBean->retrieve_by_string_fields(array('email_address_caps' => strtoupper($emailAddress)));
         return $emailAddressBean->id;
     }
+
+    /**
+     * saveRelation
+     *
+     * Only saves the relation between the current email address and another bean.
+     *
+     * @param $beanId
+     * @param $module
+     */
+    public function saveRelation($beanId, $module) {
+        $query = "INSERT INTO `email_addr_bean_rel` 
+                (`id`, `email_address_id`, `bean_id`, `bean_module`) 
+                VALUES ('" . create_guid() . "', '" . $this->id . "', '" . $beanId . "', '" . $module . "')";
+        $this->db->query($query);
+    }
 }

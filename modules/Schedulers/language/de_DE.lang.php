@@ -145,6 +145,7 @@ $mod_strings = array(
     'LBL_SENDEMAILREMINDERS' => 'E-Mail Erinnerungsbenachrichtigungen ausführen',
     'LBL_CLEANJOBQUEUE' => 'Cleanup Job Queue',
     'LBL_FULLTEXTINDEX' => 'Full Text Indexing',
+    'LBL_FULLTEXTINDEXBULK' => 'Full Text Indexing (bulk)',
     'LBL_KDEPLOYMENTMWNOTIFICATION' => 'Wartungsfenster: User benachrichtigen',
 
     'LBL_FETCHEMAILS' => 'Fetch Emails',
@@ -154,4 +155,7 @@ $mod_strings = array(
     'LBL_SYNCGOOGLECALENDAR' => 'Sync Google Calendar',
     'LBL_SENDCAMPAIGNTASKEMAILS' => 'Send CampaignTask Emails',
     'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
+    'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
+    'LBL_SCHEDULERTEST' => 'Dummy-Funktion zum Testen des Zeitplaners (tut nichts)',
+    'LBL_URL_SPECIFIED' => 'URL (anzugeben)'
 );

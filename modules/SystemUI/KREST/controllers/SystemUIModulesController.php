@@ -8,7 +8,7 @@ class SystemUIModulesController
     {
         global $db, $current_user, $moduleList, $modInvisList;
 
-        if(isset($_SESSION['SpiceUI']['modules'])){
+        if(isset($_SESSION['SpiceUI']['modules']) && 1 == 2){
             $retArray =  $_SESSION['SpiceUI']['modules'];
         } else {
 
@@ -20,7 +20,7 @@ class SystemUIModulesController
             $dbresult = $db->query("SELECT * FROM sysmodules UNION SELECT * FROM syscustommodules");
             while ($m = $db->fetchByAssoc($dbresult)) {
                 // check if we have the module or if it has been filtered out
-                if (!$m['acl'] || $current_user->is_admin || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
+                if (!$m['acl'] || $current_user->is_admin || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
                     $modules[$m['module']] = $m;
             }
 
@@ -36,17 +36,13 @@ class SystemUIModulesController
                 $aclArray = [];
                 $seed = \BeanFactory::getBean($module['module']);
                 if ($seed) {
-                    $aclActions = ['list', 'listrelated', 'view', 'delete', 'edit', 'create', 'export', 'import'];
-                    foreach ($aclActions as $aclAction) {
-                        // $aclArray[$aclAction] = $seed->ACLAccess($aclAction);
-                        $aclArray[$aclAction] = $GLOBALS['ACLController']->checkAccess($module['module'], $aclAction, true);
-                    }
+                    $aclArray = $GLOBALS['ACLController']->getModuleAccess($module['module']);
                 } else {
                     $aclArray['list'] = true;
                 }
 
                 // check if we have any ACL right
-                if ($aclArray['list'] || $aclArray['view'] || $aclArray['edit']) {
+                if ($module['module'] == 'Home' || $aclArray['list'] || $aclArray['view'] || $aclArray['edit']) {
                     $retArray[$module['module']] = array(
                         'icon' => $module['icon'],
                         'actionset' => $module['actionset'],
@@ -56,6 +52,7 @@ class SystemUIModulesController
                         'singular_label' => $module['singular_label'],
                         'track' => $module['track'],
                         'visible' => $module['visible'] ? true : false,
+                        'visibleaclaction' => $module['visibleaclaction'],
                         'audited' => $seed ? $seed->is_AuditEnabled() : false,
                         'tagging' => $module['tagging'] ? true : false,
                         'workflow' => $module['workflow'] ? true : false,
@@ -78,6 +75,7 @@ class SystemUIModulesController
 
     function getFieldDefs()
     {
+        $retArray = [];
         $modules = self::getModules();
         foreach ($modules as $module => $moduleDetails) {
             $seed = \BeanFactory::getBean($module);
@@ -127,32 +125,32 @@ class SystemUIModulesController
     {
         global $current_user, $db;
 
-        $roleids = [];
-        $retArray = array();
-        if ($current_user->portal_only)
-            $sysuiroles = $db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.portaldefault = 1) roles order by name");
-        else
-            $sysuiroles = $db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.systemdefault = 1) roles order by name");
-        while ($sysuirole = $db->fetchByAssoc($sysuiroles)) {
-            if (array_search($sysuirole['id'], $roleids) === false) {
-                $retArray[] = $sysuirole;
-                $roleids[] = $sysuirole['id'];
-            }
+        $retArray = [];
+
+        # Load the roles assigned to the user (custom and global roles):
+        $roles = $db->query("SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuiuserroles INNER JOIN sysuicustomroles ON sysuicustomroles.id = sysuiuserroles.sysuirole_id WHERE sysuiuserroles.user_id = '$current_user->id' ORDER BY NAME");
+        while ( $role = $db->fetchByAssoc( $roles )) $retArray[] = $role;
+        $roles = $db->query("SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiuserroles INNER JOIN sysuiroles ON sysuiroles.id = sysuiuserroles.sysuirole_id WHERE sysuiuserroles.user_id = '$current_user->id' ORDER BY NAME");
+        while ( $role = $db->fetchByAssoc( $roles )) {
+            if ( !isset( $retArray[$role['id']] )) $retArray[$role['id']] = $role; # In case a custom and a global role have the same ID, don´t load the global role.
         }
 
-        // same for custom
-        if ($current_user->portal_only)
-            $sysuiroles = $db->query("select * from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.portaldefault = 1) roles order by name");
-        else
-            $sysuiroles = $db->query("select * from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.systemdefault = 1) roles order by name");
-        while ($sysuirole = $db->fetchByAssoc($sysuiroles)) {
-            if (array_search($sysuirole['id'], $roleids) === false) {
-                $retArray[] = $sysuirole;
-                $roleids[] = $sysuirole['id'];
+        // When there are no to the user assigned roles ...
+        if ( count( $retArray ) === 0 ) {
+
+            // ... load all the custom roles:
+            $roles = $db->query( 'SELECT *, 0 AS defaultrole FROM sysuicustomroles WHERE '.( $current_user->portal_only ? 'portaldefault':'systemdefault' ).' = 1 ORDER BY NAME' );
+            while ( $role = $db->fetchByAssoc( $roles )) $retArray[] = $role;
+
+            # ... or when there are no custom roles, load all the global roles:
+            if ( count( $retArray ) === 0 ) {
+                $roles = $db->query( 'SELECT sysuiroles.*, 0 AS defaultrole FROM sysuiroles WHERE '.( $current_user->portal_only ? 'portaldefault':'systemdefault' ).' = 1 ORDER BY NAME' );
+                while ( $role = $db->fetchByAssoc( $roles )) $retArray[] = $role;
             }
+
         }
 
-        return $retArray;
+        return array_values( $retArray );
     }
 
 

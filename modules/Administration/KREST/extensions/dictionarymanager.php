@@ -98,4 +98,8 @@ $app->group('/dictionary', function () use ($app) {
         }
         echo json_encode(array('response' => $response));
     });
+    $app->group('/browser/{module}', function () use ($app) {
+        $app->get('/nodes', [new \SpiceCRM\modules\Administration\KREST\controllers\DictionaryController(), 'getNodes']);
+        $app->get('/fields', [new \SpiceCRM\modules\Administration\KREST\controllers\DictionaryController(), 'getFields']);
+    });
 });

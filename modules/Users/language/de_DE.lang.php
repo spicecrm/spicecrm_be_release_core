@@ -57,6 +57,7 @@ $mod_strings = array (
     'ERR_USER_NAME_EXISTS_1'			=> 'Der Benutzer mit dem Namen',
     'ERR_USER_NAME_EXISTS_2'			=> 'existiert bereits. Jeder Username muss im System einmalig sein. Ändern Sie bitte den Namen und versuchen Sie es erneut.',
     'ERR_USER_IS_LOCKED_OUT'			=> 'This user is locked out of the Sugar application and cannot log in using his/her existing password.',
+    'ERR_ACCESS_ONLY_FOR_ADMINS'        => 'Zugang nur für Administratoren.',
 
     'LBL_PASSWORD_SENT'                => 'Das Passwort wurde aktualisiert.',
     'LBL_CANNOT_SEND_PASSWORD'         => 'Das Passwort konnte nicht gesendert werden',

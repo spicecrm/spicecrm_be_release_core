@@ -4,6 +4,12 @@ $dictionary['CompanyCode'] = array(
     'table' => 'companycodes',
     'audited' => true,
     'fields' => array(
+        'registration' => array(
+            'name' => 'registration',
+            'vname' => 'LBL_REGISTRATION',
+            'type' => 'varchar',
+            'len' => 80
+        ),
         'vatid' => array(
             'name' => 'vatid',
             'vname' => 'LBL_VATID',
@@ -52,6 +58,42 @@ $dictionary['CompanyCode'] = array(
             'type' => 'enum',
             'options' => 'countries_dom',
             'group' => 'company_address'
+        ),
+        'tel' => array(
+            'name' => 'tel',
+            'vname' => 'LBL_TEL',
+            'type' => 'varchar',
+            'len' => 50
+        ),
+        'fax' => array(
+            'name' => 'fax',
+            'vname' => 'LBL_FAX',
+            'type' => 'varchar',
+            'len' => 50
+        ),
+        'email' => array(
+            'name' => 'email',
+            'vname' => 'LBL_EMAIL',
+            'type' => 'varchar',
+            'len' => 50
+        ),
+        'bank_name' => array(
+            'name' => 'bank_name',
+            'vname' => 'LBL_BANK_NAME',
+            'type' => 'varchar',
+            'len' => 50
+        ),
+        'bank_bic' => array(
+            'name' => 'bank_bic',
+            'vname' => 'LBL_BANK_BIC',
+            'type' => 'varchar',
+            'len' => 50
+        ),
+        'bank_iban' => array(
+            'name' => 'bank_iban',
+            'vname' => 'LBL_BANK_IBAN',
+            'type' => 'varchar',
+            'len' => 50
         ),
         'header_from' => array(
             'name' => 'header_from',

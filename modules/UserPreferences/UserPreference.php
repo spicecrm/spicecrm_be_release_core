@@ -237,6 +237,31 @@ class UserPreference extends SugarBean
     }
 
     /**
+     * CR1000267: additional user prefs like datef... Set default from sugar_config when not set yet
+     * Needed for UI
+     * @param string $category
+     */
+    public function loadEnrichedPreferences($category = 'global' ){
+        $prefMapToDefault = [
+            'datef' => 'datef',
+            'timef' => 'timef',
+//            'currency' => 'currency', //default is ''
+            'default_currency_significant_digits' => 'default_currency_significant_digits',
+            'dec_sep' => 'default_decimal_seperator',
+            'num_grp_sep' => 'default_number_grouping_seperator'
+        ];
+        foreach($prefMapToDefault as $userpref => $defaultpref) {
+            if (empty($this->getPreference($userpref))) {
+                $value = $GLOBALS['sugar_config'][$defaultpref];
+//                if($defaultpref == 'currency' && empty($value))
+//                    $value= '-99';
+                $this->setPreference($userpref, $value, $category);
+            }
+        }
+    }
+
+
+    /**
      * Unconditionally reloads user preferences from the DB and updates the session
      * @param string $category name of the category to retreive, defaults to global scope
      * @return bool successful?

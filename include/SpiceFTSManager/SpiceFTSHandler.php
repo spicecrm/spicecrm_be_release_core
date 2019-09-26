@@ -16,7 +16,7 @@ class SpiceFTSHandler
     function search($req, $res, $args)
     {
         $postBody = $req->getParsedBody();
-        $result = $this->getGlobalSearchResults($postBody['modules'], $postBody['searchterm'], $postBody, $postBody['aggregates'], $postBody['sort']);
+        $result = $this->getGlobalSearchResults($postBody['modules'], $postBody['searchterm'], json_decode( $postBody['searchtags'] ), $postBody, $postBody['aggregates'], $postBody['sort']);
         echo json_encode($result);
     }
 
@@ -27,15 +27,15 @@ class SpiceFTSHandler
 
         // determine the delimiter
         $delimiter = \UserPreference::getDefaultPreference('export_delimiter');
-        if ( !empty( $GLOBALS['current_user']->getPreference('export_delimiter'))) $delimiter = $GLOBALS['current_user']->getPreference('export_delimiter');
+        if (!empty($GLOBALS['current_user']->getPreference('export_delimiter'))) $delimiter = $GLOBALS['current_user']->getPreference('export_delimiter');
 
         // determine the charset
         $supportedCharsets = mb_list_encodings();
         $charsetTo = \UserPreference::getDefaultPreference('default_charset');
-        if ( !empty( $postBody['charset'] )) {
-            if ( in_array( $postBody['charset'], $supportedCharsets ) ) $charsetTo = $postBody['charset'];
+        if (!empty($postBody['charset'])) {
+            if (in_array($postBody['charset'], $supportedCharsets)) $charsetTo = $postBody['charset'];
         } else {
-            if ( in_array( $GLOBALS['current_user']->getPreference('default_export_charset'), $supportedCharsets ) ) $charsetTo = $GLOBALS['current_user']->getPreference('default_export_charset');
+            if (in_array($GLOBALS['current_user']->getPreference('default_export_charset'), $supportedCharsets)) $charsetTo = $GLOBALS['current_user']->getPreference('default_export_charset');
         }
 
         $fh = @fopen('php://output', 'w');
@@ -43,12 +43,12 @@ class SpiceFTSHandler
         foreach ($result as $thisBean) {
             $entryArray = [];
             foreach ($postBody['fields'] as $returnField)
-                $entryArray[] = !empty( $charsetTo ) ? mb_convert_encoding ( $thisBean[$returnField], $charsetTo ) : $thisBean[$returnField];
+                $entryArray[] = !empty($charsetTo) ? mb_convert_encoding($thisBean[$returnField], $charsetTo) : $thisBean[$returnField];
             fputcsv($fh, $entryArray, $delimiter);
         }
         fclose($fh);
 
-        return $res->withHeader('Content-Type','text/csv; charset='.$charsetTo);
+        return $res->withHeader('Content-Type', 'text/csv; charset=' . $charsetTo);
     }
 
     /*
@@ -99,6 +99,18 @@ class SpiceFTSHandler
             $this->indexBean($seed);
         }
 
+    }
+
+    /**
+     * CR1000257
+     * helper funciton that indexes one given module with bulk fts.
+     *
+     * @param $module thebean name
+     */
+    function indexModuleBulk($module)
+    {
+        $packageSize = $GLOBALS['sugar_config']['fts']['schedulerpackagesize'];
+        $this->bulkIndexBeans($packageSize, $module);
     }
 
     /**
@@ -224,6 +236,7 @@ class SpiceFTSHandler
      * indexes a given bean that is passed in
      *
      * @param $bean the sugarbean to be indexed
+     *
      * @return bool
      */
     function indexBean($bean)
@@ -337,7 +350,7 @@ class SpiceFTSHandler
      *
      * @return array|mixed
      */
-    function searchModule($module, $searchterm = '', $aggregatesFilters = array(), $size = 25, $from = 0, $sort = array(), $addFilters = array(), $useWildcard = false, $requiredFields = [], $source = true)
+    function searchModule($module, $searchterm = '', $searchtags = [], $aggregatesFilters = array(), $size = 25, $from = 0, $sort = array(), $addFilters = array(), $useWildcard = false, $requiredFields = [], $source = true)
     {
         global $current_user;
 
@@ -371,16 +384,16 @@ class SpiceFTSHandler
         );
 
         // if we do not want any srurce fields to be returned
-        if(!$source){
+        if (!$source) {
             $queryParam['_source'] = false;
         }
 
         if ($sort['sortfield'] && $sort['sortdirection']) {
 
             // check that the field is here, is sortable and if aanother sort field is set
-            foreach($indexProperties as $indexProperty){
-                if($indexProperty['fieldname'] == $sort['sortfield']){
-                    if($indexProperty['metadata']['sort_on']){
+            foreach ($indexProperties as $indexProperty) {
+                if ($indexProperty['fieldname'] == $sort['sortfield']) {
+                    if ($indexProperty['metadata']['sort_on']) {
                         $queryParam['sort'] = array(array($indexProperty['metadata']['sort_on'] . '.raw' => $sort['sortdirection']));
                     } else {
                         $queryParam['sort'] = array(array($sort['sortfield'] . '.raw' => $sort['sortdirection']));
@@ -393,19 +406,36 @@ class SpiceFTSHandler
         }
 
 
+        /**
+         * changed to build multiple must queries
+         */
         if (!empty($searchterm)) {
-            $queryParam['query'] = array(
-                'bool' => array(
-                    'must' => array(
-                        "multi_match" => array(
-                            "query" => "$searchterm",
-                            'analyzer' => 'spice_standard',
-                            // 'operator' => 'or',
-                            'fields' => $searchFields,
-                        )
+            $multimatch = [
+                "query" => "$searchterm",
+                'analyzer' => 'spice_standard',
+                'fields' => $searchFields,
+            ];
 
-                    )
-                )
+            if ($indexSettings['minimum_should_match'])
+                $multimatch['minimum_should_match'] = $indexSettings['minimum_should_match'] . '%';
+
+            if ($indexSettings['fuzziness'])
+                $multimatch['fuzziness'] = $indexSettings['fuzziness'];
+
+
+            if ($indexSettings['operator'])
+                $multimatch['operator'] = $indexSettings['operator'];
+
+            if ($indexSettings['multimatch_type'])
+                $multimatch['type'] = $indexSettings['multimatch_type'];
+
+
+            $queryParam['query'] = array(
+                'bool' => [
+                    'must' => [
+                        ['multi_match' => $multimatch]
+                    ]
+                ]
             );
 
             // check for required fields
@@ -422,18 +452,6 @@ class SpiceFTSHandler
                 $queryParam['query']['bool']['minimum_should_match'] = 1;
             }
 
-            if ($indexSettings['minimum_should_match'])
-                $queryParam['query']['bool']['must']['multi_match']['minimum_should_match'] = $indexSettings['minimum_should_match'] . '%';
-
-            if ($indexSettings['fuzziness'])
-                $queryParam['query']['bool']['must']['multi_match']['fuzziness'] = $indexSettings['fuzziness'];
-
-
-            if ($indexSettings['operator'])
-                $queryParam['query']['bool']['must']['multi_match']['operator'] = $indexSettings['operator'];
-
-            if ($indexSettings['multimatch_type'])
-                $queryParam['query']['bool']['must']['multi_match']['type'] = $indexSettings['multimatch_type'];
 
             //wildcard capability: change elasticsearch params!
             if ($useWildcard) {
@@ -447,6 +465,15 @@ class SpiceFTSHandler
                 }
 
             };
+        }
+
+        // if searchtags add an additional query for the must
+        if ( $searchtags ) {
+            $queryParam['query']['bool']['must'][] = [
+                'terms' => [
+                    'tags' => $searchtags, // ['travelmaster', 'reisen']
+                ]
+            ];
         }
 
         // add ACL Check filters
@@ -466,6 +493,13 @@ class SpiceFTSHandler
                 }
 
             }
+        }
+
+        // check if we have a global filter for the module defined
+        // if yes add this here to the add filters
+        if (!empty($indexSettings['globalfilter'])) {
+            $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+            $addFilters[] = $sysFilter->generareElasticFilterForFilterId($indexSettings['globalfilter']);
         }
 
         // process additional filters
@@ -502,6 +536,7 @@ class SpiceFTSHandler
      * checks for duplicate records
      *
      * @param SugarBean $bean
+     *
      * @return array
      */
     function checkDuplicates($bean)
@@ -624,6 +659,7 @@ class SpiceFTSHandler
      *
      * @param $module
      * @param string $searchTerm
+     *
      * @return array
      */
     function getRawSearchResultsForListView($module, $searchTerm = '')
@@ -633,7 +669,7 @@ class SpiceFTSHandler
         $useWildcard = false;
         if (preg_match("/\*/", $searchTerm))
             $useWildcard = true;
-        $searchresults = $this->searchModule($module, $searchTerm, array(), 25, 0, array(), array(), $useWildcard);
+        $searchresults = $this->searchModule($module, $searchTerm, array(), array(), 25, 0, array(), array(), $useWildcard);
 
         $rows = array();
         foreach ($searchresults['hits']['hits'] as $searchresult) {
@@ -654,6 +690,7 @@ class SpiceFTSHandler
      * legacy function for getting aggregates int eh old UI .. will be deleted sooner or later
      *
      * @param $aggretgates
+     *
      * @return string
      * @throws \SmartyException
      */
@@ -673,9 +710,10 @@ class SpiceFTSHandler
      * @param array $aggregates
      * @param array $sort
      * @param array $required
+     *
      * @return array
      */
-    function getGlobalSearchResults($modules, $searchterm, $params, $aggregates = [], $sort = [], $required = [])
+    function getGlobalSearchResults($modules, $searchterm, $searchtags, $params, $aggregates = [], $sort = [], $required = [])
     {
         global $current_user;
 
@@ -728,7 +766,7 @@ class SpiceFTSHandler
             if (preg_match("/\*/", $searchterm))
                 $useWildcard = true;
 
-            $searchresultsraw = $this->searchModule($module, $searchterm, $aggregatesFilters, $params['records'] ?: 5, $params['start'] ?: 0, $sort, $addFilters, $useWildcard, $required);
+            $searchresultsraw = $this->searchModule($module, $searchterm, $searchtags, $aggregatesFilters, $params['records'] ?: 5, $params['start'] ?: 0, $sort, $addFilters, $useWildcard, $required);
             $searchresults[$module] = $searchresultsraw['hits'] ?: ['hits' => [], 'total' => 0];
 
             if ($searchresultsraw['error']) {
@@ -775,7 +813,7 @@ class SpiceFTSHandler
         if (!$GLOBALS['ACLController']->checkAccess($module, 'export', true))
             return false;
 
-        $searchresultsraw = $this->getRawSearchResults($module, $searchterm, $params, $aggregates, 1000, 0, $sort,  $required, false);
+        $searchresultsraw = $this->getRawSearchResults($module, $searchterm, $params, $aggregates, 1000, 0, $sort, $required, false);
 
         if ($searchresultsraw['error']) {
             return $exportresults;
@@ -791,7 +829,8 @@ class SpiceFTSHandler
         return $exportresults;
     }
 
-    function getRawSearchResults($module, $searchterm, $params, $aggregates = [], $size, $from, $sort = [], $required = [], $source = true){
+    function getRawSearchResults($module, $searchterm, $params, $aggregates = [], $size, $from, $sort = [], $required = [], $source = true)
+    {
         global $current_user;
 
         $aggregatesFilters = array();
@@ -821,7 +860,7 @@ class SpiceFTSHandler
         if (preg_match("/\*/", $searchterm))
             $useWildcard = true;
 
-        $searchresultsraw = $this->searchModule($module, $searchterm, $aggregatesFilters, $size, $from, $sort, $addFilters, $useWildcard, $required, $source);
+        $searchresultsraw = $this->searchModule($module, $searchterm, array(), $aggregatesFilters, $size, $from, $sort, $addFilters, $useWildcard, $required, $source);
 
         return $searchresultsraw;
 
@@ -892,7 +931,7 @@ class SpiceFTSHandler
         }
 
         // make the search
-        $searchresults = $this->searchModule($module, $searchTerm, $aggregatesFilters, 25, $page * 25);
+        $searchresults = $this->searchModule($module, $searchTerm, array(), $aggregatesFilters, 25, $page * 25);
 
         $rows = array();
         foreach ($searchresults['hits']['hits'] as $searchresult) {
@@ -950,6 +989,135 @@ class SpiceFTSHandler
             if ($beanCounter >= $packagesize) {
                 echo "Indexing incomplete closed, because scheduler package size ($packagesize) exceeded. Will continue next time.\n";
                 return true;
+            }
+        }
+        echo 'Indexing finished. All done.';
+    }
+
+    /**
+     *
+     * @param $packagesize
+     * @param null $module added for CR1000257
+     * @return bool
+     */
+    function bulkIndexBeans($packagesize, $module= null)
+    {
+        global $timedate, $db, $sugar_config;
+
+        $beanCounter = 0;
+        // BEGIN CR1000257
+        $where = "";
+        if(!empty($module)){
+            $where = " WHERE module='".$module."'";
+        }
+        // END
+        $beans = $db->query("SELECT * FROM sysfts".$where);
+        echo "Starting indexing (maximal $packagesize records).\n";
+
+        $bulkCommitSize = ($sugar_config['fts']['bulkcommitsize'] ?: 1000);
+        $bulkItems = [];
+        $bulkUpdates = [
+            'indexed' => [],
+            'deleted' => []
+        ];
+
+        while ($bean = $db->fetchByAssoc($beans)) {
+            echo 'Indexing module ' . $bean['module'] . ' ... ';
+            $seed = \BeanFactory::getBean($bean['module']);
+
+            //in case of module mispelling, no bean will be found. Catch here
+            if (!$seed) continue;
+
+            $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL OR date_indexed <> ''))", 0, $packagesize);
+
+            $counterIndexed = $counterDeleted = 0;
+            while ($indexBean = $db->fetchByAssoc($indexBeans)) {
+                if ($indexBean['deleted'] == 0) {
+                    $seed->retrieve($indexBean['id']);
+                    $bulkItems[] = json_encode([
+                        'index' => [
+                            '_index' => $sugar_config['fts']['prefix'] . strtolower($bean['module']),
+                            '_type' => $bean['module'],
+                            '_id' => $seed->id
+                        ]
+                    ]);
+                    $beanHandler = new SpiceFTSBeanHandler($seed);
+                    $bulkItems[] = json_encode($beanHandler->normalizeBean());
+
+                    $bulkUpdates['indexed'][]=$seed->id;
+
+                    $beanCounter++;
+                    $counterIndexed++;
+                } else {
+                    $seed->retrieve($indexBean['id'], true, false);
+                    $bulkItems[] = json_encode([
+                        'delete' => [
+                            '_index' => $sugar_config['fts']['prefix'] . strtolower($bean['module']),
+                            '_type' => $bean['module'],
+                            '_id' => $seed->id
+                        ]
+                    ]);
+
+                    $bulkUpdates['deleted'][]=$seed->id;
+
+                    $beanCounter++;
+                    $counterDeleted++;
+                }
+                if(count($bulkItems) >= $bulkCommitSize){
+                    $indexResponse = $this->elasticHandler->bulk($bulkItems);
+                    if(!$indexResponse->errors){
+                        if(count($bulkUpdates['indexed']) > 0)
+                            $db->query("UPDATE " . $seed->table_name . " SET date_indexed = '" . $timedate->nowDb() . "' WHERE id IN ('" . implode("','", $bulkUpdates['indexed']) . "')");
+
+                        if(count($bulkUpdates['deleted']) > 0)
+                            $db->query("UPDATE " . $seed->table_name . " SET date_indexed = NULL WHERE id IN ('" . implode("','", $bulkUpdates['deleted']) . "')");
+
+                        $bulkUpdates = [
+                            'indexed' => [],
+                            'deleted' => []
+                        ];
+                    }
+                    $bulkItems = [];
+                }
+            }
+
+            if(count($bulkItems) >0){
+                $indexResponse = $this->elasticHandler->bulk($bulkItems);
+                if(!$indexResponse->errors){
+                    if(count($bulkUpdates['indexed']) > 0)
+                        $db->query("UPDATE " . $seed->table_name . " SET date_indexed = '" . $timedate->nowDb() . "' WHERE id IN ('" . implode("','", $bulkUpdates['indexed']) . "')");
+
+                    if(count($bulkUpdates['deleted']) > 0)
+                        $db->query("UPDATE " . $seed->table_name . " SET date_indexed = NULL WHERE id IN ('" . implode("','", $bulkUpdates['deleted']) . "')");
+
+                    $bulkUpdates = [
+                        'indexed' => [],
+                        'deleted' => []
+                    ];
+                }
+                $bulkItems = [];
+            }
+
+            echo "finished. Indexed $counterIndexed, deleted $counterDeleted records.\n";
+            if ($beanCounter >= $packagesize) {
+
+                echo "Indexing incomplete closed, because scheduler package size ($packagesize) exceeded. Will continue next time.\n";
+                return true;
+            }
+        }
+        if(count($bulkItems) >0){
+            $indexResponse = $this->elasticHandler->bulk($bulkItems);
+            if(!$indexResponse->errors){
+                if(count($bulkUpdates['indexed']) > 0)
+                    $db->query("UPDATE " . $seed->table_name . " SET date_indexed = '" . $timedate->nowDb() . "' WHERE id IN ('" . implode("','", $bulkUpdates['indexed']) . "')");
+
+                if(count($bulkUpdates['deleted']) > 0)
+                    $db->query("UPDATE " . $seed->table_name . " SET date_indexed = NULL WHERE id IN ('" . implode("','", $bulkUpdates['deleted']) . "')");
+
+                $bulkUpdates = [
+                    'indexed' => [],
+                    'deleted' => []
+                ];
             }
         }
         echo 'Indexing finished. All done.';

@@ -1624,7 +1624,9 @@ function translate($string, $mod = '', $selectedValue = '') {
     }
 
     $returnValue = '';
+
     global $app_strings, $app_list_strings;
+    if ( !isset( $app_list_strings )) $app_list_strings = return_app_list_strings_language( $current_language );
 
     if (isset($mod_strings[$string]))
         $returnValue = $mod_strings[$string];

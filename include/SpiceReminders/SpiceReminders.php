@@ -110,14 +110,16 @@ class SpiceReminders
                 $lastNRow['reminder_date'] = str_replace('.000', '', $lastNRow['reminder_date']);
 
             $thisBean = \BeanFactory::getBean($lastNRow['bean'], $lastNRow['bean_id']);
-            $summaryText = $thisBean ? $thisBean->get_summary_text() : '';
-            $favArray[] = array(
-                'bean_id' => $lastNRow['bean_id'],
-                'bean' => $lastNRow['bean'],
-                'summary' => (strlen($summaryText) > 15 ? substr($summaryText, 0, 13) . '...' : $summaryText),
-                'reminder_date' => $GLOBALS['timedate']->to_display_date($lastNRow['reminder_date'], false),
-                'icon' => \SugarThemeRegistry::current()->getImage($lastNRow['bean'])
-            );
+            if($thisBean) {
+                $summaryText = $thisBean ? $thisBean->get_summary_text() : '';
+                $favArray[] = array(
+                    'bean_id' => $lastNRow['bean_id'],
+                    'bean' => $lastNRow['bean'],
+                    'summary' => (strlen($summaryText) > 15 ? substr($summaryText, 0, 13) . '...' : $summaryText),
+                    'reminder_date' => $GLOBALS['timedate']->to_display_date($lastNRow['reminder_date'], false),
+                    'icon' => \SugarThemeRegistry::current()->getImage($lastNRow['bean'])
+                );
+            }
             $thisBean = null;
             unset($thisBean);
         }

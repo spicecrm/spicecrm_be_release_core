@@ -190,8 +190,7 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'type' => 'date',
                 'comment' => 'The birthdate of the contact'
             ),
-            'accounts' =>
-                array(
+            'accounts' =>                array(
                     'name' => 'accounts',
                     'type' => 'link',
                     'relationship' => 'accounts_contacts',
@@ -297,8 +296,7 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'vname' => 'LBL_LEADS',
                 'module' => 'Leads'
             ),
-            'meetings' =>
-                array(
+            'meetings' =>                array(
                     'name' => 'meetings',
                     'type' => 'link',
                     'relationship' => 'meetings_contacts',
@@ -320,13 +318,13 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'vname' => 'LBL_NOTES',
             ),
             //@deprecated name project. Use projects
-            'project' => array(
-                'name' => 'project',
-                'type' => 'link',
-                'relationship' => 'projects_contacts',
-                'source' => 'non-db',
-                'vname' => 'LBL_PROJECTS_DEPRECATED',
-            ),
+//            'project' => array(
+//                'name' => 'project',
+//                'type' => 'link',
+//                'relationship' => 'projects_contacts',
+//                'source' => 'non-db',
+//                'vname' => 'LBL_PROJECTS_DEPRECATED',
+//            ),
             'projects' => array(
                 'name' => 'projects',
                 'type' => 'link',
@@ -334,16 +332,6 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'source' => 'non-db',
                 'vname' => 'LBL_PROJECTS',
             ),
-// uncleaned PRO code
-//            'project_resource' => array(
-//                'name' => 'project_resource',
-//                'type' => 'link',
-//                'relationship' => 'projects_contacts_resources',
-//                'source' => 'non-db',
-//                'vname' => 'LBL_PROJECTS_RESOURCES',
-//            ),
-
-
             'tasks' => array(
                 'name' => 'tasks',
                 'type' => 'link',
@@ -415,15 +403,12 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'rname' => 'id',
                 'id_name' => 'campaign_id',
                 'type' => 'id',
-                //'dbType' => 'char',
                 'table' => 'campaigns',
                 'isnull' => 'true',
                 'module' => 'Campaigns',
-//            'reportable'=>false,
                 'massupdate' => false,
                 'duplicate_merge' => 'disabled',
             ),
-
             'campaign_name' => array(
                 'name' => 'campaign_name',
                 'rname' => 'name',
@@ -448,19 +433,7 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'source' => 'non-db',
                 'vname' => 'LBL_CAMPAIGNLOG',
             ),
-            /*
-            'campaignlog' => array(
-                'name' => 'campaignlog',
-                'type' => 'link',
-                'relationship' => 'contact_campaign_log',
-                'module' => 'CampaignLog',
-                'bean_name' => 'CampaignLog',
-                'source' => 'non-db',
-                'vname' => 'LBL_CAMPAIGNLOG',
-            ),
-            */
-            'campaign_contacts' =>
-                array(
+            'campaign_contacts' =>                array(
                     'name' => 'campaign_contacts',
                     'type' => 'link',
                     'vname' => 'LBL_CAMPAIGN_CONTACT',

@@ -373,12 +373,28 @@ class M2MRelationship extends SugarRelationship
 
         $sort = '';
         if(!empty($params['sort'])){
+            $sortFieldTable = null;
+            $sortField = null;
+            if (!empty($params['relationship_fields']) && $params['sort']['sortfield']) {
+                foreach ($params['relationship_fields'] as $fieldName => $fieldProperties) {
+                    if ($fieldProperties['map'] && $fieldProperties['map'] == $params['sort']['sortfield']) {
+                        $sortFieldTable = $rel_table;
+                        $sortField = $fieldName;
+                        break;
+                    }
+                }
+            }
+
+            if(is_null($sortField)) $sortField = $params['sort']['sortfield'];
+
             if ($this->linkIsLHS($link)) {
+                if (is_null($sortFieldTable))$sortFieldTable = $this->def['rhs_table'];
                 $from .= " INNER JOIN " . $this->def['rhs_table'] . ' ON ' . $this->def['rhs_table'] . '.' . $this->def['rhs_key'] . ' = ' . $rel_table . '.' . $this->def['join_key_rhs'];
-                $sort = ' ORDER BY ' . $this->def['rhs_table'] . '.' . $params['sort']['sortfield'] . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
+                $sort = ' ORDER BY ' . $sortFieldTable . '.' . $sortField . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
             } else {
+                if (is_null($sortFieldTable))$sortFieldTable = $this->def['lhs_table'];
                 $from .= " INNER JOIN " . $this->def['lhs_table'] . ' ON ' . $this->def['lhs_table'] . '.' . $this->def['lhs_key'] . ' = ' . $rel_table . '.' . $this->def['join_key_lhs'];
-                $sort = ' ORDER BY ' . $this->def['lhs_table'] . '.' . $params['sort']['sortfield'] . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
+                $sort = ' ORDER BY ' . $sortFieldTable . '.' . $sortField . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
             }
 
 
@@ -397,7 +413,7 @@ class M2MRelationship extends SugarRelationship
         if (empty($params['return_as_array'])) {
             // 20reasons add the relid to the query
             // $query = "SELECT $targetKey id FROM $from WHERE $where AND $rel_table.deleted=$deleted";
-            $query = "SELECT $rel_table.id relid, $targetKey id $relFieldsSelect FROM $from WHERE $where AND $rel_table.deleted=$deleted $sort";
+            $query = "SELECT $rel_table.id relid, $targetKey id $relFieldsSelect FROM $from WHERE $where AND $rel_table.deleted=$deleted ".$this->getRoleFilterForJoin()." $sort";  // CR1000269: added $this->getRoleFilterForJoin()
 
             // BEGIN Exception SpiceACL
             if($rel_table == 'spiceaclterritories_hash'){
@@ -419,7 +435,7 @@ class M2MRelationship extends SugarRelationship
                 //'select' => "SELECT $targetKey id",
                 'select' => "SELECT $rel_table.id relid, $targetKey id $relFieldsSelect",
                 'from' => "FROM $from",
-                'where' => "WHERE $where AND $rel_table.deleted=$deleted",
+                'where' => "WHERE $where AND $rel_table.deleted=$deleted ".$this->getRoleFilterForJoin(), // CR1000269: added $this->getRoleFilterForJoin()
                 'sort' => $sort
             );
         }
@@ -512,14 +528,7 @@ class M2MRelationship extends SugarRelationship
             $joinTable = $params['join_table_link_alias'];
         }
 
-        //BEGIN maretval 2019-03-13: missing relationship_role_column for n-2-n
-        $addRoleColumnWhere = "";
-        if(!empty($this->def['relationship_role_column']) && !empty($this->def['relationship_role_value'])){
-            $addRoleColumnWhere = " AND ".$joinTable.".".$this->def['relationship_role_column']." = '".$this->def['relationship_role_value']."'";
-        }
-        //END
-
-        $where = "$startingTable.$startingKey=$joinTable.$startingJoinKey AND $joinTable.$joinKey='{$link->getFocus()->$targetKey}' $addRoleColumnWhere"; //added maretval $addRoleColumnWhere
+        $where = "$startingTable.$startingKey=$joinTable.$startingJoinKey AND $joinTable.$joinKey='{$link->getFocus()->$targetKey}' ".$this->getRoleFilterForJoin(); //CR1000269 added $this->getRoleFilterForJoin()
 
         //Check if we should ignore the role filter.
         $ignoreRole = !empty($params['ignore_role']);
@@ -549,6 +558,12 @@ class M2MRelationship extends SugarRelationship
     protected function getRoleFilterForJoin()
     {
         $ret = "";
+        // BEGIN CR1000269: fix getRoleFilterForJoin()
+        if(!empty($this->def['relationship_role_column']))
+            $this->relationship_role_column = $this->def['relationship_role_column'];
+        if(!empty($this->def['relationship_role_column_value']))
+            $this->relationship_role_column_value = $this->def['relationship_role_column_value'];
+        // END
         if (!empty($this->relationship_role_column) && !$this->ignore_role_filter)
         {
             $ret .= " AND ".$this->getRelationshipTable().'.'.$this->relationship_role_column;

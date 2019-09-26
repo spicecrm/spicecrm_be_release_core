@@ -169,4 +169,29 @@ class Company extends Basic
         return $query;
     }
 
+    /**
+     * ensure the is_inactive flag is properly set in the index parameters
+     *
+     * @return array
+     */
+    public function add_fts_metadata()
+    {
+        return array(
+            'is_inactive' => array(
+                'type' => 'keyword',
+                'index' => 'analyzed',
+                'search' => false,
+                'enablesort' => true
+            )
+        );
+    }
+
+    /**
+     * write is_inactive into the index
+     */
+    public function add_fts_fields()
+    {
+        return ['is_inactive' => $this->is_inactive ? '1' : '0'];
+    }
+
 }

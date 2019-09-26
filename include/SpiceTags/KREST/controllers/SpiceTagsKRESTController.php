@@ -21,8 +21,8 @@ class SpiceTagsKRESTController
             "aggs" => [
                 "tags" => [
                     "terms" => [
-                        "field" => "tags.raw",
-                        // hack to get the search and filöter case insensitive
+                        "field" => "tags.agg",
+                        // hack to get the search and filter case insensitive
                         "script" => [
                             "source" => "_value + ';' + _value.toLowerCase()",
                             "lang" => "painless"
@@ -87,8 +87,8 @@ class SpiceTagsKRESTController
             "aggs" => [
                 "tags" => [
                     "terms" => [
-                        "field" => "tags.raw",
-                        // hack to get the search and filöter case insensitive
+                        "field" => "tags.agg",
+                        // hack to get the search and filter case insensitive
                         "script" => [
                             "source" => "_value + ';' + _value.toLowerCase()",
                             "lang" => "painless"

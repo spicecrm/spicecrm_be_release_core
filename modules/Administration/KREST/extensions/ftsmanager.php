@@ -56,12 +56,21 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
 //            require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
             $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
 
-            // delete and recreate the index
-            $spiceFTSManager->deleteIndex($args['module']);
-            $spiceFTSManager->mapModule($args['module']);
+            //get params CR1000257
+            $params = $_GET;
+
+            // delete and recreate the index - CR1000257 not when bulk indexing
+            if (!isset($params['bulk']) || $params['bulk'] == false){
+                $spiceFTSManager->deleteIndex($args['module']);
+                $spiceFTSManager->mapModule($args['module']);
+            }
 
             // index the beans
-            $ftsHandler->indexModule($args['module']);
+            if(isset($params['bulk']) && $params['bulk'] == true) {
+                $ftsHandler->indexModuleBulk($args['module']); //CR1000257
+            } else {
+                $ftsHandler->indexModule($args['module']);
+            }
 
             echo json_encode(array('status' => 'success'));
         });

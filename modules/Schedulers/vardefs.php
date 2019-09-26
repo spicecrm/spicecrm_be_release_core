@@ -161,6 +161,12 @@ $dictionary['Scheduler'] = array('table' => 'schedulers',
 			'bean_name'		=> 'Scheduler',
 			'source'		=> 'non-db',
 		),
+        'last_successful_run' => array(
+            'name' => 'last_successful_run',
+            'type' => 'datetime',
+            'source' => 'non-db',
+            'vname' => 'LBL_LAST_SUCCESSFUL_RUN'
+        )
 	),
 	'indices' => array (
 		array(

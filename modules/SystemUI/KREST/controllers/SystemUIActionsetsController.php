@@ -42,7 +42,6 @@ class SystemUIActionsetsController
                     'name' => $actionset['name'],
                     'module' => $actionset['module'],
                     'type' => 'custom',
-                    '' => '',
                     'actions' => array()
                 );
             }

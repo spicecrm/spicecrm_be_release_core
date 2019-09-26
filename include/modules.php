@@ -390,6 +390,16 @@ if (file_exists('modules/Questionnaires/Questionnaire.php')) {
     $moduleList['QuestionnaireInterpretations'] = 'QuestionnaireInterpretations';
     $beanList['QuestionnaireInterpretations'] = 'QuestionnaireInterpretation';
     $beanFiles['QuestionnaireInterpretation'] = 'modules/QuestionnaireInterpretations/QuestionnaireInterpretation.php';
+
+    /** include QuestionnaireEvaluations */
+    $moduleList['QuestionnaireEvaluations'] = 'QuestionnaireEvaluations';
+    $beanList['QuestionnaireEvaluations'] = 'QuestionnaireEvaluation';
+    $beanFiles['QuestionnaireEvaluation'] = 'modules/QuestionnaireEvaluations/QuestionnaireEvaluation.php';
+
+    /** include QuestionnaireEvaluationItems */
+    $moduleList['QuestionnaireEvaluationItems'] = 'QuestionnaireEvaluationItems';
+    $beanList['QuestionnaireEvaluationItems'] = 'QuestionnaireEvaluationItem';
+    $beanFiles['QuestionnaireEvaluationItem'] = 'modules/QuestionnaireEvaluationItems/QuestionnaireEvaluationItem.php';
 }
 
 /** include MediaFiles and MediaFileCategories */

@@ -1455,7 +1455,12 @@ $dictionary['sysmodules'] = array(
         ),
         'visible' => array(
             'name' => 'visible',
+            'type' => 'bool',
+        ),
+        'visibleaclaction' => array(
+            'name' => 'visibleaclaction',
             'type' => 'varchar',
+            'len' => 30
         ),
         'tagging' => array(
             'name' => 'tagging',
@@ -1561,7 +1566,12 @@ $dictionary['syscustommodules'] = array(
         ),
         'visible' => array(
             'name' => 'visible',
+            'type' => 'bool',
+        ),
+        'visibleaclaction' => array(
+            'name' => 'visibleaclaction',
             'type' => 'varchar',
+            'len' => 30
         ),
         'tagging' => array(
             'name' => 'tagging',

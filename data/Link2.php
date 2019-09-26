@@ -192,8 +192,15 @@ class Link2 {
      * @return array ids of records related through this link
      */
     public function get($role = false) {
-        if (!$this->loaded)
-            $this->load();
+        if (!$this->loaded) {
+            // added sort option for link
+            $params = [];
+            if($this->def['sort']){
+                $params['sort'] = $this->def['sort'];
+            }
+
+            $this->load($params);
+        }
 
         return array_keys($this->rows);
     }
@@ -407,7 +414,13 @@ class Link2 {
             $params = array();
 
         if (!$this->loaded && empty($params)) {
-            $this->load();
+
+            // add a sort if not set
+            if($this->def['sort']){
+                $params['sort'] = $this->def['sort'];
+            }
+
+            $this->load($params);
         }
 
         if(count($this->relationship_fields)>0){

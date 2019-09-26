@@ -234,24 +234,24 @@ class ImapHandler extends TransportHandler
 
         $items = imap_search($stream, 'ALL');
 
+        if (is_array($items) || is_object($items)) {
+            foreach ($items as $item) {
+                $overview = imap_fetch_overview($stream, $item);
+                $email = \BeanFactory::getBean('Emails')
+                    ->get_full_list(
+                        '',
+                        'message_id= "' . $overview[0]->message_id . '"'
+                    )[0];
 
-        foreach ($items as $item) {
-            $overview  = imap_fetch_overview($stream, $item);
-            $email     = \BeanFactory::getBean('Emails')
-                ->get_full_list(
-                    '',
-                    'message_id= "' . $overview[0]->message_id . '"'
-                )[0]
-            ;
+                if (!$this->emailExists($overview[0]->message_id)) {
+                    continue;
+                }
 
-            if (!$this->emailExists($overview[0]->message_id)) {
-                continue;
+                $email->deleted = 1;
+                $email->save();
+
+                ++$deleted_mail_count;
             }
-
-            $email->deleted = 1;
-            $email->save();
-
-            ++$deleted_mail_count;
         }
 
         imap_close($stream);
@@ -590,7 +590,8 @@ class ImapHandler extends TransportHandler
         $subject = '';
 
         if ((substr(strtolower($decodedSubject[0]->charset), 0 ,3) == 'iso')
-        || ($decodedSubject[0]->charset == 'Windows-1252')) {
+            || (strtolower($decodedSubject[0]->charset) == 'windows-1252')
+            || (strtolower($decodedSubject[0]->charset) == 'windows-1250')) {
             $subject = utf8_encode($decodedSubject[0]->text);
         } else {
             $subject = $decodedSubject[0]->text;
@@ -621,5 +622,20 @@ class ImapHandler extends TransportHandler
         }
 
         return str_replace(',', '', $address);
+    }
+
+    /**
+     * saveRelation
+     *
+     * Only saves the relation between the current email address and another bean.
+     *
+     * @param $beanId
+     * @param $module
+     */
+    public function saveRelation($beanId, $module) {
+        $query = "INSERT INTO `email_addr_bean_rel` 
+                (`id`, `email_address_id`, `bean_id`, `bean_module`) 
+                VALUES ('" . create_guid() . "', '" . $this->id . "', '" . $beanId . "', '" . $module . "')";
+        $this->db->query($query);
     }
 }

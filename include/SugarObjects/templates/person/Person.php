@@ -143,7 +143,7 @@ class Person extends Basic
         if(!empty($this->first_name)) $nameArray[] =  $this->first_name;
         if(!empty($this->last_name)) $nameArray[] =  $this->last_name;
         if(!empty($this->degree2)) $nameArray[] =  $this->degree2;
-        return implode_r(' ', $nameArray);
+        return implode(' ', $nameArray);
     }
 
     public function getLetterLastName()
@@ -152,7 +152,7 @@ class Person extends Basic
         if(!empty($this->degree1)) $nameArray[] =  $this->degree1;
         if(!empty($this->last_name)) $nameArray[] =  $this->last_name;
         if(!empty($this->degree2)) $nameArray[] =  $this->degree2;
-        return implode_r(' ', $nameArray);
+        return implode(' ', $nameArray);
     }
 
     /**
@@ -388,6 +388,32 @@ class Person extends Basic
             }
         }
         return false;
+    }
+
+
+    /**
+     * ensure the is_inactive flag is properly set in the index parameters
+     *
+     * @return array
+     */
+    public function add_fts_metadata()
+    {
+        return array(
+            'is_inactive' => array(
+                'type' => 'keyword',
+                'index' => 'analyzed',
+                'search' => false,
+                'enablesort' => true
+            )
+        );
+    }
+
+    /**
+     * write is_inactive into the index
+     */
+    public function add_fts_fields()
+    {
+        return ['is_inactive' => $this->is_inactive ? '1' : '0'];
     }
 
 }

@@ -40,7 +40,7 @@ class SpiceNotes {
 	public static function saveQuickNote($beanName, $beanId, $data) {
 		global $current_user, $db;
 		$guid = create_guid();
-		$db->query("INSERT INTO spicenotes (id, bean_type, bean_id, user_id, trdate, trglobal, text, deleted) VALUES ('{$guid}', '{$beanName}', '{$beanId}', '".$current_user->id."', '" . gmdate('Y-m-d H:i:s') . "', {$data['global']}, '{$data['text']}', 0)");
+		$db->query( sprintf('INSERT INTO spicenotes ( id, bean_type, bean_id, user_id, trdate, trglobal, text, deleted ) VALUES ( "%s", "%s", "%s", "%s", "%s", "%s", "%s", 0 )', $guid, $db->quote( $beanName ), $db->quote( $beanId ), $current_user->id, gmdate('Y-m-d H:i:s'), $data['global'] ? 1:0, $db->quote( $data['text'] )));
 		$quicknotes[]=array(
 				'id' => $guid,
 				'user_id' => $current_user->id,

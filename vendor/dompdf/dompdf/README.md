@@ -25,8 +25,7 @@ release. For released code please
 question on [StackOverflow](http://stackoverflow.com/questions/tagged/dompdf) or
 on the [Google Groups](http://groups.google.com/group/dompdf).**
 
-Follow us on [![Twitter](http://twitter-badges.s3.amazonaws.com/twitter-a.png)](http://www.twitter.com/dompdf) or 
-[![Follow us on Google+](https://ssl.gstatic.com/images/icons/gplus-16.png)](https://plus.google.com/108710008521858993320?prsrc=3).
+Follow us on [![Twitter](http://twitter-badges.s3.amazonaws.com/twitter-a.png)](http://www.twitter.com/dompdf).
 
 ---
 
@@ -68,7 +67,7 @@ https://github.com/dompdf/dompdf/wiki/Requirements
 PDF documents internally support the following fonts: Helvetica, Times-Roman,
 Courier, Zapf-Dingbats, & Symbol. These fonts only support Windows ANSI
 encoding. In order for a PDF to display characters that are not available in
-Windows ANSI you must supply an external font. Dompdf will embed any referenced
+Windows ANSI, you must supply an external font. Dompdf will embed any referenced
 font in the PDF so long as it has been pre-loaded or is accessible to dompdf and
 reference in CSS @font-face rules. See the
 [font overview](https://github.com/dompdf/dompdf/wiki/About-Fonts-and-Character-Encoding)

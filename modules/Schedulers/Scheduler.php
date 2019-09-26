@@ -55,6 +55,7 @@ class Scheduler extends SugarBean {
     var $time_from;
     var $time_to;
     var $last_run;
+    var $last_successful_run;
     var $status;
     var $catch_up;
     // object attributes
@@ -553,29 +554,31 @@ class Scheduler extends SugarBean {
     }
 
     function handleIntervalType($type, $value, $mins, $hours) {
-        global $mod_strings;
+
+        $labels = !empty( $GLOBALS['mod_strings'] ) ? $GLOBALS['mod_strings'] : return_module_language($GLOBALS['current_language'], 'Schedulers');
+
         /* [0]:min [1]:hour [2]:day of month [3]:month [4]:day of week */
-        $days = array (	1 => $mod_strings['LBL_MON'],
-            2 => $mod_strings['LBL_TUE'],
-            3 => $mod_strings['LBL_WED'],
-            4 => $mod_strings['LBL_THU'],
-            5 => $mod_strings['LBL_FRI'],
-            6 => $mod_strings['LBL_SAT'],
-            0 => $mod_strings['LBL_SUN'],
-            '*' => $mod_strings['LBL_ALL']);
+        $days = array (	1 => $labels['LBL_MON'],
+            2 => $labels['LBL_TUE'],
+            3 => $labels['LBL_WED'],
+            4 => $labels['LBL_THU'],
+            5 => $labels['LBL_FRI'],
+            6 => $labels['LBL_SAT'],
+            0 => $labels['LBL_SUN'],
+            '*' => $labels['LBL_ALL']);
         switch($type) {
             case 0: // minutes
                 if($value == '0') {
                     //return;
-                    return trim($mod_strings['LBL_ON_THE']).$mod_strings['LBL_HOUR_SING'];
+                    return trim($labels['LBL_ON_THE']).$labels['LBL_HOUR_SING'];
                 } elseif(!preg_match('/[^0-9]/', $hours) && !preg_match('/[^0-9]/', $value)) {
                     return;
 
                 } elseif(preg_match('/\*\//', $value)) {
                     $value = str_replace('*/','',$value);
-                    return $value.$mod_strings['LBL_MINUTES'];
+                    return $value.' '.$labels['LBL_MINUTES'];
                 } elseif(!preg_match('[^0-9]', $value)) {
-                    return $mod_strings['LBL_ON_THE'].$value.$mod_strings['LBL_MIN_MARK'];
+                    return $labels['LBL_ON_THE'].$value.$labels['LBL_MIN_MARK'];
                 } else {
                     return $value;
                 }
@@ -583,7 +586,7 @@ class Scheduler extends SugarBean {
                 global $current_user;
                 if(preg_match('/\*\//', $value)) { // every [SOME INTERVAL] hours
                     $value = str_replace('*/','',$value);
-                    return $value.$mod_strings['LBL_HOUR'];
+                    return $value.' '.$labels['LBL_HOURS'];
                 } elseif(preg_match('/[^0-9]/', $mins)) { // got a range, or multiple of mins, so we return an 'Hours' label
                     return $value;
                 } else {	// got a "minutes" setting, so it will be at some o'clock.
@@ -608,12 +611,8 @@ class Scheduler extends SugarBean {
 
     function setIntervalHumanReadable() {
         global $current_user;
-        global $mod_strings;
-        $labels = $mod_strings;
 
-        if (!$labels) {
-            $labels = return_module_language($GLOBALS['current_language'], 'Schedulers');
-        }
+        $labels = !empty( $GLOBALS['mod_strings'] ) ? $GLOBALS['mod_strings'] : return_module_language($GLOBALS['current_language'], 'Schedulers');
 
         /* [0]:min [1]:hour [2]:day of month [3]:month [4]:day of week */
         $ints = $this->intervalParsed;
@@ -642,19 +641,19 @@ class Scheduler extends SugarBean {
                                 $tempInt .= $this->handleIntervalType($key, $valRange, $ints['raw'][0], $ints['raw'][1]);
                             }
                         } elseif($tempInt != $iteration) {
-                            $tempInt .= $labels['LBL_AND'];
+                            $tempInt .= ' '.$labels['LBL_AND'].' ';
                         }
                         $tempInt .= $this->handleIntervalType($key, $val, $ints['raw'][0], $ints['raw'][1]);
                     }
                 } elseif(false !== strpos($interval, '-')) {
                     $exRange = explode('-', $interval);
-                    $tempInt .= $labels['LBL_FROM'];
+                    $tempInt .= $labels['LBL_FROM'].' ';
                     $check = $tempInt;
 
                     foreach($exRange as $val) {
                         if($tempInt == $check) {
                             $tempInt .= $this->handleIntervalType($key, $val, $ints['raw'][0], $ints['raw'][1]);
-                            $tempInt .= $labels['LBL_RANGE'];
+                            $tempInt .= ' '.$labels['LBL_RANGE'].' ';
 
                         } else {
                             $tempInt .= $this->handleIntervalType($key, $val, $ints['raw'][0], $ints['raw'][1]);
@@ -662,7 +661,7 @@ class Scheduler extends SugarBean {
                     }
 
                 } elseif(false !== strpos($interval, '*/')) {
-                    $tempInt .= $labels['LBL_EVERY'];
+                    $tempInt .= $labels['LBL_EVERY'].' ';
                     $tempInt .= $this->handleIntervalType($key, $interval, $ints['raw'][0], $ints['raw'][1]);
                 } else {
                     $tempInt .= $this->handleIntervalType($key, $interval, $ints['raw'][0], $ints['raw'][1]);
@@ -1056,17 +1055,21 @@ class Scheduler extends SugarBean {
     }
     ////	END STANDARD SUGARBEAN OVERRIDES
     ///////////////////////////////////////////////////////////////////////////
-    static public function getJobsList()
-    {
-        if(empty(self::$job_strings)) {
-            global $mod_strings;
+
+    static public function getJobsList() {
+
+        if ( empty( self::$job_strings )) {
+
+            global $job_strings;
             include_once('modules/Schedulers/_AddJobsHere.php');
+            $labels = !empty( $GLOBALS['mod_strings'] ) ? $GLOBALS['mod_strings'] : return_module_language($GLOBALS['current_language'], 'Schedulers');
 
             // job functions
-            self::$job_strings = array('url::' => 'URL');
-            foreach($job_strings as $k=>$v){
-                self::$job_strings['function::' . $v] = $mod_strings['LBL_'.strtoupper($v)];
+            self::$job_strings = array( 'url::' => $labels['LBL_URL_SPECIFIED'] );
+            foreach( $job_strings as $k => $v ) {
+                self::$job_strings['function::' . $v] = empty( $labels['LBL_'.strtoupper($v)] ) ? 'LBL_'.strtoupper($v) : $labels['LBL_'.strtoupper($v)];
             }
+
         }
         return self::$job_strings;
     }

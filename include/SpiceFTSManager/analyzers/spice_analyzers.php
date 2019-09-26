@@ -15,9 +15,19 @@ $elasticAnalyzers = array(
         "tokenizer" => "standard",
         "filter" => $languagefilter
     ),
+    "spice_standard_all" => array(
+        "type" => "custom",
+        "tokenizer" => "spice_standard_all",
+        "filter" => $languagefilter
+    ),
     "spice_ngram" => array(
         "type" => "custom",
         "tokenizer" => "spice_ngram",
+        "filter" => array_merge(["lowercase"],$languagefilter)
+    ),
+    "spice_ngram_all" => array(
+        "type" => "custom",
+        "tokenizer" => "spice_ngram_all",
         "filter" => array_merge(["lowercase"],$languagefilter)
     ),
     "spice_accountname" => array(

@@ -93,8 +93,7 @@ class OutputTemplate extends SugarBean
             throw new Exception("No Bean found, translation aborted!");
 
         $templateCompiler = new \SpiceCRM\includes\SpiceTemplateCompiler\Compiler();
-        $html = $templateCompiler->compile($this->body, $bean, $this->language);
-        $html = '<style>' . $this->getStyle() . '</style><body>' . html_entity_decode($html) . '</body>';
+        $html = '<style>' . $this->getStyle() . '</style>' . $templateCompiler->compile('<body><header>'.html_entity_decode( $this->header ).'</header><main>'.html_entity_decode( $this->body ).'</main><footer>'.html_entity_decode( $this->footer ).'</footer></body>', $bean, $this->language );
 
         return $html;
     }
@@ -147,7 +146,7 @@ class OutputTemplate extends SugarBean
             $styleRecord = $this->db->fetchByAssoc($this->db->query("SELECT csscode FROM sysuihtmlstylesheets WHERE id='{$this->stylesheet_id}'"));
             $style = html_entity_decode($styleRecord['csscode'], ENT_QUOTES);
         }
-        return $style;
+        return str_replace(["\n", "\t"], "", $style);
     }
 
 }

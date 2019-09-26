@@ -110,7 +110,7 @@ class One2MBeanRelationship extends One2MRelationship
         //If we aren't already in a relationship save, intitiate a save now.
         if (empty($GLOBALS['resavingRelatedBeans']))
             SugarRelationship::resaveRelatedBeans();
-        
+
         return true;
     }
 
@@ -248,10 +248,15 @@ class One2MBeanRelationship extends One2MRelationship
             if (empty($params['return_as_array'])) {
                 //Limit is not compatible with return_as_array
                 $query = "SELECT id FROM $from $where";
+                // add the sort param from the relationship
+                if($params['sort']['sortfield']){
+                    $query .= " ORDER BY {$rhsTable}.{$params['sort']['sortfield']} {$params['sort']['sortdirection']}";
+                }
                 if (!empty($params['limit']) && $params['limit'] > 0) {
                     $offset = isset($params['offset']) ? $params['offset'] : 0;
                     $query = DBManagerFactory::getInstance()->limitQuery($query, $offset, $params['limit'], false, "", false);
                 }
+
                 return $query;
             }
             else
@@ -340,7 +345,7 @@ class One2MBeanRelationship extends One2MRelationship
         {
             $tableInRoleFilter = $linkIsLHS ? $alias : $startingTable;
         }
-        
+
         //Set up any table aliases required
         $targetTableWithAlias = "$targetTable $alias";
         $targetTable = $alias;
