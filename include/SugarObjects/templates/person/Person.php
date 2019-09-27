@@ -265,9 +265,7 @@ class Person extends Basic
         // For easier code reading, reused plenty of time
         $table = $this->table_name;
 
-        if ($custom_join) {
-            $custom_join['join'] .= $relate_link_join;
-        }
+
         $query = "SELECT
 					$table.*,
 					email_addresses.email_address email_address,
@@ -416,4 +414,26 @@ class Person extends Basic
         return ['is_inactive' => $this->is_inactive ? '1' : '0'];
     }
 
+    /**
+     * Generate VCARD content
+     * @return $content
+     */
+    public function getVCardContent() {
+        $address = $this->primary_address_street && $this->primary_address_street != "" ? "{$this->primary_address_street};;" : null;
+        $address .= $this->primary_address_city && $this->primary_address_city != "" ? "{$this->primary_address_city};" : null;
+        $address .= $this->primary_address_state && $this->primary_address_state != "" ? "{$this->primary_address_state};" : null;
+        $address .= $this->primary_address_postalcode && $this->primary_address_postalcode != "" ? "{$this->primary_address_postalcode};" : null;
+        $address .= $this->primary_address_country && $this->primary_address_country != "" ? "{$this->primary_address_country}" : null;
+
+        $content = "BEGIN:VCARD\nVERSION:4.0\n";
+        $content .= "N:{$this->last_name};{$this->first_name};;{$this->salutation} {$this->degree1};{$this->degree2}\n";
+        $content .= "FN:{$this->salutation} {$this->degree1} {$this->first_name} {$this->last_name} {$this->degree2}\n";
+        $content .= $this->email1 && $this->email1 != "" ? "EMAIL:{$this->email1}\n" : "";
+        $content .= $this->account_name && $this->account_name != "" ? "ORG:{$this->account_name}\n" : "";
+        $content .= $this->phone_work && $this->phone_work != "" ? "TEL:{$this->phone_work}\n" : "";
+        $content .= $this->phone_fax && $this->phone_fax != "" ? "TEL;type=FAX:{$this->phone_fax}\n" : "";
+        $content .= $address ? "ADR:;{$address}\n" : "";
+        $content .= "END:VCARD";
+        return $content;
+    }
 }

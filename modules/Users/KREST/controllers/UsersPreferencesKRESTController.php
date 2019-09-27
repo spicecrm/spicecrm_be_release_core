@@ -90,6 +90,16 @@ class UsersPreferencesKRESTController
         return $prefArray;
     }
 
+    /**
+     * CR1000276 Depending on which user (an admin or a regular user) is editing settings
+     * Use original setPreference/getPreference function when edited record is current user himself
+     * Use new setPreferenceForUser/getPreferenceForUser when edited record is not current user
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     * @throws ForbiddenException
+     */
     public function set_user_preferences($req, $res, $args)
     {
         global $current_user;
@@ -97,12 +107,16 @@ class UsersPreferencesKRESTController
         $category = $args['category'];
         $userId = $args['userId'];
         $preferences = $req->getParsedBody();
+        $setPreferenceFunction = "setPreference";
+        $getPreferenceFunction = "getPreference";
 
         if ( $current_user->id === $userId ) $user = $current_user;
         else {
             if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ) {
                 $user = new \User();
                 $user->retrieve( $userId );
+                $setPreferenceFunction = "setPreferenceForUser";
+                $getPreferenceFunction = "getPreferenceForUser";
                 if ( empty( $user->id )) throw ( new NotFoundException('User not found.'))->setLookedFor([ 'id'=>$userId, 'module'=>'Users' ]);
             } else {
                 throw new ForbiddenException('Forbidden to change user preferences of foreign user.');
@@ -115,8 +129,8 @@ class UsersPreferencesKRESTController
         // do the magic
         foreach ($preferences as $name => $value) {
             if ($value === null) $userPreference->deletePreference($name, $category);
-            else $userPreference->setPreference($name, $value, $category);
-            if (($memmy = $userPreference->getPreference($name, $category)) !== null) $retData[$name] = $memmy;
+            else $userPreference->{$setPreferenceFunction}($name, $value, $category);
+            if (($memmy = $userPreference->{$getPreferenceFunction}($name, $category)) !== null) $retData[$name] = $memmy;
         }
 
         return $res->withJson($retData);

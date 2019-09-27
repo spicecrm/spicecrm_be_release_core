@@ -118,6 +118,39 @@ class UserPreference extends SugarBean
     }
 
     /**
+     * CR1000276 Workaround
+     * Call this function when an admin user gets a preference for another user
+     *
+     * @param $name
+     * @param string $category
+     * @return mixed|null
+     */
+    public function getPreferenceForUser(
+        $name,
+        $category = 'global'
+    )
+    {
+        global $sugar_config;
+
+        $user = $this->_userFocus;
+
+        if ( empty($user->user_name) )
+            return;
+
+        $focus = new \UserPreference($this->_userFocus);
+        if($result = $focus->retrieve_by_string_fields(array(
+            'assigned_user_id' => $user->id,
+            'category' => $category,
+        ))) {
+            $cats = unserialize(base64_decode($result->contents));
+            return $cats[$name];
+        }
+
+        return null;
+    }
+
+
+    /**
      * Get preference by name and category from the system settings.
      *
      * @param string $name name of the preference to retreive
@@ -184,6 +217,40 @@ class UserPreference extends SugarBean
 
         $_SESSION[$user->user_name.'_PREFERENCES'][$category][$name] = $value;
     }
+
+    /**
+     * CR1000276 Workaround
+     * Call this function when an admin user sets preferences for a user
+     * @param $name
+     * @param $value
+     * @param string $category
+     */
+    public function setPreferenceForUser(
+        $name,
+        $value,
+        $category = 'global'
+    )
+    {
+        $user = $this->_userFocus;
+
+        if ( empty($user->user_name) )
+            return;
+
+        $focus = new \UserPreference($this->_userFocus);
+        $result = $focus->retrieve_by_string_fields(array(
+            'assigned_user_id' => $user->id,
+            'category' => $category,
+        ));
+        $cats = unserialize(base64_decode($result->contents));
+
+        $contents = array_merge($cats, array($name => $value));
+        $focus->assigned_user_id = $user->id; // MFH Bug #13862
+        $focus->deleted = 0;
+        $focus->contents = base64_encode(serialize($contents));
+        $focus->category = $category;
+        $focus->save();
+    }
+
 
     /**
      * Delete preference by name and category. Saving will be done in utils.php -> sugar_cleanup

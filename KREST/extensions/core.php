@@ -59,15 +59,15 @@ $app->get('/sysinfo', function () use ($KRESTManager) {
     echo json_encode(array(
         'version' => '2.0',
         'systemsettings' => [
-            'upload_maxsize' => $sugar_config['upload_maxsize']
+            'upload_maxsize' => $sugar_config['upload_maxsize'],
+            'enableSettingUserPrefsByAdmin' => isset( $sugar_config['enableSettingUserPrefsByAdmin'] ) ? (boolean)@$sugar_config['enableSettingUserPrefsByAdmin'] : false
         ],
         'extensions' => $KRESTManager->extensions,
         'languages' => $languages,
         'elastic' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::checkElastic(),
         'loginSidebarUrl' => isset ($sugar_config['uiLoginSidebarUrl']{0}) ? $sugar_config['uiLoginSidebarUrl'] : false,
         'ChangeRequestRequired' => isset($GLOBALS['sugar_config']['change_request_required']) ? (boolean)$GLOBALS['sugar_config']['change_request_required'] : false,
-        'sessionMaxLifetime' => (int)ini_get('session.gc_maxlifetime'),
-        'enableSettingUserPrefsByAdmin' => (boolean)@$sugar_config['enableSettingUserPrefsByAdmin']
+        'sessionMaxLifetime' => (int)ini_get('session.gc_maxlifetime')
     ));
 });
 
