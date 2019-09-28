@@ -121,6 +121,23 @@ $app->group('/spiceui', function () use ($app, $uiRestHandler) {
                 echo json_encode($result);
             });
         });
+
+        $app->group('/modelvalidations', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->get( '', 'modules/SystemUI/KREST/controllers/SystemUIModelValidationsController::getModelValidations' );
+
+            $app->get('/{module}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+                echo json_encode($uiRestHandler->getModuleModelValidations($args['module']), JSON_HEX_TAG);
+            });
+
+            $app->post('', function ($req, $res, $args) use ($app, $uiRestHandler) {
+                //$postbody = json_decode($req->getParsedBody(), true);var_dump($req->getParsedBody(), $postbody, $req->getParams());
+                $postbody = $req->getParsedBody();
+                echo json_encode($uiRestHandler->setModelValidation($postbody));
+            });
+            $app->delete('/{id}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+                echo json_encode($uiRestHandler->deleteModelValidation($args['id']));
+            });
+        });
     });
     $app->group('/admin', function () use ($app, $uiRestHandler) {
         $app->get('/navigation', function ($req, $res, $args) use ($app, $uiRestHandler) {
