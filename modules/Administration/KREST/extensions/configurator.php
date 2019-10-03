@@ -184,6 +184,7 @@ $app->group('/configurator', function () use ($app) {
         return $res->withJson([ 'repostring' => array_pop( $row ) ]);
     });
 
+    $uiRestHandler = new SpiceCRM\modules\SystemUI\SystemUIRESTHandler();
     $app->group('/roles', function () use ($app, $uiRestHandler) {
 
         $app->get('/{userid}', function ($req, $res, $args) use ($app, $uiRestHandler) {
