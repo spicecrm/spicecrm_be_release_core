@@ -121,8 +121,8 @@ $app->group('/configurator', function () use ($app) {
             }
 
             // check for CR relevancy
-            global $dictionary;
             include('modules/TableDictionary.php');
+            global $dictionary;
             foreach ($dictionary as $meta) {
                 if ($meta['table'] == $args['table']) {
                     // check if we have a CR set
