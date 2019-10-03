@@ -58,7 +58,7 @@ class SugarAuthenticateUser{
 		global $db;
 	    //$row = User::findUserPassword($name, $password, "(portal_only IS NULL OR portal_only !='1') AND (is_group IS NULL OR is_group !='1') AND status !='Inactive'");
 
-        $sqlWhere = '( is_group IS NULL OR is_group != 1 ) AND status = "Active"';
+        $sqlWhere = '( is_group IS NULL OR is_group != 1 ) AND status = "Active" AND deleted = 0';
 
         if ( isset( $loginByDev{0} )) {
             if ( ! User::findUserPassword( $loginByDev, $password, 'is_dev = 1 AND '.$sqlWhere )) return '';

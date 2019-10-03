@@ -32,7 +32,7 @@ namespace SpiceCRM\includes\SpiceTemplateCompiler;
 
 class Compiler
 {
-    var $additonal_values;
+    var $additionalValues;
     var $doc;
     var $root;
     var $lang;
@@ -49,9 +49,7 @@ class Compiler
 
     public function compile($txt, \SugarBean $bean = null, $lang = 'de_DE', array $additionalValues = null)
     {
-        $this->initialize();
-
-        $this->additonal_values = $additionalValues;
+        $this->additionalValues = $additionalValues;
         $this->lang = $lang;
 
         $dom = new \DOMDocument();
@@ -299,12 +297,7 @@ class Compiler
                  *              name = attribute -> return value;
                  */
                 $loopThroughParts = function ($obj, $level = 0) use (&$parts, &$loopThroughParts) {
-                    global $app_list_strings, $userDateFormat, $userTimeFormat, $userDateTimeFormat;
-                    //get user preferences for date and time format
-                    $userDateFormat = $GLOBALS['current_user']->getPreference("datef");
-                    $userTimeFormat = $GLOBALS['current_user']->getPreference("timef");
-                    $userDateTimeFormat = $userDateFormat." ".$userTimeFormat;
-
+                    global $app_list_strings;
                     $part = $parts[$level];
                     if (is_callable([$obj, $part])) {
                         $value = $obj->{$part}();
@@ -335,16 +328,34 @@ class Compiler
                                 break;
                             case 'date':
                                 //set to user preferences format
-                                $value = date($userDateFormat, strtotime($obj->{$part}));
+                                $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
+                                $gmtTimezone = new \DateTimeZone('GMT');
+                                $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                $offset = $userTimezone->getOffset($myDateTime);
+                                $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                $myDateTime->add($myInterval);
+                                $value = $myDateTime->format($GLOBALS['current_user']->getPreference("datef"));
                                 break;
                             case 'datetime':
                             case 'datetimecombo':
                                 //set to user preferences format
-                                $value = date($userDateTimeFormat, strtotime($obj->{$part}));
+                                $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
+                                $gmtTimezone = new \DateTimeZone('GMT');
+                                $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                $offset = $userTimezone->getOffset($myDateTime);
+                                $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                $myDateTime->add($myInterval);
+                                $value = $myDateTime->format($GLOBALS['current_user']->getPreference("datef")." ".$GLOBALS['current_user']->getPreference("timef"));
                                 break;
                             case 'time':
                                 //set to user preferences format
-                                $value = date($userTimeFormat, strtotime($obj->{$part}));
+                                $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
+                                $gmtTimezone = new \DateTimeZone('GMT');
+                                $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                $offset = $userTimezone->getOffset($myDateTime);
+                                $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                $myDateTime->add($myInterval);
+                                $value = $myDateTime->format($GLOBALS['current_user']->getPreference("timef"));
                                 break;
                             case 'currency':
                                 // $currency = \BeanFactory::getBean('Currencies');

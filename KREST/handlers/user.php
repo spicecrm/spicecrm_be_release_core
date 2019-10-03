@@ -107,13 +107,14 @@ class KRESTUserHandler
         $destUserPrefs = new UserPreference( $user );
         $destUserPrefs->reloadPreferences();
         $destLang = $destUserPrefs->getPreference('language');
+        if ( !isset( $destLang{0} )) $destLang = $GLOBALS['sugar_config']['default_language'];
         if ( !isset( $destLang{0} )) $destLang = 'en_us';
 
         $emailTempl = new EmailTemplate();
         $emailTempl->retrieve_by_string_fields( [ 'type' => $type, 'language' => $destLang ], false );
 
         if ( empty( $emailTempl->id )) {
-            $GLOBALS['log']->warn('Could not retrieve email template "'.$type.'" for language of user preferences ("'.$destLang.'"), will try "en_us" instead');
+            $GLOBALS['log']->warn('Could not retrieve email template "'.$type.'" for language "'.$destLang.'", will try "en_us" instead');
             $destLang = 'en_us';
             $emailTempl->retrieve_by_string_fields( [ 'for_bean' => 'Users', 'type' => $type, 'language' => $destLang ], false );
             if ( empty( $emailTempl->id )) throw ( new \KREST\Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve email template "'.$type.'" (for language "' . $destLang . '")');
