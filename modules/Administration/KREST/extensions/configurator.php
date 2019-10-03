@@ -121,6 +121,7 @@ $app->group('/configurator', function () use ($app) {
             }
 
             // check for CR relevancy
+            global $dictionary;
             include('modules/TableDictionary.php');
             foreach ($dictionary as $meta) {
                 if ($meta['table'] == $args['table']) {
@@ -182,24 +183,6 @@ $app->group('/configurator', function () use ($app) {
         $row = $db->fetchByAssoc( $dbResult );
 
         return $res->withJson([ 'repostring' => array_pop( $row ) ]);
-    });
-
-    $uiRestHandler = new SpiceCRM\modules\SystemUI\SystemUIRESTHandler();
-    $app->group('/roles', function () use ($app, $uiRestHandler) {
-
-        $app->get('/{userid}', function ($req, $res, $args) use ($app, $uiRestHandler) {
-            echo json_encode($uiRestHandler->getAllRoles($args['userid']));
-        });
-        $app->post('/{roleid}/{userid}/{default}', function ($req, $res, $args) use ($app, $uiRestHandler) {
-            global $current_user;
-            if (!$current_user->is_admin) throw (new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
-            echo json_encode($uiRestHandler->setUserRole($args));
-        });
-        $app->delete('/{roleid}/{userid}', function ($req, $res, $args) use ($app, $uiRestHandler) {
-            global $current_user;
-            if (!$current_user->is_admin) throw (new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
-            echo json_encode($uiRestHandler->deleteUserRole($args));
-        });
     });
 
 });
