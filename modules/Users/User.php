@@ -495,6 +495,20 @@ class User extends Person
             $this->portal_only = 0;
         }
 
+        // If ...
+        // • the user name has been changed, or
+        // • the status has been set from 'Inactive' to 'Active' (while the user is not deleted), or
+        // • the deleted flag has been set from 1 to 0 (undelete) (while the user status is 'Active')
+        // ... check if the user name is already taken by another user. This would not be allowed!
+        if ((   $this->user_name != $this->fetched_row['user_name']
+                or ( $this->fetched_row['status'] != $this->status and !$this->deleted )
+                or ( $this->fetched_row['deleted'] != $this->deleted and $this->status == 'Active' ))
+            and self::usernameAlreadyExists( $this->user_name, $this->id ) ) {
+
+            throw ( new KREST\BadRequestException( 'User name \'' . $this->user_name . '\' already exists.' ) )->setErrorCode( 'duplicateUsername' );
+
+        }
+
         // set some default preferences when creating a new user
         $setNewUserPreferences = empty($this->id) || !empty($this->new_with_id);
 
@@ -1888,9 +1902,9 @@ EOQ;
             $body = str_replace( '$contact_user_user_hash', $additionalData['password'], $body );
         }
         // Bug 36833 - Add replacing of special value $instance_url
-            //workaround due to UI email templates for backend. Placeholder for $config_site_url was changed
-            $htmlBody = str_replace( '{config.frontend_url}', '$config_site_url', $htmlBody );
-            $body = str_replace( '{config.frontend_url}', '$config_site_url', $body );
+        //workaround due to UI email templates for backend. Placeholder for $config_site_url was changed
+        $htmlBody = str_replace( '{config.frontend_url}', '$config_site_url', $htmlBody );
+        $body = str_replace( '{config.frontend_url}', '$config_site_url', $body );
 
         $htmlBody = str_replace( '$config_site_url', $sugar_config['site_url'], $htmlBody );
         $body = str_replace( '$config_site_url', $sugar_config['site_url'], $body );
@@ -1962,4 +1976,17 @@ EOQ;
 
         return $result;
     }
+
+    /**
+     * Checks if another user with a specific/same user name already exists.
+     * @username The user name to check for.
+     * @userIdToIgnore The id of the user who should own the user name. The check will ignore this user.
+     */
+    public static function usernameAlreadyExists( string $username, string $userIdToIgnore ) {
+        global $db;
+        $sql = sprintf('SELECT id,user_name FROM users WHERE status = "Active" AND deleted = 0 AND id <> "%s" AND LOWER(user_name) = "%s" LIMIT 1', $db->quote( $userIdToIgnore ), $db->quote( mb_strtolower( $username )));
+        $user = $db->fetchOne( $sql );
+        return $user !== false;
+    }
+
 }
