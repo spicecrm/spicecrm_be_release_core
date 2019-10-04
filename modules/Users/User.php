@@ -1982,7 +1982,7 @@ EOQ;
      * @username The user name to check for.
      * @userIdToIgnore The id of the user who should own the user name. The check will ignore this user.
      */
-    public static function usernameAlreadyExists( string $username, string $userIdToIgnore ) {
+    public static function usernameAlreadyExists( $username, $userIdToIgnore ) {
         global $db;
         $sql = sprintf('SELECT id,user_name FROM users WHERE status = "Active" AND deleted = 0 AND id <> "%s" AND LOWER(user_name) = "%s" LIMIT 1', $db->quote( $userIdToIgnore ), $db->quote( mb_strtolower( $username )));
         $user = $db->fetchOne( $sql );
