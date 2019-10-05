@@ -143,7 +143,6 @@ class SpiceBeanGuideRestHandler
         } else if(strpos($method, '->') > 0){
             try{
                 $funcArray = explode('->', $method);
-                $GLOBALS['log']->fatal($funcArray[0]);
                 $obj = new $funcArray[0]();
                 $checkResult = $obj->{$funcArray[1]}($params);
             } catch(Exception  $e){
