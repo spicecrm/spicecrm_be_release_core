@@ -2,6 +2,8 @@
 
 namespace SpiceCRM\modules\Trackers\KREST\controllers;
 
+use KRESTModuleHandler;
+
 class TrackersKRESTController
 {
 
@@ -14,6 +16,7 @@ class TrackersKRESTController
     {
         global $current_user;
 
+        $moduleHandler = new KRESTModuleHandler();
 
         $tracker = \BeanFactory::getBean('Trackers');
         $history = $tracker->get_recently_viewed($current_user->id, '', 50);
@@ -24,7 +27,13 @@ class TrackersKRESTController
                 continue;
             }
 
-            $recentItems[] = $row;
+            $seed = \BeanFactory::getBean($row['module_name'], $row['item_id']);
+            if($seed){
+                $row['data'] = $moduleHandler->mapBeanToArray($row['module_name'], $seed);
+                $recentItems[] = $row;
+            }
+
+
         }
         return $recentItems;
     }
@@ -36,11 +45,8 @@ class TrackersKRESTController
     {
         global $current_user;
         $getParams = $req->getParams();
-        /*
-        require_once('modules/Trackers/Tracker.php');
-        $tracker = new \Tracker();
-        $getParams['module'], $getParams['limit']
-        */
+
+        $moduleHandler = new KRESTModuleHandler();
 
         $tracker = \BeanFactory::getBean('Trackers');
         $history = $tracker->get_recently_viewed($current_user->id, $getParams['module'] ? array($getParams['module']) : '', $getParams['limit']);
@@ -51,7 +57,11 @@ class TrackersKRESTController
                 continue;
             }
 
-            $recentItems[] = $row;
+            $seed = \BeanFactory::getBean($row['module_name'], $row['item_id']);
+            if($seed){
+                $row['data'] = $moduleHandler->mapBeanToArray($row['module_name'], $seed);
+                $recentItems[] = $row;
+            }
         }
         return $res->write(json_encode($recentItems));
     }

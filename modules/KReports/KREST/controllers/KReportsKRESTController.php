@@ -22,7 +22,7 @@ class KReportsKRESTController
         $searchKey = $_GET['searchKey'] ? $db->quote($_GET['searchKey']) : '';
         $offset = $_GET['offset'] ? $db->quote($_GET['offset']) : 0;
         $limit = $_GET['limit'] ? $db->quote($_GET['limit']) : 40;
-        $where = "integration_params LIKE '%\"$type\":\"on\"%' AND integration_params LIKE '%\"kpublishing\":1%'";
+        $where = "integration_params LIKE '%\"$type\":\"on\"%' AND (integration_params LIKE '%\"kpublishing\":1%' OR integration_params LIKE '%\"kpublishing\":\"1\"%')";
         if ($searchKey != '') {
             $where .= " AND name LIKE '%$searchKey%'";
         }

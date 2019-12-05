@@ -119,7 +119,8 @@ class SystemUIRESTHandler
                     'favorites' => $module['favorites'],
                     'listtypes' => $listArray,
                     'acl' => $aclArray,
-                    'ftsactivities' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::checkActivities($module['module'])
+                    'ftsactivities' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::checkActivities($module['module']),
+                    'ftsgeo' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler::checkGeo($module['module'])
                 );
             }
         }
@@ -1171,8 +1172,8 @@ class SystemUIRESTHandler
             }
         };
 
-        usort($modules, function ($a, $b){
-            return $a['module'] > $b['module'] ? 1 : -1;
+        usort($modules, function ($a, $b) {
+            return strcasecmp( $a['module'], $b['module'] );
         });
 
         return $modules;

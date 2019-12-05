@@ -362,6 +362,45 @@ $dictionary['sysuicustomloadtaskitems'] = array(
     )
 );
 
+$dictionary['sysuicalendarcolorconditions'] = array(
+    'table' => 'sysuicalendarcolorconditions',
+    'audited' => true,
+    'fields' =>
+        array(
+            'id' => array(
+                'name' => 'id',
+                'type' => 'id'
+            ),
+            'module' => array(
+                'name' => 'module',
+                'type' => 'varchar',
+                'len' => 100
+            ),
+            'priority' => array(
+                'name' => 'priority',
+                'type' => 'int',
+                'default' => 0,
+            ),
+            'module_filter' => array(
+                'name' => 'module_filter',
+                'type' => 'varchar',
+                'len' => 50
+            ),
+            'color_hex_code' => array(
+                'name' => 'color_hex_code',
+                'type' => 'varchar',
+                'len' => 7
+            ),
+        ),
+    'indices' => array(
+        array(
+            'name' => 'sysuicalendarcolorconditionspk',
+            'type' => 'primary',
+            'fields' => array('id')
+        )
+    )
+);
+
 $dictionary['sysuicalendars'] = array(
     'table' => 'sysuicalendars',
     'audited' => true,
@@ -387,6 +426,13 @@ $dictionary['sysuicalendars'] = array(
                 'len' => 1
             ),
         ),
+    'indices' => array(
+        array(
+            'name' => 'sysuicalendarspk',
+            'type' => 'primary',
+            'fields' => array('id')
+        )
+    )
 );
 
 $dictionary['sysuicalendaritems'] = array(
@@ -1472,6 +1518,11 @@ $dictionary['sysmodules'] = array(
             'type' => 'bool',
             'default' => 1
         ),
+        'acl_multipleusers' => array(
+            'name' => 'acl_multipleusers',
+            'type' => 'bool',
+            'default' => 0
+        ),
         'workflow' => array(
             'name' => 'workflow',
             'type' => 'bool',
@@ -1582,6 +1633,11 @@ $dictionary['syscustommodules'] = array(
             'name' => 'acl',
             'type' => 'bool',
             'default' => 1
+        ),
+        'acl_multipleusers' => array(
+            'name' => 'acl_multipleusers',
+            'type' => 'bool',
+            'default' => 0
         ),
         'workflow' => array(
             'name' => 'workflow',

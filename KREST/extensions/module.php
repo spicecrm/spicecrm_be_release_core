@@ -120,7 +120,7 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
                 $app->post('', function ($req, $res, $args) use ($app) {
                     $postBody = $body = $req->getParsedBody();
                     $postParams = $_GET;
-                    echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveAttachmentHashFiles($args['beanName'], $args['beanId'], array_merge($postBody, $postParams));
+                    return json_encode(\SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveAttachmentHashFiles($args['beanName'], $args['beanId'], array_merge($postBody, $postParams)));
                 });
                 $app->get('', function ($req, $res, $args) use ($app) {
                     echo \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsForBeanHashFiles($args['beanName'], $args['beanId']);
@@ -260,6 +260,12 @@ $app->group('/module', function () use ($app, $KRESTManager, $KRESTModuleHandler
                 $app->delete('', function ($req, $res, $args) use ($app, $KRESTModuleHandler) {
                     $params = $req->getParams();
                     echo json_encode($KRESTModuleHandler->delete_related($args['beanName'], $args['beanId'], $args['linkname'], $params));
+                });
+            });
+            $app->group('/filtered', function () use ($app, $KRESTModuleHandler) {
+                $app->get('', function ($req, $res, $args) use ($app, $KRESTModuleHandler) {
+                    $getParams = $_GET;
+                    echo json_encode($KRESTModuleHandler->get_filtered($args['beanName'], $args['beanId'], $getParams));
                 });
             });
             $app->post('/merge_bean', function ($req, $res, $args) use ($app, $KRESTModuleHandler) {

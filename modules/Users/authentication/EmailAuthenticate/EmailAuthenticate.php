@@ -54,8 +54,8 @@ class EmailAuthenticate extends SugarAuthenticate {
 	 *
 	 * @return EmailAuthenticate
 	 */
-	function EmailAuthenticate(){
-	    
+	function __construct(){
+
 		parent::__construct();
 	}
 

@@ -184,15 +184,15 @@ $app->group('/KReporter', function () use ($app, $KRESTManager, $KReportRestHand
         });
     });
 
-    $app->get('/{reportId}', function($req, $res, $args) use ($app, $KRESTManager) {
-        $thisReport = BeanFactory::getBean('KReports', $args['reportId']);
-        $vizData = json_decode(html_entity_decode($thisReport->visualization_params, ENT_QUOTES, 'UTF-8'), true);
-        $pluginManager = new KReportPluginManager();
-        $vizObject = $pluginManager->getVisualizationObject('googlecharts');
-        echo json_encode($vizObject->getItem('', $thisReport, $vizData[1]['googlecharts']));
-    });
-    $app->group('/{reportId}', function () use ($app, $KRESTManager, $KReportRestHandler) {
 
+    $app->group('/{reportId}', function () use ($app, $KRESTManager, $KReportRestHandler) {
+        $app->get('', function($req, $res, $args) use ($app, $KRESTManager) {
+            $thisReport = BeanFactory::getBean('KReports', $args['reportId']);
+            $vizData = json_decode(html_entity_decode($thisReport->visualization_params, ENT_QUOTES, 'UTF-8'), true);
+            $pluginManager = new KReportPluginManager();
+            $vizObject = $pluginManager->getVisualizationObject('googlecharts');
+            echo json_encode($vizObject->getItem('', $thisReport, $vizData[1]['googlecharts']));
+        });
         $app->group('/snapshot', function () use ($app, $KRESTManager) {
             $app->get('', function($req, $res, $args) use ($app, $KRESTManager) {
                 $thisReport = new KReport();

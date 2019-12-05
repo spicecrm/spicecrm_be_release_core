@@ -188,6 +188,21 @@ $dictionary['Mailbox'] = [
             'name' => 'mailbox_processors',
             'source' => 'non-db',
         ],
+        'mailboxprocessors' => [
+            'name' => 'mailboxprocessors',
+            'type' => 'link',
+            'module' => 'MailboxProcessors',
+            'relationship' => 'mailboxes_mailbox_processors',
+            'source' => 'non-db',
+            'default' => true,
+        ],
+        'log_level'   => [
+            'name'    => 'log_level',
+            'vname'   => 'LBL_LOG_LEVEL',
+            'type'    => 'enum',
+            'len'     => 1,
+            'options' => 'mailboxes_log_levels',
+        ],
     ],
     'relationships' => [
         'mailboxes_emails_rel' => [
@@ -217,6 +232,16 @@ $dictionary['Mailbox'] = [
             'relationship' => 'mailboxes_users',
             'source' => 'non-db'
         ],
+        'mailboxes_mailbox_processors' => array(
+            'lhs_module' => 'Mailboxes',
+            'lhs_table' => 'mailboxes',
+            'lhs_key' => 'id',
+            'rhs_module' => 'MailboxProcessors',
+            'rhs_table' => 'mailbox_processors',
+            'rhs_key' => 'mailbox_id',
+            'relationship_type' => 'one-to-many'
+        ),
+
     ],
 
     'indices' => [],

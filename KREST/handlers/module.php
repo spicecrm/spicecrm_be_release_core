@@ -2,13 +2,13 @@
 
 /*
  * This File is part of KREST is a Restful service extension for SugarCRM
- * 
+ *
  * Copyright (C) 2015 AAC SERVICES K.S., DOSTOJEVSKÉHO RAD 5, 811 09 BRATISLAVA, SLOVAKIA
- * 
+ *
  * you can contat us at info@spicecrm.io
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
@@ -106,7 +106,7 @@ class KRESTModuleHandler
     }
 
 
-    public function get_bean_list($beanModule, $searchParams)
+    public function get_bean_list($beanModule, $searchParams, $addwhere = "")
     {
         global $db, $current_user, $sugar_config, $dictionary;
 
@@ -150,8 +150,13 @@ class KRESTModuleHandler
                         case 'relate':
                         case 'parent':
                             $returnFields[] = $setField;
+                            // return the id for the parent as well
                             if ($thisBean->field_name_map[$setField]['id_name']) {
                                 $returnFields[] = $thisBean->field_name_map[$setField]['id_name'];
+                            }
+                            // also return the parent type if set in the vardefs
+                            if ($thisBean->field_name_map[$setField]['type_name']) {
+                                $returnFields[] = $thisBean->field_name_map[$setField]['type_name'];
                             }
                             break;
                         default:
@@ -277,9 +282,9 @@ class KRESTModuleHandler
             $ownerclause = '';
 
             if ($searchParams['owner'] && $searchParams['creator']) {
-                $ownerclause .= "($thisBean->table_name.assigned_user_id='$current_user->id' OR $thisBean->table_name.created_by='$current_user->id')";
+                $ownerclause .= "((".$GLOBALS['ACLController']->getOwnerWhereClause($thisBean).") OR $thisBean->table_name.created_by='$current_user->id')";
             } else if ($searchParams['owner']) {
-                $ownerclause .= "$thisBean->table_name.assigned_user_id='$current_user->id'";
+                $ownerclause .= $GLOBALS['ACLController']->getOwnerWhereClause($thisBean);
             } else if ($searchParams['creator']) {
                 $ownerclause .= "$thisBean->table_name.created_by='$current_user->id'";
             }
@@ -288,7 +293,7 @@ class KRESTModuleHandler
             if ($searchParams['owner'] === false) {
                 if ($ownerclause != '')
                     $ownerclause .= ' AND ';
-                $ownerclause .= "$thisBean->table_name.assigned_user_id <> '$current_user->id'";
+                $ownerclause .= $GLOBALS['ACLController']->getOwnerWhereClause($thisBean);
             }
             // if creator is explicitly set to false
             if ($searchParams['creator'] === false) {
@@ -362,7 +367,7 @@ class KRESTModuleHandler
         if (empty($searchParams['limit']))
             $searchParams['limit'] = $sugar_config['list_max_entries_per_page'] ?: 25;
 
-        $beanList = $thisBean->process_list_query($query, $searchParams['offset'], $searchParams['limit'], $searchParams['limit']);
+        $beanList = $thisBean->process_list_query($query, $searchParams['offset'], $searchParams['limit'], $searchParams['limit'], $addwhere);
 
         $includeReminder = $searchParams['includeReminder'] ? true : false;
         $includeNotes = $searchParams['includeNotes'] ? true : false;
@@ -384,6 +389,12 @@ class KRESTModuleHandler
             // TTG-22 full load of lists
             //$thisBean->force_load_details = true;
             //$thisBean->fill_in_additional_list_fields();
+
+            // BUG FIX "Parent Name is not set"
+            // because the fill_in_additional_parent_fields does not set the parent_name if the last_parent_id is set
+            // and the last_parent_id is previously set in the process_list_query->fill_in_additional_parent_fields
+            // set last_parent_id to null to ensure setting the parent_name on retrieve
+            $thisBean->last_parent_id = null;
             $thisBean->retrieve();
 
             $beanData[] = $this->mapBeanToArray($beanModule, $thisBean, $returnFields, $includeReminder, $includeNotes);
@@ -780,7 +791,7 @@ class KRESTModuleHandler
             throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId, array('encode' => false)); //set encode to false to avoid things like ' being translated to &#039;
-        if (!$thisBean) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (empty($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         if(!$thisBean->ACLAccess('view')){
             throw (new KREST\ForbiddenException("not allowed to view this record"))->setErrorCode('noModuleView');
@@ -858,10 +869,10 @@ class KRESTModuleHandler
         $duplicates = $seed->checkForDuplicates();
 
         $retArray = array();
-        foreach ($duplicates as $duplicate) {
+        foreach ($duplicates['records'] as $duplicate) {
             $retArray[] = $this->mapBeanToArray($beanModule, $duplicate);
         }
-        return $retArray;
+        return ['count' => $duplicates['count'], 'records' => $retArray];
     }
 
     public function get_bean_duplicates($beanModule, $beanId)
@@ -878,10 +889,10 @@ class KRESTModuleHandler
         $duplicates = $thisBean->checkForDuplicates();
 
         $retArray = array();
-        foreach ($duplicates as $duplicate) {
+        foreach ($duplicates['records'] as $duplicate) {
             $retArray[] = $this->mapBeanToArray($beanModule, $duplicate);
         }
-        return $retArray;
+        return ['count' => $duplicates['count'], 'records' => $retArray];
 
     }
 
@@ -900,6 +911,13 @@ class KRESTModuleHandler
             require_once('modules/Notes/NoteSoap.php');
             $noteSoap = new NoteSoap();
             $fileData = $noteSoap->retrieveFile($thisBean->id, $thisBean->filename);
+            // In case the file is a text file:
+            // For a correct display of special characters in the browser, convert the file content to UTF8, if it not already UTF8 encoded.
+            if ( $thisBean->file_mime_type === 'text/plain') {
+                $dummy = base64_decode( $fileData );
+                $dummy = mb_check_encoding( $dummy, 'UTF-8' ) ? $dummy : utf8_encode( $dummy );
+                $fileData = base64_encode( $dummy );
+            }
             if ($fileData >= -1)
                 return array(
                     'filename' => $thisBean->filename,
@@ -962,6 +980,67 @@ class KRESTModuleHandler
         return $aclArray;
     }
 
+    public function get_filtered($beanModule, $beanId, $params)
+    {
+        // acl check if user can get the detail
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
+            throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+
+        // get the bean
+        $thisBean = BeanFactory::getBean($beanModule, $beanId);
+        if (!isset($thisBean)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+
+        if($params['module']) {
+            $filterModule = $params['module'];
+        }
+        else{
+            $GLOBALS['log']->fatal("No module for the list");
+        }
+
+        // apply module filter if one is set
+        if ($params['modulefilter']) {
+            $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+            $addWhere = $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter'], '', $thisBean);
+            $sortBySequenceField = false;
+        }
+
+        // apply field filter ..
+        // ToDo: prevent SQL Injection
+        if ($params['fieldfilters']) {
+            $valuewhere = [];
+
+            // decode the array and go for it
+            $fieldFilters = json_decode($params['fieldfilters'], true);
+            if (count($fieldFilters) > 0 && $filterModule) {
+                $relSeed = \BeanFactory::getBean($filterModule);
+                foreach ($fieldFilters as $field => $value) {
+                    $valuewhere[] = "{$relSeed->table_name}.$field = '$value'";
+                }
+                $valuewhere = join(' AND ', $valuewhere);
+                if ($addWhere != '') {
+                    $addWhere = "($addWhere) AND ($valuewhere)";
+                } else {
+                    $addWhere = $valuewhere;
+                }
+            }
+        }
+
+        $sortingDefinition = json_decode($params['sort'], true) ?: array();
+        if ($sortingDefinition) $sortBySequenceField = false;
+
+        if (!$GLOBALS['ACLController']->checkAccess($filterModule, 'list', true))
+            throw (new KREST\ForbiddenException('Forbidden to list in module ' . $filterModule . '.'))->setErrorCode('noModuleList');
+
+        $filterBeans = $this->get_bean_list($filterModule, $params, $addWhere);
+
+        //rename count
+        $filterBeans['count'] = $filterBeans['totalcount'];
+        unset($filterBeans['tatalcount']);
+
+
+            return $filterBeans;
+    }
+
     public function get_related($beanModule, $beanId, $linkName, $params)
     {
 
@@ -971,7 +1050,7 @@ class KRESTModuleHandler
 
         // get the bean
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if ( $thisBean === false ) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         if($thisBean->load_relationship($linkName)) {
             $relModule = $thisBean->{$linkName}->getRelatedModuleName();
@@ -1061,7 +1140,7 @@ class KRESTModuleHandler
         $retArray = array();
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if ( $thisBean === false ) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
@@ -1077,6 +1156,10 @@ class KRESTModuleHandler
             $retArray[$relatedId] = $thisBean->{$linkName}->relationship->relid;
         }
 
+        // reindex the curent bean since the added relationship might add to the indexed data
+        $ftsHandler = new SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
+        $ftsHandler->indexBean($thisBean);
+
         return $retArray;
     }
 
@@ -1089,7 +1172,7 @@ class KRESTModuleHandler
         $retArray = array();
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if ( $thisBean === false ) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
@@ -1099,14 +1182,14 @@ class KRESTModuleHandler
 
         // set the relate module
         $relBean = BeanFactory::getBean($relModule, $postparams['id']);
-        if (!isset($relBean->id)) throw (new KREST\NotFoundException('Related record not found.'))->setLookedFor(['id' => $postparams['id'], 'module' => $relModule]);
+        if ( $relBean === false ) throw (new KREST\NotFoundException('Related record not found.'))->setLookedFor(['id' => $postparams['id'], 'module' => $relModule]);
 
         if(!$GLOBALS['ACLController']->checkAccess($relModule, 'edit', true) &&
             !$GLOBALS['ACLController']->checkAccess($relModule, 'editrelated', true)){
             throw (new KREST\ForbiddenException("Forbidden to edit in module $relModule."))->setErrorCode('noModuleEdit');
         }
 
-        if(!$GLOBALS['ACLController']->checkAccess($relModule, 'edit', true)){
+        if(!$GLOBALS['ACLController']->checkAccess($relModule, 'editrelated', true)){
             $beanResponse = $this->add_bean($relModule, $postparams['id'], $postparams);
         }
 
@@ -1135,6 +1218,10 @@ class KRESTModuleHandler
             }
         }
 
+        // reindex the curent bean since the added relationship might add to the indexed data
+        $ftsHandler = new SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
+        $ftsHandler->indexBean($thisBean);
+
         return $beanResponse;
     }
 
@@ -1147,7 +1234,7 @@ class KRESTModuleHandler
         $retArray = array();
 
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if ( $thisBean === false ) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
@@ -1165,6 +1252,10 @@ class KRESTModuleHandler
         } else {
             $thisBean->$linkName->delete($beanId, $postParams['relatedids']);
         }
+
+        // reindex the curent bean since the added relationship might add to the indexed data
+        $ftsHandler = new SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
+        $ftsHandler->indexBean($thisBean);
 
         return $retArray;
     }
@@ -1545,6 +1636,7 @@ class KRESTModuleHandler
                 'name' => $modulename
             );
         }
+        usort($modArray, function($a, $b){return $a['name'] > $b['name'] ? 1 : -1;});
         return $modArray;
     }
 
@@ -1594,6 +1686,9 @@ class KRESTModuleHandler
                         $beanDataArray[$fieldId] = $thisBean->$fieldId;
                         if ($fieldData['id_name']) {
                             $beanDataArray[$fieldData['id_name']] = $thisBean->{$fieldData['id_name']};
+                        }
+                        if ($fieldData['type_name']) {
+                            $beanDataArray[$fieldData['type_name']] = $thisBean->{$fieldData['type_name']};
                         }
                     }
                     break;

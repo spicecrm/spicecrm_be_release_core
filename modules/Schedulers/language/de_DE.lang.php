@@ -157,5 +157,6 @@ $mod_strings = array(
     'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
     'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
     'LBL_SCHEDULERTEST' => 'Dummy-Funktion zum Testen des Zeitplaners (tut nichts)',
-    'LBL_URL_SPECIFIED' => 'URL (anzugeben)'
+    'LBL_URL_SPECIFIED' => 'URL (anzugeben)',
+    'LBL_GENERATEQUESTIONNAIREEVALUATIONS' => 'Generate missing Questionnaire Evaluations',
 );

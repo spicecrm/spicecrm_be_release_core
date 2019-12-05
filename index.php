@@ -48,6 +48,6 @@ ob_start();
 require_once('include/MVC/SugarApplication.php');
 $app = new SugarApplication();
 $app->startSession();
-
 $GLOBALS['totalquerytime'] = 0;
 $app->execute();
+

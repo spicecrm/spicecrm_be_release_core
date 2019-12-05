@@ -242,10 +242,13 @@ $dictionary['Call'] = [
         ],
         'contact_name' => [
             'name'             => 'contact_name',
-            'rname'            => 'last_name',
+            'rname'            => 'name',
             'db_concat_fields' => [
-                0 => 'first_name',
-                1 => 'last_name',
+                0 => 'salutation',
+                0 => 'degree1',
+                2 => 'first_name',
+                3 => 'last_name',
+                3 => 'degree2'
             ],
             'id_name'          => 'contact_id',
             'massupdate'       => false,

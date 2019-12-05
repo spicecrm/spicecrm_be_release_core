@@ -498,7 +498,7 @@ $dictionary['User'] = array(
             'relationship' => 'tasks_users',
             'source' => 'non-db',
             'vname' => 'LBL_TASKS'
-        ) ,
+        ),
         'contacts_sync' => array(
             'name' => 'contacts_sync',
             'type' => 'link',
@@ -546,6 +546,59 @@ $dictionary['User'] = array(
             'source' => 'non-db',
             'vname' => 'LBL_REPORTS_TO',
             'reportable' => false,
+        ),
+        'companycode_id' => array(
+            'name' => 'companycode_id',
+            'vname' => 'LBL_COMPANYCODE',
+            'type' => 'companies',
+            'dbType' => 'varchar',
+            'len' => 36,
+            'required' => false
+        ),
+        'companycode_name' => array(
+            'name' => 'companycode_name',
+            'rname' => 'name',
+            'id_name' => 'companycode_id',
+            'vname' => 'LBL_COMPANY',
+            'type' => 'relate',
+            'link' => 'companycode',
+            'isnull' => 'true',
+            'table' => 'companycodes',
+            'module' => 'CompanyCodes',
+            'source' => 'non-db',
+        ),
+        'companycode' => array(
+            'name' => 'companycode',
+            'type' => 'link',
+            'vname' => 'LBL_COMPANYCODE',
+            'relationship' => 'companycode_users',
+            'source' => 'non-db',
+        ),
+        'costcenter_id' => array(
+            'name' => 'costcenter_id',
+            'vname' => 'LBL_COSTCENTER',
+            'type' => 'id',
+            'required' => false
+        ),
+        'costcenter_name' => array(
+            'name' => 'costcenter_name',
+            'rname' => 'name',
+            'id_name' => 'costcenter_id',
+            'vname' => 'LBL_COSTCENTER',
+            'type' => 'relate',
+            'link' => 'costcenter',
+            'isnull' => 'true',
+            'table' => 'costcenters',
+            'module' => 'CostCenters',
+            'source' => 'non-db',
+        ),
+        'costcenter' => array(
+            'name' => 'costcenter',
+            'type' => 'link',
+            'vname' => 'LBL_COSTCENTER',
+            'relationship' => 'costcenter_users',
+            'module' => 'CostCenters',
+            'source' => 'non-db'
         ),
         'email1' => array(
             'name' => 'email1',
@@ -663,7 +716,7 @@ $dictionary['User'] = array(
         'gcal_sync_token' => [
             'name' => 'gcal_sync_token',
             'type' => 'varchar',
-            'len'  => 64,
+            'len' => 64,
         ],
         'prospect_lists' => array(
             'name' => 'prospect_lists',
@@ -738,7 +791,25 @@ $dictionary['User'] = array(
             'relationship' => 'users_userabsences',
             'source' => 'non-db',
             'module' => 'UserAbsences'
-        )
+        ),
+
+        // service orders many to many
+        'serviceorders' => array(
+            'name' => 'serviceorders',
+            'type' => 'link',
+            'relationship' => 'serviceorders_users',
+            'module' => 'ServiceOrders',
+            'bean_name' => 'ServiceOrder',
+            'source' => 'non-db',
+            'vname' => 'LBL_SERVICEORDERS'
+        ),
+        'serviceorder_user_role' => array(
+            'name' => 'serviceorder_user_role',
+            'vname' => 'LBL_ROLE',
+            'type' => 'enum',
+            'source' => 'non-db',
+            'options' => 'serviceorder_user_role_dom'
+        ),
     ),
     'indices' => array(
         array(
@@ -759,63 +830,87 @@ $dictionary['User'] = array(
                 'first_name',
                 'id'
             )
-        ),
+        )
     ),
     'relationships' => array(
-        'user_direct_reports' => array('lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id', 'rhs_module' => 'Users', 'rhs_table' => 'users', 'rhs_key' => 'reports_to_id', 'relationship_type' => 'one-to-many'),
-        'users_users_signatures' =>
-            array(
-                'lhs_module' => 'Users',
-                'lhs_table' => 'users',
-                'lhs_key' => 'id',
-                'rhs_module' => 'UserSignature',
-                'rhs_table' => 'users_signatures',
-                'rhs_key' => 'user_id',
-                'relationship_type' => 'one-to-many'
-            ),
-        'users_email_addresses' =>
-            array(
-                'lhs_module' => "Users", 'lhs_table' => 'users', 'lhs_key' => 'id',
-                'rhs_module' => 'EmailAddresses', 'rhs_table' => 'email_addresses', 'rhs_key' => 'id',
-                'relationship_type' => 'many-to-many',
-                'join_table' => 'email_addr_bean_rel', 'join_key_lhs' => 'bean_id', 'join_key_rhs' => 'email_address_id',
-                'relationship_role_column' => 'bean_module',
-                'relationship_role_column_value' => "Users"
-            ),
-        'users_email_addresses_primary' =>
-            array('lhs_module' => "Users", 'lhs_table' => 'users', 'lhs_key' => 'id',
-                'rhs_module' => 'EmailAddresses', 'rhs_table' => 'email_addresses', 'rhs_key' => 'id',
-                'relationship_type' => 'many-to-many',
-                'join_table' => 'email_addr_bean_rel', 'join_key_lhs' => 'bean_id', 'join_key_rhs' => 'email_address_id',
-                'relationship_role_column' => 'primary_address',
-                'relationship_role_column_value' => '1'
-            ),
-        'users_userabsences' =>
-            array(
-                'lhs_module' => 'Users',
-                'lhs_table' => 'users',
-                'lhs_key' => 'id',
-                'rhs_module' => 'UserAbsences',
-                'rhs_table' => 'userabsences',
-                'rhs_key' => 'user_id',
-                'relationship_type' => 'one-to-many'
-            ),
-    ),
-
-
+        'user_direct_reports' => array(
+            'lhs_module' => 'Users',
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Users',
+            'rhs_table' => 'users',
+            'rhs_key' => 'reports_to_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'users_users_signatures' => array(
+            'lhs_module' => 'Users',
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'UserSignature',
+            'rhs_table' => 'users_signatures',
+            'rhs_key' => 'user_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'users_email_addresses' => array(
+            'lhs_module' => "Users", 'lhs_table' => 'users', 'lhs_key' => 'id',
+            'rhs_module' => 'EmailAddresses', 'rhs_table' => 'email_addresses', 'rhs_key' => 'id',
+            'relationship_type' => 'many-to-many',
+            'join_table' => 'email_addr_bean_rel', 'join_key_lhs' => 'bean_id', 'join_key_rhs' => 'email_address_id',
+            'relationship_role_column' => 'bean_module',
+            'relationship_role_column_value' => "Users"
+        ),
+        'users_email_addresses_primary' => array(
+            'lhs_module' => "Users",
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'EmailAddresses', 'rhs_table' => 'email_addresses', 'rhs_key' => 'id',
+            'relationship_type' => 'many-to-many',
+            'join_table' => 'email_addr_bean_rel', 'join_key_lhs' => 'bean_id', 'join_key_rhs' => 'email_address_id',
+            'relationship_role_column' => 'primary_address',
+            'relationship_role_column_value' => '1'
+        ),
+        'users_userabsences' => array(
+            'lhs_module' => 'Users',
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'UserAbsences',
+            'rhs_table' => 'userabsences',
+            'rhs_key' => 'user_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'companycode_users' => [
+            'lhs_module' => 'CompanyCodes',
+            'lhs_table' => 'companycodes',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Users',
+            'rhs_table' => 'users',
+            'rhs_key' => 'companycode_id',
+            'relationship_type' => 'one-to-many'
+        ],
+        'costcenter_users' => [
+            'rhs_module' => 'Users',
+            'rhs_table' => 'users',
+            'rhs_key' => 'costcenter_id',
+            'lhs_module' => 'CostCenters',
+            'lhs_table' => 'costcenters',
+            'lhs_key' => 'id',
+            'relationship_type' => 'one-to-many',
+            'default' => true
+        ],
+    )
 );
 
 //set global else error with PHP7.1: Uncaught Error: Cannot use string offset as an array
-global  $dictionary;
-if(file_exists('modules/ServiceQueues/ServiceQueue.php')){
+global $dictionary;
+if (file_exists('modules/ServiceQueues/ServiceQueue.php')) {
     $dictionary['User']['fields']['servicequeues'] = array(
-            'vname' => 'LBL_SERVICEQUEUES',
-            'name' => 'servicequeues',
-            'type' => 'link',
-            'module_name' => 'ServiceQueues',
-            'bean_name' => 'ServiceQueue',
-            'relationship' => 'servicequeues_users',
-            'source' => 'non-db'
+        'vname' => 'LBL_SERVICEQUEUES',
+        'name' => 'servicequeues',
+        'type' => 'link',
+        'module_name' => 'ServiceQueues',
+        'bean_name' => 'ServiceQueue',
+        'relationship' => 'servicequeues_users',
+        'source' => 'non-db'
     );
 
 }

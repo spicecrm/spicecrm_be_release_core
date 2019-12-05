@@ -139,6 +139,39 @@ class Currency extends SugarBean
 		return $sugar_config['default_currency_iso4217'];
 	}
 
+    function getISO4217ById($currencyID){
+        if($currencyID == "-99")
+        {
+
+            return $this->getDefaultISO4217();
+        }
+        else
+        {
+            $c = $this->retrieve($currencyID);
+            if($c->id)
+                return  $c->iso4217;
+            else
+                return $this->getDefaultISO4217();
+        }
+    }
+
+
+    function retrieveIDByIso($isoCode){
+        global $db;
+        if($this->getDefaultISO4217() == $isoCode)
+        {
+            return "-99";
+        }
+        else
+        {
+            $c = $this->retrieve_by_string_fields(['iso4217' => $isoCode]);
+            if($c->id)
+                return $c->id;
+            else
+                return "-99";
+        }
+    }
+
     /**
      * retrieveIDBySmbol
      *

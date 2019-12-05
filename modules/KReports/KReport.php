@@ -1030,18 +1030,25 @@ class KReport extends SugarBean
         if (!empty($listFieldArray ['overridetype']) && $listFieldArray ['overridetype'] != "-")
             $fieldType = $listFieldArray ['overridetype'];
 
+        // get XtypeAlignment config if available
+        $configXtypeAlignment = "";
+        if(isset($GLOBALS['sugar_config']['KReports']['getXtypeAlignment'][$fieldType])){
+            $configXtypeAlignment = $GLOBALS['sugar_config']['KReports']['getXtypeAlignment'][$fieldType];
+        }
+
         // process the fieldtypes
         switch ($fieldType) {
-            case 'currency':
             case 'currencyint':
-                return 'right';
+            case 'currency':
+            case 'number':
+                return ((!empty($configXtypeAlignment) ) ? $configXtypeAlignment : 'right');
             case 'double' :
             case 'float' :
             case 'int' :
             case 'percentage':
                 //2013-04-06 type decimal
             case 'decimal':
-                return 'center';
+                return ((!empty($configXtypeAlignment) ) ? $configXtypeAlignment : 'center');
             default :
                 return 'left';
         }
@@ -1199,13 +1206,12 @@ class KReport extends SugarBean
     function getContextselectionResult($parameters, $getcount = false, $additionalFilter = '', $additionalGroupBy = array())
     {
         $query = '';
-//        file_put_contents("sugarcrm.log", "------". print_r($this->whereOverride, true)."\n", FILE_APPEND);
 
         //handle start not set and start content (added maretval 2019-05-03)
-        if (isset($parameters['start']) || !KReportUtil::KReportValueIsIntegerOnly($parameters['start']))
+        if (!isset($parameters['start']) || !KReportUtil::KReportValueIsIntegerOnly((int)$parameters['start']))
             $parameters['start'] = 0;
         //handle limit not set and limit content (added maretval 2019-05-03)
-        if (isset($parameters['limit']) || !KReportUtil::KReportValueIsIntegerOnly($parameters['limit']))
+        if (!isset($parameters['limit']) || !KReportUtil::KReportValueIsIntegerOnly((int)$parameters['limit']))
             $parameters['limit'] = 0;
 
 

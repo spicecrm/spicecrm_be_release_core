@@ -71,8 +71,27 @@ class Compiler
                 case 'DOMDocumentType':
                     $this->parseDom($node, $beans);
                     break;
+
+                case 'DOMText':
+                    $elementcontent = $this->compileblock($node->textContent, $beans, $this->lang);
+                    // check if we have embedded HTML that is returned from the replaceing functions
+                    // ToDo: check if there is not a nice way to do this
+                    if(strip_tags($elementcontent) != $elementcontent) {
+                        $elementdom = new \DOMDocument();
+                        $elementhtml = preg_replace("/\n|\r|\t/", "", html_entity_decode($elementcontent, ENT_QUOTES));
+                        $elementdom->loadHTML('<?xml encoding="utf-8"?><embedded>'.$elementhtml.'</embedded>');
+                        $embeddednode = $elementdom->getElementsByTagName('embedded');
+                        $elements[] = $this->createNewElement($embeddednode[0], $beans);
+                    } else {
+                        $newElement = $this->doc->createTextNode($elementcontent);
+                        $elements[] = $newElement;
+                    }
+                    break;
+                case 'DOMComment':
+                    // no takeover of comments
+                    break;
                 case 'DOMElement':
-                    $newElement = $this->doc->createElement($node->tagName);
+//                    $newElement = $this->doc->createElement($node->tagName);
 
                     // check spiceif, spicefor
                     if($node->getAttribute('data-spiceif')){
@@ -93,22 +112,8 @@ class Compiler
                         $elements[] = $this->createNewElement($node, $beans);
                     }
                     break;
-                case 'DOMText':
-                    $elementcontent = $this->compileblock($node->textContent, $beans, $this->lang);
-
-                    // check if we have embedded HTML that is returned from the replaceing functions
-                    // ToDo: check if there is not a nice way to do this
-                    if(strip_tags($elementcontent) != $elementcontent) {
-                        $elementdom = new \DOMDocument();
-                        $elementhtml = preg_replace("/\n|\r|\t/", "", html_entity_decode($elementcontent, ENT_QUOTES));
-                        $elementdom->loadHTML('<?xml encoding="utf-8"?><embedded>'.$elementhtml.'</embedded>');
-                        $embeddednode = $elementdom->getElementsByTagName('embedded');
-                        $elements[] = $this->createNewElement($embeddednode[0], $beans);
-                    } else {
-                        $newElement = $this->doc->createTextNode($elementcontent);
-                        $elements[] = $newElement;
-                    }
-                    break;
+                default:
+                    die(get_class($node));
             }
         }
         return $elements;
@@ -124,7 +129,7 @@ class Compiler
                         break;
                     default:
                         $newAttribute = $this->doc->createAttribute($attribute->nodeName);
-                        $newAttribute->value = $attribute->nodeValue;
+                        $newAttribute->value = $this->compileblock($attribute->nodeValue, $beans, $this->lang);
                         $newElement->appendChild($newAttribute);
                 }
             }
@@ -327,42 +332,58 @@ class Compiler
                                 //$value = implode(', ', unencodeMultienum($obj->{$parts[$level]}));
                                 break;
                             case 'date':
-                                //set to user preferences format
-                                $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
-                                $gmtTimezone = new \DateTimeZone('GMT');
-                                $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
-                                $offset = $userTimezone->getOffset($myDateTime);
-                                $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                                $myDateTime->add($myInterval);
-                                $value = $myDateTime->format($GLOBALS['current_user']->getPreference("datef"));
+                                if(!empty($obj->{$part})){
+                                    //set to user preferences format
+                                    $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
+                                    $gmtTimezone = new \DateTimeZone('GMT');
+                                    $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                    $offset = $userTimezone->getOffset($myDateTime);
+                                    $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                    $myDateTime->add($myInterval);
+                                    $value = $myDateTime->format($GLOBALS['current_user']->getPreference("datef"));
+                                } else {
+                                    $value = '';
+                                }
                                 break;
                             case 'datetime':
                             case 'datetimecombo':
-                                //set to user preferences format
-                                $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
-                                $gmtTimezone = new \DateTimeZone('GMT');
-                                $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
-                                $offset = $userTimezone->getOffset($myDateTime);
-                                $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                                $myDateTime->add($myInterval);
-                                $value = $myDateTime->format($GLOBALS['current_user']->getPreference("datef")." ".$GLOBALS['current_user']->getPreference("timef"));
+                                if(!empty($obj->{$part})){
+                                    //set to user preferences format
+                                    $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
+                                    $gmtTimezone = new \DateTimeZone('GMT');
+                                    $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                    $offset = $userTimezone->getOffset($myDateTime);
+                                    $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                    $myDateTime->add($myInterval);
+                                    $value = $myDateTime->format($GLOBALS['current_user']->getPreference("datef")." ".$GLOBALS['current_user']->getPreference("timef"));
+                                } else {
+                                    $value = '';
+                                }
                                 break;
                             case 'time':
-                                //set to user preferences format
-                                $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
-                                $gmtTimezone = new \DateTimeZone('GMT');
-                                $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
-                                $offset = $userTimezone->getOffset($myDateTime);
-                                $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                                $myDateTime->add($myInterval);
-                                $value = $myDateTime->format($GLOBALS['current_user']->getPreference("timef"));
+                                if(!empty($obj->{$part})){
+                                    //set to user preferences format
+                                    $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
+                                    $gmtTimezone = new \DateTimeZone('GMT');
+                                    $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                    $offset = $userTimezone->getOffset($myDateTime);
+                                    $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                    $myDateTime->add($myInterval);
+                                    $value = $myDateTime->format($GLOBALS['current_user']->getPreference("timef"));
+                                } else {
+                                    $value = '';
+                                }
                                 break;
                             case 'currency':
                                 // $currency = \BeanFactory::getBean('Currencies');
                                 $value = currency_format_number($obj->{$part});
                                 break;
+                            case 'html':
+                                $value = html_entity_decode($obj->{$part});
+                                break;
                             default:
-                                $value = $obj->{$part};
+                                // moved nl2br to only be added when non specific fields are parsed
+                                $value = nl2br($obj->{$part});
                                 break;
                         }
                     }
@@ -379,6 +400,6 @@ class Compiler
         // set the current app_list_strings back to the current language...
         $app_list_strings = return_app_list_strings_language($current_language);
 
-        return nl2br($txt);
+        return $txt;
     }
 }

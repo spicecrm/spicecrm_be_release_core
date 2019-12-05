@@ -4,69 +4,44 @@ require_once 'KREST/handlers/module.php';
 
 class CalendarRestHandler
 {
-    function getUserCalendar($userid, $params)
+    function getCalendarModules()
     {
-        global $current_user, $db;
+        $result = [];
+        $modules = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getCalendarModules();
+        foreach ($modules as $module => $data) {
+            $dateStartFieldName = null;
+            $dateEndFieldName = null;
+            foreach ($data['ftsfields'] as $field) {
+                if ($field['activitytype'] == 'activitydate')
+                    $dateStartFieldName = $field['fieldname'];
+                if ($field['activitytype'] == 'activityenddate')
+                    $dateEndFieldName = $field['fieldname'];
+            }
+            if ($dateStartFieldName) {
+                $result[] = [
+                    'name' => $module,
+                    'dateStartFieldName' => $dateStartFieldName,
+                    'dateEndFieldName' => $dateEndFieldName
+                ];
+            }
+        }
+        return $result;
+    }
 
-        $retArray = [];
-
+    function getUserCalendar($userId, $params)
+    {
+        global $db;
         $start = $db->quote($params['start']);
         $end = $db->quote($params['end']);
+        return \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::loadCalendarEvents($start, $end, $userId);
+    }
 
-        $krestModuleHandler = new KRESTModuleHandler();
-
-        if($GLOBALS['ACLController']->checkAccess('Meetings', 'list', $current_user->id)) {
-            $seedMeeting = BeanFactory::getBean('Meetings');
-            $meetings = $db->query("SELECT id FROM meetings WHERE deleted = 0 and date_start < '$end' AND date_end > '$start' AND assigned_user_id = '$userid'");
-            while($meeting = $db->fetchByAssoc($meetings)){
-                if($seedMeeting->retrieve($meeting['id'])){
-                    $retArray[] = array(
-                        'id' => $seedMeeting->id,
-                        'module' => 'Meetings',
-                        'type' => 'event',
-                        'start' => $seedMeeting->date_start,
-                        'end' => $seedMeeting->date_end,
-                        'data' => $krestModuleHandler->mapBeanToArray('Meetings', $seedMeeting)
-                    );
-                }
-            }
-        }
-
-        if($GLOBALS['ACLController']->checkAccess('Calls', 'list', $current_user->id)) {
-            $seedCall = BeanFactory::getBean('Calls');
-            $calls = $db->query("SELECT id FROM calls WHERE deleted = 0 and date_start < '$end' AND date_end > '$start' AND assigned_user_id = '$userid'");
-            while($call = $db->fetchByAssoc($calls)){
-                if($seedCall->retrieve($call['id'])){
-                    $retArray[] = array(
-                        'id' => $seedCall->id,
-                        'module' => 'Calls',
-                        'type' => 'event',
-                        'start' => $seedCall->date_start,
-                        'end' => $seedCall->date_end,
-                        'data' => $krestModuleHandler->mapBeanToArray('Calls', $seedCall)
-                    );
-                }
-            }
-        }
-
-        $seedAbsence = BeanFactory::getBean('UserAbsences');
-        $userabsences = $db->query("SELECT id FROM userabsences WHERE deleted = 0 and date_start <= CAST('$end' as DATE) AND date_end >= CAST('$start' as DATE) AND user_id = '$userid'");
-        while($absence = $db->fetchByAssoc($userabsences)){
-            if($seedAbsence->retrieve($absence['id'])){
-                $eventStart = new DateTime($seedAbsence->date_start);
-                $eventEnd = new DateTime($seedAbsence->date_end);
-                $retArray[] = array(
-                    'id' => $seedAbsence->id,
-                    'module' => 'UserAbsences',
-                    'type' => 'absence',
-                    'start' => $eventStart->format('Y-m-d H:i:s'),
-                    'end' => $eventEnd->format('Y-m-d H:i:s'),
-                    'data' => $krestModuleHandler->mapBeanToArray('UserAbsences', $seedAbsence)
-                );
-            }
-        }
-
-        return $retArray;
+    function getUsersCalendar($userId, $params)
+    {
+        global $db;
+        $start = $db->quote($params['start']);
+        $end = $db->quote($params['end']);
+        return \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::loadCalendarEvents($start, $end, $userId, '', json_decode($params['users']));
     }
 
     function getCalendars() {

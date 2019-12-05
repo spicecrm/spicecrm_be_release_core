@@ -381,6 +381,11 @@ if (file_exists('modules/Questionnaires/Questionnaire.php')) {
     $beanList['QuestionSetParticipations'] = 'QuestionSetParticipation';
     $beanFiles['QuestionSetParticipation'] = 'modules/QuestionSetParticipations/QuestionSetParticipation.php';
 
+    /** include QuestionnaireParticipations */
+    $moduleList['QuestionnaireParticipations'] = 'QuestionnaireParticipations';
+    $beanList['QuestionnaireParticipations'] = 'QuestionnaireParticipation';
+    $beanFiles['QuestionnaireParticipation'] = 'modules/QuestionnaireParticipations/QuestionnaireParticipation.php';
+
     /** include QuestionOptionCategories */
     $moduleList['QuestionOptionCategories'] = 'QuestionOptionCategories';
     $beanList['QuestionOptionCategories'] = 'QuestionOptionCategory';

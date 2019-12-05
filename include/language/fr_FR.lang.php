@@ -1948,16 +1948,18 @@ $app_list_strings = array (
   ),
   'sales_stage_dom' => 
   array (
+// CR1000302 adapt to match opportunity spicebeanguidestages
+//          'Prospecting' => 'Prospection',
     'Qualification' => 'Qualification',
-    'Prospecting' => 'Prospection',
-    'Needs Analysis' => 'Analyse des besoins',
-    'Value Proposition' => 'Chiffrage',
-    'Id. Decision Makers' => 'Ident. Décideurs',
-    'Perception Analysis' => 'Evaluation',
-    'Proposal/Price Quote' => 'Devis/Proposition',
-    'Negotiation/Review' => 'Négociation',
+    'Analysis' => 'Analyse des besoins',
+    'Proposition' => 'Chiffrage',
+//    'Id. Decision Makers' => 'Ident. Décideurs',
+//    'Perception Analysis' => 'Evaluation',
+    'Proposal' => 'Devis/Proposition',
+    'Negotiation' => 'Négociation',
     'Closed Won' => 'Gagné',
     'Closed Lost' => 'Perdu',
+    'Closed Discontinued' => 'Abandonné',
   ),
     'opportunityrevenuesplit_dom' => array(
         'none' => 'aucun',
@@ -2006,11 +2008,11 @@ $app_list_strings = array (
   'salutation_dom' => 
   array (
     '' => '',
-    'Dr.' => 'Dr.',
-    'Prof.' => 'Prof.',
+    // 'Dr.' => 'Dr.',
+    // 'Prof.' => 'Prof.',
     'Mr.' => 'M.',
     'Ms.' => 'Mlle',
-    'Mrs.' => 'Mme',
+    // 'Mrs.' => 'Mme',
   ),
     'salutation_letter_dom' => array(
         '' => '',
@@ -4366,7 +4368,6 @@ $app_list_strings['mailboxes_transport_dom'] = [
     'mailgun'  => 'Mailgun',
     'sendgrid' => 'Sendgrid',
     'twillio'  => 'Twillio',
-    'a1'       => 'A1 SMS Gateway',
 ];
 
 $app_list_strings['mailboxes_outbound_comm'] = [

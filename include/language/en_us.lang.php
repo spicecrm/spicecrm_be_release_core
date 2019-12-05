@@ -365,14 +365,15 @@ $app_list_strings = array(
         'Elastic' => 'elasticsearch'
     ),
     'sales_stage_dom' => array(
-        'Prospecting' => 'Prospecting',
+// CR1000302 adapt to match opportunity spicebeanguidestages
+//        'Prospecting' => 'Prospecting',
         'Qualification' => 'Qualification',
-        'Needs Analysis' => 'Needs Analysis',
-        'Value Proposition' => 'Value Proposition',
-        'Id. Decision Makers' => 'Id. Decision Makers',
-        'Perception Analysis' => 'Perception Analysis',
-        'Proposal/Price Quote' => 'Proposal/Price Quote',
-        'Negotiation/Review' => 'Negotiation/Review',
+        'Analysis' => 'Needs Analysis',
+        'Proposition' => 'Value Proposition',
+//        'Id. Decision Makers' => 'Id. Decision Makers',
+//        'Perception Analysis' => 'Perception Analysis',
+        'Proposal' => 'Proposal/Price Quote',
+        'Negotiation' => 'Negotiation/Review',
         'Closed Won' => 'Closed Won',
         'Closed Lost' => 'Closed Lost',
         'Closed Discontinued' => 'Closed Discontinued'
@@ -1027,10 +1028,13 @@ $app_list_strings = array(
         'closed' => 'Closed',
         'draft' => 'In Draft',
         'read' => 'Read',
+        'opened' => 'Opened',
         'replied' => 'Replied',
         'sent' => 'Sent',
+        'delivered' => 'Delivered',
         'send_error' => 'Send Error',
         'unread' => 'Unread',
+        'bounced' => 'Bounced'
     ),
     'dom_textmessage_status' => array(
         'archived' => 'Archived',
@@ -1408,11 +1412,7 @@ $app_list_strings = array(
             'move' => 'Move',
             'donothing' => 'Do Nothing'
         ),
-    'salesdoc_doctypes' => array(
-        'QT' => 'Quote',
-        'OR' => 'Order',
-        'IV' => 'Invoice'
-    ),
+
     'salesdoc_doccategories' => array(
         'QT' => 'Quote',
         'OR' => 'Order',
@@ -1433,6 +1433,15 @@ $app_list_strings = array(
         '30DN7D3' => '30 Days Net, 7 Days 3%',
         '60DN' => '60 Days Net',
         '60DN7D3' => '60 Days Net, 7 Days 3%',
+    ),
+    'salesdocitem_rejection_reasons_dom' => array(
+        'tooexpensive' => 'too expensive',
+        'nomatch' => 'does not match requirements',
+        'deliverydate' => 'proposed delivery too late'
+    ),
+    'salesvoucher_type_dom' => array(
+        'v' => 'value',
+        'p' => 'prercent'
     ),
     'mediatypes_dom' => array(
         1 => 'Bild',
@@ -1482,6 +1491,7 @@ $app_list_strings = array(
         'LE' => '≤',
     ),
     'workflowtask_status' => array(
+        '5' => 'Scheduled',
         '10' => 'New',
         '20' => 'in process',
         '30' => 'completed',
@@ -1496,6 +1506,16 @@ $app_list_strings = array(
     'page_orientation_dom' => array(
         'P' => 'Portrait',
         'L' => 'Landscape'
+    ),
+    // dropdown status for costcenter module
+    'costcenter_status_dom'=> array(
+    'active' => 'Active',
+    'inactive' => 'Inactive'
+    ),
+    // dropdown status for serviceorderitems module
+    'serviceorderitem_status_dom'=> array(
+        'active' => 'Active',
+        'inactive' => 'Inactive'
     )
 );
 
@@ -4515,7 +4535,12 @@ $app_list_strings['mailboxes_transport_dom'] = [
     'mailgun'  => 'Mailgun',
     'sendgrid' => 'Sendgrid',
     'twillio'  => 'Twillio',
-    'a1'       => 'A1 SMS Gateway',
+];
+
+$app_list_strings['mailboxes_log_levels'] = [
+    '0' => 'none',
+    '1' => 'error',
+    '2' => 'debug',
 ];
 
 $app_list_strings['mailboxes_outbound_comm'] = [
@@ -4599,3 +4624,40 @@ $app_list_strings['incoterms_dom'] = [
     'DAP' => 'Delivered at Place',
     'DDP' => 'Delivered duty paid',
 ];
+
+
+$app_list_strings['sales_planning_characteristics_fieldtype_dom'] = array(
+    'char' => 'character',
+    'int' => 'natural',
+    'float' => 'float',
+);
+
+$app_list_strings['sales_planning_version_status_dom'] = array(
+    'd' => 'created',
+    'a' => 'active',
+    'c' => 'closed',
+);
+
+$app_list_strings['sales_planning_content_field_dom'] = array(
+    'percentage' => 'Percentage',
+    'currency' => 'Currency',
+    'character' => 'Character',
+    'natural' => 'Natural',
+    'float' => 'Float',
+);
+
+$app_list_strings['sales_planning_periode_units_dom'] = array(
+    'days' => 'Days',
+    'weeks' => 'Weeks',
+    'months' => 'Months',
+    'quarters' => 'Quarters',
+    'years' => 'Years',
+);
+
+$app_list_strings['sales_planning_group_actions_dom'] = array(
+    '' => '',
+    'sum' => 'Sum',
+    'avg' => 'Average',
+    'min' => 'Minimum',
+    'max' => 'Maximum'
+);

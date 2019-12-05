@@ -43,7 +43,7 @@ $app->group('/assistant', function () use ($app, $KRESTModuleHandler) {
                 $retArray[] = array(
                     'id' => $call->id,
                     'module' => 'Calls',
-                    'date' => $call->date_start,
+                    'date_activity' => $call->date_start,
                     'data' => $KRESTModuleHandler->mapBeanToArray('Calls', $call)
                 );
             }
@@ -56,7 +56,7 @@ $app->group('/assistant', function () use ($app, $KRESTModuleHandler) {
                 $retArray[] = array(
                     'id' => $meeting->id,
                     'module' => 'Meetings',
-                    'date' => $meeting->date_start,
+                    'date_activity' => $meeting->date_start,
                     'data' => $KRESTModuleHandler->mapBeanToArray('Meetings', $meeting)
                 );
             }
@@ -69,14 +69,14 @@ $app->group('/assistant', function () use ($app, $KRESTModuleHandler) {
                 $retArray[] = array(
                     'id' => $task->id,
                     'module' => 'Tasks',
-                    'date' => $task->date_due,
+                    'date_activity' => $task->date_due,
                     'data' => $KRESTModuleHandler->mapBeanToArray('Tasks', $task)
                 );
             }
         }
 
         usort($retArray, function ($a, $b){
-            return $a['date'] > $b['date']  ? 1 : -1;
+            return $a['date_activity'] > $b['date_activity']  ? 1 : -1;
         });
 
         echo json_encode($retArray);

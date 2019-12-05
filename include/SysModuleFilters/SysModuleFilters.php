@@ -44,15 +44,16 @@ class SysModuleFilters
 
         // load module filters list
         $moduleFilters = [];
-        $filters = "SELECT 'global' As `type`, `id`, `name`, `module` FROM `sysmodulefilters` UNION ";
-        $filters .= "SELECT 'custom' As `type`, `id`, `name`, `module` FROM `syscustommodulefilters`";
+        $filters = "SELECT 'global' As `type`, `id`, `name`, `module`, `filterdefs` FROM `sysmodulefilters` UNION ";
+        $filters .= "SELECT 'custom' As `type`, `id`, `name`, `module`, `filterdefs` FROM `syscustommodulefilters`";
         $filters = $db->query($filters);
         while ($filter = $db->fetchByAssoc($filters)) {
             $moduleFilters[$filter['id']] = array(
                 'id' => $filter['id'],
                 'name' => $filter['name'],
                 'module' => $filter['module'],
-                'type' => $filter['type']
+                'type' => $filter['type'],
+                'filterdefs' => $filter['filterdefs'],
             );
         }
         return $moduleFilters;
@@ -425,7 +426,7 @@ class SysModuleFilters
     {
         switch($condition->operator){
             case 'empty':
-                return is_empty($bean->{$condition->field});
+                return empty($bean->{$condition->field});
                 break;
             case 'equals':
                 return $bean->{$condition->field} == $condition->filtervalue;

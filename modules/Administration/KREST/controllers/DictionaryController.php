@@ -22,79 +22,49 @@ class DictionaryController
 
         $returnArray = array();
 
-        // 2013-08-21 BUG #492 create a functional eleent holding the leafs for audit and relationships to make sure they stay on top after sorting
-        $functionsArray = array();
         $nodeModule = \BeanFactory::getBean($module);
+        // $nodeModule->load_relationships();
         if ($nodeModule) {
 
             foreach ($nodeModule->field_name_map as $field_name => $field_defs) {
                 // 2011-03-23 also exculde the excluded modules from the config in the Module Tree
                 //if ($field_defs['type'] == 'link' && (!isset($field_defs['module']) || (isset($field_defs['module']) && array_search($field_defs['module'], $excludedModules) == false))) {
-                if ($field_defs['type'] == 'link' && (!isset($field_defs['reportable']) || (isset($field_defs ['reportable']) && $field_defs['reportable'])) && (!isset($field_defs['module']) || (isset($field_defs['module']) && array_search($field_defs['module'], $excludedModules) == false))) {
-
-
-                    //BUGFIX 2010/07/13 to display alternative module name if vname is not maintained
-                    if (isset($field_defs['vname']))
+                if ($field_defs['type'] == 'link') {
+                    if($nodeModule->load_relationship($field_name)) {
+                        //BUGFIX 2010/07/13 to display alternative module name if vname is not maintained
                         $returnArray[] = array(
                             'path' => 'link:' . $module . ':' . $field_name,
-                            'module' => ((translate($field_defs['vname'], $module)) == "" ? ('[' . $field_defs['name'] . ']') : (translate($field_defs['vname'], $module))),
-                            'bean' => $nodeModule->$field_name->focus->object_name,
-                            'leaf' => false,
-                            'label' => $field_defs['vname']
-                        );
-                    elseif (isset($field_defs['module']))
-                        $returnArray[] = array(
-                            'path' => 'link:' . $module . ':' . $field_name,
-                            'module' => translate($field_defs['module'], $module),
-                            'bean' => $nodeModule->$field_name->focus->object_name,
-                            'leaf' => false,
-                            'label' => $field_defs['vname']
-                        );
-                    else {
-                        $field_defs_rel = $field_defs['relationship'];
-                        $returnArray[] = array(
-                            'path' => 'link:' . $module . ':' . $field_name,
-                            'module' => get_class($nodeModule->$field_defs_rel->_bean),  //PHP7 - 5.6 COMPAT $nodeModule->$field_defs['relationship']->_bean
+                            'module' => $nodeModule->$field_name->getRelatedModuleName(),
                             'bean' => $nodeModule->$field_name->focus->object_name,
                             'leaf' => false,
                             'label' => $field_defs['vname']
                         );
                     }
                 }
+            }
 
-                //2013-01-09 add support for Studio Relate Fields
-                // get all relate fields where the link is empty ... those with link we get via the link anyway properly
-                if ($field_defs['type'] == 'relate' && empty($field_defs['link']) && (!isset($field_defs['reportable']) || (isset($field_defs ['reportable']) && $field_defs['reportable'])) && (!isset($field_defs['module']) || (
-                            isset($field_defs['module']) && array_search($field_defs['module'], $excludedModules) == false))
-                ) {
-                    if (isset($field_defs['vname']))
-                        $returnArray [] = array(
-                            'path' => 'relate:' . $module . ':' . $field_name,
-                            'module' => ((translate($field_defs['vname'], $module)) == "" ? ('[' . $field_defs['name'] . ']') : (translate($field_defs
-                            ['vname'], $module))),
-                            'bean' => $field_defs['module'],
-                            'leaf' => false,
-                            'label' => $field_defs['vname']
-                        );
-                    elseif (isset($field_defs['module']))
-                        $returnArray[] = array(
-                            'path' => 'relate:' . $module . ':' . $field_name,
-                            'module' => translate($field_defs['module'], $module),
-                            'bean' => $field_defs['module'],
-                            'leaf' => false,
-                            'label' => $field_defs['vname']
-                        );
-                    else
-                        $returnArray[] = array(
-                            'path' => 'relate:' . $module . ':' . $field_name,
-                            'module' => $field_defs['name'],
-                            'bean' => $field_defs['module'],
-                            'leaf' => false,
-                            'label' => $field_defs['vname']
-                        );
-                }
+            //2013-01-09 add support for Studio Relate Fields
+            // get all relate fields where the link is empty ... those with link we get via the link anyway properly
+            if ($field_defs['type'] == 'relate') {
+                if (isset($field_defs['module']))
+                    $returnArray[] = array(
+                        'path' => 'relate:' . $module . ':' . $field_name,
+                        'module' => translate($field_defs['module'], $module),
+                        'bean' => $field_defs['module'],
+                        'leaf' => false,
+                        'label' => $field_defs['vname']
+                    );
+                else
+                    $returnArray[] = array(
+                        'path' => 'relate:' . $module . ':' . $field_name,
+                        'module' => $field_defs['name'],
+                        'bean' => $field_defs['module'],
+                        'leaf' => false,
+                        'label' => $field_defs['vname']
+                    );
             }
         }
+
         // 2013-08-21 BUG #492 added sorting for the module tree
         usort($returnArray, function ($a, $b) {
             if (strtolower($a['module']) > strtolower($b['module']))
@@ -106,7 +76,7 @@ class DictionaryController
         });
 
         // 2013-08-21 BUG #492 merge with the basic functional elelements
-        return array_merge($functionsArray, $returnArray);
+        return $returnArray;
     }
 
     function getFields($req, $res, $args)

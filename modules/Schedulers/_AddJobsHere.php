@@ -78,8 +78,8 @@ $job_strings = [
     27 => 'cleanSysFTSLogs',
     28 => 'workflowHandler',
     29 => 'schedulerTest',
-	30 => 'fullTextIndexBulk'
-
+	30 => 'fullTextIndexBulk',
+	31 => 'generateQuestionnaireEvaluations',
 ];
 
 function workflowHandler(){
@@ -697,6 +697,7 @@ function cleanSysLogs(){
     $defaultInterval = "7 DAY";
     $q = "DELETE FROM syslogs WHERE date_entered < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['logger']['db']['clean_interval']) && !empty($GLOBALS['sugar_config']['logger']['db']['clean_interval']) ? $GLOBALS['sugar_config']['logger']['db']['clean_interval'] : $defaultInterval).")";
     $GLOBALS['db']->query($q);
+    return true;
 }
 
 /**
@@ -706,8 +707,9 @@ function cleanSysLogs(){
 
 function cleanSysFTSLogs(){
     $defaultInterval = "14 DAY";
-    $q = "DELETE FROM sysftslogs WHERE date_entered < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['fts']['log_clean_interval']) && !empty($GLOBALS['sugar_config']['fts']['clean_interval']) ? $GLOBALS['sugar_config']['fts']['log_clean_interval'] : $defaultInterval).")";
+    $q = "DELETE FROM sysftslog WHERE date_created < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['fts']['log_clean_interval']) && !empty($GLOBALS['sugar_config']['fts']['clean_interval']) ? $GLOBALS['sugar_config']['fts']['log_clean_interval'] : $defaultInterval).")";
     $GLOBALS['db']->query($q);
+    return true;
 }
 
 /**
@@ -716,8 +718,25 @@ function cleanSysFTSLogs(){
  */
 
 function schedulerTest() {
-    echo "Scheduler Test (function schedulerTest() executed, nothing else is done).\n";
+    echo "Scheduler Test (function schedulerTest() executed, nothing else is done.\n";
     $GLOBALS['log']->debug('Scheduler Test');
+    return true;
+}
+
+/**
+ * Job 31
+ * Generate missing QuestionnaireEvaluations
+ */
+
+function generateQuestionnaireEvaluations()
+{
+    global $db;
+    echo "Generating non existing QuestionnaireEvaluations for ServiceFeedbacks with linked Questionnaires.\n";
+    // in future: "FROM questionnaireparticipations instead "FROM servicefeedbacks"
+    $result = $db->query('SELECT DISTINCT sf.id FROM servicefeedbacks sf LEFT JOIN questionnaireevaluations qe ON sf.questionnaireevaluation_id = qe.id WHERE NOT ISNULL(NULLIF(sf.questionnaire_id,\'\')) AND ( ISNULL(NULLIF(sf.questionnaireevaluation_id,\'\')) OR qe.deleted = 1 ) AND sf.deleted = 0');
+    while ( $row = $db->fetchByAssoc( $result )) {
+        QuestionnaireEvaluation::generateEvaluation('ServiceFeedbacks', $row['id'] );
+    }
     return true;
 }
 

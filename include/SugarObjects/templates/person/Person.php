@@ -69,6 +69,29 @@ class Person extends Basic
     }
 
     /**
+     * a helper function to reterieve a person via an email address
+     *
+     * @param $email
+     * @param bool $encode
+     * @param bool $deleted
+     * @param bool $relationships
+     * @return Basic|bool|null
+     */
+    public function retrieve_by_email_address($email, $encode = true, $deleted = true, $relationships = true)
+    {
+        $email_addr = BeanFactory::getBean('EmailAddresses');
+        $result = $email_addr->retrieve_by_string_fields(['email_address' => $email]);
+        if($result)
+        {
+            $sql = "SELECT bean_id FROM email_addr_bean_rel WHERE email_address_id = '{$email_addr->id}' AND bean_module = '$this->module_dir' AND deleted = 0";
+            $row = $this->db->fetchByAssoc($this->db->query($sql));
+            if(!$row) return false;
+            return $this->retrieve($row['bean_id'], $encode, $deleted, $relationships);
+        }
+        return false;
+    }
+
+    /**
      * Populate email address fields here instead of retrieve() so that they are properly available for logic hooks
      *
      * @see parent::fill_in_relationship_fields()
@@ -399,7 +422,6 @@ class Person extends Basic
         return array(
             'is_inactive' => array(
                 'type' => 'keyword',
-                'index' => 'analyzed',
                 'search' => false,
                 'enablesort' => true
             )
@@ -419,21 +441,25 @@ class Person extends Basic
      * @return $content
      */
     public function getVCardContent() {
-        $address = $this->primary_address_street && $this->primary_address_street != "" ? "{$this->primary_address_street};;" : null;
-        $address .= $this->primary_address_city && $this->primary_address_city != "" ? "{$this->primary_address_city};" : null;
-        $address .= $this->primary_address_state && $this->primary_address_state != "" ? "{$this->primary_address_state};" : null;
-        $address .= $this->primary_address_postalcode && $this->primary_address_postalcode != "" ? "{$this->primary_address_postalcode};" : null;
-        $address .= $this->primary_address_country && $this->primary_address_country != "" ? "{$this->primary_address_country}" : null;
-
+        global $app_list_strings;
         $content = "BEGIN:VCARD\nVERSION:4.0\n";
         $content .= "N:{$this->last_name};{$this->first_name};;{$this->salutation} {$this->degree1};{$this->degree2}\n";
         $content .= "FN:{$this->salutation} {$this->degree1} {$this->first_name} {$this->last_name} {$this->degree2}\n";
-        $content .= $this->email1 && $this->email1 != "" ? "EMAIL:{$this->email1}\n" : "";
+        $content .= $this->email1 && $this->email1 != "" ? "EMAIL;TYPE=INTERNET:{$this->email1}\n" : "";
         $content .= $this->account_name && $this->account_name != "" ? "ORG:{$this->account_name}\n" : "";
-        $content .= $this->phone_work && $this->phone_work != "" ? "TEL:{$this->phone_work}\n" : "";
-        $content .= $this->phone_fax && $this->phone_fax != "" ? "TEL;type=FAX:{$this->phone_fax}\n" : "";
-        $content .= $address ? "ADR:;{$address}\n" : "";
-        $content .= "END:VCARD";
+        $content .= $this->phone_work && $this->phone_work != "" ? "TEL;TYPE=WORK:{$this->phone_work}\n" : "";
+        $content .= $this->phone_home && $this->phone_home != "" ? "TEL;TYPE=HOME:{$this->phone_home}\n" : "";
+        $content .= $this->phone_mobile && $this->phone_mobile != "" ? "TEL;TYPE=CELL:{$this->phone_mobile}\n" : "";
+        $content .= $this->phone_other && $this->phone_other != "" ? "TEL:{$this->phone_other}\n" : "";
+        $title = $app_list_strings && $app_list_strings['contacts_title_dom'] ? $app_list_strings['contacts_title_dom'][$this->title_dd] : null;
+        $content .= $title && $title != "" ? "TITLE:{$title}\n" : "";
+        $content .= "ADR:;";
+        $content .= $this->primary_address_street && $this->primary_address_street != "" ? "{$this->primary_address_street};" : ';';
+        $content .= $this->primary_address_city && $this->primary_address_city != "" ? "{$this->primary_address_city};" : ';';
+        $content .= $this->primary_address_state && $this->primary_address_state != "" ? "{$this->primary_address_state};" : ';';
+        $content .= $this->primary_address_postalcode && $this->primary_address_postalcode != "" ? "{$this->primary_address_postalcode};" : ';';
+        $content .= $this->primary_address_country && $this->primary_address_country != "" ? "{$this->primary_address_country}" : '';
+        $content .= "\nEND:VCARD";
         return $content;
     }
 }

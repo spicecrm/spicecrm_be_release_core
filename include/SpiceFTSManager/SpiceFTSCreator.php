@@ -107,7 +107,6 @@ class SpiceFTSCreator {
                         'path' => 'root:'.$module.'::field:'.$field['name'],
                         'search' => true,
                         'indextype' => $this->setFtsIndexType($field['type']),
-                        'index' => 'analyzed',
                         'enablesort' => true //important! At least 1 field shall have it else indexing will not work, and first field for listview!
                     );
                 }

@@ -1,8 +1,12 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
+use SpiceCRM\modules\Mailboxes\MailboxLogTrait;
+
 abstract class TransportHandler
 {
+    use MailboxLogTrait;
+
     protected $mailbox;
     protected $transport_handler;
     protected $logger;

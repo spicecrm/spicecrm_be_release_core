@@ -17,9 +17,9 @@ class KReportUtil {
      */
     public static function KReportValueIsIntegerOnly($value, $allow_negative = false){
         if($allow_negative){
-            return preg_match('/^[0-9|-].[0-9]*$/', $value);
+            return is_int($value) || preg_match('/^[0-9|-].[0-9]*$/', $value);
         }
-        return preg_match('/^[0-9]*$/', $value);
+        return is_int($value) || preg_match('/^[0-9]*$/', $value);
     }
 
 

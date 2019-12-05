@@ -16,7 +16,7 @@ class SpiceFTSAggregates
     function __construct($indexProperties, $aggregatesFilters, $indexSettings = [])
     {
         foreach ($indexProperties as $indexProperty) {
-            if ($indexProperty['index'] == 'analyzed' && $indexProperty['search']) {
+            if ($indexProperty['search']) {
                 $searchFields[] = $indexProperty['indexfieldname'];
             }
 
@@ -57,6 +57,14 @@ class SpiceFTSAggregates
         }
 
         return count($postFilter) > 0 ? $postFilter : false;
+    }
+
+    function buildAggFilters(){
+        $aggFilters = [];
+        foreach ($this->aggregatesFilters as $aggregatesFilter => $aggregatesFilterValues) {
+                $aggFilters['bool']['must'][] = SpiceFTSFilters::buildFiltersFromAggregate($this->aggregateFields[$aggregatesFilter]['indexfieldname'], $aggregatesFilterValues);
+        }
+        return $aggFilters;
     }
 
     function buildAggregates()

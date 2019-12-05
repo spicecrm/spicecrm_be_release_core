@@ -560,7 +560,23 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'vname' => 'LBL_QUANTITY',
                 'type' => 'varchar',
                 'source' => 'non-db'
-            )
+            ),
+            'serviceorderitems' => array(
+                'name' => 'serviceorderitems',
+                'type' => 'link',
+                'vname' => 'LBL_SERVICE_ORDER_ITEMS',
+                'relationship' => 'contacts_serviceorderitems',
+                'module' => 'ServiceOrderItems',
+                'source' => 'non-db',
+            ),
+            'salesvouchers' => [
+                'name'         => 'salesvouchers',
+                'type'         => 'link',
+                'relationship' => 'contacts_salesvouchers',
+                'module'       => 'SalesVouchers',
+                'source'       => 'non-db',
+                'vname'        => 'LBL_SALESVOUCHERS',
+            ]
             /*
             'portal_user_id' => array(
                 'name' => 'portal_user_id',
@@ -788,6 +804,7 @@ if (is_file("modules/SalesDocs/SalesDoc.php")) {
         'module' => 'SalesDocs',
         'source' => 'non-db',
     );
+
 }
 if (is_file("modules/ContactsOnlineProfiles/ContactsOnlineProfile.php")) {
     $dictionary['Contact']['fields']['contactsonlineprofiles'] = array(

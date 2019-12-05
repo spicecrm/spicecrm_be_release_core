@@ -189,14 +189,15 @@ $app_list_strings = array(
         'Elastic' => 'elasticsearch'
     ),
     'sales_stage_dom' => array(
-        'Prospecting' => 'تقصّي',
+// CR1000302 adapt to match opportunity spicebeanguidestages
+//        'Prospecting' => 'تقصّي',
         'Qualification' => 'مؤهل',
-        'Needs Analysis' => 'تحليل الاحتياجات',
-        'Value Proposition' => 'إقتراح قيمة',
-        'Id. Decision Makers' => 'تحديد صناع القرار',
-        'Perception Analysis' => 'تحليل المعرفة',
-        'Proposal/Price Quote' => 'اقتراح / اقتباس السعر',
-        'Negotiation/Review' => 'تفاوض / مراجعة',
+        'Analysis' => 'تحليل الاحتياجات',
+        'Proposition' => 'إقتراح قيمة',
+//        'Id. Decision Makers' => 'تحديد صناع القرار',
+//        'Perception Analysis' => 'تحليل المعرفة',
+        'Proposal' => 'اقتراح / اقتباس السعر',
+        'Negotiation' => 'تفاوض / مراجعة',
         'Closed Won' => 'مغلق رابح',
         'Closed Lost' => 'مغلق خاسر',
         'Closed Discontinued' => 'مغلق متوقف'
@@ -1305,6 +1306,7 @@ $app_list_strings = array(
         'LE' => '≤',
     ),
     'workflowtask_status' => array(
+        '5' => 'Scheduled',
         '10' => 'جديد',
         '20' => 'جار العمل عليه',
         '30' => 'مكتمل',

@@ -125,4 +125,7 @@
     'italic' => $fontDir . '/LibreFranklin-ThinItalic',
     'bold_italic' => $fontDir . '/LibreFranklin-ThinItalic',
   ),
+  'roboto' => array(
+    'normal' => $fontDir . '\cf99a9d56c411ce3fa8a2fc49c520e74',
+  ),
 ) ?>

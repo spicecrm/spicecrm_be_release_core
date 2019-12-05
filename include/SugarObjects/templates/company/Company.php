@@ -76,7 +76,30 @@ class Company extends Basic
         }
 		return $record_id;
 	}
-	
+
+    /**
+     * a helper function to reterieve a company via an email address
+     *
+     * @param $email
+     * @param bool $encode
+     * @param bool $deleted
+     * @param bool $relationships
+     * @return Basic|bool|null
+     */
+    public function retrieve_by_email_address($email, $encode = true, $deleted = true, $relationships = true)
+    {
+        $email_addr = BeanFactory::getBean('EmailAddresses');
+        $result = $email_addr->retrieve_by_string_fields(['email_address' => $email]);
+        if($result)
+        {
+            $sql = "SELECT bean_id FROM email_addr_bean_rel WHERE email_address_id = '{$email_addr->id}' AND bean_module = '$this->module_dir' AND deleted = 0";
+            $row = $this->db->fetchByAssoc($this->db->query($sql));
+            if(!$row) return false;
+            return $this->retrieve($row['bean_id'], $encode, $deleted, $relationships);
+        }
+        return false;
+    }
+
  	/**
  	 * Populate email address fields here instead of retrieve() so that they are properly available for logic hooks
  	 *
@@ -179,7 +202,6 @@ class Company extends Basic
         return array(
             'is_inactive' => array(
                 'type' => 'keyword',
-                'index' => 'analyzed',
                 'search' => false,
                 'enablesort' => true
             )

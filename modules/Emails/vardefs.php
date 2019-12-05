@@ -103,6 +103,26 @@ $dictionary['Email'] = [
             'reportable' => false,
             'comment'    => 'User name who created record',
         ],
+        'file_mime_type' =>
+            array (
+                'name' => 'file_mime_type',
+                'vname' => 'LBL_FILE_MIME_TYPE',
+                'type' => 'varchar',
+                'len' => '100',
+                'comment' => 'Attachment MIME type',
+                'importable' => false,
+            ),
+        'filename' =>
+            array (
+                'name' => 'filename',
+                'vname' => 'LBL_FILENAME',
+                'type' => 'file',
+                'dbType' => 'varchar',
+                'len' => '255',
+                'reportable'=>true,
+                'comment' => 'File name associated with the email (attachment)',
+                'importable' => false,
+            ),
         'deleted' => [
             'name'       => 'deleted',
             'vname'      => 'LBL_DELETED',
@@ -676,8 +696,7 @@ if (file_exists('modules/ServiceTickets/ServiceTicket.php')) {
         'relationship' => 'emails_servicetickets_rel',
         'module'       => 'ServiceTickets',
         'bean_name'    => 'ServiceTicket',
-        'source'       => 'non-db',
-        'default'      => true,
+        'source'       => 'non-db'
     ];
 }
 if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
@@ -688,8 +707,7 @@ if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
         'relationship' => 'emails_serviceorders_rel',
         'module'       => 'ServiceOrders',
         'bean_name'    => 'ServiceOrder',
-        'source'       => 'non-db',
-        'default'      => true,
+        'source'       => 'non-db'
     ];
 }
 

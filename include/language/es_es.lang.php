@@ -254,16 +254,18 @@ $app_list_strings = array (
 
 
     'sales_stage_dom' => array(
-        'Prospecting'                                      => 'Prospecto',
+// CR1000302 adapt to match opportunity spicebeanguidestages
+//        'Prospecting'                                      => 'Prospecto',
         'Qualification'                                    => 'Calificación',
-        'Needs Analysis'                                   => 'Necesita Análisis',
-        'Value Proposition'                                => 'Propuesta de Valor',
-        'Id. Decision Makers'                              => 'Id. Tomadores de Decisiones',
-        'Perception Analysis'                              => 'Análisis de Percepción',
-        'Proposal/Price Quote'                             => 'Propuesta/Presupuesto',
-        'Negotiation/Review'                               => 'Negociación/Revisión',
+        'Analysis'                                   => 'Necesita Análisis',
+        'Proposition'                                => 'Propuesta de Valor',
+//        'Id. Decision Makers'                              => 'Id. Tomadores de Decisiones',
+//        'Perception Analysis'                              => 'Análisis de Percepción',
+        'Proposal'                             => 'Propuesta/Presupuesto',
+        'Negotiation'                               => 'Negociación/Revisión',
         'Closed Won'                                       => 'Ganado',
         'Closed Lost'                                      => 'Perdido',
+        'Closed Discontinued' => 'Abandonado'
     ),
 
 
@@ -306,9 +308,9 @@ $app_list_strings = array (
         ' '                                               => '',
         'Mr.'                                              => 'Sr.',
         'Ms.'                                              => 'Sra.',
-        'Mrs.'                                             => 'Sra.',
-        'Dr.'                                              => 'Dr.',
-        'Prof.'                                            => 'Prof.',
+        // 'Mrs.'                                             => 'Sra.',
+        // 'Dr.'                                              => 'Dr.',
+        // 'Prof.'                                            => 'Prof.',
     ),
     'reminder_max_time'                                => '3600',
 

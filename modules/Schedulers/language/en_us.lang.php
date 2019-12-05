@@ -183,5 +183,6 @@ $mod_strings = array(
     'LBL_SYNCGOOGLECALENDAR' => 'Sync Google Calendar',
     'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
     'LBL_SCHEDULERTEST' => 'Dummy function for testing the scheduler (does nothing)',
-    'LBL_URL_SPECIFIED' => 'URL (to be specified)'
+    'LBL_URL_SPECIFIED' => 'URL (to be specified)',
+    'LBL_GENERATEQUESTIONNAIREEVALUATIONS' => 'Generate missing Questionnaire Evaluations',
 );

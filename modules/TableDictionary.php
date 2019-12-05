@@ -54,7 +54,6 @@ include("metadata/email_addressesMetaData.php");
 include("metadata/emails_beansMetaData.php");
 include("metadata/foldersMetaData.php");
 include("metadata/import_mapsMetaData.php");
-include('metadata/mailbox_processorsMetaData.php');
 include("metadata/meetings_contactsMetaData.php");
 include("metadata/meetings_usersMetaData.php");
 include("metadata/meetings_leadsMetaData.php");

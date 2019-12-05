@@ -136,6 +136,10 @@ $dictionary['spicebeanguidestages'] = array(
             'name' => 'stage_componentset',
             'type' => 'varchar',
             'len' => 36
+        ),
+        'not_in_kanban' => array(
+            'name' => 'not_in_kanban',
+            'type' => 'bool'
         )
     ),
    'indices' => array(

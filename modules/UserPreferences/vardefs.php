@@ -103,7 +103,9 @@ $GLOBALS['dictionary']['UserPreference'] = array('table' => 'user_preferences',
 
 'indices' => array (
        array('name' =>'userpreferencespk', 'type' =>'primary', 'fields'=>array('id')),
+       array('name' =>'idx_userprefcat', 'type'=>'index', 'fields'=>array('category')),
        array('name' =>'idx_userprefnamecat', 'type'=>'index', 'fields'=>array('assigned_user_id','category')),
+       array('name' =>'idx_userprefnamecatdel', 'type'=>'index', 'fields'=>array('assigned_user_id','category', 'deleted')),
       )
 );
 

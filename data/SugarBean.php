@@ -1298,6 +1298,11 @@ class SugarBean
     public function getAuditChangesAfterDate($date, $fields = []){
         $records = [];
 
+        // CR1000308
+        if(!$this->db->tableExists($this->get_audit_table_name())){
+            return $records;
+        }
+
         $query = "SELECT {$this->get_audit_table_name()}.*, users.user_name FROM {$this->get_audit_table_name()}, users WHERE users.id = {$this->get_audit_table_name()}.created_by AND parent_id = '$this->id' AND date_created > '$date'";
         if(count($fields) > 0){
             $query .= " AND field_name in ('".implode("','", $fields)."')";
@@ -5855,9 +5860,10 @@ class SugarBean
      *
      * @param string $order_by
      * @param string $where
+     * @param string $additionalParam see in child classes like Project, Campaign, Meeting, Contact...
      * @return string SQL query
      */
-    public function create_export_query($order_by, $where)
+    public function create_export_query($order_by, $where, $additionalParam = '')
     {
         return $this->create_new_list_query($order_by, $where, array(), array(), 0, '', false, $this, true, true);
     }
@@ -5871,10 +5877,10 @@ class SugarBean
         $duplicates = $spiceFTSHandler->checkDuplicates($this);
 
         $dupRet = array();
-        foreach ($duplicates as $duplicate) {
+        foreach ($duplicates['records'] as $duplicate) {
             $dupRet[] = BeanFactory::getBean($module, $duplicate);
         }
-        return $dupRet;
+        return ['count' => $duplicates['count'], 'records' => $dupRet];
     }
 
     public function beanToMail($data)

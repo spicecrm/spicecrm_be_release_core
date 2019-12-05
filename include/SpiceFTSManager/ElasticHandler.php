@@ -96,7 +96,12 @@ class ElasticHandler
 
     function document_index($module, $data)
     {
-        $response = $this->query('POST', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $data['id'], array(), $data);
+        // determein if we send the wait_for param .. for activity stream
+        $params = [];
+        $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
+        if($indexSettings['waitfor']) $params['wait_for'] = true;
+
+        $response = $this->query('POST', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $data['id'], $params, $data);
         return $response;
     }
 
@@ -189,40 +194,12 @@ class ElasticHandler
 
     function getMapping($module)
     {
-        $response = $this->query('GET', '_mapping/' . $module);
+        $response = $this->query('GET', '_mapping/' . $this->indexPrefix . strtolower($module));
         return $response;
     }
 
     function putMapping($module, $properties)
     {
-
-
-        // check properties for Elasstic 6 comaptibility
-        foreach($properties as $field => &$fieldproperties){
-            if($fieldproperties['type'] == 'string'){
-                switch($fieldproperties['index']){
-                    case 'analyzed':
-                        $properties[$field]['type'] = 'text';
-                        $properties[$field]['index'] = true;
-                        break;
-                    case 'no':
-                    case 'not_analyzed':
-                        $properties[$field]['type'] = 'keyword';
-                        $properties[$field]['index'] = true;
-                        break;
-                }
-            } else {
-                switch($fieldproperties['index']){
-                    case 'analyzed':
-                        $properties[$field]['index'] = true;
-                        break;
-                    case 'not_analyzed':
-                        $properties[$field]['index'] = false;
-                        break;
-                }
-            }
-        }
-
         $mapping = array(
             '_all' => array(
                 'analyzer' => 'spice_ngram'
@@ -297,7 +274,6 @@ class ElasticHandler
                 'Content-Type: application/json',
                 'Content-Length: ' . strlen($body))
         );
-
 
         $start = microtime();
         $result = curl_exec($ch);

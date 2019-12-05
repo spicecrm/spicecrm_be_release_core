@@ -303,7 +303,7 @@ $dictionary['Meeting'] = [
         ],
         'contact_name' => [
             'name'       => 'contact_name',
-            'rname'      => 'last_name',
+            'rname'      => 'name',
             'db_concat_fields' => [
                 0 => 'first_name',
                 1 => 'last_name',

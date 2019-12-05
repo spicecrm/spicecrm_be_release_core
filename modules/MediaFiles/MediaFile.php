@@ -33,9 +33,10 @@ class MediaFile extends SugarBean {
         return $this->name;
     }
 
-    public function save($check_notify = false, $fts_index_bean = true)
-    {
+    public function save( $check_notify = false, $fts_index_bean = true ) {
         global $sugar_config;
+
+        if ( isset( $this->file{0} )) $this->storeMedia();
 
         $returnOfSave = parent::save( $check_notify, $fts_index_bean );
 
@@ -299,6 +300,10 @@ class MediaFile extends SugarBean {
     private static function _deleteMediaPhysical( $mediaId ) {
         if ( @$GLOBALS['sugar_config']['media_files_no_trash'] ) unlink( self::getMediaPath( $mediaId ));
         else rename( self::getMediaPath( $mediaId ), self::getFolderOfTrash().$mediaId.'.'.microtime() );
+        self::deleteVariants( $mediaId );
+    }
+
+    private static function deleteVariants( $mediaId ) {
         if ( is_dir( $memmy = self::getFolderOfThumbs())) array_map( 'unlink', glob( $memmy.$mediaId.'.*' ));
         if ( is_dir( $memmy = self::getFolderOfSizes())) array_map( 'unlink', glob( $memmy.$mediaId.'.*' ));
     }
@@ -326,6 +331,25 @@ class MediaFile extends SugarBean {
             rename( $_FILES['file']['tmp_name'], self::getMediaPath( $mediaId ));
             return json_encode( $filedata );
         }
+    }
+
+    public function storeMedia()
+    {
+        $this->upload_completed = 1;
+        file_put_contents( self::getMediaPath( ( $this->id ) ), base64_decode( $this->file ) );
+        $this->filesize = filesize( self::getMediaPath( $this->id ) );
+        $this->hash = md5_file( self::getMediaPath( ( $this->id ) ) );
+        switch ( $this->mediatype ) {
+            case 1: // Image
+                list( $this->width, $this->height ) = getimagesize( self::getMediaPath( ( $this->id ) ) );
+                self::deleteVariants( $this->id );
+                break;
+            case 2: // Audio
+                break;
+            case 3: // Video
+                break;
+        }
+        unset( $this->file );
     }
 
     public static function getMediaPath( $mediaId ) {
@@ -368,6 +392,12 @@ class MediaFile extends SugarBean {
             }
         }
         if ( $error ) sugar_die( 'Error with media file directory/directories. Please refer to sugarcrm.log (and error.log) for details.' );
+    }
+
+    public function fill_in_additional_detail_fields() {
+        parent::fill_in_additional_detail_fields();
+        if ( !self::thumbExists( 150, $this->id )) $this->generateThumb( 150 );
+        $this->thumbnail = base64_encode( file_get_contents( self::getFolderOfThumbs() . '/' .$this->id . ".thumb" . 150 ));
     }
 
 }

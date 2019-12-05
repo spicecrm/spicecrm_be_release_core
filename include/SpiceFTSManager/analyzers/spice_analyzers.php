@@ -30,12 +30,6 @@ $elasticAnalyzers = array(
         "tokenizer" => "spice_ngram_all",
         "filter" => array_merge(["lowercase"],$languagefilter)
     ),
-    "spice_accountname" => array(
-        "type" => "custom",
-        "tokenizer" => "spice_ngram",
-        "filter" => array_merge(["lowercase"],$languagefilter),
-        "stopwords" => ['GmbH', 'Gesellschaft', 'Co', 'KG', 'EU', 'AG', 'SE', 'Österreich', 'Verein', 'Vereinigung']
-    ),
     "spice_html" => array(
         "type" => "custom",
         "tokenizer" => "spice_ngram",

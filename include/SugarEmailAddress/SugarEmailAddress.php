@@ -620,9 +620,11 @@ class SugarEmailAddress extends SugarBean {
         $address = $this->db->quote($this->_cleanAddress($addr));
         $addressCaps = strtoupper($address);
 
-        $q = "SELECT id FROM email_addresses WHERE email_address_caps = '{$addressCaps}'";
-        $r = $this->db->query($q);
-        $a = $this->db->fetchByAssoc($r);
+        if($addressCaps !== "") {
+            $q = "SELECT id FROM email_addresses WHERE email_address_caps = '{$addressCaps}'";
+            $r = $this->db->query($q);
+            $a = $this->db->fetchByAssoc($r);
+        }
 
         if(!empty($a) && !empty($a['id'])) {
             return $a['id'];

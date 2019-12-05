@@ -39,6 +39,8 @@ if (!defined('sugarEntry') || !sugarEntry)
 
 require_once('include/SugarObjects/templates/person/Person.php');
 
+use KREST\NotFoundException;
+
 // User is used to store customer information.
 class User extends Person
 {
@@ -503,7 +505,7 @@ class User extends Person
         if ((   $this->user_name != $this->fetched_row['user_name']
                 or ( $this->fetched_row['status'] != $this->status and !$this->deleted )
                 or ( $this->fetched_row['deleted'] != $this->deleted and $this->status == 'Active' ))
-            and self::usernameAlreadyExists( $this->user_name, $this->id ) ) {
+                and self::usernameAlreadyExists( $this->user_name, $this->id ) ) {
 
             throw ( new KREST\BadRequestException( 'User name \'' . $this->user_name . '\' already exists.' ) )->setErrorCode( 'duplicateUsername' );
 
@@ -1031,7 +1033,7 @@ EOQ;
         return $active_users;
     }
 
-    function create_export_query($order_by, $where) {
+    function create_export_query($order_by, $where, $relate_link_join='') {
         include('modules/Users/field_arrays.php');
         global $fields_array;
 
@@ -1902,9 +1904,9 @@ EOQ;
             $body = str_replace( '$contact_user_user_hash', $additionalData['password'], $body );
         }
         // Bug 36833 - Add replacing of special value $instance_url
-        //workaround due to UI email templates for backend. Placeholder for $config_site_url was changed
-        $htmlBody = str_replace( '{config.frontend_url}', '$config_site_url', $htmlBody );
-        $body = str_replace( '{config.frontend_url}', '$config_site_url', $body );
+            //workaround due to UI email templates for backend. Placeholder for $config_site_url was changed
+            $htmlBody = str_replace( '{config.frontend_url}', '$config_site_url', $htmlBody );
+            $body = str_replace( '{config.frontend_url}', '$config_site_url', $body );
 
         $htmlBody = str_replace( '$config_site_url', $sugar_config['site_url'], $htmlBody );
         $body = str_replace( '$config_site_url', $sugar_config['site_url'], $body );
@@ -1984,9 +1986,63 @@ EOQ;
      */
     public static function usernameAlreadyExists( $username, $userIdToIgnore ) {
         global $db;
-        $sql = sprintf('SELECT id,user_name FROM users WHERE status = "Active" AND deleted = 0 AND id <> "%s" AND LOWER(user_name) = "%s" LIMIT 1', $db->quote( $userIdToIgnore ), $db->quote( mb_strtolower( $username )));
+        $sql = 'SELECT id,user_name FROM users WHERE status = "Active" AND deleted = 0';
+        if ( !empty( $userIdToIgnore ))
+            $sql .= ' AND id <> "'.$db->quote( $userIdToIgnore ).'"';
+        $sql .= ' AND LOWER(user_name) = "'.$db->quote( mb_strtolower( $username ).'" LIMIT 1');
         $user = $db->fetchOne( $sql );
         return $user !== false;
     }
 
+    /**
+     * findByName
+     *
+     * Searches for a User by its name.
+     *
+     * @param $name
+     * @return User
+     * @throws \KREST\NotFoundException
+     */
+   public static function findByName($name) {
+       global $db;
+
+       $sql = "SELECT * FROM users WHERE LOWER(CONCAT(first_name, ' ' , last_name)) LIKE LOWER('" . $name . "')";
+       $result = $db->query($sql);
+
+       if ($result->num_rows > 0) {
+           $row = $db->fetchByAssoc($result);
+
+           $user = BeanFactory::getBean('Users', $row['id']);
+
+           return $user;
+       } else {
+           throw (new NotFoundException('User not found'))->setLookedFor($name);
+       }
+   }
+
+    /**
+     * findByUserName
+     *
+     * Searches for a User by its user name.
+     *
+     * @param $name
+     * @return User
+     * @throws NotFoundException
+     */
+   public static function findByUserName($name) {
+       global $db;
+
+       $sql = "SELECT * FROM users WHERE LOWER(user_name) LIKE LOWER('" . $name . "')";
+       $result = $db->query($sql);
+
+       if ($result->num_rows > 0) {
+           $row = $db->fetchByAssoc($result);
+
+           $user = BeanFactory::getBean('Users', $row['id']);
+
+           return $user;
+       } else {
+           throw (new NotFoundException('User not found'))->setLookedFor($name);
+       }
+   }
 }

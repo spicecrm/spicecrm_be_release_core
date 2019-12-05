@@ -434,9 +434,7 @@ class Contact extends Person {
 
 		array_push($where_clauses, "contacts.last_name like '$the_query_string%'");
 		array_push($where_clauses, "contacts.first_name like '$the_query_string%'");
-		array_push($where_clauses, "accounts.name like '$the_query_string%'");
 		array_push($where_clauses, "contacts.assistant like '$the_query_string%'");
-		array_push($where_clauses, "ea.email_address like '$the_query_string%'");
 
 		if (is_numeric($the_query_string))
 		{
@@ -454,7 +452,6 @@ class Contact extends Person {
 			if($the_where != "") $the_where .= " or ";
 			$the_where .= $clause;
 		}
-
 
 		return $the_where;
 	}

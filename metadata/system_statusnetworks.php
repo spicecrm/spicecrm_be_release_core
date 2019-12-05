@@ -35,6 +35,11 @@ $dictionary['syststatusnetworks'] = array(
             'name' => 'status_component',
             'type' => 'varchar',
             'len' => 100
+        ),
+        'prompt_label' => array(
+            'name' => 'prompt_label',
+            'type' => 'varchar',
+            'len' => 100
         )
     ),
     'indices' => array(

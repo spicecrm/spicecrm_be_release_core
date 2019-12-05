@@ -328,19 +328,20 @@ class KRESTManager {
         $this->tmpSessionId = null;
 
         $loginData = [
-            'access_token' => $_SESSION['google_oauth']['access_token'],
-            'admin'        => $current_user->is_admin,
-            'display_name' => $current_user->get_summary_text(),
-            'email'        => $current_user->email1,
-            'first_name'   => $current_user->first_name,
-            'id'           => session_id(),
-            'last_name'    => $current_user->last_name,
-            'portal_only'  => $current_user->portal_only,
-            'renewPass'    => $current_user->system_generated_password,
-            'user_name'    => $current_user->user_name,
-            'userid'       => $current_user->id,
-            'user_image'   => $current_user->user_image,
-            'dev'          => $current_user->is_dev
+            'access_token'   => $_SESSION['google_oauth']['access_token'],
+            'admin'          => $current_user->is_admin,
+            'display_name'   => $current_user->get_summary_text(),
+            'email'          => $current_user->email1,
+            'first_name'     => $current_user->first_name,
+            'id'             => session_id(),
+            'last_name'      => $current_user->last_name,
+            'portal_only'    => $current_user->portal_only,
+            'renewPass'      => $current_user->system_generated_password,
+            'user_name'      => $current_user->user_name,
+            'userid'         => $current_user->id,
+            'user_image'     => $current_user->user_image,
+            'dev'            => $current_user->is_dev,
+            'companycode_id' => $current_user->companycode_id
         ];
 
         return $loginData;

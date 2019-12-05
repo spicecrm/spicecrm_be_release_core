@@ -211,6 +211,11 @@ class ACLController {
         return ACLAction::userNeedsOwnership($current_user->id, $category, $value, $type);
 	}
 
+	public function getOwnerWhereClause($bean, $table_name = ''){
+        global $current_user;
+        return "$bean->table_name.assigned_user_id='$current_user->id'";
+    }
+
 	function addJavascript($category,$form_name='', $is_owner=false){
 		$jscontroller = new ACLJSController($category, $form_name, $is_owner);
 		echo $jscontroller->getJavascript();

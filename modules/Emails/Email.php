@@ -40,6 +40,10 @@ require_once('include/SugarPHPMailer.php');
 require_once 'include/upload_file.php';
 
 use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+use Hfig\MAPI;
+use Hfig\MAPI\OLE\Pear;
+use Hfig\MAPI\Mime\Swiftmailer;
+use Ramsey\Uuid\Uuid;
 
 class Email extends SugarBean
 {
@@ -165,6 +169,13 @@ class Email extends SugarBean
     const OPENNESS_OPEN          = 'open';
     const OPENNESS_USER_CLOSED   = 'user_closed';
     const OPENNESS_SYSTEM_CLOSED = 'system_closed';
+
+    const STATUS_UNREAD  = 'unread';
+    const STATUS_READ    = 'read';
+    const STATUS_CREATED = 'created';
+
+    const TYPE_INBOUND  = 'inbound';
+    const TYPE_OUTBOUND = 'out';
 
     /**
      * sole constructor
@@ -1097,9 +1108,9 @@ class Email extends SugarBean
             $GLOBALS['log']->debug("EMAIL - tried to save a duplicate Email record");
         } else {
 
-            if ($this->load_relationship('mailboxes')) {
-                $mailbox = $this->mailboxes->getBeans()[$this->mailbox_id];
-                if($mailbox) // check on object (mainly for spicecrm installation process)
+            if(!empty($this->mailbox_id)) {
+                $mailbox = BeanFactory::getBean('Mailboxes', $this->mailbox_id);
+                if ($mailbox) // check on object (mainly for spicecrm installation process)
                     $mailbox->initTransportHandler();
             }
 
@@ -1108,8 +1119,8 @@ class Email extends SugarBean
                 $this->new_with_id = true;
             }
             if ($this->to_be_sent) {
-                $this->type = 'out';
-                $this->status = 'created';
+                $this->type   = self::TYPE_OUTBOUND;
+                $this->status = self::STATUS_CREATED;
             }
 
             $this->from_addr_name = $this->cleanEmails($this->from_addr_name);
@@ -1302,16 +1313,19 @@ class Email extends SugarBean
                 if (empty($recipient_address['email_address_id'])) {
                     require_once('modules/EmailAddresses/EmailAddress.php');
                     $emailAddress = new EmailAddress();
-                    if (!$emailAddress->retrieve_by_string_fields(
-                        array('email_address_caps' => strtoupper($recipient_address['email_address']))
-                    )) {
-                        $emailAddress->email_address = $recipient_address['email_address'];
-                        $emailAddress->email_address_caps = strtoupper($emailAddress);
-                        $emailAddress->invalid_email = 0;
-                        $emailAddress->opt_out = 0;
-                        $emailAddress->save();
+
+                    if (strtoupper($recipient_address['email_address']) != "") {
+                        if (!$emailAddress->retrieve_by_string_fields(
+                            array('email_address_caps' => strtoupper($recipient_address['email_address']))
+                        )) {
+                            $emailAddress->email_address = $recipient_address['email_address'];
+                            $emailAddress->email_address_caps = strtoupper($emailAddress);
+                            $emailAddress->invalid_email = 0;
+                            $emailAddress->opt_out = 0;
+                            $emailAddress->save();
+                        }
+                        $recipient_address['email_address_id'] = $emailAddress->id;
                     }
-                    $recipient_address['email_address_id'] = $emailAddress->id;
                 }
 
                 // check if we have an id
@@ -1470,6 +1484,18 @@ class Email extends SugarBean
             //$ret->raw_source = SugarCleaner::cleanHtml($ret->raw_source);
             $ret->description = to_html($ret->description);
             //$ret->description_html = SugarCleaner::cleanHtml($ret->description_html);
+
+            // BEGIN CR1000307
+            if(empty($this->body)){
+                if(!empty($ret->description)){
+                    $this->body = $ret->description;
+                }
+                if(!empty($ret->description_html)){
+                    $this->body = $ret->description_html;
+                }
+            }
+            // END
+
             $ret->retrieveEmailAddresses();
 
             $ret->date_start = '';
@@ -1491,6 +1517,20 @@ class Email extends SugarBean
             if (json_last_error() == 5)
                 $this->body = utf8_encode($this->body);
         }
+
+        // check for embedded files, if they are attached embed them as base64 ref
+        $matches = [];
+        if(preg_match_all('/src\s*=\s*"(.+?)"/', $this->body, $matches)){
+            $attachments = \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsForBean('Emails', $this->id, 100, false);
+            foreach($attachments as $attachment){
+                foreach($matches[1] as $match){
+                    if(strpos($match, $attachment['filename']) !== false){
+                        $attachmentDetails = \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachment($attachment['id'], false);
+                        $this->body = str_replace($match, "data:{$attachmentDetails['file_mime_type']};charset=utf-8;base64,{$attachmentDetails['file']}", $this->body);
+                    }
+                }
+            }
+        };
 
         return $ret;
     }
@@ -2738,7 +2778,7 @@ class Email extends SugarBean
     }
 
 
-    function create_export_query($order_by, $where)
+    function create_export_query($order_by, $where, $relate_link_join='')
     {
         $contact_required = stristr($where, "contacts");
         $custom_join = $this->getCustomJoin(true, true, $where);
@@ -3933,4 +3973,70 @@ eoq;
         }
         return $emails;
       }
+
+    /**
+     * convertMsgToEmail
+     *
+     * Converts a file in Outlook .msg format into an Email Bean.
+     *
+     * @param $fileId
+     * @param null $beanModule
+     * @param null $beanId
+     *
+     * @throws Exception
+     */
+    public  function convertMsgToEmail($fileId, $beanModule = null, $beanId = null) {
+        $messageFactory  = new MAPI\MapiMessageFactory(new Swiftmailer\Factory());
+        $documentFactory = new Pear\DocumentFactory();
+        $this->convertMessageToBean($messageFactory->parseMessage($documentFactory->createFromFile('upload://' . $fileId)));
+
+        // set the parent
+        $this->parent_id   = $beanId;
+        $this->parent_type = $beanModule;
+    }
+
+    /**
+     * convertMessageToBean
+     *
+     * Converts a Swiftmailer Message into an Email Bean.
+     *
+     * @param Swiftmailer\Message $message
+     * @return SugarBean
+     * @throws Exception
+     */
+    private function convertMessageToBean(Swiftmailer\Message $message) {
+
+        // process the message
+        $this->name       = $message->properties['subject'];
+        try {
+            $this->body = utf8_encode($message->getBodyHTML());
+        } catch (\Exception $e) {
+            try {
+                $this->body = $message->getBody();
+            } catch (\Exception $e) {
+                // Apparently there is no email body whatsoever.
+                $this->body = '';
+            }
+        }
+        $this->message_id = $message->properties['internet_message_id'];
+        $dateSent  = $message->properties['message_delivery_time'] ?? $message->properties['client_submit_time']
+            ?? $message->properties['last_modification_time'] ?? $message->properties['creation_time'] ?? null;
+        $this->date_sent  = date('Y-m-d H:i:s', $dateSent);
+        $this->from_addr  = $message->getSender();
+        foreach ($message->getRecipients() as $recipient) {
+            $this->recipient_addresses[strtolower($recipient->getType()) . '_addrs'] = [
+                'email_address' => $recipient->getEmail(),
+                'address_type'  => strtolower($recipient->getType()),
+            ];
+        }
+        $this->type       = self::TYPE_INBOUND;
+        $this->status     = self::STATUS_UNREAD;
+        $this->openness   = self::OPENNESS_OPEN;
+        $this->to_be_sent = false;
+
+        // todo deal with attachments lol
+        foreach ($message->getAttachments() as $attachment) {
+            SpiceAttachments::saveEmailAttachmentFromMsg('Emails', $this->id, $attachment);
+        }
+    }
 } // end class def

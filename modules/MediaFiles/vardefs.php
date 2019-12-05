@@ -95,7 +95,6 @@ $dictionary['MediaFile'] = array(
             'vname' => 'LBL_UPLOAD_COMPLETED',
             'type' => 'bool',
             'isnull' => false,
-            'required' => true,
             'default' => 0
         ),
         'cdn' => array(
@@ -112,12 +111,60 @@ $dictionary['MediaFile'] = array(
             'isnull' => false,
             'required' => false
         ),
-        'category' => array(
-            'name' => 'category',
-            'vname' => 'LBL_CATEGORY',
+        'mediacategory_id' => array(
+            'name' => 'mediacategory_id',
+            'vname' => 'LBL_MEDIACATEGORY_ID',
             'type' => 'id',
             'required' => false
         ),
+        'mediacategory' => array (
+            'name' => 'mediacategory',
+            'vname' => 'LBL_MEDIACATEGORY',
+            'type' => 'link',
+            'relationship' => 'mediacategory_mediafiles',
+            'source' => 'non-db',
+            'module' => 'MediaCategories'
+        ),
+        'mediacategory_name' => array(
+            'name' => 'mediacategory_name',
+            'rname' => 'name',
+            'id_name' => 'mediacategory_id',
+            'vname' => 'LBL_MEDIACATEGORY',
+            'join_name' => 'mediacategory',
+            'type' => 'relate',
+            'link' => 'mediacategory',
+            'table' => 'mediacetegories',
+            'isnull' => 'true',
+            'module' => 'MediaCategories',
+            'dbType' => 'varchar',
+            'len' => '255',
+            'source' => 'non-db',
+            'unified_search' => true,
+        ),
+        'file' => array(
+            'name' => 'file',
+            'vname' => 'LBL_FILE',
+            'type' => 'text',
+            # 'required' => true,
+            'source' => 'non-db',
+        ),
+        'thumbnail' => array(
+            'name' => 'thumbnail',
+            'vname' => 'LBL_THUMBNAIL',
+            'type' => 'text',
+            'source' => 'non-db'
+        ),
+    ),
+    'relationships' => array(
+        'mediacategory_mediafiles' => array(
+            'lhs_module' => 'MediaCategories',
+            'lhs_table' => 'mediacategories',
+            'lhs_key' => 'id',
+            'rhs_module' => 'MediaFiles',
+            'rhs_table' => 'mediafiles',
+            'rhs_key' => 'mediacategory_id',
+            'relationship_type' => 'one-to-many',
+        )
     ),
     'indices' => array (
         array( 'name' =>'idx_mediafiles_name', 'type' => 'index', 'fields' => array('name') ),
@@ -125,7 +172,7 @@ $dictionary['MediaFile'] = array(
         array( 'name' =>'idx_mediafiles_copyright_owner', 'type' => 'index', 'fields' => array('copyright_owner') ),
         array( 'name' =>'idx_mediafiles_mediatype', 'type' => 'index', 'fields' => array('mediatype') ),
         array( 'name' =>'idx_mediafiles_deleted', 'type' => 'index', 'fields' => array('deleted') ),
-        array( 'name' =>'idx_mediafiles_category', 'type' => 'index', 'fields' => array('category') )
+        array( 'name' =>'idx_mediafiles_mediacategory', 'type' => 'index', 'fields' => array('mediacategory_id') )
     )
 );
 

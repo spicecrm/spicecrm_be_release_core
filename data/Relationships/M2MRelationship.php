@@ -416,7 +416,7 @@ class M2MRelationship extends SugarRelationship
             $query = "SELECT $rel_table.id relid, $targetKey id $relFieldsSelect FROM $from WHERE $where AND $rel_table.deleted=$deleted ".$this->getRoleFilterForJoin()." $sort";  // CR1000269: added $this->getRoleFilterForJoin()
 
             // BEGIN Exception SpiceACL
-            if($rel_table == 'spiceaclterritories_hash'){
+            if($rel_table == 'spiceaclterritories_hash' || $rel_table == 'spiceaclusers_hash'){
                 $query = "SELECT $rel_table.hash_id relid, $targetKey id $relFieldsSelect FROM $from WHERE $where AND $rel_table.deleted=$deleted $sort";
             }
             // END

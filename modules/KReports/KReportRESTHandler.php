@@ -730,7 +730,7 @@ class KReporterRESTHandler
 
     private function buildNodeArray($module, $thisLink = '')
     {
-        global $beanFiles, $beanList;
+        global $beanFiles, $beanList, $excludedModules;
         require_once('include/utils.php');
 
         include('modules/KReports/kreportsConfig.php');
@@ -998,10 +998,10 @@ class KReporterRESTHandler
         $thisReport = BeanFactory::getBean('KReports', $reportId);
 
         //handle start not set and start content (added maretval 2019-05-03)
-        if (!isset($requestParams['start']) || !KReportUtil::KReportValueIsIntegerOnly($requestParams['start']))
+        if (!isset($requestParams['start']) || !KReportUtil::KReportValueIsIntegerOnly((int)$requestParams['start']))
             $requestParams['start'] = 0;
         //handle limit not set and limit content (added maretval 2019-05-03)
-        if (!isset($requestParams['limit']) || !KReportUtil::KReportValueIsIntegerOnly($requestParams['limit']))
+        if (!isset($requestParams['limit']) || !KReportUtil::KReportValueIsIntegerOnly((int)$requestParams['limit']))
             $requestParams['limit'] = 0;
 
         // set request Paramaters
@@ -1175,6 +1175,7 @@ class KReporterRESTHandler
                 'display' => $reportField['display'],
                 'width' => $reportField['width'],
                 'path' => $reportField['path'],
+                'sort' => $reportField['sort'],
                 'link' => $reportField['link'],
                 'linkinfo' => $linkArray[$reportField['fieldid']] ? $linkArray[$reportField['fieldid']] : [],
                 'component' => $reportField['component']
@@ -2145,7 +2146,7 @@ class KReporterRESTHandler
               kc.id category_id, kc.name category_name, kc.is_admin_only category_is_admin
             FROM kreports 
             INNER JOIN kreportcategories kc ON kc.id = kreports.category_id AND kc.deleted=0           
-            WHERE kreports.deleted = \'0\'".$addWhere."
+            WHERE kreports.deleted = \'0\' '.$addWhere.'
             ORDER BY kc.priority ASC, category_name ASC, kreport_priority ASC, kreport_name ASC';
 
             $resArray = $GLOBALS['db']->query($q);
@@ -2153,7 +2154,7 @@ class KReporterRESTHandler
                 //make a bean of it and check on access
                 $kreport = new KReport();
                 $kreport->retrieve($thisEntry['kreport_id']);
-                if ($kreport->ACLAccess('list')) {
+                if ($GLOBALS['ACLController']->checkAccess($kreport, 'list', false, $kreport->acltype)) {
                     $returnArray[$thisEntry['category_name']][] = array(
                         'kreport_id' => $thisEntry['kreport_id'],
                         'kreport_name' => html_entity_decode($thisEntry['kreport_name']),

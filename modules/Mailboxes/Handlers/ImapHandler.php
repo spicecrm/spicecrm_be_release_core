@@ -1,6 +1,9 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
+use Mailbox;
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+
 /**
  * Class ImapHandler
  */
@@ -84,7 +87,7 @@ class ImapHandler extends TransportHandler
             $response['imap'] = $this->testImapConnection();
         }
 
-        if ($this->mailbox->outbound_comm == 'single' || $this->mailbox->outbound_comm = 'mass') {
+        if ($this->mailbox->outbound_comm == 'single' || $this->mailbox->outbound_comm == 'mass') {
             $response['smtp'] = $this->testSmtpConnection($testEmail);
         }
 
@@ -105,6 +108,10 @@ class ImapHandler extends TransportHandler
 
         $imap_status = $this->checkConfiguration($this->incoming_settings);
         if (!$imap_status['result']) {
+            $this->log(Mailbox::LOG_DEBUG,
+                $this->mailbox->name . ': No IMAP connection set up. Missing values for: '
+                    . implode(', ', $imap_status['missing']));
+
             return [
                 'result' => false,
                 'errors' => 'No IMAP connection set up. Missing values for: '
@@ -140,10 +147,8 @@ class ImapHandler extends TransportHandler
             $items = imap_search($stream, 'ALL');
         }
 
-        if ($this->mailbox->log_level == \Mailbox::LOG_DEBUG) {
-            $GLOBALS['log']->error($this->mailbox->name . ': ' . count($items) . ' emails in mailbox since '
-                . date('d-M-Y', strtotime($dateSince)));
-        }
+        $this->log(\Mailbox::LOG_DEBUG, count($items) . ' emails in mailbox since '
+            . date('d-M-Y', strtotime($dateSince)));
 
         $new_mail_count = 0;
         $checked_mail_count = 0;
@@ -171,8 +176,8 @@ class ImapHandler extends TransportHandler
                 if (isset($header->bccaddress)) {
                     $email->bcc_addrs = $header->bccaddress;
                 }
-                $email->type = 'inbound';
-                $email->status = 'unread';
+                $email->type = \Email::TYPE_INBOUND;
+                $email->status = \Email::STATUS_UNREAD;
                 $email->openness = \Email::OPENNESS_OPEN;
 
                 $structure = new ImapStructure($stream, $item);
@@ -188,7 +193,7 @@ class ImapHandler extends TransportHandler
 
 
                 foreach ($structure->getAttachments() as $attachment) {
-                    \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveEmailAttachment('Emails', $email->id, $attachment);
+                    SpiceAttachments::saveEmailAttachment('Emails', $email->id, $attachment);
                 }
 
                 $email->processEmail();
@@ -206,12 +211,9 @@ class ImapHandler extends TransportHandler
 
         imap_close($stream);
 
-        if ($this->mailbox->log_level == \Mailbox::LOG_DEBUG) {
-            $GLOBALS['log']->error($this->mailbox->name . ': ' . $checked_mail_count . ' emails checked');
-        }
-        if ($this->mailbox->log_level == \Mailbox::LOG_DEBUG) {
-            $GLOBALS['log']->error($this->mailbox->name . ': ' . $new_mail_count . ' emails fetched');
-        }
+        $this->log(\Mailbox::LOG_DEBUG, $checked_mail_count . ' emails checked');
+        $this->log(\Mailbox::LOG_DEBUG, $new_mail_count . ' emails fetched');
+
 
         if (isset($this->mailbox->allow_external_delete) && $this->mailbox->allow_external_delete == true) {
             $this->fetchDeleted();
@@ -288,7 +290,10 @@ class ImapHandler extends TransportHandler
         $stream = imap_open(
             $this->mailbox->getRef() . $folder,
             $this->mailbox->imap_pop3_username,
-            $this->mailbox->imap_pop3_password
+            $this->mailbox->imap_pop3_password,
+            null,
+            1,
+            ['DISABLE_AUTHENTICATOR' => 'GSSAPI']
         );
 
         return $stream;
@@ -445,8 +450,9 @@ class ImapHandler extends TransportHandler
      *
      * Converts the Email bean object into the structure used by the transport handler
      *
-     * @param \Email $email
+     * @param $email
      * @return \Swift_Message
+     * @throws \Exception
      */
     protected function composeEmail($email)
     {
@@ -489,7 +495,7 @@ class ImapHandler extends TransportHandler
             $message->setReplyTo($this->mailbox->reply_to);
         }
 
-        foreach (json_decode (\SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {
+        foreach (json_decode (SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {
             $message->attach(
                 \Swift_Attachment::fromPath('upload://' . $att->filemd5)->setFilename($att->filename)
             );
@@ -521,19 +527,19 @@ class ImapHandler extends TransportHandler
                 'result' => false,
                 'errors' => $exception->getMessage(),
             ];
-            $GLOBALS['log']->info($exception->getMessage());
+            $this->log(Mailbox::LOG_DEBUG, $this->mailbox->name . ': ' . $exception->getMessage());
         } catch (\Swift_TransportException $exception) {
             $result = [
                 'result' => false,
                 'errors' => "Cannot inititalize connection.",
             ];
-            $GLOBALS['log']->info($exception->getMessage());
+            $this->log(Mailbox::LOG_DEBUG, $this->mailbox->name . ': ' . $exception->getMessage());
         } catch (\Exception $exception) {
             $result = [
                 'result' => false,
                 'errors' => $exception->getMessage(),
             ];
-            $GLOBALS['log']->info($exception->getMessage());
+            $this->log(Mailbox::LOG_DEBUG, $this->mailbox->name . ': ' . $exception->getMessage());
         }
 
         if (($result['result'] == true || $result == true) && $this->mailbox->imap_sent_dir != '') {
@@ -633,8 +639,8 @@ class ImapHandler extends TransportHandler
      * @param $module
      */
     public function saveRelation($beanId, $module) {
-        $query = "INSERT INTO `email_addr_bean_rel` 
-                (`id`, `email_address_id`, `bean_id`, `bean_module`) 
+        $query = "INSERT INTO `email_addr_bean_rel`
+                (`id`, `email_address_id`, `bean_id`, `bean_module`)
                 VALUES ('" . create_guid() . "', '" . $this->id . "', '" . $beanId . "', '" . $module . "')";
         $this->db->query($query);
     }

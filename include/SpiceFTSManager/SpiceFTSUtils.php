@@ -54,17 +54,15 @@ class SpiceFTSUtils
             'index' => false,
             'format' => 'yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis'
         ),
-        'date_activity' => array(
-            'type' => 'date',
-            'index' => false,
-            'format' => 'yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis'
-        ),
         'tags' => array(
             'type' => 'text',
             'index' => true,
             'aggregate' => true,
             'suggest' => true,
             'analyzer' => 'spice_ngram'
+        ),
+        '_location' => array(
+            'type' => 'geo_point'
         )
     );
 
@@ -74,7 +72,7 @@ class SpiceFTSUtils
         return json_decode($response);
     }
 
-    static function getBeanIndexProperties($module, $overrideCache = false)
+    static function getBeanIndexProperties($module, $overrideCache = true)
     {
         global $db;
         //catch installation process and abort. table sysfts will not exist at the point during installation
@@ -207,6 +205,24 @@ class SpiceFTSUtils
         while ($moduleProperty = $db->fetchByAssoc($moduleProperties)) {
             $moduleSettings = json_decode(html_entity_decode($moduleProperty['settings']), true);
             if (($scope == 'Activities' && $moduleSettings['activitiessearch']) || ($scope == 'History' && $moduleSettings['historysearch'])) {
+                $modules[$moduleProperty['module']] = [
+                    'settings' => $moduleSettings,
+                    'ftsfields' => json_decode(html_entity_decode($moduleProperty['ftsfields']), true),
+                ];
+            }
+        }
+
+        return $modules;
+    }
+    static function getCalendarModules()
+    {
+        global $db;
+        $modules = [];
+
+        $moduleProperties = $db->query("SELECT * FROM sysfts");
+        while ($moduleProperty = $db->fetchByAssoc($moduleProperties)) {
+            $moduleSettings = json_decode(html_entity_decode($moduleProperty['settings']), true);
+            if ($moduleSettings['calendarsearch']) {
                 $modules[$moduleProperty['module']] = [
                     'settings' => $moduleSettings,
                     'ftsfields' => json_decode(html_entity_decode($moduleProperty['ftsfields']), true),

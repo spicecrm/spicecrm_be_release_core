@@ -4,10 +4,13 @@ namespace SpiceCRM\modules\Emails\KREST\controllers;
 
 use BeanFactory;
 use Exception;
+use Email;
 use KREST\ForbiddenException;
 use KREST\NotFoundException;
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
 use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachmentHandler;
+use UploadFile;
 
 class EmailsKRESTController
 {
@@ -66,6 +69,8 @@ class EmailsKRESTController
      * @param $req
      * @param $res
      * @param $args
+     * @throws NotFoundException
+     * @throws \KREST\Exception
      */
     public function process($req, $res, $args) {
         $email = self::getEmailBean($args['id']);
@@ -194,6 +199,8 @@ class EmailsKRESTController
      * @param $res
      * @param $args
      * @return mixed
+     * @throws NotFoundException
+     * @throws \KREST\Exception
      */
     public function setOpenness($req, $res, $args) {
         $email = self::getEmailBean($args['id']);
@@ -213,6 +220,8 @@ class EmailsKRESTController
      * @param $res
      * @param $args
      * @return mixed
+     * @throws NotFoundException
+     * @throws \KREST\Exception
      */
     public function setStatus($req, $res, $args) {
         // todo: check auf erlaubte stati
@@ -225,32 +234,119 @@ class EmailsKRESTController
     }
 
     /**
+     * parseMsgAttachment
+     *
+     * Parses a SpiceAttachment in .msg format and saves it as an Email Bean.
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     * @throws Exception
+     */
+    public function parseMsgAttachment($req, $res, $args) {
+        $attachmentId = filter_var($args['attachmentId'], FILTER_SANITIZE_STRING);
+        $attachment   = json_decode(SpiceAttachments::getAttachment($attachmentId));
+        $email = Email::convertMsgToEmail($attachment->filemd5);
+        $email->save();
+        return $res->withJson($email);
+    }
+
+    /**
+     * previewMsgAttachment
+     *
+     * Parses a SpiceAttachment in .msg format and converts it to an Email Bean, but doesn't save it.
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     * @throws Exception
+     */
+    public function previewMsgFromAttachment($req, $res, $args) {
+        $attachmentId = filter_var($args['attachmentId'], FILTER_SANITIZE_STRING);
+        $attachment   = json_decode(SpiceAttachments::getAttachment($attachmentId));
+        $email = \BeanFactory::getBean('Emails');
+        $email->convertMsgToEmail($attachment->filemd5);
+
+        $KRESTModuleHandler = new \KRESTModuleHandler();
+
+        $emailResponse = $KRESTModuleHandler->mapBeanToArray('EMails', $email, array(), false, false);
+
+        // prepare email addresses
+        // email addresse temporär umschreiben ..
+
+        // todo utf8 beachten
+        $emailResponse['body'] = $emailResponse['body'];
+
+        return $res->withJson($emailResponse);
+    }
+
+    /**
+     * createEmailFromMSGFile
+     *
+     * Saves the posted .msg file (base64 encoded), converts it into an Email Bean and adds the relationships.
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     * @throws Exception
+     */
+    public function createEmailFromMSGFile($req, $res, $args) {
+        $postBody = $body = $req->getParsedBody();
+        $postParams = $_GET;
+        // $result = SpiceAttachments::saveAttachmentHashFiles($args['beanName'], $args['beanId'], array_merge($postBody, $postParams));
+
+        $email = \BeanFactory::getBean('Emails');
+        $email->id = create_guid();
+        $email->new_with_id = true;
+        $email->filename = $postBody['filename'];
+        $email->file_mime_type = $postBody['filemimetype'];
+
+        // create a guid for the email and save the message as file with the bean id
+        $emailId = create_guid();
+        $upload_file = new UploadFile('file');
+        $decodedFile = base64_decode($postBody['file']);
+        $upload_file->set_for_soap($email->id, $decodedFile);
+        $upload_file->final_move($email->id, true);
+
+        // convert the message
+        $email->convertMsgToEmail($email->id, $postBody['beanModule'], $postBody['beanId']);
+        $email->save();
+
+        $KRESTModuleHandler = new \KRESTModuleHandler();
+
+        return $res->write(json_encode($KRESTModuleHandler->get_bean_detail('Emails', $email->id, null)));
+    }
+
+    /**
      * externalDataToEmail
      *
      * Converts the data from the external add-ons (Gmail, Outlook) into an Email bean and saves it.
      *
      * @param $data
      * @param $beans
-     * @return \Email
+     * @return Email
      * @throws Exception
      */
     private function externalDataToEmail($data, $beans) {
         try {
-            $email = \Email::findByMessageId($data['message_id']);
+            $email = Email::findByMessageId($data['message_id']);
 
             return $email;
         } catch (Exception $e) {
             $email = \BeanFactory::getBean('Emails');
 
-            $email->name = $data['subject'];
-            $email->body = $data['body'];
-            $email->message_id = $data['message_id'];
-            $email->date_sent = date('Y-m-d H:i:s', strtotime($data['date']));
-            $email->type = 'inbound';
-            $email->status = 'read';
-            $email->openness = \Email::OPENNESS_OPEN;
-            $email->from_addr = $data['from'];
-            $email->to_addrs = $data['to'];
+            $email->name          = $data['subject'];
+            $email->body          = $data['body'];
+            $email->message_id    = $data['message_id'];
+            $email->date_sent     = date('Y-m-d H:i:s', strtotime($data['date']));
+            $email->type          = Email::TYPE_INBOUND;
+            $email->status        = Email::STATUS_READ;
+            $email->openness      = Email::OPENNESS_OPEN;
+            $email->from_addr     = $data['from'];
+            $email->to_addrs      = $data['to'];
             $email->reply_to_addr = $data['replyto'];
 
             // add parent_type and parent_id -> the first bean from the list
@@ -292,10 +388,10 @@ class EmailsKRESTController
      *
      * Finds the email in the database by its message_id.
      *
-     * todo maybe use \Email::findByMessageId instead
+     * todo maybe use Email::findByMessageId instead
      *
      * @param $message_id
-     * @return \Email
+     * @return Email
      */
     private function findEmailByMessageId($message_id) {
         global $db;
@@ -312,12 +408,14 @@ class EmailsKRESTController
     }
 
     /**
-     * getEmailBean
+     *getEmailBean
      *
      * Retrieves the email bean or throws exceptions.
      *
      * @param $emailId
-     * @return \Email
+     * @return Email
+     * @throws NotFoundException
+     * @throws \KREST\Exception
      */
     private static function getEmailBean($emailId) {
         $email = BeanFactory::getBean('Emails', $emailId);
@@ -337,13 +435,26 @@ class EmailsKRESTController
      *
      * Initializes the OutlookAttachmentHandler and saves the Outlook attachments sent from the Outlook add-in
      *
-     * @param \Email $email
+     * @param Email $email
      * @param $attachmentData
      * @return array
      * @throws Exception
      */
-    private function handleOutlookAttachments(\Email $email, $attachmentData) {
+    private function handleOutlookAttachments(Email $email, $attachmentData) {
         $attachmentHandler = new OutlookAttachmentHandler($email, $attachmentData);
         return $attachmentHandler->saveAttachments();
+    }
+
+    private function setEmailAttachment($beanId, $post = [])
+    {
+        $upload_file = new UploadFile('file');
+        if ($post['file']) {
+            $decodedFile = base64_decode($post['file']);
+            $upload_file->set_for_soap($beanId, $decodedFile);
+            $upload_file->final_move($beanId, true);
+        } else if (isset($_FILES['file']) && $upload_file->confirm_upload()) {
+            $upload_file->use_proxy = $_FILES['file']['proxy'] ? true : false;
+            $upload_file->final_move($beanId, true);
+        }
     }
 }

@@ -4,6 +4,30 @@ namespace SpiceCRM\modules\SystemUI\KREST\controllers;
 
 class SystemUIModulesController
 {
+    function geUnfilteredModules(){
+        global $db, $current_user, $moduleList, $modInvisList;
+
+        $modules = [];
+
+        // select from sysmodules
+        $dbresult = $db->query("SELECT * FROM sysmodules");
+        while ($m = $db->fetchByAssoc($dbresult)) {
+            // check if we have the module or if it has been filtered out
+            if (!$m['acl'] || $current_user->is_admin || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
+                $modules[$m['module']] = $m;
+        }
+
+        // select from custom modules and also allow override
+        $dbresult = $db->query("SELECT * FROM syscustommodules");
+        while ($m = $db->fetchByAssoc($dbresult)) {
+            // check if we have the module or if it has been filtered out
+            if (!$m['acl'] || $current_user->is_admin || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
+                $modules[$m['module']] = $m;
+        }
+
+        return $modules;
+    }
+
     function getModules()
     {
         global $db, $current_user, $moduleList, $modInvisList;
@@ -12,12 +36,25 @@ class SystemUIModulesController
             $retArray =  $_SESSION['SpiceUI']['modules'];
         } else {
 
+            // if we have no ACL Controller yet .. return an empty array
+            if(!$GLOBALS['ACLController']) return [];
+
+            // filter the module list
             $GLOBALS['ACLController']->filterModuleList($moduleList);
             $GLOBALS['ACLController']->filterModuleList($modInvisList);
 
             $retArray = array();
 
-            $dbresult = $db->query("SELECT * FROM sysmodules UNION SELECT * FROM syscustommodules");
+            // select from sysmodules
+            $dbresult = $db->query("SELECT * FROM sysmodules");
+            while ($m = $db->fetchByAssoc($dbresult)) {
+                // check if we have the module or if it has been filtered out
+                if (!$m['acl'] || $current_user->is_admin || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
+                    $modules[$m['module']] = $m;
+            }
+
+            // select from custom modules and also allow override
+            $dbresult = $db->query("SELECT * FROM syscustommodules");
             while ($m = $db->fetchByAssoc($dbresult)) {
                 // check if we have the module or if it has been filtered out
                 if (!$m['acl'] || $current_user->is_admin || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
@@ -60,7 +97,9 @@ class SystemUIModulesController
                         'favorites' => $module['favorites'],
                         'listtypes' => $listArray,
                         'acl' => $aclArray,
-                        'ftsactivities' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::checkActivities($module['module'])
+                        'acl_multipleusers' => $module['acl_multipleusers'],
+                        'ftsactivities' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::checkActivities($module['module']),
+                        'ftsgeo' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler::checkGeo($module['module'])
                     );
                 }
             }
@@ -83,7 +122,7 @@ class SystemUIModulesController
             $indexProperties = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexProperties($module);
             if ($indexProperties) {
                 foreach ($indexProperties as $indexProperty) {
-                    if ($indexProperty['index'] == 'analyzed' && $indexProperty['duplicatecheck'] && isset($retArray[$module][$indexProperty['indexfieldname']])) {
+                    if ($indexProperty['duplicatecheck'] && isset($retArray[$module][$indexProperty['indexfieldname']])) {
                         $retArray[$module][$indexProperty['indexfieldname']]['duplicatecheck'] = true;
                     }
                 }

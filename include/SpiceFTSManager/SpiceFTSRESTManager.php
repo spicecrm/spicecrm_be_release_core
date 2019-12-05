@@ -33,8 +33,11 @@ class SpiceFTSRESTManager
 
         $modules = $db->query("SELECT module FROM sysfts");
         while($module = $db->fetchByAssoc($modules)){
+
             $this->elasticHandler->deleteIndex($module['module']);
-            $this->elasticHandler->putMapping($module['module'], SpiceFTSBeanHandler::mapModule($module['module']));
+
+            $beanHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSBeanHandler($module['module']);
+            $this->elasticHandler->putMapping($module['module'], $beanHandler->mapModule());
             $this->spiceFTSHandler->resetIndexModule($module['module']);
         }
 
@@ -83,6 +86,49 @@ class SpiceFTSRESTManager
         return $checkIndex;
     }
 
+    /**
+     * returns the modules that have an active fts configutaion
+     *
+     * @return mixed
+     */
+    function getModules()
+    {
+        global $db;
+
+        $this->checkAdmin();
+
+        $retArray = [];
+        $modules = $db->query("SELECT module FROM sysfts");
+        while($module = $db->fetchByAssoc($modules)){
+            $retArray[] = $module['module'];
+        }
+        return $retArray;
+    }
+
+    /**
+     * deletes the index settings from the Database and attpmts to drop the index from Elastic (if it exists)
+     *
+     * @param $module
+     * @return mixed
+     */
+    function deleteIndexSettings($module)
+    {
+        global $db;
+
+        $this->checkAdmin();
+
+        $db->query("DELETE FROM sysfts WHERE module = '$module'");
+        $deleteIndex = json_decode($this->elasticHandler->deleteIndex($module), true);
+        return $deleteIndex;
+    }
+
+
+    /**
+     * deletes the inex from elastic
+     *
+     * @param $module
+     * @return mixed
+     */
     function deleteIndex($module)
     {
         $this->checkAdmin();
@@ -100,7 +146,7 @@ class SpiceFTSRESTManager
         $seed = \BeanFactory::getBean($module);
 
         // check if we have a mapping
-        $mapping = json_decode($this->elasticHandler->getMapping($module));
+        // $mapping = json_decode($this->elasticHandler->getMapping($module));
 
         $ftsFields = array();
         $record = $db->fetchByAssoc($db->query("SELECT * FROM sysfts WHERE module = '$module'"));
@@ -113,6 +159,11 @@ class SpiceFTSRESTManager
         return $ftsFields;
     }
 
+    /**
+     * returns the analyzers defined in the system
+     *
+     * @return array
+     */
     function getAnalyzers()
     {
         $analyzers = array();
@@ -132,7 +183,7 @@ class SpiceFTSRESTManager
         $this->checkAdmin();
 
         // check if we have a mapping
-        $mapping = json_decode($this->elasticHandler->getMapping($module));
+        // $mapping = json_decode($this->elasticHandler->getMapping($module));
 
         $ftsFields = array();
         $record = $db->fetchByAssoc($db->query("SELECT * FROM sysfts WHERE module = '$module'"));
@@ -148,8 +199,8 @@ class SpiceFTSRESTManager
     function mapModule($module)
     {
         $this->checkAdmin();
-
-        return json_decode($this->elasticHandler->putMapping($module, SpiceFTSBeanHandler::mapModule($module)));
+        $beanHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSBeanHandler($module);
+        return json_decode($this->elasticHandler->putMapping($module, $beanHandler->mapModule()));
     }
 
     function setFTSFields($module, $items)

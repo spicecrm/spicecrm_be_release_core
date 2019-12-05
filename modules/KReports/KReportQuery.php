@@ -205,7 +205,7 @@ class KReportQueryArray
             // 2011-03-25 added function to be evaluated
             if ($whereArrayEntry['operator'] == 'function') {
                 include('modules/KReports/kreportsConfig.php');
-                $customFunctionInclude = 'modules/KReports/KReportCustomFunctions.php';
+                $customFunctionInclude = 'custom/modules/KReports/KReportCustomFunctions.php';
                 if (file_exists($customFunctionInclude)) {
                     include($customFunctionInclude);
                     if (function_exists($whereArrayEntry['valuekey'])) {
@@ -639,9 +639,9 @@ class KReportQuery
     var $listArray;
     var $whereGroupsArray;
     var $fieldNameMap;
-    // 2012-11-04 a var for the root field nam map Array
-    // will feed that sop we now in union what types the root field is ... to react properly on that 
-    // especially reqwuired for the currency handling since we need to ensure we have the same number of fields
+    // 2012-11-04 a var for the root field name map Array
+    // will feed that so we now in union what types the root field is ... to react properly on that
+    // especially required for the currency handling since we need to ensure we have the same number of fields
     var $rootfieldNameMap;
     var $tablePath;
     var $rootGuid;
@@ -926,7 +926,7 @@ class KReportQuery
                 case 'SpiceACL':
                     $selectArray = array('where' => '', 'from' => '', 'select' => '');
                     if(method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray'))
-                        $GLOBALS['ACLController']->addACLAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], $true);
+                        $GLOBALS['ACLController']->addACLAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], true);
                     if (!empty($selectArray['where'])) {
                         if (empty($this->whereString)) {
                             $this->whereString = " " . $selectArray['where'] . " ";
@@ -1472,7 +1472,7 @@ class KReportQuery
                             'join_table_alias' => $this->joinSegments[$pathName]['alias']
                         );
 
-                        $tempWhereString .= $this->joinSegments[$leftPath]['object']->$rightArrayEl->getWhereExistsStatement($join_params); //$rightArray[2]
+                        $tempWhereString .= $this->joinSegments[$leftPath]['object']->{$rightArray[2]}->getWhereExistsStatement($join_params); //$rightArray[2]
 
                         // add the standard Where Clause
                         // $thisWhereString .= $this->getWhereOperatorClause($thisWhere['operator'], $fieldArray[1], $this->joinSegments[$pathName]['alias'],  $thisWhere['value'], $thisWhere['valuekey'], $thisWhere['valueto']);
@@ -1762,11 +1762,39 @@ class KReportQuery
                         //			$thisWhereString .= ' = \'' . $GLOBALS['timedate']->to_db_date($value, false) . '\'';
                         //			break;
                         default:
-                            $thisWhereString .= ' = \'' . $value . '\'';
+                            //BEGIN ticket 0001025 maretval 2019-11-26 implement grouping in where clause
+                            if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                                $groupingValues = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping']);
+                                if(count($value) > 1 || (count($value) == 1 && !in_array('other', $value))) {
+                                    $thisWhereString .= ' IN (\'' . implode("','", $groupingValues) . '\')';
+                                }
+                                $groupingValuesOther = $this->where_field_grouping_other($this->fieldNameMap[$fieldid]['grouping'], $value);
+                                if(!empty($groupingValuesOther)){
+                                    $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValuesOther) : $value)) . '\')';
+                                }
+                            }
+                            else
+                                //END
+                                $thisWhereString .= ' = \'' . $value . '\'';
                             break;
                     }
-                } else
-                    $thisWhereString .= ' = \'' . $value . '\'';
+                } else{
+                    //BEGIN ticket 0001025 maretval 2019-11-26 implement grouping in where clause
+                    if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                        $groupingValues = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping']);
+                        if(count($value) > 1 || (count($value) == 1 && !in_array('other', $value))) {
+                            $thisWhereString .= ' IN (\'' . implode("','", $groupingValues) . '\')';
+                        }
+                        $groupingValuesOther = $this->where_field_grouping_other($this->fieldNameMap[$fieldid]['grouping'], $value);
+                        if(!empty($groupingValuesOther)){
+                            $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValuesOther) : $value)) . '\')';
+                        }
+
+                    }
+                    else
+                        //END
+                        $thisWhereString .= ' = \'' . $value . '\'';
+                }
                 break;
             case 'soundslike':
                 $thisWhereString .= ' SOUNDS LIKE \'' . $value . '\'';
@@ -1776,8 +1804,20 @@ class KReportQuery
                 if(is_array($value)){
                     $value = reset($value);
                 }
-
-                $thisWhereString .= ' <> \'' . $value . '\'';
+                //BEGIN ticket 0001025 maretval 2019-11-26 implement grouping in where clause
+                if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                    $groupingValues = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping'], $value);
+                    if(count($value) > 1 || (count($value) == 1 && !in_array('other', $value))) {
+                        $thisWhereString .= ' NOT IN (\'' . implode("','", $groupingValues) . '\')';
+                    }
+                    $groupingValuesOther = $this->where_field_grouping_other($this->fieldNameMap[$fieldid]['grouping'], $value);
+                    if(!empty($groupingValuesOther)){
+                        $thisWhereString .= ' IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValuesOther) : $value)) . '\')';
+                    }
+                }
+                else
+                    //END
+                    $thisWhereString .= ' <> \'' . $value . '\'';
                 break;
             case 'greater':
                 $thisWhereString .= ' > \'' . $value . '\'';
@@ -1843,7 +1883,15 @@ class KReportQuery
                 break;
             case 'oneof':
                 if ($this->fieldNameMap[$fieldid]['type'] == 'multienum') {
-                    $valueArray = (is_array($value) ? $value : preg_split('/,/', $value));
+                    //BEGIN ticket 0001025 maretval 2019-03-27 implement grouping in where clause
+                    if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                        $valueArray = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping'], $value);
+                    }
+                    else
+                        //END
+                        $valueArray = (is_array($value) ? $value : preg_split('/,/', $value));
+
+
                     $multienumWhereString = '';
                     foreach ($valueArray as $thisMultiEnumValue) {
                         if ($multienumWhereString != '')
@@ -1853,12 +1901,32 @@ class KReportQuery
                     }
                     $thisWhereString .= $multienumWhereString;
                 } else {
-                    $thisWhereString .= ' IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $value) : $value)) . '\')';
+                    //BEGIN ticket 0001025 maretval 2019-03-27 implement grouping in where clause
+                    if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                        $groupingValues = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping'], $value);
+                        if(count($value) > 1 || (count($value) == 1 && !in_array('other', $value))) {
+                            $thisWhereString .= ' IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValues) : $value)) . '\')';
+                        }
+                        $groupingValuesOther = $this->where_field_grouping_other($this->fieldNameMap[$fieldid]['grouping'], $value);
+                        if(!empty($groupingValuesOther)){
+                            $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValuesOther) : $value)) . '\')';
+                        }
+                    }
+                    else
+                        //END
+                        $thisWhereString .= ' IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $value) : $value)) . '\')';
                 }
                 break;
             case 'oneofnot':
                 if ($this->fieldNameMap[$fieldid]['type'] == 'multienum') {
-                    $valueArray = (is_array($value) ? $value : preg_split('/,/', $value));
+                    //BEGIN ticket 0001025 maretval 2019-03-27 implement grouping in where clause
+                    if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                        $valueArray = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping']);
+                    }
+                    else
+                        //END
+                        $valueArray = (is_array($value) ? $value : preg_split('/,/', $value));
+
                     $multienumWhereString = '';
                     foreach ($valueArray as $thisMultiEnumValue) {
                         if ($multienumWhereString != '')
@@ -1868,12 +1936,32 @@ class KReportQuery
                     }
                     $thisWhereString .= $multienumWhereString;
                 } else {
-                    $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $value) : $value)) . '\')';
+                    //BEGIN ticket 0001025 maretval 2019-03-27 implement grouping in where clause
+                    if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                        $groupingValues = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping'], $value);
+                        if(count($value) > 1 || (count($value) == 1 && !in_array('other', $value))) {
+                            $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValues) : $value)) . '\')';
+                        }
+                        $groupingValuesOther = $this->where_field_grouping_other($this->fieldNameMap[$fieldid]['grouping'], $value);
+                        if(!empty($groupingValuesOther)){
+                            $thisWhereString .= ' IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValuesOther) : $value)) . '\')';
+                        }
+                    }
+                    else
+                        //END
+                        $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $value) : $value)) . '\')';
                 }
                 break;
             case 'oneofnotornull':
                 if ($this->fieldNameMap[$fieldid]['type'] == 'multienum') {
-                    $valueArray = (is_array($value) ? $value : preg_split('/,/', $value));
+                    //BEGIN ticket 0001025 maretval 2019-03-27 implement grouping in where clause
+                    if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                        $valueArray = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping']);
+                    }
+                    else
+                        //END
+                        $valueArray = (is_array($value) ? $value : preg_split('/,/', $value));
+
                     $multienumWhereString = '';
                     foreach ($valueArray as $thisMultiEnumValue) {
                         if ($multienumWhereString != '')
@@ -1883,7 +1971,20 @@ class KReportQuery
                     }
                     $thisWhereString .= $multienumWhereString . 'OR ' . $this->get_field_name($path, $fieldname, $fieldid) . ' IS NULL';
                 } else {
-                    $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $value) : $value)) . '\') OR ' . $this->get_field_name($path, $fieldname, $fieldid) . ' IS NULL';
+                    //BEGIN ticket 0001025 maretval 2019-03-27 implement grouping in where clause
+                    if (isset($this->fieldNameMap[$fieldid]['grouping']) && !empty($this->fieldNameMap[$fieldid]['grouping'])) {
+                        $groupingValues = $this->where_field_grouping($this->fieldNameMap[$fieldid]['grouping']);
+                        if(count($value) > 1 || (count($value) == 1 && !in_array('other', $value))) {
+                            $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValues) : $value)) . '\')';
+                        }
+                        $groupingValuesOther = $this->where_field_grouping_other($this->fieldNameMap[$fieldid]['grouping'], $value);
+                        if(!empty($groupingValuesOther)){
+                            $thisWhereString .= ' IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $groupingValuesOther) : $value)) . '\')';
+                        }
+                    }
+                    else
+                        //END
+                        $thisWhereString .= ' NOT IN (\'' . str_replace(',', '\',\'', (is_array($value) ? implode(',', $value) : $value)) . '\') OR ' . $this->get_field_name($path, $fieldname, $fieldid) . ' IS NULL';
                 }
                 break;
             case 'today':
@@ -2340,7 +2441,7 @@ class KReportQuery
                     elseif ($this->fieldNameMap[$this->sortOverride['sortid']]['sqlFunction'] == 'COUNT_DISTINCT')
                         $sortArray['100'][] = 'COUNT(DISTINCT ' . $this->get_field_name($this->get_fieldpath_by_fieldid($this->sortOverride['sortid']), $this->get_fieldname_by_fieldid($this->sortOverride['sortid']), $this->sortOverride['sortid']) . ')' . ' ' . strtoupper($this->sortOverride['sortseq']);
                     else
-                        $sortArray[$thisList['sortpriority']][] = $this->fieldNameMap[$this->sortOverride['sortid']]['sqlFunction'] . '(' . $this->get_field_name($this->get_fieldpath_by_fieldid($this->sortOverride['sortid']), $this->get_fieldname_by_fieldid($this->sortOverride['sortid']), $this->sortOverride['sortid']) . ')' . ' ' . strtoupper($this->sortOverride['sortseq']);
+                        $sortArray[$this->fieldNameMap[$this->sortOverride['sortid']]['sortpriority']][] = $this->fieldNameMap[$this->sortOverride['sortid']]['sqlFunction'] . '(' . $this->get_field_name($this->get_fieldpath_by_fieldid($this->sortOverride['sortid']), $this->get_fieldname_by_fieldid($this->sortOverride['sortid']), $this->sortOverride['sortid']) . ')' . ' ' . strtoupper($this->sortOverride['sortseq']);
                 }
             } else {
                 foreach ($this->listArray as $thisList) {
@@ -2436,6 +2537,56 @@ class KReportQuery
         // $thisModule = new $beanList[$module];
         $thisModule = BeanFactory::getBean($module);
         return $thisModule->table_name;
+    }
+
+
+    /**
+     * ticket 0001025
+     * Helper to  parse values corresponding to content bucket contents
+     * @param $grouping
+     * @param array $selectedMappings
+     * @return array
+     */
+    private function where_field_grouping($grouping, $selectedMappings = array())
+    {
+        global $db;
+
+        $groupingValues = [];
+        $groupingDetail = $db->fetchByAssoc($db->query("SELECT * FROM kreportgroupings WHERE id = '$grouping'"));
+        $groupingMapping = json_decode(html_entity_decode($groupingDetail['mapping']), true);
+        foreach ($groupingMapping['mappings'] as $mappingDetail) {
+            if(!empty($selectedMappings) && !in_array($mappingDetail['mappingvalue'], $selectedMappings)){
+                continue; //skip value
+            }
+            foreach ($mappingDetail['children'] as $mappedValue)
+                $groupingValues[] =  $mappedValue;
+        }
+        return $groupingValues;
+    }
+
+    /**
+     * ticket 0001025
+     * Helper to  parse values corresponding to content bucket contents
+     * @param $grouping
+     * @param array $selectedMappings
+     * @return array
+     */
+    private function where_field_grouping_other($grouping, $selectedMappings = array())
+    {
+        global $db;
+
+        $groupingValues = [];
+        $groupingDetail = $db->fetchByAssoc($db->query("SELECT * FROM kreportgroupings WHERE id = '$grouping'"));
+        $groupingMapping = json_decode(html_entity_decode($groupingDetail['mapping']), true);
+
+        // check if "other" is selected. If so send back all mapped values and parse as NOT IN
+        if(!empty($selectedMappings) && in_array('other', $selectedMappings)){
+            foreach ($groupingMapping['mappings'] as $mappingDetail) {
+                foreach ($mappingDetail['children'] as $mappedValue)
+                    $groupingValues[] =  $mappedValue;
+            }
+        }
+        return $groupingValues;
     }
 
     /*

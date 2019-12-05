@@ -39,7 +39,7 @@ $app->group( '/module/MediaFiles', function() use ( $app ) {
 
         $thisBean = $KRESTModuleHandler->add_bean( 'MediaFiles', $args['mediaId'], $params );
 
-        echo json_encode( $thisBean );
+        return $res->withJson( $thisBean );
     });
 
     $app->get( '/{mediaId}/file', function( $req, $res, $args ) use ( $app ) {

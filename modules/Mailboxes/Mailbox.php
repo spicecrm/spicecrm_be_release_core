@@ -50,7 +50,6 @@ class Mailbox extends SugarBean {
 	public $object_name = "Mailbox";
 
 	public $transport_handler;
-	public $log_level = 2; // todo remove hardcode
 
     const LOG_NONE  = 0;
     const LOG_ERROR = 1;
@@ -104,7 +103,12 @@ class Mailbox extends SugarBean {
         $class_name = "\\SpiceCRM\\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler";
         
         if (!class_exists($class_name)) {
-            throw new Exception('Transport Handler ' . $class_name . ' does not exist');
+            $class_name = "\\SpiceCRM\\custom\\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler";
+            if (!class_exists($class_name)) {
+                throw new Exception('Transport Handler '
+                    . "\\SpiceCRM\\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler"
+                    . ' or ' . $class_name . ' do not exist.');
+            }
         }
 
         $this->transport_handler = new $class_name($this);

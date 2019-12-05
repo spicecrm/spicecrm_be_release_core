@@ -93,7 +93,7 @@ class OutputTemplate extends SugarBean
             throw new Exception("No Bean found, translation aborted!");
 
         $templateCompiler = new \SpiceCRM\includes\SpiceTemplateCompiler\Compiler();
-        $html = '<style>' . $this->getStyle() . '</style>' . $templateCompiler->compile('<body><header>'.html_entity_decode( $this->header ).'</header><main>'.html_entity_decode( $this->body ).'</main><footer>'.html_entity_decode( $this->footer ).'</footer></body>', $bean, $this->language );
+        $html = '<style>' . $this->getStyle() . '</style>' . $templateCompiler->compile('<body><header>'.html_entity_decode( $this->header ).'</header><footer>'.html_entity_decode( $this->footer ).'</footer><main>'.html_entity_decode( $this->body ).'</main></body>', $bean, $this->language );
 
         return $html;
     }

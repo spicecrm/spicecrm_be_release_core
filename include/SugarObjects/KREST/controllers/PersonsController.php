@@ -13,6 +13,6 @@ class PersonsController
         $bean = \BeanFactory::getBean($args['module'], $args['id']);
         if (!$bean) return false;
         $content = $bean->getVCardContent();
-        return $res->withHeader('Content-Type', 'text/bin')->write($content);
+        return $res->withHeader('Content-Type', 'text/x-vcard', 'charset=utf-8')->write($content);
     }
 }
