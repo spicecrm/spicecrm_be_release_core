@@ -27,18 +27,19 @@ class SpiceFTSRESTManager
 
     function initialize()
     {
-        global $db;
+        global $db, $moduleList;
 
         $this->checkAdmin();
 
         $modules = $db->query("SELECT module FROM sysfts");
         while($module = $db->fetchByAssoc($modules)){
+            if (in_array($module['module'], $moduleList)) {
+                $this->elasticHandler->deleteIndex($module['module']);
 
-            $this->elasticHandler->deleteIndex($module['module']);
-
-            $beanHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSBeanHandler($module['module']);
-            $this->elasticHandler->putMapping($module['module'], $beanHandler->mapModule());
-            $this->spiceFTSHandler->resetIndexModule($module['module']);
+                $beanHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSBeanHandler($module['module']);
+                $this->elasticHandler->putMapping($module['module'], $beanHandler->mapModule());
+                $this->spiceFTSHandler->resetIndexModule($module['module']);
+            }
         }
 
         return array('status' => 'success');
