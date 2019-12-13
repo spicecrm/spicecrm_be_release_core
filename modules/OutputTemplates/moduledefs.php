@@ -1,4 +1,4 @@
 <?php
-$moduleList['OutputTemplates'] = 'OutputTemplates';
+$moduleList[] = 'OutputTemplates';
 $beanList['OutputTemplates']   = 'OutputTemplate';
 $beanFiles['OutputTemplate']   = 'modules/OutputTemplates/OutputTemplate.php';

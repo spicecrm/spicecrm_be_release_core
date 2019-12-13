@@ -8,6 +8,6 @@
  * performance of the enterprise, while low-level KPIs may focus on processes in departments
  * such as sales, marketing or a call center.
  */
-$moduleList['AccountKPIs'] = 'AccountKPIs';
+$moduleList[] = 'AccountKPIs';
 $beanList['AccountKPIs'] = 'AccountKPI';
 $beanFiles['AccountKPI'] = 'modules/AccountKPIs/AccountKPI.php';
