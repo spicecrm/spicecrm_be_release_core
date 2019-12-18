@@ -198,17 +198,20 @@ class SpiceFTSUtils
     static function getActivitiyModules($scope = 'Activities')
     {
 
-        global $db;
+        global $db, $moduleList;
         $modules = [];
 
         $moduleProperties = $db->query("SELECT * FROM sysfts");
         while ($moduleProperty = $db->fetchByAssoc($moduleProperties)) {
             $moduleSettings = json_decode(html_entity_decode($moduleProperty['settings']), true);
             if (($scope == 'Activities' && $moduleSettings['activitiessearch']) || ($scope == 'History' && $moduleSettings['historysearch'])) {
-                $modules[$moduleProperty['module']] = [
-                    'settings' => $moduleSettings,
-                    'ftsfields' => json_decode(html_entity_decode($moduleProperty['ftsfields']), true),
-                ];
+                // check if module is loaded (because of core/more edition)
+                if(in_array($moduleProperty['module'], $moduleList)) {
+                    $modules[$moduleProperty['module']] = [
+                        'settings' => $moduleSettings,
+                        'ftsfields' => json_decode(html_entity_decode($moduleProperty['ftsfields']), true),
+                    ];
+                }
             }
         }
 

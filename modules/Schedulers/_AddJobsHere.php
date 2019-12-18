@@ -568,7 +568,7 @@ function fullTextIndex(){
 
 //    require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
     $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
-    $ftsHandler->indexBeans($packagesize);
+    $ftsHandler->indexBeans($packagesize, true );
     return true;
 }
 
@@ -586,7 +586,7 @@ function fullTextIndexBulk(){
 
 //    require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
     $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
-    $ftsHandler->bulkIndexBeans($packagesize);
+    $ftsHandler->bulkIndexBeans($packagesize, null, true );
     return true;
 }
 

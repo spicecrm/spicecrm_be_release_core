@@ -1068,7 +1068,7 @@ class SpiceFTSHandler
         );
     }
 
-    function indexBeans($packagesize)
+    function indexBeans($packagesize, $toConsole = false )
     {
         global $db;
 
@@ -1087,16 +1087,20 @@ class SpiceFTSHandler
 
             $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL OR date_indexed <> ''))", 0, $packagesize - $beanCounter);
             $counterIndexed = $counterDeleted = 0;
-            $numRows = $indexBeans->num_rows;
-            echo $numRows . ' records to do.';
-            if ( $numRows ) {
-                $numRowsLength = strlen( $numRows ); // determine the maximum character number of the counter
-                echo ' Finished ';
-            } else echo "\n";
+            if ( $toConsole ) {
+                $numRows = $indexBeans->num_rows;
+                echo $numRows . ' records to do.';
+                if ( $numRows ) {
+                    $numRowsLength = strlen( $numRows ); // determine the maximum character number of the counter
+                    echo ' Finished ';
+                } else echo "\n";
+            }
 
             while ($indexBean = $db->fetchByAssoc($indexBeans)) {
-                if ( $counterIndexed+$counterDeleted > 0 ) echo str_repeat( chr( 8 ), $numRowsLength ); // delete previous counter output
-                echo sprintf("%${numRowsLength}d", $counterIndexed+$counterDeleted+1 ); // output current counter
+                if ( $toConsole ) {
+                    if ( $counterIndexed + $counterDeleted > 0 ) echo str_repeat( chr( 8 ), $numRowsLength ); // delete previous counter output
+                    echo sprintf( "%${numRowsLength}d", $counterIndexed + $counterDeleted + 1 ); // output current counter
+                }
                 if ($indexBean['deleted'] == 0) {
                     $seed->retrieve($indexBean['id']);
                     $this->indexBean($seed);
@@ -1110,7 +1114,7 @@ class SpiceFTSHandler
                 }
             }
             if ( $numRows ) {
-                echo str_repeat( chr( 8 ), $numRowsLength+1 ).'!'; // delete previous/last counter output
+                if ( $toConsole ) echo str_repeat( chr( 8 ), $numRowsLength+1 ).'!'; // delete previous/last counter output
                 echo " Indexed $counterIndexed, deleted $counterDeleted records.\n";
             }
             if ($beanCounter >= $packagesize) {
@@ -1127,7 +1131,7 @@ class SpiceFTSHandler
      * @param null $module added for CR1000257
      * @return bool
      */
-    function bulkIndexBeans($packagesize, $module = null)
+    function bulkIndexBeans($packagesize, $module = null, $toConsole = false )
     {
         global $timedate, $db, $sugar_config;
 
@@ -1162,16 +1166,20 @@ class SpiceFTSHandler
             $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL OR date_indexed <> ''))", 0, $packagesize);
 
             $counterIndexed = $counterDeleted = 0;
-            $numRows = $indexBeans->num_rows;
-            echo $numRows . ' records to do.';
-            if ( $numRows ) {
-                $numRowsLength = strlen( $numRows ); // determine the maximum character number of the counter
-                echo ' Finished ';
-            } else echo "\n";
+            if ( $toConsole ) {
+                $numRows = $indexBeans->num_rows;
+                echo $numRows . ' records to do.';
+                if ( $numRows ) {
+                    $numRowsLength = strlen( $numRows ); // determine the maximum character number of the counter
+                    echo ' Finished ';
+                } else echo "\n";
+            }
 
             while ($indexBean = $db->fetchByAssoc($indexBeans)) {
-                if ( $counterIndexed+$counterDeleted > 0 ) echo str_repeat( chr( 8 ), $numRowsLength ); // delete previous counter output
-                echo sprintf("%${numRowsLength}d", $counterIndexed+$counterDeleted+1 ); // output current counter
+                if ( $toConsole ) {
+                    if ( $counterIndexed + $counterDeleted > 0 ) echo str_repeat( chr( 8 ), $numRowsLength ); // delete previous counter output
+                    echo sprintf( "%${numRowsLength}d", $counterIndexed + $counterDeleted + 1 ); // output current counter
+                }
                 if ($indexBean['deleted'] == 0) {
                     $seed->retrieve($indexBean['id']);
                     $bulkItems[] = json_encode([
@@ -1239,7 +1247,7 @@ class SpiceFTSHandler
             }
 
             if ( $numRows ) {
-                echo str_repeat( chr( 8 ), $numRowsLength+1 ).'!'; // delete previous/last counter output
+                if ( $toConsole ) echo str_repeat( chr( 8 ), $numRowsLength+1 ).'!'; // delete previous/last counter output
                 echo " Indexed $counterIndexed, deleted $counterDeleted records.\n";
             }
             if ($beanCounter >= $packagesize) {

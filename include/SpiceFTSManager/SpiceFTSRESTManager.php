@@ -34,7 +34,7 @@ class SpiceFTSRESTManager
         $modules = $db->query("SELECT module FROM sysfts");
         while($module = $db->fetchByAssoc($modules)){
             if (in_array($module['module'], $moduleList)) {
-                $this->elasticHandler->deleteIndex($module['module']);
+            $this->elasticHandler->deleteIndex($module['module']);
 
                 $beanHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSBeanHandler($module['module']);
                 $this->elasticHandler->putMapping($module['module'], $beanHandler->mapModule());
