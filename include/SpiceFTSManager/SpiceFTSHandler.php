@@ -1086,9 +1086,9 @@ class SpiceFTSHandler
             }
 
             $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL OR date_indexed <> ''))", 0, $packagesize - $beanCounter);
+            $numRows = $indexBeans->num_rows;
             $counterIndexed = $counterDeleted = 0;
             if ( $toConsole ) {
-                $numRows = $indexBeans->num_rows;
                 echo $numRows . ' records to do.';
                 if ( $numRows ) {
                     $numRowsLength = strlen( $numRows ); // determine the maximum character number of the counter
@@ -1164,10 +1164,9 @@ class SpiceFTSHandler
             }
 
             $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL OR date_indexed <> ''))", 0, $packagesize);
-
+            $numRows = $indexBeans->num_rows;
             $counterIndexed = $counterDeleted = 0;
             if ( $toConsole ) {
-                $numRows = $indexBeans->num_rows;
                 echo $numRows . ' records to do.';
                 if ( $numRows ) {
                     $numRowsLength = strlen( $numRows ); // determine the maximum character number of the counter
