@@ -26,27 +26,28 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-$app->group('/systrashcan', function () use ($app) {
-    $app->get('', function () use ($app) {
+$app->group('/systrashcan', function () {
+    $this->get('', function () {
         global $current_user;
 
         echo json_encode(SystemTrashCan::getRecords());
     });
-    $app->get('/related/:transactionid/:recordid', function ($transactionid, $recordid) use ($app) {
+    $this->get('/related/{transactionid}/{recordid}', function ($req, $res, $args) {
         global $current_user;
 
-        echo json_encode(SystemTrashCan::getRelated($transactionid, $recordid));
+        echo json_encode(SystemTrashCan::getRelated($args['transactionid'], $args['recordid']));
     });
-    $app->post('/recover/:id', function ($id) use ($app) {
+    $this->post('/recover/{id}', function ($req, $res, $args)  {
         global $current_user;
 
         $requestData = $_GET;
+        $params = $req->getParams();
 
-        $recovery = SystemTrashCan::recover($id, $requestData['recoverrelated'] == 'true' ? true : false);
+        $recovery = SystemTrashCan::recover($args['id'], $params['recoverrelated'] == '1' ? true : false);
 
-        echo json_encode(Array(
+        return $res->withJson([
             'status' => $recovery === true ? 'success' : 'error',
             'message' => $recovery === true ? '' : $recovery
-        ));
+        ]);
     });
 });

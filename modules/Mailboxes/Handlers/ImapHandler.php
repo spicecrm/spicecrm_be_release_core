@@ -48,7 +48,7 @@ class ImapHandler extends TransportHandler
     /**
      * initTransportHandler
      *
-     * Initialized the transport handler
+     * Initializes the transport handler.
      *
      * @return void
      */
@@ -471,9 +471,15 @@ class ImapHandler extends TransportHandler
             $message->setTo($toAddressess);
         } else { // send everything to the catch all address
             $message->setTo([$this->mailbox->catch_all_address]);
+
+            // add a message for whom this was intended for
+            $intendedReciepients = [];
+            foreach ($email->to() as $recipient) {
+                $intendedReciepients[] = $recipient['email'];
+            }
+            $email->name .= ' [intended for ' . join(', ', $intendedReciepients) . ']';
+            $message->setSubject($email->name);
         }
-
-
 
         if (!empty($email->cc_addrs)) {
             $ccAddressess = [];
@@ -495,10 +501,12 @@ class ImapHandler extends TransportHandler
             $message->setReplyTo($this->mailbox->reply_to);
         }
 
-        foreach (json_decode (SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {
-            $message->attach(
-                \Swift_Attachment::fromPath('upload://' . $att->filemd5)->setFilename($att->filename)
-            );
+        if($email->id){
+            foreach (json_decode (SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {
+                $message->attach(
+                    \Swift_Attachment::fromPath('upload://' . $att->filemd5)->setFilename($att->filename)
+                );
+            }
         }
 
         return $message;

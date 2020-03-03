@@ -67,7 +67,7 @@ class SpiceBeanGuideRestHandler
         $statusField = $object['status_field'];
 
         // get the sales stages
-        $stagesObj = $db->query("SELECT st.*, stt.stage_name, stt.stage_secondaryname, stt.stage_description FROM spicebeanguidestages st , spicebeanguidestages_texts stt WHERE st.spicebeanguide_id = '" . $object['id'] . "' AND st.id = stt.stage_id AND stt.language = '$current_language' ORDER BY st.stage_sequence");
+        $stagesObj = $db->query("SELECT st.*, stt.stage_name, stt.stage_secondaryname, stt.stage_description FROM spicebeanguidestages st LEFT JOIN spicebeanguidestages_texts stt ON st.id = stt.stage_id AND stt.language = '$current_language' WHERE st.spicebeanguide_id = '" . $object['id'] . "' ORDER BY st.stage_sequence");
 
 
         $stages = array();
@@ -89,17 +89,19 @@ class SpiceBeanGuideRestHandler
                 while ($check = $db->fetchByAssoc($checks)) {
                     // BEGIN CR1000278: implement namespace for class containing stage checks
                     // keep file include for BWC
-                    if (!empty($check['check_include']) && file_exists($check['check_include'])) {
-                        require_once($check['check_include']);
-                        if(class_exists($check['check_class'])){
-                            $checkClass = new $check['check_class']();
-                            $checkMethod = $check['check_method'];
-                            $checkResult = $checkClass->$checkMethod($focus);
+                    if(!empty($beanid)){
+                        if (!empty($check['check_include']) && file_exists($check['check_include'])) {
+                            require_once($check['check_include']);
+                            if(class_exists($check['check_class'])){
+                                $checkClass = new $check['check_class']();
+                                $checkMethod = $check['check_method'];
+                                $checkResult = $checkClass->$checkMethod($focus);
+                            }
                         }
-                    }
-                    // CR1000278 new syntax: namespace class method is in check_method column
-                    elseif(!empty($check['check_method'])) {
-                        $checkResult = $this->runCheckResults($check['check_method'], $focus);
+                        // CR1000278 new syntax: namespace class method is in check_method column
+                        elseif(!empty($check['check_method'])) {
+                            $checkResult = $this->runCheckResults($check['check_method'], $focus);
+                        }
                     }
 
                     // prepare results

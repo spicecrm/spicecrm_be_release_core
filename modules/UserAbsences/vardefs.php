@@ -38,6 +38,14 @@ $dictionary['UserAbsence'] = array(
             'reportable' => false,
             'options' => 'userabsences_type_dom',
         ),
+        'status' => array(
+            'name' => 'status',
+            'vname' => 'LBL_STATUS',
+            'type' => 'enum',
+            'required' => true,
+            'default' => 'created',
+            'options' => 'userabsences_status_dom',
+        ),
         'user_id' => array(
             'name' => 'user_id',
             'vname' => 'LBL_USER_ID',
@@ -62,7 +70,7 @@ $dictionary['UserAbsence'] = array(
             'relationship' => 'users_userabsences',
             'source' => 'non-db',
             'module' => 'Users'
-        ),
+        )
     ),
     'indices' => array(
         array(

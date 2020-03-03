@@ -333,7 +333,8 @@ class MysqlManager extends DBManager
 	public function get_columns($tablename)
 	{
 		//find all unique indexes and primary keys.
-		$result = $this->query("DESCRIBE $tablename");
+		// $result = $this->query("DESCRIBE $tablename");
+		$result = $this->query("SHOW FULL COLUMNS FROM $tablename");
 
 		$columns = array();
 		while (($row=$this->fetchByAssoc($result)) !=null) {
@@ -350,6 +351,8 @@ class MysqlManager extends DBManager
 				$columns[$name]['required'] = 'true';
 			if (!empty($row['Default']) )
 				$columns[$name]['default'] = $row['Default'];
+			if (!empty($row['Comment']) )
+				$columns[$name]['comment'] = $row['Comment'];
 		}
 		return $columns;
 	}
@@ -750,9 +753,9 @@ class MysqlManager extends DBManager
      * To ensure multiple database types support vardefs will sometimes be defined with a basic dbType and a specific length to match another column Type. Example dbType='text' and a len=4294967295. This definition creates a longtext column in mysql.
      * Column will be created properly in database but repair/rebuild will not recognize that vardef match with column type
      * This function matches definition with table column type for specific column types
-     * @param $dbtype
-     * @param $vardef
-     * @return string|null
+     * @param $fielddef1 database field definition
+     * @param $fielddef2 vardef
+     * @return boolean
      */
 
     public function checkOnVarDefinition($fielddef1, $fielddef2)
@@ -789,14 +792,54 @@ class MysqlManager extends DBManager
                             $fieldtype =  'mediumint';
                         elseif($fielddef2['len'] > 11 && $fielddef2['len'] <= 19)
                             $fieldtype =  'int';
-                        elseif($fielddef2['len'] >  19)
+                        elseif($fielddef2['len'] >  19){
                             $fieldtype =  'bigint';
+                        }
+
                         break;
                 }
                 break;
         }
 
-        return ($dbtype === $fieldtype);
+        return (strtolower($dbtype) == strtolower($fieldtype));
+
+    }
+
+    /**
+     * CR1000138 - add 2020-02-21
+     * @param $fieldDef
+     */
+    public function normalizeVardefs(&$fieldDef){
+
+        switch($fieldDef['type']) {
+            case 'int':
+                if( (is_string($fieldDef['len']) && intval($fieldDef['len']) > 0) || (is_int($fieldDef['len']) && $fieldDef['len'] > 0 ) ) {
+                    if ($fieldDef['len'] > 0 && $fieldDef['len'] <= 4)
+                        $fieldDef['dbType'] = 'tinyint';
+                    elseif ($fieldDef['len'] > 4 && $fieldDef['len'] <= 6)
+                        $fieldDef['dbType'] = 'smallint';
+                    elseif ($fieldDef['len'] > 6 && $fieldDef['len'] <= 10)
+                        $fieldDef['dbType'] = 'mediumint';
+                    elseif ($fieldDef['len'] > 11 && $fieldDef['len'] <= 19)
+                        $fieldDef['dbType'] = 'int';
+                    elseif ($fieldDef['len'] > 19) {
+                        $fieldDef['dbType'] = 'bigint';
+                    }
+                }
+                break;
+            case 'text':
+                if( (is_string($fieldDef['len']) && intval($fieldDef['len']) > 0) || (is_int($fieldDef['len']) && $fieldDef['len'] > 0 ) ) {
+                    if ($fieldDef['len'] > 0 && $fieldDef['len'] <= 255)
+                        $fieldDef['dbType'] = 'varchar';
+                    elseif ($fieldDef['len'] > 255 && $fieldDef['len'] <= 65535)
+                        $fieldDef['dbType'] = 'text';
+                    elseif ($fieldDef['len'] > 65535 && $fieldDef['len'] <= 16777215)
+                        $fieldDef['dbType'] = 'mediumtext';
+                    elseif ($fieldDef['len'] > 16777215 && $fieldDef['len'] <= 4294967295)
+                        $fieldDef['dbType'] = 'longtext';
+                    break;
+                }
+        }
 
     }
 

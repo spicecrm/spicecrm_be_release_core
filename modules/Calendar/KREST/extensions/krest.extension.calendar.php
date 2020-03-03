@@ -1,6 +1,6 @@
 <?php
-require_once 'modules/Calendar/KREST/handlers/krest.handler.calendar.php';
-$restHandler = new CalendarRestHandler();
+
+$restHandler = new  \SpiceCRM\modules\Calendar\KREST\handlers\CalendarRestHandler();
 
 $app->group('/calendar', function () use ($app, $restHandler) {
     $app->get('/modules', function($req, $res, $args) use ($app, $restHandler) {

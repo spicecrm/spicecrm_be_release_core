@@ -66,7 +66,7 @@ class SystemTrashCan
         $record = $db->fetchByAssoc($db->query("SELECT systrashcan.* FROM systrashcan WHERE id='$id' AND recovered = '0'"));
 
         $bean = array_search($record['recordmodule'], $beanList);
-        $focus = BeanFactory::getBean($bean);
+        $focus = \BeanFactory::getBean($bean);
         if($focus->retrieve($record['recordid'], true, false)){
             $focus->mark_undeleted($focus->id);
 
@@ -78,8 +78,9 @@ class SystemTrashCan
 
                 $relRecords = SystemTrashCan::getRelated($record['transactionid'], $focus->id);
                 foreach($relRecords as $relRecord){
-                    $focus->{$relRecord['linkname']}->add($relRecord['linkid']);
-
+                    if($focus->{$relRecord['linkname']}) {
+                        $focus->{$relRecord['linkname']}->add($relRecord['linkid']);
+                    }
                     // set as recovered
                     $db->query("UPDATE systrashcan SET recovered = '1' WHERE id='".$relRecord['id']."'");
                 }

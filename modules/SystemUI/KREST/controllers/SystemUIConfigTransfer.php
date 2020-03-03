@@ -106,7 +106,7 @@ class SystemUIConfigTransfer
         foreach ( $allTablesToExport as $tablename ) {
             if ( !in_array( $tablename, self::$allTablenamesOfDB )) $unknownTables[] = $tablename;
         }
-        if ( count( $unknownTables )) throw ( new \KREST\BadRequestException( 'Unknown table(s) "' . implode('", "', $unknownTables ) . '".' ))->setErrorCode( 'unknownTables' );
+        if ( count( $unknownTables )) throw ( new \SpiceCRM\KREST\BadRequestException( 'Unknown table(s) "' . implode('", "', $unknownTables ) . '".' ))->setErrorCode( 'unknownTables' );
 
         $outputRows = [];
         foreach ( $allTablesToExport as $tablename ) $outputRows[$tablename] = self::getRowsFromTable( $tablename );
@@ -158,7 +158,7 @@ class SystemUIConfigTransfer
         $importfile = $params['file'];
         $filecontent = json_decode( gzdecode ( base64_decode( $importfile )));
 
-        if ( $filecontent->format != self::$dataFormat ) throw ( new \KREST\BadRequestException('Wrong file format.'))->setErrorCode('wrongFileFormat');
+        if ( $filecontent->format != self::$dataFormat ) throw ( new \SpiceCRM\KREST\BadRequestException('Wrong file format.'))->setErrorCode('wrongFileFormat');
 
         $db->transactionStart();
 
@@ -189,7 +189,7 @@ class SystemUIConfigTransfer
                         $result = $db->query( $sql, false, '', true );
                         if ( $result === false ) {
                             $db->transactionRollback();
-                            throw ( new \KREST\Exception( 'Unknown database error. Please refer to the CRM log.') )->setErrorCode( 'databaseError' )->getLogMessage('Unknown database error.');
+                            throw ( new \SpiceCRM\KREST\Exception( 'Unknown database error. Please refer to the CRM log.') )->setErrorCode( 'databaseError' )->getLogMessage('Unknown database error.');
                         }
                         $numberLinesInserted += $db->getAffectedRowCount( $result );
                     }
@@ -198,7 +198,7 @@ class SystemUIConfigTransfer
         }
         if ( count( $unknownTables )) {
             $db->transactionRollback();
-            throw ( new \KREST\BadRequestException( 'Unknown table(s) "' . implode('", "', array_keys( $unknownTables )) . '".' ) )->setErrorCode( 'unknownTables' );
+            throw ( new \SpiceCRM\KREST\BadRequestException( 'Unknown table(s) "' . implode('", "', array_keys( $unknownTables )) . '".' ) )->setErrorCode( 'unknownTables' );
         }
 
         $db->transactionCommit();

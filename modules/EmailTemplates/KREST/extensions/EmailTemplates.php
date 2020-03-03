@@ -6,7 +6,7 @@ $app->group('/EmailTemplates', function () use ($app) {
 
         $template_list = array();
 
-        $res = $db->query("SELECT id, name FROM email_templates 
+        $res = $db->query("SELECT id, name FROM email_templates
                 WHERE type = 'bean2mail' AND (for_bean = '{$args['module']}' OR for_bean = '*' )");
         while($row = $db->fetchByAssoc($res)) $template_list[] = $row;
 

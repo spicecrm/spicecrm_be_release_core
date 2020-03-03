@@ -49,7 +49,7 @@ class KRESTLogViewer {
 
         # Accessing the log file is allowed only for admins:
         if ( !$GLOBALS['current_user']->isAdmin() )
-            throw ( new \KREST\ForbiddenException('Forbidden to view the KREST log. Only for admins.'))->setErrorCode('noKRESTlogView');
+            throw ( new \SpiceCRM\KREST\ForbiddenException('Forbidden to view the KREST log. Only for admins.'))->setErrorCode('noKRESTlogView');
 
         $config = SugarConfig::getInstance();
         $this->maxLength = $config->get( 'logger.view.truncateText', 500 ) * 1;
@@ -135,7 +135,7 @@ class KRESTLogViewer {
 
         $line = $db->fetchOne( $sql );
         if ( $line === false )
-            throw ( new \KREST\NotFoundException( 'Log line not found.'))->setLookedFor( $lineId );
+            throw ( new \SpiceCRM\KREST\NotFoundException( 'Log line not found.'))->setLookedFor( $lineId );
 
         return $line;
 

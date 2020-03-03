@@ -41,7 +41,9 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * All Rights Reserved.
  * Contributor(s): ______________________________________..
  ********************************************************************************/
-class Call extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEventInterface
+
+// todo move functions from GoogleCalendarEventInterface
+class Call extends SugarBean
 {
     var $field_name_map;
     // Stored fields

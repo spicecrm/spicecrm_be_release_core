@@ -1339,10 +1339,15 @@ class KReporterRESTHandler
 
     function saveStandardLayout($reportId, $layoutParams)
     {
-        $thisReport = new KReport();
-        $thisReport->retrieve($reportId);
 
-        $layoutParams = json_decode(html_entity_decode($layoutParams), true);
+        $thisReport = BeanFactory::getBean('KReports', $reportId);
+        if(!$thisReport->ACLAccess('edit')){
+            throw (new \SpiceCRM\KREST\ForbiddenException("not allowed to edit report"));
+        }
+
+        if(is_string($layoutParams)){
+            $layoutParams = json_decode(html_entity_decode($layoutParams), true);
+        }
 
         $listFields = json_decode(html_entity_decode($thisReport->listfields), true);
 
@@ -1369,6 +1374,8 @@ class KReporterRESTHandler
 
         $thisReport->listfields = json_encode($listFields);
         $thisReport->save();
+
+        return ['success' => true];
     }
 
 ###################### BEGIN SavedFilters ksavedfilters ######################
@@ -1683,6 +1690,24 @@ class KReporterRESTHandler
             $returnArray = array('success' => 0, 'msg' => 'Could not insert record into DB.kreportgroupings');
 
         return $returnArray;
+    }
+
+    /**
+     * set deleted true for the given id in kreportsavedfilters
+     * @param $id: string
+     * @return array
+     */
+    public function deleteSavedFilter($id)
+    {
+        global $db;
+        $id = $db->quote($id);
+        $query = "UPDATE kreportsavedfilters SET deleted = 1 WHERE id='$id'";
+        if ($db->query($query)) {
+            $returnArray = ['success' => 1, 'savedFilterId' => $id];
+        } else
+            $returnArray = ['success' => 0, 'msg' => 'Could not set record deleted into DB.kreportsavedfilters'];
+
+        echo json_encode($returnArray);
     }
 
     public function deleteGrouping($params)
@@ -2128,12 +2153,13 @@ class KReporterRESTHandler
 ###################### BEGIN Cockpit ######################
     public function getCockpit()
     {
+        global $db;
         $returnArray = array();
         $queryOnTable = false;
 
         //check first if table exists (PRO version). If not, just return empty array
-        $resArray = $GLOBALS['db']->query("SHOW TABLES like 'kreportcategories'");
-        if ($GLOBALS['db']->getRowCount($resArray) > 0) $queryOnTable = true;
+        $resArray = $db->query("SHOW TABLES like 'kreportcategories'");
+        if ($db->getRowCount($resArray) > 0) $queryOnTable = true;
 
         //get dlists
         if ($queryOnTable) {
@@ -2141,7 +2167,7 @@ class KReporterRESTHandler
             if (!$GLOBALS['current_user']->is_admin)
                 $addWhere .= " AND  kc.is_admin_only < 1";
 
-            $q = 'SELECT kreports.id kreport_id, kreports.name kreport_name,
+            $q = 'SELECT kreports.id kreport_id, kreports.name kreport_name, kreports.report_module,
               kreports.category_priority kreport_priority, kreports.description kreport_description,
               kc.id category_id, kc.name category_name, kc.is_admin_only category_is_admin
             FROM kreports 
@@ -2149,8 +2175,8 @@ class KReporterRESTHandler
             WHERE kreports.deleted = \'0\' '.$addWhere.'
             ORDER BY kc.priority ASC, category_name ASC, kreport_priority ASC, kreport_name ASC';
 
-            $resArray = $GLOBALS['db']->query($q);
-            while ($thisEntry = $GLOBALS['db']->fetchByAssoc($resArray)) {
+            $resArray = $db->query($q);
+            while ($thisEntry = $db->fetchByAssoc($resArray)) {
                 //make a bean of it and check on access
                 $kreport = new KReport();
                 $kreport->retrieve($thisEntry['kreport_id']);
@@ -2158,6 +2184,7 @@ class KReporterRESTHandler
                     $returnArray[$thisEntry['category_name']][] = array(
                         'kreport_id' => $thisEntry['kreport_id'],
                         'kreport_name' => html_entity_decode($thisEntry['kreport_name']),
+                        'report_module' => html_entity_decode($thisEntry['report_module']),
                         'kreport_description' => html_entity_decode($thisEntry['kreport_description']),
                         'kreport_priority' => $thisEntry['kreport_priority'],
                         'category_id' => $thisEntry['category_id'],

@@ -51,6 +51,9 @@ class SpiceFavorites
     public static function getFavoritesRaw($beanModule = '', $lastN = 10)
     {
         global $current_user, $db, $beanFiles, $beanList;
+
+        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+
         $favorites = array();
 
         $moduleWhere = '';
@@ -84,9 +87,7 @@ class SpiceFavorites
                         'module_name' => $thisFav['bean'],
                         'item_summary' => $thisBean->name,
                         'item_summary_short' => substr($thisBean->name, 0, 15),
-                        //BEGIN CR1000149
-                        'module_icon' => \SugarThemeRegistry::current()->getImageURL($thisFav['bean'] . '.gif')
-                        //END
+                        'data' => $moduleHandler->mapBeanToArray($thisFav['bean'], $thisBean)
                     );
                 } else {
                     self::delete_favorite($thisFav['module'], $thisFav['beanid']);

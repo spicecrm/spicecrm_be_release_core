@@ -221,7 +221,7 @@ class SpiceFTSRESTManager
 
             $setFields = [];
             if ($items["fields"] != '') {
-                $setFields[] = "ftsfields = '" . json_encode($items["fields"]) . "'";
+                $setFields[] = "ftsfields = '" . addslashes(json_encode($items["fields"])) . "'"; // CR1000343 added addslahes
             }
             if ($items["settings"] != '') {
                 $setFields[] = "index_priority='" . $items["settings"]["index_priority"] . "'";

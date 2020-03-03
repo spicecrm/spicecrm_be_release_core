@@ -85,7 +85,6 @@ class ElasticHandler
         return $indexes;
     }
 
-
     function getStats()
     {
         $response = json_decode($this->query('GET',$this->indexPrefix . '*/_stats'), true);
@@ -170,7 +169,7 @@ class ElasticHandler
 
     function filter($filterfield, $filtervalue)
     {
-        $response = json_decode($this->query('POST', '/' . implode(',', $this->getAllIndexes()) . '/_search', array(), array('query' => array('bool' => array('filter' => array('term' => array($filterfield => $filtervalue)))))), true);
+        $response = json_decode($this->query('POST', '/' . $this->indexPrefix . '*/_search', array(), array('query' => array('bool' => array('filter' => array('term' => array($filterfield => $filtervalue)))))), true);
         return $response;
     }
 
@@ -179,6 +178,17 @@ class ElasticHandler
         $response = $this->query('PUT', '', array(), array('settings' => $this->standardSettings));
         return $response;
     }
+
+
+    function checkIndex($module){
+        $response = $this->query('GET', $this->indexPrefix . strtolower($module));
+        $response = json_decode($response);
+        if($response->{$this->indexPrefix . strtolower($module)})
+            return true;
+        else
+            return false;
+    }
+
 
     function deleteIndex($module)
     {

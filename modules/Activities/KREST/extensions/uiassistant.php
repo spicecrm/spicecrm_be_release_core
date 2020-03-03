@@ -1,7 +1,7 @@
 <?php
-require_once('KREST/handlers/module.php');
+ require_once('KREST/handlers/ModuleHandler.php');
 
-$KRESTModuleHandler = new KRESTModuleHandler($app);
+$KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($app);
 
 $app->group('/assistant', function () use ($app, $KRESTModuleHandler) {
     $app->get('/list', function ($req, $res, $args) use ($app, $KRESTModuleHandler) {

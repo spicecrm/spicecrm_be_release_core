@@ -326,8 +326,9 @@ $dictionary['emails_text'] = array(
 			'dbType'		=> 'id',
 			'len'			=> 36,
 			'required'		=> true,
+			'isnull'       => false,
 			'reportable'	=> true,
-			'comment' 		=> 'Foriegn key to emails table',
+			'comment' 		=> 'Foreign key to emails table',
 		),
 		'from_addr' => array (
 			'name'			=> 'from_addr',

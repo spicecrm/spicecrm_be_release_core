@@ -1,12 +1,8 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
-class Attachment
+class Attachment extends AbstractAttachment
 {
-    public $filename;
-    public $filesize;
-    public $filemd5;
-    public $mime_type;
     public $path;
     private $part;
 
@@ -19,10 +15,7 @@ class Attachment
     const TYPE_VIDEO       = 6;
     const TYPE_OTHER       = 7;
 
-    const ATTACHMENT_DIR = "upload://";
-
-    public function __construct($part)
-    {
+    public function __construct($part) {
         $this->part     = $part;
 
         if ($this->part->ifdparameters) { // attachments
@@ -33,54 +26,11 @@ class Attachment
     }
 
     /**
-     * saveFile
-     *
-     * Saves the attachment in the file system
-     *
-     * @param $file_body
-     */
-    public function saveFile($file_body)
-    {
-        file_put_contents(self::ATTACHMENT_DIR . $this->filename, $file_body);
-
-        if(file_exists(self::ATTACHMENT_DIR . $this->filename)) {
-            $this->initMD5();
-
-            rename(self::ATTACHMENT_DIR . $this->filename,
-                self::ATTACHMENT_DIR . $this->filemd5);
-
-            $this->initFilesize();
-            $this->initMimeType();
-        }
-    }
-
-    /**
-     * initFilesize
-     *
-     * Initializes the file size attribute
-     */
-    private function initFilesize()
-    {
-        $this->filesize = filesize(self::ATTACHMENT_DIR . $this->filemd5);
-    }
-
-    /**
-     * initMD5
-     *
-     * Initializes the md5 attribute
-     */
-    private function initMD5()
-    {
-        $this->filemd5 = md5_file(self::ATTACHMENT_DIR . $this->filename);
-    }
-
-    /**
      * initMimeType
      *
      * Initializes the mime type attribute
      */
-    private function initMimeType()
-    {
+    public function initMimeType() {
         switch ($this->part->type) {
             case self::TYPE_TEXT:
                 $mime_type = 'TEXT';

@@ -6,7 +6,7 @@ use BeanFactory;
 use Exception;
 use Email;
 use KREST\ForbiddenException;
-use KREST\NotFoundException;
+use SpiceCRM\KREST\NotFoundException;
 use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
 use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachmentHandler;
@@ -29,7 +29,7 @@ class EmailsKRESTController
      */
     public function getEmail($req, $res, $args) {
         $postBody = $req->getParsedBody();
-        $moduleHandler = new \KRESTModuleHandler();
+        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
         $result = [];
 
         global $db;
@@ -315,7 +315,7 @@ class EmailsKRESTController
         $email->convertMsgToEmail($email->id, $postBody['beanModule'], $postBody['beanId']);
         $email->save();
 
-        $KRESTModuleHandler = new \KRESTModuleHandler();
+        $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
 
         return $res->write(json_encode($KRESTModuleHandler->get_bean_detail('Emails', $email->id, null)));
     }

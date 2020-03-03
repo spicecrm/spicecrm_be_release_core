@@ -1,7 +1,7 @@
 <?php
-require_once('KREST/handlers/module.php');
+// require_once('KREST/handlers/ModuleHandler.php');
 
-$KRESTModuleHandler = new KRESTModuleHandler($app);
+$KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($app);
 
 $app->get('module/Users/{id}/signature', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
     global $db, $current_user;

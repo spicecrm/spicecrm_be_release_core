@@ -202,6 +202,15 @@ $dictionary['User'] = array(
             'source' => 'non-db',
             'vname' => 'LBL_ACCOUNTS'
         ),
+        'projects' => array(
+            'name' => 'projects',
+            'type' => 'link',
+            'relationship' => 'projects_users',
+            'module' => 'Projects',
+            'bean_name' => 'Project',
+            'source' => 'non-db',
+            'vname' => 'LBL_PROJECTS'
+        ),
         'opportunity_role' => array(
             'name' => 'opportunity_role',
             'type' => 'enum',
@@ -491,6 +500,58 @@ $dictionary['User'] = array(
             'source' => 'non-db',
             'vname' => 'LBL_MEETINGS'
         ),
+        'activity_accept_status' => array(
+            'name' => 'activity_accept_status',
+            'type' => 'enum',
+            'source' => 'non-db',
+            'vname' => 'LBL_ACTIVITY_ACCEPT_STATUS',
+            'options' => 'dom_meeting_accept_status',
+            'comment' => 'non db field retirved from the relationship to the meeting call etc'
+        ),
+        // CR1000356
+        'meeting_user_status_accept' => array(
+            'name'   => 'meeting_user_status_accept',
+            'vname'  => 'LBL_USER_STATUS_ACCEPT',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'meetings_users_status_accept',
+        ),
+        'meeting_user_status_decline' => array(
+            'name'   => 'meeting_status_decline',
+            'vname'  => 'LBL_USER_STATUS_DECLINE',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'meetings_users_status_decline',
+        ),
+        'meeting_user_status_tentative' => array(
+            'name'   => 'meeting_user_status_tentative',
+            'vname'  => 'LBL_USER_STATUS_TENTATIVE',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'meetings_users_status_tentative',
+        ),
+        'call_user_status_accept' => array(
+            'name'   => 'call_user_status_accept',
+            'vname'  => 'LBL_USER_STATUS_ACCEPT',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'calls_users_status_accept',
+        ),
+        'call_user_status_decline' => array(
+            'name'   => 'call_user_status_decline',
+            'vname'  => 'LBL_USER_STATUS_DECLINE',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'calls_users_status_decline',
+        ),
+        'call_user_status_tentative' => array(
+            'name'   => 'call_user_status_tentative',
+            'vname'  => 'LBL_USER_STATUS_TENTATIVE',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'calls_users_status_tentative',
+        ),
+
         'tasks' => array(
             'name' => 'tasks',
             'type' => 'link',
@@ -907,10 +968,45 @@ if (file_exists('modules/ServiceQueues/ServiceQueue.php')) {
         'vname' => 'LBL_SERVICEQUEUES',
         'name' => 'servicequeues',
         'type' => 'link',
-        'module_name' => 'ServiceQueues',
+        'module' => 'ServiceQueues',
         'bean_name' => 'ServiceQueue',
         'relationship' => 'servicequeues_users',
         'source' => 'non-db'
     );
 
 }
+// CR1000333
+if (file_exists('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')) {
+    $dictionary['User']['fields']['systemdeploymentreleases'] = array(
+        'vname' => 'LBL_SYSTEMDEPLOYMENTRELEASES',
+        'name' => 'systemdeploymentreleases',
+        'type' => 'link',
+        'module' => 'SystemDeploymentReleases',
+        'bean_name' => 'SystemDeploymentRelease',
+        'relationship' => 'systemdeploymentreleases_users',
+        'source' => 'non-db'
+    );
+}
+if (file_exists('modules/SystemDeploymentCRs/SystemDeploymentCR.php')) {
+    $dictionary['User']['fields']['cr_user_role'] = [
+        'vname' => 'LBL_ROLE',
+        'name' => 'cr_user_role',
+        'type' => 'multienum',
+        'options' => 'cruser_role_dom',
+        'source' => 'non-db',
+        'comment' => 'representation of user_role column in join table systemdeploymentcrs_users'
+    ];
+    $dictionary['User']['fields']['systemdeploymentcrs'] = [
+        'name' => 'systemdeploymentcrs',
+        'type' => 'link',
+        'relationship' => 'systemdeploymentcrs_users',
+        'source' => 'non-db',
+        'vname' => 'LBL_SYSTEMDEPLOYMENTCRS',
+        'module' => 'SystemDeploymentCRs',
+        'default' => false,
+        'comment' => '',
+    ];
+
+}
+
+

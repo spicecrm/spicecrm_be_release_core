@@ -59,7 +59,7 @@ $dictionary['ProjectWBS'] = array(
             'link_type' => 'one',
             'side' => 'right',
             'source' => 'non-db',
-            'vname' => 'LBL_PROJECTS_PROJECTWBSS_LINK',
+            'vname' => 'LBL_PROJECTS',
         ),
         'parent_id' => array (
             'name' => 'parent_id',
@@ -133,7 +133,15 @@ $dictionary['ProjectWBS'] = array(
             'relationship' => 'projectwbs_systemdeploymentcrs',
             'source'=>'non-db',
 //            'side' => 'right',
-        )
+        ),
+        'scrumuserstories' => array(
+            'name' => 'scrumuserstories',
+            'type' => 'link',
+            'relationship' => 'projectwbs_scrumuserstories',
+            'rname' => 'name',
+            'source' => 'non-db',
+            'module' => 'ScrumUserStories'
+        ),
 
     ),
     'relationships' => array(

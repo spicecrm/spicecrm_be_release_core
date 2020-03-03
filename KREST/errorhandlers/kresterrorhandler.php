@@ -4,7 +4,7 @@
  * each thrown Exception is catched here and is available in $exception
  */
 
-require_once 'KREST/handlers/exceptionClasses.php';
+require_once 'KREST/Exception.php';
 
 $c = $app->getContainer();
 
@@ -19,7 +19,7 @@ $c['errorHandler'] = $c['phpErrorHandler'] = function( $container ) {
 
 $c['notFoundHandler'] = function ( $container ) {
     return function( $request, $response ) {
-        return handleErrorResponse(new KREST\NotFoundException());
+        return handleErrorResponse(new \SpiceCRM\KREST\NotFoundException());
     };
 };
 
@@ -43,10 +43,10 @@ function outputError( $exception ) {
 
     if ( is_object( $exception )) {
 
-        if ( is_a( $exception, 'KREST\Exception' ) ) {
+        if ( is_a( $exception, 'SpiceCRM\KREST\Exception' ) ) {
             if ( $exception->isFatal() ) $GLOBALS['log']->fatal( $exception->getMessageToLog() . ' in ' . $exception->getFile() . ':' . $exception->getLine() );
             $responseData = $exception->getResponseData();
-            if ( get_class( $exception ) === 'KREST\Exception' ) {
+            if ( get_class( $exception ) === 'SpiceCRM\KREST\Exception' ) {
                 $responseData['line'] = $exception->getLine();
                 $responseData['file'] = $exception->getFile();
                 $responseData['trace'] = $exception->getTrace();
@@ -84,10 +84,10 @@ function handleErrorResponse($exception) {
 
     if ( is_object( $exception )) {
 
-        if ( is_a( $exception, 'KREST\Exception' ) ) {
+        if ( is_a( $exception, 'SpiceCRM\KREST\Exception' ) ) {
             if ( $exception->isFatal() ) $GLOBALS['log']->fatal( $exception->getMessageToLog() . ' in ' . $exception->getFile() . ':' . $exception->getLine() );
             $responseData = $exception->getResponseData();
-            if ( get_class( $exception ) === 'KREST\Exception' ) {
+            if ( get_class( $exception ) === 'SpiceCRM\KREST\Exception' ) {
                 $responseData['line'] = $exception->getLine();
                 $responseData['file'] = $exception->getFile();
                 $responseData['trace'] = $exception->getTrace();
@@ -115,15 +115,11 @@ function handleErrorResponse($exception) {
 
 }
 
-
-
-
-
 $app->add( function( $request, $response, $next ) {
     try {
         $response = $next( $request, $response );
     }
-    catch( KREST\Exception $exception ) {
+    catch( SpiceCRM\KREST\Exception $exception ) {
         return handleErrorResponse($exception);
     }
     catch( Exception $exception ) {

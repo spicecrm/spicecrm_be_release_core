@@ -1,14 +1,14 @@
 <?php
 namespace SpiceCRM\modules\EmailAddresses;
 
-require_once('KREST/handlers/module.php');
+// require_once('KREST/handlers/ModuleHandler.php');
 
 class EmailAddressRestHandler
 {
     public static function searchBeans($params) {
         global $db;
 
-        $moduleHandler = new \KRESTModuleHandler();
+        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
 
         $results = [];
 

@@ -70,7 +70,6 @@ class EmailAddress extends SugarEmailAddress
         $emailAddresses = [];
 
         // get an FTS manager
-//        require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
         $ftsManager = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
 
         // determine the modules
@@ -89,8 +88,7 @@ class EmailAddress extends SugarEmailAddress
                     $emailFields[] = $field['indexfieldname'];
                 }
             }
-
-            $moduleResults = $ftsManager->getGlobalSearchResults($module['module'], $searchterm, 0, [], [], $emailFields);
+            $moduleResults = $ftsManager->getGlobalSearchResults($module['module'], $searchterm, null, [], [], [], $emailFields);
             foreach ($moduleResults[$module['module']]['hits'] as $hit) {
                 $foundemailaddress = [];
                 foreach ($emailFields as $emailField) {

@@ -523,6 +523,13 @@ $dictionary['Email'] = [
             'vname'   => 'LBL_RECIPIENT_ADDRESSES',
             'comment' => 'array with recipient addresses',
         ],
+        'external_id' => [
+            'name'    => 'external_id',
+            'vname'   => 'LBL_EXTERNALID',
+            'type'    => 'varchar',
+            'len'     => 160,
+            'comment' => 'Email ID for external app API',
+        ],
         /* end relationship collections */
 
     ], /* end fields() array */

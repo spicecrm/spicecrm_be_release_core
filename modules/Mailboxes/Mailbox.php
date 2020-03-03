@@ -55,6 +55,11 @@ class Mailbox extends SugarBean {
     const LOG_ERROR = 1;
     const LOG_DEBUG = 2;
 
+    const TRANSPORT_EWS      = 'ews';
+    const TRANSPORT_IMAP     = 'imap';
+    const TRANSPORT_MAILGUN  = 'mailgun';
+    const TRANSPORT_SENDGRID = 'sendgrid';
+
     /**
      * Mailbox constructor.
      */
@@ -205,7 +210,7 @@ class Mailbox extends SugarBean {
      * @return void
      */
     private function initializeSettings() {
-        $settings = json_decode(html_entity_decode($this->settings));
+        $settings = json_decode(html_entity_decode($this->settings, ENT_QUOTES));
 
         foreach ($settings as $key => $value) {
             $this->$key = $value;
@@ -217,7 +222,8 @@ class Mailbox extends SugarBean {
      *
      * Returns the default system mailbox
      *
-     * @return Mailbox
+     * @return bool|Mailbox
+     * @throws Exception
      */
     public static function getDefaultMailbox()
     {// todo errors when no default mailbox available
@@ -395,5 +401,47 @@ class Mailbox extends SugarBean {
             return 'email';
         }
         return '';
+    }
+
+    /**
+     * Checks if a mailbox uses EWS and if the EWS push notifications are turned on.
+     *
+     * @return bool
+     */
+    public function usesEwsNotifications() {
+        if ($this->transport != self::TRANSPORT_EWS) {
+            return false;
+        }
+
+        if (!isset($this->ews_push)) {
+            return false;
+        }
+
+        if ($this->ews_push == false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if a mailbox has non empty EWS subscription data stored in the settings.
+     *
+     * @return bool
+     */
+    public function hasEwsSubscription() {
+        if (!$this->usesEwsNotifications()) {
+            return false;
+        }
+
+        if (!isset($this->ews_subscriptionid) || !isset($this->ews_watermark)) {
+            return false;
+        }
+
+        if ($this->ews_subscription == '' || $this->ews_watermark == '') {
+            return false;
+        }
+
+        return true;
     }
 }

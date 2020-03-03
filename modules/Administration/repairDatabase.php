@@ -73,10 +73,12 @@ if (is_admin($current_user) || isset ($from_sync_client) || is_admin_for_any_mod
 				array(
 					"\n",
 					'&#039;',
+                    '&quot;'
 				),
 				array(
 					'',
 					"'",
+                    '"'
 				),
 				preg_replace('#(/\*.+?\*/\n*)#', '', $_POST['sql'])
 			);

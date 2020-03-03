@@ -1103,6 +1103,7 @@ class Email extends SugarBean
     function save($check_notify = false, $fts_index_bean = true)
     {
         global $current_user;
+        global $timedate;
 
         if ($this->isDuplicate) {
             $GLOBALS['log']->debug("EMAIL - tried to save a duplicate Email record");
@@ -1143,6 +1144,10 @@ class Email extends SugarBean
             $this->raw_source = SugarCleaner::cleanHtml($this->raw_source, true);
             $this->saveEmailText();
             $this->saveEmailAddresses();
+            // disable cache! timedate->now() return null at this time
+            $timedate->allow_cache = false;
+            $this->date_sent = $timedate->now();
+
 
             $GLOBALS['log']->debug('-------------------------------> Email called save()');
 
@@ -1520,7 +1525,7 @@ class Email extends SugarBean
 
         // check for embedded files, if they are attached embed them as base64 ref
         $matches = [];
-        if(preg_match_all('/src\s*=\s*"(.+?)"/', $this->body, $matches)){
+        if(preg_match_all('/src\s*=\s*"(.+?)"/', html_entity_decode($this->body), $matches)){
             $attachments = \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsForBean('Emails', $this->id, 100, false);
             foreach($attachments as $attachment){
                 foreach($matches[1] as $match){
@@ -2549,7 +2554,9 @@ class Email extends SugarBean
     {
         if ($this->mailbox_id) {
             $mailbox = BeanFactory::getBean('Mailboxes', $this->mailbox_id);
-        } else {
+        }
+
+        if(!$mailbox) {
             try {
                 $mailbox = Mailbox::getDefaultMailbox();
                 $this->mailbox_id = $mailbox->id;
@@ -3538,14 +3545,14 @@ eoq;
 
         // todo add recipient_addresses
         // that would require saving the test email
-        $testEmail->from_addr = $mailbox->imap_pop3_username;
+        $testEmail->from_addr = $mailbox->imap_pop3_username ?? $mailbox->ews_username;
         if ($mailbox->imap_pop3_display_name != '') {
             $testEmail->from_addr = $mailbox->imap_pop3_display_name . ' <' . $testEmail->from_addr . '>';
         }
 
         $testEmail->to_addrs = $testEmailAddress;
-        $testEmail->name = "Test Email";
-        $testEmail->body = "<h1>Lorem ipsum</h1><p>Dolor sit amet</p>";
+        $testEmail->name = "Connection Test Email from SpiceCRM";
+        $testEmail->body = "<p>This is a machine generated Test Email</p>";
 
         return $testEmail;
     }
@@ -3683,7 +3690,7 @@ eoq;
                 );
             } else { // just email
                 $emailAddress['name'] = null;
-                $emailAddress['email'] = $item;
+                $emailAddress['email'] = trim($item);
             }
 
             array_push($email_array, $emailAddress);
@@ -3718,7 +3725,8 @@ eoq;
                 continue;
             }
 
-            $items = $this->extractEmailAddress(explode(', ', $this->$address_field));
+            $replace = [',', ';'];
+            $items = $this->extractEmailAddress(explode($replace, $this->$address_field));
 
             foreach ($items as $item) {
                 $address = [
@@ -4009,6 +4017,7 @@ eoq;
         // process the message
         $this->name       = $message->properties['subject'];
         try {
+            set_time_limit(60);
             $this->body = utf8_encode($message->getBodyHTML());
         } catch (\Exception $e) {
             try {
@@ -4019,8 +4028,10 @@ eoq;
             }
         }
         $this->message_id = $message->properties['internet_message_id'];
-        $dateSent  = $message->properties['message_delivery_time'] ?? $message->properties['client_submit_time']
-            ?? $message->properties['last_modification_time'] ?? $message->properties['creation_time'] ?? null;
+        $dateSent  = isset($message->properties['message_delivery_time']) ? $message->properties['message_delivery_time'] :
+            (isset($message->properties['client_submit_time']) ? $message->properties['client_submit_time'] :
+                (isset($message->properties['last_modification_time']) ? $message->properties['last_modification_time'] :
+                    (isset($message->properties['creation_time']) ? $message->properties['creation_time'] : null)));
         $this->date_sent  = date('Y-m-d H:i:s', $dateSent);
         $this->from_addr  = $message->getSender();
         foreach ($message->getRecipients() as $recipient) {

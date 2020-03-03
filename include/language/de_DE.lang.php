@@ -218,10 +218,20 @@ $app_list_strings = array(
         'speaker' => 'Sprecher',
         'moderator' => 'Moderator',
     ),
+    'userabsences_status_dom' =>        array(
+        '' => '',
+        'created' => 'Angelegt',
+        'submitted' => 'Gesendet',
+        'approved' => 'Genehmigt',
+        'rejected' => 'Abgelehnt',
+        'revoked' => 'Storniert',
+        'cancel_requested' => 'Stornierung angefordert'
+    ),
     'userabsences_type_dom' =>        array(
         '' => '',
         'Krankenstand' => 'Krankenstand',
         'Urlaub' => 'Urlaub',
+        'HomeOffice' => 'Home Office'
     ),
     //e.g. en espaï¿½ol 'Apparel'=>'Ropa',
     'industry_dom' => array(
@@ -1306,10 +1316,17 @@ $app_list_strings = array(
             'donothing' => 'Nichts machen'
         ),
 
+    'salesdoc_parent_type_display' => array(
+        'Opportunities' => 'Opportunities',
+        'ServiceOrders' => 'Service Aufträge',
+        'Projects' => 'Projekte ',
+    ),
+
     'salesdoc_doccategories' => array(
         'QT' => 'Angebot',
         'OR' => 'Auftrag',
-        'IV' => 'Rechnung'
+        'IV' => 'Rechnung',
+        'CT' => 'Vertrag'
     ),
     'salesdoc_docparties' => array(
         'I' => 'Person',
@@ -3026,6 +3043,9 @@ $app_strings = array(
 
     /* Questionnaires */
 
+    'LBL_QUESTIONNAIREPARTICIPATIONS' => 'Fragebogen-Teilnahmen',
+    'LBL_QUESTIONNAIREPARTICIPATION' => 'Fragebogen-Teilnahme',
+    'LBL_QUESTIONNAIREINTERPRETATION_ID' => 'Fragebogen-Teilnahme-ID',
     'LBL_QUESTIONNAIREINTERPRETATIONS' => 'Fragebogen-Interpretationen',
     'LBL_QUESTIONNAIREINTERPRETATION' => 'Fragebogen-Interpretation',
     'LBL_QUESTIONSET_PREVIEW' => 'Fragegruppe-Vorschau',
@@ -3274,6 +3294,29 @@ if (file_exists('modules/Workflows/Workflow.php')) {
     $app_list_strings['moduleListSingular']['WorkflowSystemActions'] = 'Workflow Systemaktion';
     $app_list_strings['moduleList']['WorkflowTaskDecisions'] = 'Workflow Aufgabe Entscheidungen';
     $app_list_strings['moduleListSingular']['WorkflowTaskDecisions'] = 'Workflow Aufgabe Entscheidung';
+}
+
+
+if (file_exists('modules/SalesPlanningVersions/SalesPlanningVersion.php')) {
+    $app_list_strings['moduleList']['SalesPlanningContents'] = 'Sales Planungs Inhalte';
+    $app_list_strings['moduleList']['SalesPlanningContentFields'] = 'Sales Planungs Inhalts Felder';
+    $app_list_strings['moduleList']['SalesPlanningContentData'] = 'Sales Planungs Inhalts Daten';
+    $app_list_strings['moduleList']['SalesPlanningCharacteristics'] = 'Sales Planungs Merkmale';
+    $app_list_strings['moduleList']['SalesPlanningCharacteristicValues'] = 'Sales Planungs Merkmalswerte';
+    $app_list_strings['moduleList']['SalesPlanningNodes'] = 'Sales Planungs Knoten';
+    $app_list_strings['moduleList']['SalesPlanningScopeSers'] = 'Sales Planungs Umfänge';
+    $app_list_strings['moduleList']['SalesPlanningTerritories'] = 'Sales Planungs Gebiete';
+    $app_list_strings['moduleList']['SalesPlanningVersions'] = 'Sales Planungs Versionen';
+
+    $app_list_strings['moduleListSingular']['SalesPlanningContents'] = 'Sales Planungs Inhalt';
+    $app_list_strings['moduleListSingular']['SalesPlanningContentFields'] = 'Sales Planungs Inhalts Feld';
+    $app_list_strings['moduleListSingular']['SalesPlanningContentData'] = 'Sales Planungs Inhalts Daten';
+    $app_list_strings['moduleListSingular']['SalesPlanningCharacteristics'] = 'Sales Planungs Merkmal';
+    $app_list_strings['moduleListSingular']['SalesPlanningCharacteristicValues'] = 'Sales Planungs Merkmalswert';
+    $app_list_strings['moduleListSingular']['SalesPlanningNodes'] = 'Sales Planungs Knoten';
+    $app_list_strings['moduleListSingular']['SalesPlanningScopeSers'] = 'Sales Planungs Umfang';
+    $app_list_strings['moduleListSingular']['SalesPlanningTerritories'] = 'Sales Planungs Gebiet';
+    $app_list_strings['moduleListSingular']['SalesPlanningVersions'] = 'Sales Planungs Versione';
 }
 
 if (file_exists('modules/Library/Library.php')) {
@@ -4222,11 +4265,38 @@ $app_list_strings['spiceaclobjects_types_dom'] = [
     //'5' => 'exclude (profile)'
 ];
 
+// CR1000333
+$app_list_strings['cruser_role_dom'] = [
+    'developer' => 'Entwickler',
+    'tester' => 'Tester',
+];
+
+$app_list_strings['crstatus_dom'] = [
+    '0' => 'angelegt',
+    '1' => 'in Arbeit',
+    '2' => 'unit tested',
+    '3' => 'integration test',
+    '4' => 'abgeschlossen', // was 3 before CR1000333
+    '5' => 'gestrichen / vertagt' // was 4 before CR1000333
+];
+
+$app_list_strings['crtype_dom'] = [
+    '0' => 'bug',
+    '1' => 'feature request',
+    '2' => 'change request',
+    '3' => 'hotfix'
+];
+
+// CR1000333
 $app_list_strings['deploymentrelease_status_dom'] = [
-  ''         => '',
-  'planned'  => 'planned',
-  'released' => 'released',
-  'canceled' => 'canceled',
+    ''         => '',
+    'plan'  => 'planen', // value was planned before CR1000333
+    'develop'  => 'entwickeln',
+    'prepare'    => 'vorbereiten',
+    'test'  => 'testen',
+    'release' => 'releasen',
+    'closed completed' => 'abgeschlossen', // value was released before CR1000333
+    'closed canceled' => 'gestrichen',
 ];
 
 $app_list_strings['product_status_dom'] = [
@@ -4312,4 +4382,19 @@ $app_list_strings['sales_planning_group_actions_dom'] = array(
 $app_list_strings['costcenter_status_dom'] = array(
     'active' => 'Aktiv',
     'inactive' => 'Inaktiv'
+);
+
+
+
+/** KReporter **/
+$app_list_strings['kreportstatus'] = array(
+    '1' => 'draft',
+    '2' => 'limited release',
+    '3' => 'general release'
+);
+
+$app_list_strings['report_type_dom'] = array(
+    'standard' => 'Standard',
+    'admin' => 'Admin',
+    'system' => 'System'
 );

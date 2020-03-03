@@ -168,7 +168,6 @@ if(file_exists('custom/application/Ext/TableDictionary/tabledictionary.ext.php')
 if(file_exists('modules/SalesDocs/dictionarydata/SalesDocs.dictionary.php')){
     include('modules/SalesDocs/dictionarydata/SalesDocs.dictionary.php');
 }
-
 */
 
 $metadatahandle = opendir('./metadata');

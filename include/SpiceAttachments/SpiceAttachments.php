@@ -5,14 +5,16 @@ namespace SpiceCRM\includes\SpiceAttachments;
 use Hfig\MAPI\Message\Attachment;
 use Ramsey\Uuid\Uuid;
 use Slim\Http\UploadedFile;
+use SpiceCRM\modules\Mailboxes\Handlers\EwsAttachment;
 use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachment;
 
 class SpiceAttachments {
     const UPLOAD_DESTINATION = 'upload://';
 
-    public static function getAttachmentsForBean($beanName, $beanId, $lastN = 10, $json_encode = true) {
+    public static function getAttachmentsForBean($beanName, $beanId, $lastN = 25, $json_encode = true) {
         global $current_user, $db, $beanFiles, $beanList;
         $attachments = array();
+
 
         if ($GLOBALS['db']->dbType == 'mssql') {
             $attachmentsRes = $db->query("SELECT TOP $lastN qn.*,u.user_name FROM spiceattachments AS qn 
@@ -39,9 +41,7 @@ class SpiceAttachments {
                     'filemd5'        => $thisAttachment['filemd5'],
                     'file_mime_type' => $thisAttachment['file_mime_type'],
                     'thumbnail'      => $thisAttachment['thumbnail'],
-                    'external_id'    => $thisAttachment['external_id'],
-                    'url'            => "index.php?module=SpiceThemeController&action=attachment_download&id="
-                                        . $thisAttachment['id'],
+                    'external_id'    => $thisAttachment['external_id']
                 ];
             }
         }
@@ -49,6 +49,12 @@ class SpiceAttachments {
             return json_encode($attachments);
         else
             return $attachments;
+    }
+
+    public static function getAttachmentsCount($beanName, $beanId){
+        global $db;
+        $res = $db->fetchByAssoc($db->query("SELECT count(id) attachmentcount FROM spiceattachments WHERE bean_id='{$beanId}' AND bean_type='{$beanName}' AND deleted = 0"));
+        return (int) $res['attachmentcount'];
     }
 
     public static function getAttachmentsForBeanHashFiles($beanName, $beanId, $lastN = 10) {
@@ -81,12 +87,20 @@ class SpiceAttachments {
         return json_encode($attachments);
     }
 
+    /**
+     * @deprecated
+     *
+     * @param int $lastN
+     * @return mixed
+     */
+    /*
     public static function getAttachmentsCount($lastN = 10) {
         global $current_user, $db;
         $attachmentsRec = $db->fetchByAssoc($db->query("SELECT count(*) AS noteCount FROM spiceattachments WHERE bean_id='{$_REQUEST['record']}' AND bean_type='{$_REQUEST['module']}'  AND deleted = 0"));
 
         return $attachmentsRec['noteCount'];
     }
+    */
 
     public static function saveAttachment($beanName, $beanId, $post) {
         global $current_user, $db;
@@ -256,6 +270,35 @@ class SpiceAttachments {
             'filename'       => $payload->filename,
             'filesize'       => $payload->filesize,
             'file_mime_type' => $payload->file_mime_type,
+            'thumbnail'      => $thumbnail,
+            'url'            => "index.php?module=SpiceThemeController&action=attachment_download&id=" . $guid
+        ];
+        return json_encode($attachments);
+    }
+
+    public static function saveEwsEmailAttachment($beanName, $beanId, EwsAttachment $attachment) {
+        global $current_user, $db;
+        $guid = create_guid();
+
+        // if we have an image create a thumbnail
+        $thumbnail = self::createThumbnail($attachment->filemd5, $attachment->mime_type);
+
+        $sql = "INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, 
+                text, thumbnail, deleted, file_mime_type)
+                VALUES ('{$guid}', '{$beanName}', '{$beanId}', '{$current_user->id}', '" . gmdate('Y-m-d H:i:s') . "',
+                        '{$attachment->filename}', '{$attachment->filesize}', '{$attachment->filemd5}', '{$_POST['text']}', 
+                        '{$thumbnail}', 0, '{$attachment->mime_type}')";
+        $db->query($sql);
+
+        $attachments[] = [
+            'id'             => $guid,
+            'user_id'        => $current_user->id,
+            'user_name'      => $current_user->user_name,
+            'date'           => $GLOBALS['timedate']->to_display_date_time(gmdate('Y-m-d H:i:s')),
+            'text'           => nl2br($_POST['text']),
+            'filename'       => $attachment->filename,
+            'filesize'       => $attachment->filesize,
+            'file_mime_type' => $attachment->file_mime_type,
             'thumbnail'      => $thumbnail,
             'url'            => "index.php?module=SpiceThemeController&action=attachment_download&id=" . $guid
         ];

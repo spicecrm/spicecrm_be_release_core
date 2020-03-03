@@ -85,6 +85,9 @@ $app->group('/spiceui', function () use ($app, $uiRestHandler) {
             });
             $app->post('', 'SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIFieldsetsController::setFieldSets');
         });
+        $app->group('/actionsets', function () use ($app, $uiRestHandler) {
+            $app->post('', 'SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIActionsetsController::setActionSets');
+        });
         $app->get('/fieldsetalreadyexists', function ($req, $res, $args) use ($app, $uiRestHandler) {
             $getParams = $req->getParams();
             echo json_encode($uiRestHandler->checkFieldSetAlreadyExists($getParams));

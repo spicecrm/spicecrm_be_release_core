@@ -725,14 +725,12 @@ class SugarView
                     //require_once('include/SpiceFavorites/SpiceFavorites.php');
                     //$ss->assign('iafavorite', SpiceFavorites::get_favorite($this->bean->module_dir, $this->bean->id));
                     // handle the Reminder
-                    require_once('include/SpiceReminders/SpiceReminders.php');
-                    $ss->assign('iareminder', SpiceReminders::getReminder($this->bean->id));
+                    $ss->assign('iareminder', \SpiceCRM\includes\SpiceReminders\SpiceReminders::getReminder($this->bean->id));
                     // handle the Quicknotes
                     require_once('include/SpiceNotes/SpiceNotes.php');
                     $ss->assign('iaquicknotescount', SpiceNotes::getQuickNotesCount($this->bean->module_dir, $this->bean->id));
                     // handle the Attachments
-                    require_once('include/SpiceAttachments/SpiceAttachments.php');
-                    $ss->assign('iaattachmentscount', \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsCount());
+                    $ss->assign('iaattachmentscount', \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsCount($this->bean->name, $this->bean->id));
                 }
                 require_once('modules/SpiceThemeController/SpiceThemeController.php');
                 $ss->assign('footerToggled', SpiceThemeController::getToggleFooterline());

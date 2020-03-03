@@ -160,6 +160,14 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'vname' => 'LBL_LEVEL_OF_INFLUENCE',
                 'options' => 'opportunity_relationship_buying_center_dom',
             ),
+            'activity_accept_status' => array(
+                'name' => 'activity_accept_status',
+                'type' => 'enum',
+                'source' => 'non-db',
+                'vname' => 'LBL_ACTIVITY_ACCEPT_STATUS',
+                'options' => 'dom_meeting_accept_status',
+                'comment' => 'non db field retirved from the relationship to the meeting call etc'
+            ),
             'reports_to_id' => array(
                 'name' => 'reports_to_id',
                 'vname' => 'LBL_REPORTS_TO_ID',

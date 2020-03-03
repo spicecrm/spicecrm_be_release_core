@@ -164,7 +164,7 @@ class SugarBean
     var $update_modified_by = true;
 
     /**
-     * This allows for seed data to be created without using the current uesr to set the id.
+     * This allows for seed data to be created without using the current user to set the id.
      * This should be replaced by altering the current user before the call to save.
      *
      * @var unknown_type
@@ -284,6 +284,11 @@ class SugarBean
      * save data changes to be able to look up audited fields in after_save logic
      */
     public $auditDataChanges = array();
+
+    /**
+     * In case this bean is a clone: This informs about the GUID of the template bean.
+     */
+    var $newFromTemplate = '';
 
     /**
      * Constructor for the bean, it performs following tasks:
@@ -1448,6 +1453,13 @@ class SugarBean
      */
     public function save($check_notify = false, $fts_index_bean = true)
     {
+
+        if ( isset( $this->newFromTemplate{0} ) ) {
+            $GLOBALS['cloningData'] = [ 'count' => 1, 'cloned' => [[ 'module' => $this->module_name, 'id' => $this->newFromTemplate, 'bean' => &$this, 'cloneId' => $this->id ]], 'custom' => null ];
+            $templateBean = BeanFactory::getBean( $this->module_name, $this->newFromTemplate );
+            $templateBean->cloneBeansOfAllLinks( $this );
+        }
+
         $this->in_save = true;
         // cn: SECURITY - strip XSS potential vectors
         $this->cleanBean();
@@ -1522,6 +1534,7 @@ class SugarBean
         // call the custom business logic
         $custom_logic_arguments['check_notify'] = $check_notify;
 
+        $this->save_or_delete_images();
 
         $this->call_custom_logic("before_save", $custom_logic_arguments);
         unset($custom_logic_arguments);
@@ -3339,6 +3352,29 @@ class SugarBean
     }
 
     /**
+     * Changes the select expression of the given query to be an aggregate function ona specific field
+     *
+     * @param $query the query
+     * @param $aggregate_field the aggregate field
+     * @param $aggregate_function the aggergate function mus be a parseable SQL function
+     * @return string
+     */
+    function create_list_aggregate_query($query, $aggregate_field, $aggregate_function)
+    {
+        // remove the 'order by' clause which is expected to be at the end of the query
+        $pattern = '/\sORDER BY.*/is';  // ignores the case
+        $replacement = '';
+        $query = preg_replace($pattern, $replacement, $query);
+        // change the select expression to 'count(*)'
+        $pattern = '/SELECT(.*?)(\s){1}FROM(\s){1}/is';  // ignores the case
+        $replacement = "SELECT {$aggregate_function}('{$aggregate_field}') c FROM ";
+
+        $modified_select_query = preg_replace($pattern, $replacement, $query, 1) . " GROUP BY $aggregate_field";
+
+        return $modified_select_query;
+    }
+
+    /**
      * This is designed to be overridden and add specific fields to each record.
      * This allows the generic query to fill in the major fields, and then targeted
      * queries to get related fields and add them to the record.  The contact's
@@ -3347,9 +3383,7 @@ class SugarBean
      */
     function fill_in_additional_list_fields()
     {
-        if (!empty($this->field_defs['parent_name']) && empty($this->parent_name)) {
-            $this->fill_in_additional_parent_fields();
-        }
+        $this->fill_in_additional_parent_fields();
     }
 
     function hasCustomFields()
@@ -3812,9 +3846,9 @@ class SugarBean
         if (!empty($this->field_defs['modified_user_id']) && !empty($this->modified_user_id))
             $this->modified_by_name = get_assigned_user_name($this->modified_user_id);
 
-        if (!empty($this->field_defs['parent_name'])) {
-            $this->fill_in_additional_parent_fields();
-        }
+        $this->fill_in_images();
+
+        $this->fill_in_additional_parent_fields();
     }
 
     /**
@@ -3823,20 +3857,14 @@ class SugarBean
      */
     function fill_in_additional_parent_fields()
     {
+        // loop through the fields definition in the vardefs file
+        foreach ($this->field_defs as $key => $value) {
+            // check if the parent field is not set yet and verify the necessary values for the retrieve process of the parent field.
+            if ($value['type'] != 'parent' || !empty($this->{$value['name']}) || empty($value['id_name']) ||
+                empty($value['type_name']) || empty($this->{$value['id_name']}) || empty($this->{$value['type_name']})) continue;
 
-        if (!empty($this->parent_id) && !empty($this->last_parent_id) && $this->last_parent_id == $this->parent_id) {
-            return false;
-        } else {
-            $this->parent_name = '';
-        }
-        if (!empty($this->parent_type)) {
-            $this->last_parent_id = $this->parent_id;
-            $this->getRelatedFields($this->parent_type, $this->parent_id, array('name' => 'parent_name', 'document_name' => 'parent_document_name', 'first_name' => 'parent_first_name', 'last_name' => 'parent_last_name'));
-            if (!empty($this->parent_first_name) || !empty($this->parent_last_name)) {
-                $this->parent_name = $GLOBALS['locale']->getLocaleFormattedName($this->parent_first_name, $this->parent_last_name);
-            } else if (!empty($this->parent_document_name)) {
-                $this->parent_name = $this->parent_document_name;
-            }
+            // call getRelatedFields to fill in the parent field and pass the module from the parent type field, the id from the parent id field and the mapping for the name of the parent field
+            $this->getRelatedFields($this->{$value['type_name']}, $this->{$value['id_name']}, ['name' => $value['name']]);
         }
     }
 
@@ -5959,5 +5987,107 @@ class SugarBean
     public function getFrontendUrlEncoded() {
         return urlencode( $this->getFrontendUrl() );
     }
+
+    /**
+     * Iterates over all linked beans of a template bean
+     * and clones them (in case the vardef property 'deepClone' is set).
+     *
+     * @param object $clone
+     */
+    private function cloneBeansOfAllLinks( &$clone )
+    {
+        foreach ( $this->field_defs as $v ) {
+            if ( $v['type'] === 'link' and @$v['deepClone'] === true ) {
+                foreach ( $this->get_linked_beans( $v['name'], $v['module'] ) as $v2 ) {
+                    if ( !$v2->isCloned() ) { # To prevent a recursion: Don´t clone in case this bean has already been cloned.
+                        $v2->cloneLinkedBean( $v['name'], $clone );
+                    } else {
+                        $GLOBALS['log']->error('Bean cloning: A recursion has been prevented ( link: '.$v['name'].' in module '.$this->module_name.', bean to clone: '.$v2->object_name.' '.$v2->id.' ). Check configuration in vardefs for property "deepClone".');
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Clones a linked bean. It also creates the link to the opposite bean.
+     *
+     * @param string $linkName Name of the link.
+     * @param string $oppositeBean The opposite cloned bean where the link is defined.
+     */
+    public function cloneLinkedBean( $linkName, &$oppositeBean )
+    {
+        $clone = clone $this;
+        $clone->id = create_guid();
+        $GLOBALS['cloningData']['cloned'][] = [ 'module' => $clone->module_name, 'id' => $this->id, 'cloneId' => $clone->id, 'clone' => $clone ];
+        $clone->cloningData['count']++;
+        $clone->new_with_id = true;
+        $clone->update_date_entered = true;
+        $clone->date_entered = $GLOBALS['timedate']->nowDb();
+        $clone->onClone();
+        $clone->save();
+
+        $oppositeBean->load_relationship( $linkName );
+        $oppositeBean->{$linkName}->add( $clone->id );
+
+        $this->cloneBeansOfAllLinks( $clone );
+    }
+
+    /**
+     * Has the bean already been cloned??
+     *
+     * @return boolean
+     */
+    public function isCloned()
+    {
+        foreach ( $GLOBALS['cloningData']['cloned'] as $v ) {
+            if ( $this->module_name === $v['module'] and $this->id === $v['id'] ) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Placeholder
+     */
+    public function onClone() { }
+
+    /**
+     * Retrieve images from the file system and fill them into the bean.
+     */
+    private function fill_in_images()
+    {
+        // To look for image fields loop through the fields definition in the vardefs file:
+        foreach ( $this->field_defs as $value ) {
+            if ( $value['type'] !== 'image' ) continue;
+            $filepathWithoutExtension = 'upload/' . $this->module_name . '___' . $this->id . '___' . $value['name'];
+            $files = glob( $filepathWithoutExtension.'.*' );
+            if ( count( $files ) and preg_match( '#\.(.+)$#', $files[0], $matches ) ) {
+                $this->{$value['name']} = $matches[1] . '|' . base64_encode( file_get_contents( $files[0] ) );
+            } else $this->{$value['name']} = null;
+        }
+    }
+
+    /**
+     * Save images from the bean to the file system.
+     */
+    private function save_or_delete_images()
+    {
+        // To look for image fields loop through the fields definition in the vardefs file:
+        foreach ( $this->field_defs as $value ) {
+            if ( $value['type'] !== 'image' or !isset( $this->{$value['name']} )) continue;
+            $filepathWithoutExtension = 'upload/' . $this->module_name . '___' . $this->id . '___' . $value['name'];
+            # An image is to be deleted:
+            if ( $this->{$value['name']} === '' ) {
+                foreach ( glob( $filepathWithoutExtension.'.*' ) as $filepath ) unlink( $filepath );
+            }
+            # A new image is to be saved:
+            if ( preg_match( '#^([^\|]+)\|(.+)$#', $this->{$value['name']}, $matches ) ) {
+                if ( file_put_contents( 'upload/' . $this->module_name . '___' . $this->id . '___' . $value['name'] . '.' . $matches[1], base64_decode( $matches[2] ) ) === false ) {
+                    throw new \SpiceCRM\KREST\Exception('Could not save image.');
+                }
+            }
+        }
+
+}
 
 }

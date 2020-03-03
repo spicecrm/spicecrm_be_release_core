@@ -142,7 +142,7 @@ class LogViewer {
 
         $line = $db->fetchOne( $sql );
         if ( $line === false )
-            throw ( new \KREST\NotFoundException( 'Log line not found.'))->setLookedFor( $lineId );
+            throw ( new \SpiceCRM\KREST\NotFoundException( 'Log line not found.'))->setLookedFor( $lineId );
 
         return $line;
 

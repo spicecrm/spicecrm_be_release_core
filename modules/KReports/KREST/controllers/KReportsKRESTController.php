@@ -31,4 +31,16 @@ class KReportsKRESTController
         while ($row = $db->fetchByAssoc($query)) $list[] = $row;
         return $res->withJson($list);
     }
+
+    /**
+     * load report categories for the ui loadtasks
+     * @return array
+     */
+    public function getReportCategories() {
+        global $db;
+        $list = [];
+        $query = $db->query("SELECT * FROM kreportcategories WHERE deleted <> 1");
+        while ($row = $db->fetchByAssoc($query)) $list[] = $row;
+        return $list;
+    }
 }

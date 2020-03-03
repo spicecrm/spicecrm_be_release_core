@@ -96,7 +96,7 @@ $dictionary['UpgradeHistory'] = array(
                 'name' => 'status',
                 'type' => 'varchar',
                 'len' => '50',
-    		    'comment' => 'The status of the upgrade (ex:  "installed")',
+    		    'comment' => "The status of the upgrade (ex:  'installed')",
         ),
         'version' => array (
                 'name' => 'version',

@@ -825,8 +825,7 @@ class SystemUIRESTHandler
         $return = [];
         $sql = "SELECT * FROM (SELECT * FROM sysuilibs UNION SELECT * FROM sysuicustomlibs) libs ORDER BY libs.rank ASC";
         $res = $this->db->query($sql);
-        while($row = $this->db->fetchByAssoc($res, false))
-        {
+        while ($row = $this->db->fetchByAssoc($res, false)) {
             $return[$row['name']][] = ['loaded' => false, 'src' => $row['src']];
         }
 
@@ -838,8 +837,7 @@ class SystemUIRESTHandler
         $return = [];
         $sql = "SELECT * FROM sysservicecategories ORDER BY keyname ASC, name ASC";
         $res = $this->db->query($sql);
-        while($row = $this->db->fetchByAssoc($res, false))
-        {
+        while ($row = $this->db->fetchByAssoc($res, false)) {
             $return[$row['id']] = $row;
         }
         return $return;
@@ -854,8 +852,7 @@ class SystemUIRESTHandler
                 WHERE IFNULL(parent_id,'') = ''
                 ORDER BY keyname ASC, cat.name ASC";
         $res = $this->db->query($sql);
-        while($row = $this->db->fetchByAssoc($res, false))
-        {
+        while ($row = $this->db->fetchByAssoc($res, false)) {
             $row['level'] = 0;
             $return[] = $this->getServiceCategoryChilds($row);
         }
@@ -867,7 +864,7 @@ class SystemUIRESTHandler
         $sql = "SELECT cat.*, queue.name AS servicequeue_name 
                 FROM sysservicecategories AS cat 
                 LEFT JOIN servicequeues AS queue ON(queue.id = cat.servicequeue_id) 
-                WHERE parent_id = '".$cat['id']."' 
+                WHERE parent_id = '" . $cat['id'] . "' 
                 ORDER BY keyname ASC, cat.name ASC";
         $res = $this->db->query($sql);
         while($row = $this->db->fetchByAssoc($res, false))
@@ -887,16 +884,15 @@ class SystemUIRESTHandler
         //var_dump($tree, $categories);
 
         # start rewriting by looping through the tree...
-        foreach($categories as $cat)
-        {
+        foreach ($categories as $cat) {
             $sql = "INSERT INTO sysservicecategories SET 
-                      id = '".$cat['id']."',
-                      name = '".$cat['name']."',
-                      keyname = '".$cat['keyname']."',
-                      selectable = '".$cat['selectable']."',
-                      favorite = '".$cat['favorite']."',
-                      parent_id = '".$cat['parent_id']."',
-                      servicequeue_id = '".$cat['servicequeue_id']."'";
+                      id = '" . $cat['id'] . "',
+                      name = '" . $cat['name'] . "',
+                      keyname = '" . $cat['keyname'] . "',
+                      selectable = '" . $cat['selectable'] . "',
+                      favorite = '" . $cat['favorite'] . "',
+                      parent_id = '" . $cat['parent_id'] . "',
+                      servicequeue_id = '" . $cat['servicequeue_id'] . "'";
             $this->db->query($sql);
         }
     }
@@ -904,12 +900,10 @@ class SystemUIRESTHandler
     private function flattenOutServiceCategoryTree($tree)
     {
         $cats = [];
-        foreach($tree as $cat)
-        {
+        foreach ($tree as $cat) {
             $cats[] = $cat;
-            if( $cat['categories'] )
-            {
-                $this->flattenOutServiceCategoryChildren($cat['categories'],$cats);
+            if ($cat['categories']) {
+                $this->flattenOutServiceCategoryChildren($cat['categories'], $cats);
             }
         }
         return $cats;
@@ -917,12 +911,10 @@ class SystemUIRESTHandler
 
     private function flattenOutServiceCategoryChildren($childs, &$cats)
     {
-        foreach($childs as $cat)
-        {
+        foreach ($childs as $cat) {
             $cats[] = $cat;
-            if( $cat['categories'] )
-            {
-                $this->flattenOutServiceCategoryChildren($cat['categories'],$cats);
+            if ($cat['categories']) {
+                $this->flattenOutServiceCategoryChildren($cat['categories'], $cats);
             }
         }
     }
@@ -932,13 +924,13 @@ class SystemUIRESTHandler
         $return = [];
         $sql = "SELECT * FROM sysselecttree_tree ORDER BY name ASC";
         $res = $this->db->query($sql);
-        while($row = $this->db->fetchByAssoc($res, false))
-        {
+        while ($row = $this->db->fetchByAssoc($res, false)) {
 //           /* $return[$row['id']] = $row;*/
             array_push($return, $row);
         }
         return $return;
     }
+
     public function getSelectTreeList($id)
     {
         $return = [];
@@ -946,40 +938,40 @@ class SystemUIRESTHandler
                 WHERE tree = '" . $id . "'
                 ORDER BY keyname ASC, name ASC";
         $res = $this->db->query($sql);
-        while($row = $this->db->fetchByAssoc($res, false))
-        {
+        while ($row = $this->db->fetchByAssoc($res, false)) {
             $return[$row['id']] = $row;
         }
         return $return;
     }
+
     public function getSelectTree($id)
     {
         $return = [];
         $sql = "SELECT * FROM sysselecttree_fields 
-                WHERE tree = '".$id."' 
+                WHERE tree = '" . $id . "' 
                 AND IFNULL(parent_id,'') = '' 
                 ORDER BY name ASC";
         $res = $this->db->query($sql);
-        while($row = $this->db->fetchByAssoc($res, false))
-        {
+        while ($row = $this->db->fetchByAssoc($res, false)) {
             $row['level'] = 0;
             $return[] = $this->getSelectTreeChilds($row);
         }
         return $return;
     }
+
     private function getSelectTreeChilds(&$cat)
     {
         $sql = "SELECT * FROM sysselecttree_fields 
-                WHERE parent_id = '".$cat['id']."' 
+                WHERE parent_id = '" . $cat['id'] . "' 
                 ORDER BY keyname ASC, name ASC";
         $res = $this->db->query($sql);
-        while($row = $this->db->fetchByAssoc($res, false))
-        {
+        while ($row = $this->db->fetchByAssoc($res, false)) {
             $row['level'] = $cat['level'] + 1;
             $cat['childs'][] = $this->getSelectTreeChilds($row);
         }
         return $cat;
     }
+
     public function setSelectTree($selecttree)
     {
         $this->checkAdmin();
@@ -988,54 +980,50 @@ class SystemUIRESTHandler
         $categories = $this->flattenOutSelectTree($selecttree);
         //var_dump($tree, $categories);
         # start rewriting by looping through the tree...
-        foreach($categories as $cat)
-        {
+        foreach ($categories as $cat) {
             $sql = "INSERT INTO sysselecttree_fields SET 
-                      id = '".$cat['id']."',
-                      name = '".$cat['name']."',
-                      keyname = '".$cat['keyname']."',
-                      selectable = '".$cat['selectable']."',
-                      favorite = '".$cat['favorite']."',
-                      parent_id = '".$cat['parent_id']."',
-                      tree = '".$cat['tree']."'";
+                      id = '" . $cat['id'] . "',
+                      name = '" . $cat['name'] . "',
+                      keyname = '" . $cat['keyname'] . "',
+                      selectable = '" . $cat['selectable'] . "',
+                      favorite = '" . $cat['favorite'] . "',
+                      parent_id = '" . $cat['parent_id'] . "',
+                      tree = '" . $cat['tree'] . "'";
             $this->db->query($sql);
         }
         return true;
     }
+
     private function flattenOutSelectTree($selecttree)
     {
         $cats = [];
-        foreach($selecttree as $cat)
-        {
+        foreach ($selecttree as $cat) {
             $cats[] = $cat;
-            if( $cat['childs'] )
-            {
-                $this->flattenOutSelectTreeChildren($cat['childs'],$cats);
+            if ($cat['childs']) {
+                $this->flattenOutSelectTreeChildren($cat['childs'], $cats);
             }
         }
         return $cats;
     }
     private function flattenOutSelectTreeChildren($childs, &$cats)
     {
-        foreach($childs as $cat)
-        {
+        foreach ($childs as $cat) {
             $cats[] = $cat;
-            if( $cat['childs'] )
-            {
-                $this->flattenOutSelectTreeChildren($cat['childs'],$cats);
+            if ($cat['childs']) {
+                $this->flattenOutSelectTreeChildren($cat['childs'], $cats);
             }
         }
     }
+
     public function setTree($tree)
     {
         $this->checkAdmin();
         $sql = "INSERT INTO sysselecttree_tree SET 
-                  id = '".$tree['id']."',
-                  name = '".$tree['name']."'";
+                  id = '" . $tree['id'] . "',
+                  name = '" . $tree['name'] . "'";
         $this->db->query($sql);
         return true;
     }
-
 
 
     function getFieldDefMapping()
@@ -1083,9 +1071,9 @@ class SystemUIRESTHandler
     }
 
     /**
+     * @return array
      * @deprecated
      *
-     * @return array
      */
     function getFavorites()
     {
@@ -1126,33 +1114,26 @@ class SystemUIRESTHandler
     function getAdminNavigation()
     {
         global $current_user, $db;
-
         $navElements = [];
 
-        if ($current_user->is_admin)
-        {
-            $admincomponents = $db->query("SELECT * FROM sysuiadmincomponents ORDER BY sequence");
-            while ($admincomponent = $db->fetchByAssoc($admincomponents))
-            {
-                $navElements[$admincomponent['admingroup']][] = array(
-                    'id' => $admincomponent['id'],
-                    'adminaction' => $admincomponent['adminaction'],
-                    'admin_label' => $admincomponent['admin_label'],
-                    'component' => $admincomponent['component'],
-                    'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($admincomponent['componentconfig'])), true) ?: new \stdClass()
-                );
-            }
-
-            $admincomponents = $db->query("SELECT * FROM sysuicustomadmincomponents ORDER BY sequence");
-            while ($admincomponent = $db->fetchByAssoc($admincomponents))
-            {
-                $navElements[$admincomponent['admingroup']][] = array(
-                    'id' => $admincomponent['id'],
-                    'adminaction' => $admincomponent['adminaction'],
-                    'admin_label' => $admincomponent['admin_label'],
-                    'component' => $admincomponent['component'],
-                    'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($admincomponent['componentconfig'])), true) ?: new \stdClass()
-                );
+        // admin only
+        if ($current_user->is_admin) {
+            // load all groups sorted
+            $groups = $db->query("SELECT * FROM (SELECT id, name, label, sequence FROM sysuiadmingroups UNION SELECT id, name, label, sequence FROM sysuicustomadmingroups) us ORDER by sequence");
+            while ($group = $db->fetchByAssoc($groups)) {
+                // get the components for the group
+                $groupComponents = [];
+                $groupComponentsObjects = $db->query("SELECT * FROM (SELECT id, adminaction, sequence, component, componentconfig, admin_label, icon FROM sysuiadmincomponents WHERE admingroup='{$group['name']}' UNION SELECT id, adminaction, sequence, component, componentconfig, admin_label, icon FROM sysuicustomadmincomponents  WHERE admingroup='{$group['name']}') gc ORDER BY sequence");
+                while ($groupComponent = $db->fetchByAssoc($groupComponentsObjects)) {
+                    // ugly but effective
+                    // ToDo: find a nice way to handle that
+                    $groupComponent['componentconfig'] = json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"', '"'), html_entity_decode($groupComponent['componentconfig'])), true) ?: new \stdClass();
+                    $groupComponents[] = $groupComponent;
+                }
+                // only add if we have any component
+                if(count($groupComponents) > 0){
+                    $navElements[] = array_merge($group, ['groupcomponents' => $groupComponents]);
+                }
             }
         }
 
@@ -1173,13 +1154,14 @@ class SystemUIRESTHandler
         };
 
         usort($modules, function ($a, $b) {
-            return strcasecmp( $a['module'], $b['module'] );
+            return strcasecmp($a['module'], $b['module']);
         });
 
         return $modules;
     }
 
-    public function createDefaultConf(){
+    public function createDefaultConf()
+    {
         require_once 'modules/SystemUI/SpiceUILoader.php';
         $spiceuiconf = new SpiceUILoader();
         $spiceuiconf->loadDefaultConf();
@@ -1192,13 +1174,13 @@ class SystemUIRESTHandler
         $response = array('stylesheets' => array());
 
         $dbResult = $db->query('SELECT id, name, csscode FROM sysuihtmlstylesheets WHERE inactive <> 1');
-        while ( $row = $db->fetchByAssoc( $dbResult, false )) {
+        while ($row = $db->fetchByAssoc($dbResult, false)) {
             $response['stylesheets'][$row['id']] = $row;
         }
 
         $dbResult = $db->query('SELECT id, name, inline, block, classes, styles, stylesheet_id, wrapper FROM sysuihtmlformats WHERE inactive <> 1 ORDER BY name');
-        while( $row = $db->fetchByAssoc( $dbResult, false )) {
-            if ( isset( $response['stylesheets'][$row['stylesheet_id']] ) ) {
+        while ($row = $db->fetchByAssoc($dbResult, false)) {
+            if (isset($response['stylesheets'][$row['stylesheet_id']])) {
                 $response['stylesheets'][$row['stylesheet_id']]['formats'][] = $row;
             }
         }

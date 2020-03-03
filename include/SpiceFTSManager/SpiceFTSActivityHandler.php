@@ -3,7 +3,8 @@
 namespace SpiceCRM\includes\SpiceFTSManager;
 class SpiceFTSActivityHandler
 {
-    static function checkActivities($module){
+    static function checkActivities($module)
+    {
         $settings = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexSettings($module);
 
         return [
@@ -83,7 +84,7 @@ class SpiceFTSActivityHandler
         }
 
         // if we do not have any modules to query .. return an empty response
-        if(count($queryModules) == 0){
+        if (count($queryModules) == 0) {
             return ['totalcount' => 0, 'aggregates' => [], 'items' => []];
         }
 
@@ -141,8 +142,7 @@ class SpiceFTSActivityHandler
         $results = json_decode($elastichandler->query('POST', join(',', $queryModules) . '/_search', null, $query), true);
 
 
-        require_once('KREST/handlers/module.php');
-        $moduleHandler = new \KRESTModuleHandler();
+        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
 
         $items = [];
         foreach ($results['hits']['hits'] as &$hit) {
@@ -153,7 +153,7 @@ class SpiceFTSActivityHandler
             }
 
             // get the email addresses
-            $krestHandler = new \KRESTModuleHandler();
+            $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
             $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($hit['_type'], $hit['_id']);
 
             $hit['acl'] = $krestHandler->get_acl_actions($seed);
@@ -181,7 +181,7 @@ class SpiceFTSActivityHandler
             ];
 
         }
-        if (count($postFilters) > 0){
+        if (count($postFilters) > 0) {
             foreach ($results['aggregations']['year']['yearfiltered']['buckets'] as $bucket) {
                 $aggregates['year'][] = [
                     'year' => $bucket['key_as_string'],
@@ -199,6 +199,7 @@ class SpiceFTSActivityHandler
 
         return ['totalcount' => $results['hits']['total'], 'aggregates' => $aggregates, 'items' => $items];
     }
+
     /**
      *
      *loads the activities from elastic
@@ -212,7 +213,7 @@ class SpiceFTSActivityHandler
      *
      * @return array and array with the element totalcount, aggregates and items
      */
-    static function loadCalendarEvents( $startdate, $enddate, $userId, $searchterm = '', $usersIds = [], $objects = [])
+    static function loadCalendarEvents($startdate, $enddate, $userId, $searchterm = '', $usersIds = [], $objects = [])
     {
         $modules = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getCalendarModules();
         $moduleQueries = [];
@@ -244,17 +245,36 @@ class SpiceFTSActivityHandler
             $moduleQuery['bool']['filter']['bool']['must'][] = [
                 'bool' => [
                     'must' => [
-                        ['range' => ['_activitydate' => ['lt' => $enddate] ] ],
-                        ['range' => ['_activityenddate' => ['gt' => $startdate] ] ]
+                        ['range' => ['_activitydate' => ['lt' => $enddate]]],
+                        ['range' => ['_activityenddate' => ['gt' => $startdate]]]
                     ]
                 ]
             ];
 
             $moduleQuery['bool']['filter']['bool']['must'][] = ['term' => ['_index' => SpiceFTSUtils::getIndexNameForModule($module)]];
-            if (empty($usersIds))
-                $moduleQuery['bool']['filter']['bool']['must'][] = ['term' => ["assigned_user_id" => $userId]];
-            else
-                $moduleQuery['bool']['filter']['bool']['must'][] = ['terms' => ["assigned_user_id" => $usersIds]];
+            if (empty($usersIds)) {
+                $moduleQuery['bool']['filter']['bool']['must'][] = [
+                    'bool' => [
+                        'should' => [
+                            ['term' => ["assigned_user_id" => $userId]],
+                            ['term' => ["_activityparticipantids" => $userId]],
+                        ],
+                        'minimum_should_match' => 1
+                    ]
+                ];
+                //    ['term' => ["assigned_user_id" => $userId]];
+            } else {
+                $moduleQuery['bool']['filter']['bool']['must'][] =[
+                    'bool' => [
+                        'should' => [
+                            ['terms' => ["assigned_user_id" => $usersIds]],
+                            ['terms' => ["_activityparticipantids" => $usersIds]],
+                        ],
+                        'minimum_should_match' => 1
+                    ]
+                ];
+                //['terms' => ["assigned_user_id" => $usersIds]];
+            }
 
             $moduleQueries[] = $moduleQuery;
 
@@ -270,7 +290,7 @@ class SpiceFTSActivityHandler
         }
 
         // if we do not have any modules to query .. return an empty response
-        if(count($queryModules) == 0){
+        if (count($queryModules) == 0) {
             return ['totalcount' => 0, 'aggregates' => [], 'items' => []];
         }
 
@@ -292,8 +312,7 @@ class SpiceFTSActivityHandler
         $results = json_decode($elastichandler->query('POST', join(',', $queryModules) . '/_search', null, $query), true);
 
 
-        require_once('KREST/handlers/module.php');
-        $moduleHandler = new \KRESTModuleHandler();
+        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
 
         $items = [];
         foreach ($results['hits']['hits'] as &$hit) {
@@ -303,11 +322,9 @@ class SpiceFTSActivityHandler
                 $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
             }
 
-            // get the email addresses
-            $krestHandler = new \KRESTModuleHandler();
-            $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($hit['_type'], $hit['_id']);
+            $hit['_source']['emailaddresses'] = $moduleHandler->getEmailAddresses($hit['_type'], $hit['_id']);
 
-            $hit['acl'] = $krestHandler->get_acl_actions($seed);
+            $hit['acl'] = $moduleHandler->get_acl_actions($seed);
             // $hit['acl_fieldcontrol'] = $krestHandler->get_acl_fieldaccess($seed);
 
             // unset hidden fields
@@ -320,7 +337,7 @@ class SpiceFTSActivityHandler
                 'start' => $hit['_source']['_activitydate'],
                 'end' => $hit['_source']['_activityenddate'],
                 'type' => $hit['_type'] == 'UserAbsences' ? 'absence' : 'event',
-                'data' => $krestHandler->mapBeanToArray($hit['_type'], $seed, [], false, false, false)
+                'data' => $moduleHandler->mapBeanToArray($hit['_type'], $seed, [], false, false, false)
             ];
         }
 

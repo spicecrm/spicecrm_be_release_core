@@ -391,6 +391,11 @@ $dictionary['sysuicalendarcolorconditions'] = array(
                 'type' => 'varchar',
                 'len' => 7
             ),
+            'category' => array(
+                'name' => 'category',
+                'type' => 'varchar',
+                'len' => 55
+            ),
         ),
     'indices' => array(
         array(
@@ -1918,6 +1923,11 @@ $dictionary['sysmodulelists'] = array(
             'type' => 'varchar',
             'len' => 100
         ),
+        'listcomponent' => array(
+            'name' => 'listcomponent',
+            'type' => 'varchar',
+            'len' => 100
+        ),
         'global' => array(
             'name' => 'global',
             'type' => 'int',
@@ -1936,6 +1946,18 @@ $dictionary['sysmodulelists'] = array(
         'filterdefs' => array(
             'name' => 'filterdefs',
             'type' => 'text'
+        ),
+        'aggregates' => array(
+            'name' => 'aggregates',
+            'type' => 'text'
+        ),
+        'sortfields' => array(
+            'name' => 'sortfields',
+            'type' => 'text'
+        ),
+        'date_last_used' => array(
+            'name' => 'date_last_used',
+            'type' => 'datetime'
         ),
         'version' => array(
             'name' => 'version',
@@ -2368,6 +2390,88 @@ $dictionary['sysuicustomrolemodules'] = array(
     )
 );
 
+$dictionary['sysuiadmingroups'] = array(
+    'table' => 'sysuiadmingroups',
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'label' => array(
+            'name' => 'label',
+            'type' => 'varchar',
+            'len' => 50
+        ),
+        'sequence' => array(
+            'name' => 'sequence',
+            'type' => 'int'
+        ),
+        'version' => array(
+            'name' => 'version',
+            'type' => 'varchar',
+            'len' => 16
+        ),
+        'package' => array(
+            'name' => 'package',
+            'type' => 'varchar',
+            'len' => 32
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuiadmingroups',
+            'type' => 'primary',
+            'fields' => array('id')
+        )
+    )
+);
+
+$dictionary['sysuicustomadmingroups'] = array(
+    'table' => 'sysuicustomadmingroups',
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'name' => array(
+            'name' => 'name',
+            'type' => 'varchar',
+            'len' => 100
+        ),
+        'label' => array(
+            'name' => 'label',
+            'type' => 'varchar',
+            'len' => 50
+        ),
+        'sequence' => array(
+            'name' => 'sequence',
+            'type' => 'int'
+        ),
+        'version' => array(
+            'name' => 'version',
+            'type' => 'varchar',
+            'len' => 16
+        ),
+        'package' => array(
+            'name' => 'package',
+            'type' => 'varchar',
+            'len' => 32
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysuicustomadmingroups',
+            'type' => 'primary',
+            'fields' => array('id')
+        )
+    )
+);
+
 $dictionary['sysuiadmincomponents'] = array(
     'table' => 'sysuiadmincomponents',
     'changerequests' => array(
@@ -2407,6 +2511,11 @@ $dictionary['sysuiadmincomponents'] = array(
         'sequence' => array(
             'name' => 'sequence',
             'type' => 'int'
+        ),
+        'icon' => array(
+            'name' => 'icon',
+            'type' => 'varchar',
+            'len' => 50
         ),
         'version' => array(
             'name' => 'version',
@@ -2467,6 +2576,11 @@ $dictionary['sysuicustomadmincomponents'] = array(
         'sequence' => array(
             'name' => 'sequence',
             'type' => 'int'
+        ),
+        'icon' => array(
+            'name' => 'icon',
+            'type' => 'varchar',
+            'len' => 50
         ),
         'version' => array(
             'name' => 'version',

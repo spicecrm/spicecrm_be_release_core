@@ -387,6 +387,17 @@ class MysqliManager extends MysqlManager
 		return function_exists("mysqli_connect") && empty($GLOBALS['sugar_config']['mysqli_disabled']);
 	}
 
+    public function compareVarDefs($fielddef1, $fielddef2, $ignoreName = false){
+	    $compared = parent::compareVarDefs($fielddef1, $fielddef2, $ignoreName);
+	    if(!$compared) return false;
+
+	    // return  mysqli_real_escape_string($this->database, $fielddef2['comment']) != $fielddef1['comment'] ? false : true;
+	    if(str_replace([';'], '', $fielddef2['comment']) != $fielddef1['comment'])
+	        return false;
+	    else
+	        return true;
+    }
+
     /**
      * introduced in SpiceCRM 20180900
      * Original DBManager function: added ticks for columns names
@@ -399,6 +410,11 @@ class MysqliManager extends MysqlManager
      */
     protected function oneColumnSQLRep($fieldDef, $ignoreRequired = false, $table = '', $return_as_array = false)
     {
+        // introduced in spicecrm 202001001
+        // check that the right type is passed to support definitions like int 20
+        $this->normalizeVardefs($fieldDef);
+
+
         $name = $fieldDef['name'];
         $type = $this->getFieldType($fieldDef);
         $colType = $this->getColumnType($type);
@@ -464,6 +480,11 @@ class MysqliManager extends MysqlManager
         if ($ignoreRequired)
             $required = "";
 
+        $comment = '';
+        if (!empty($fieldDef['comment'])){
+            $comment = " COMMENT '". mysqli_real_escape_string($this->database, $fieldDef['comment'])."'";
+        }
+
         if ( $return_as_array ) {
             return array(
                 'name' => "`".$name."`",
@@ -472,10 +493,11 @@ class MysqliManager extends MysqlManager
                 'default' => $default,
                 'required' => $required,
                 'auto_increment' => $auto_increment,
-                'full' => "$name $colType $default $required $auto_increment",
+                'comment' => $comment,
+                'full' => "$name $colType $default $required $auto_increment $comment",
             );
         } else {
-            return "`$name` $colType $default $required $auto_increment";
+            return "`$name` $colType $default $required $auto_increment $comment";
         }
     }
 

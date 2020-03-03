@@ -117,7 +117,7 @@ $dictionary['ACLAction'] = array('table' => 'acl_actions', 'comment' => 'Determi
     'type' => 'varchar',
 	'len' =>100,
     'reportable'=>true,
-    'comment' => 'Specifier for Category, usually "module"'
+    'comment' => "Specifier for Category, usually 'module'"
   ),
   'aclaccess' =>
   array (
@@ -126,7 +126,7 @@ $dictionary['ACLAction'] = array('table' => 'acl_actions', 'comment' => 'Determi
     'type' => 'int',
     'len'=>3,
     'reportable'=>true,
-    'comment' => 'Number specifying access priority; highest access "wins"'
+    'comment' => "Number specifying access priority; highest access 'wins'"
   ),
   'deleted' =>
   array (

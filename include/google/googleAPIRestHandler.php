@@ -95,9 +95,11 @@ class googleAPIRestHandler
                 'country' => $addrArray['country']['short'],
                 'location' => $responseObject->result->geometry->location
             );
+            $results['formatted_address'] = $responseObject->result->formatted_address;
             $results['formatted_phone_number'] = $responseObject->result->formatted_phone_number;
             $results['international_phone_number'] = $responseObject->result->international_phone_number;
             $results['website'] = $responseObject->result->website;
+            $results['name'] = $responseObject->result->name;
         }
 
         return $results;

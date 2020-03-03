@@ -65,6 +65,49 @@ $dictionary['calls_users'] = array(
             'join_key_lhs' => 'call_id',
             'join_key_rhs' => 'user_id',
         ),
+        // CR1000356
+        'calls_users_status_accept' => [
+            'lhs_module'		=> 'Calls',
+            'lhs_table'			=> 'calls',
+            'lhs_key'			=> 'id',
+            'rhs_module'		=> 'Users',
+            'rhs_table'			=> 'users',
+            'rhs_key'			=> 'id',
+            'relationship_type'	=> 'many-to-many',
+            'relationship_role_column'	=> 'accept_status',
+            'relationship_role_column_value'	=> 'accept',
+            'join_table'		=> 'calls_users',
+            'join_key_lhs'		=> 'call_id',
+            'join_key_rhs'		=> 'user_id'
+        ],
+        'calls_users_status_decline' => [
+            'lhs_module'		=> 'Calls',
+            'lhs_table'			=> 'calls',
+            'lhs_key'			=> 'id',
+            'rhs_module'		=> 'Users',
+            'rhs_table'			=> 'users',
+            'rhs_key'			=> 'id',
+            'relationship_type'	=> 'many-to-many',
+            'relationship_role_column'	=> 'accept_status',
+            'relationship_role_column_value'	=> 'decline',
+            'join_table'		=> 'calls_users',
+            'join_key_lhs'		=> 'call_id',
+            'join_key_rhs'		=> 'user_id'
+        ],
+        'calls_users_status_tentative' => [
+            'lhs_module'		=> 'Calls',
+            'lhs_table'			=> 'calls',
+            'lhs_key'			=> 'id',
+            'rhs_module'		=> 'Users',
+            'rhs_table'			=> 'users',
+            'rhs_key'			=> 'id',
+            'relationship_type'	=> 'many-to-many',
+            'relationship_role_column'	=> 'accept_status',
+            'relationship_role_column_value'	=> 'tentative',
+            'join_table'		=> 'calls_users',
+            'join_key_lhs'		=> 'call_id',
+            'join_key_rhs'		=> 'user_id'
+        ],
     ),
 );
 ?>

@@ -14,40 +14,40 @@
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-require_once('KREST/handlers/user.php');
+// (( require_once('KREST/handlers/user.php');
 
-$KRESTUserHandler = new KRESTUserHandler($app);
+$UserHandler = new \SpiceCRM\KREST\handlers\UserHandler($app);
 
 $KRESTManager->registerExtension('user', '1.0');
 
-$app->group('/user', function () use ($app, $KRESTUserHandler) {
+$app->group('/user', function () use ($app, $UserHandler) {
 
-    $this->get('/acl', function ($req, $res, $args) use ($KRESTUserHandler) {
-        return $res->withJson( $KRESTUserHandler->get_modules_acl() );
+    $this->get('/acl', function ($req, $res, $args) use ($UserHandler) {
+        return $res->withJson( $UserHandler->get_modules_acl() );
     });
 
-    $this->get('/validate/{email}', function ($req, $res, $args) use ($KRESTUserHandler) {
-        $userId = $KRESTUserHandler->getUserIdByEmail($args['email']);
+    $this->get('/validate/{email}', function ($req, $res, $args) use ($UserHandler) {
+        $userId = $UserHandler->getUserIdByEmail($args['email']);
         return $res->withJson( array( 'exists' => $userId.length > 0 ? true : false ));
     });
 
-    $this->group('/password', function () use ($KRESTUserHandler) {
+    $this->group('/password', function () use ($UserHandler) {
 
-        $this->post('/change', function ($req, $res, $args) use ($KRESTUserHandler) {
-            return $res->withJson( $KRESTUserHandler->change_password( $req->getParsedBody() ));
+        $this->post('/change', function ($req, $res, $args) use ($UserHandler) {
+            return $res->withJson( $UserHandler->change_password( $req->getParsedBody() ));
         });
 
-        $this->post('/new', function ($req, $res, $args) use ($KRESTUserHandler) {
+        $this->post('/new', function ($req, $res, $args) use ($UserHandler) {
             global $current_user;
-            if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
-            return $res->withJson( $KRESTUserHandler->set_new_password( $req->getParsedBody() ));
+            if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            return $res->withJson( $UserHandler->set_new_password( $req->getParsedBody() ));
         });
 
-        $this->get('/info', function ($req, $res, $args) use ($KRESTUserHandler) {
+        $this->get('/info', function ($req, $res, $args) use ($UserHandler) {
             $responseData = array(
                 'pwdCheck' => array(
-                    'regex' => '^' . KRESTUserHandler::getPwdCheckRegex() . '$',
-                    'guideline' => KRESTUserHandler::getPwdGuideline($req->getParam('lang'))
+                    'regex' => '^' . \SpiceCRM\KREST\handlers\UserHandler::getPwdCheckRegex() . '$',
+                    'guideline' => \SpiceCRM\KREST\handlers\UserHandler::getPwdGuideline($req->getParam('lang'))
                 )
             );
             return $res->withJson( $responseData );
@@ -56,24 +56,24 @@ $app->group('/user', function () use ($app, $KRESTUserHandler) {
     });
 
     /*
-    $app->group('/preferences', function () use ( $app, $KRESTUserHandler ) {
+    $app->group('/preferences', function () use ( $app, $UserHandler ) {
 
-        $this->get('/{category}', function ($req, $res, $args) use ($KRESTUserHandler) {
+        $this->get('/{category}', function ($req, $res, $args) use ($UserHandler) {
             $names = $req->getParam('names');
             if ( !isset( $names )) {
-                return $res->withJson( $KRESTUserHandler->get_all_user_preferences( $args['category'] ) );
+                return $res->withJson( $UserHandler->get_all_user_preferences( $args['category'] ) );
             } else {
-                return $res->withJson( $KRESTUserHandler->get_user_preferences($args['category'], $names ));
+                return $res->withJson( $UserHandler->get_user_preferences($args['category'], $names ));
             }
         });
 
         // route should get deleted soon
-        $this->get('/{category}/{names}', function ($req, $res, $args) use ($KRESTUserHandler) {
-            return $res->withJson( $KRESTUserHandler->get_user_preferences($args['category'], $args['names'] ));
+        $this->get('/{category}/{names}', function ($req, $res, $args) use ($UserHandler) {
+            return $res->withJson( $UserHandler->get_user_preferences($args['category'], $args['names'] ));
         });
 
-        $this->post('/{category}', function ($req, $res, $args) use ($KRESTUserHandler) {
-            return $res->withJson( $KRESTUserHandler->set_user_preferences($args['category'], $req->getParsedBody() ));
+        $this->post('/{category}', function ($req, $res, $args) use ($UserHandler) {
+            return $res->withJson( $UserHandler->set_user_preferences($args['category'], $req->getParsedBody() ));
         });
 
     });

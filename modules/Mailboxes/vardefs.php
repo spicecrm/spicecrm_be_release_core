@@ -37,33 +37,20 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 $dictionary['Mailbox'] = [
     'table' => 'mailboxes',
-    'audited' => true,
+    'audited' => false,
     'unified_search' => true,
     'full_text_search' => true,
     'unified_search_default_enabled' => true,
     'duplicate_merge' => false,
 
     'fields' => [
-
-        // general Mailbox fields
-        'name' => [
-            'name' => 'name',
-            'vname' => 'LBL_NAME',
-            'type' => 'varchar',
-            'comment' => 'Mailbox name'
-        ],
-        'description' => [
-            'name' => 'description',
-            'vname' => 'LBL_DESCRIPTION',
-            'type' => 'varchar',
-            'comment' => 'Mailbox description'
-        ],
         'transport' => [
             'name' => 'transport',
             'vname' => 'LBL_TRANSPORT',
-            'type' => 'enum',
+            'type' => 'mailboxtransport',
+            'dbtype' => 'varchar',
             'len' => 15,
-            'options' => 'mailboxes_transport_dom',
+            //'options' => 'mailboxes_transport_dom',
             'comment' => 'Mailbox transport method'
         ],
         'inbound_comm' => [
@@ -84,53 +71,54 @@ $dictionary['Mailbox'] = [
             'name' => 'last_checked',
             'vname' => 'LBL_LAST_CHECKED',
             'type' => 'datetime',
+            'audited' => false,
             'comment' => 'Date when the emails were fetched the last time',
         ],
         'settings' => [
-            'name'    => 'settings',
-            'vname'   => 'LBL_SETTINGS',
-            'type'    => 'json',
-            'dbType'  => 'text',
+            'name' => 'settings',
+            'vname' => 'LBL_SETTINGS',
+            'type' => 'json',
+            'dbType' => 'text',
             'comment' => 'JSON containing all the mailbox settings',
         ],
         'mailbox_header' => [
-            'name'    => 'mailbox_header',
-            'vname'   => 'LBL_HEADER',
-            'type'    => 'html',
-            'dbType'  => 'text',
+            'name' => 'mailbox_header',
+            'vname' => 'LBL_HEADER',
+            'type' => 'html',
+            'dbType' => 'text',
             'comment' => 'A header that will be added to all emails sent from a mailbox',
         ],
         'mailbox_footer' => [
-            'name'    => 'mailbox_footer',
-            'vname'   => 'LBL_FOOTER',
-            'type'    => 'html',
-            'dbType'  => 'text',
+            'name' => 'mailbox_footer',
+            'vname' => 'LBL_FOOTER',
+            'type' => 'html',
+            'dbType' => 'text',
             'comment' => 'A footer that will be added to all emails sent from a mailbox',
         ],
         'is_default' => [
-            'name'    => 'is_default',
-            'vname'   => 'LBL_DEFAULT_MAILBOX',
-            'type'    => 'bool',
+            'name' => 'is_default',
+            'vname' => 'LBL_DEFAULT_MAILBOX',
+            'type' => 'bool',
             'comment' => 'System default mailbox flag',
         ],
         'active' => [
-            'name'    => 'active',
-            'vname'   => 'LBL_ACTIVE',
-            'type'    => 'bool',
+            'name' => 'active',
+            'vname' => 'LBL_ACTIVE',
+            'type' => 'bool',
             'default' => true,
             'comment' => 'Mailbox active flag',
         ],
         'hidden' => [
-            'name'    => 'hidden',
-            'vname'   => 'LBL_HIDDEN',
-            'type'    => 'bool',
+            'name' => 'hidden',
+            'vname' => 'LBL_HIDDEN',
+            'type' => 'bool',
             'default' => false,
             'comment' => 'Mailbox hidden flag',
         ],
         'catch_all_address' => [
-            'name'    => 'catch_all_address',
-            'vname'   => 'LBL_CATCH_ALL_ADDRESS',
-            'type'    => 'varchar',
+            'name' => 'catch_all_address',
+            'vname' => 'LBL_CATCH_ALL_ADDRESS',
+            'type' => 'varchar',
             'comment' => 'Catch All address for debugging',
         ],
         'emails' => [
@@ -152,16 +140,17 @@ $dictionary['Mailbox'] = [
             'comment' => 'FK to SYSMAILRELAIS',
         ],
         'actionset' => [
-            'name'   => 'actionset',
-            'vname'  => 'LBL_ACTIONSET',
-            'type'   => 'id',
-            'len'    => '36'
+            'name' => 'actionset',
+            'vname' => 'LBL_ACTIONSET',
+            'type' => 'actionset',
+            'dbtype' => 'varchar',
+            'len' => '36'
         ],
         'stylesheet' => [
-            'name'  => 'stylesheet',
+            'name' => 'stylesheet',
             'vname' => 'LBL_STYLESHEET',
-            'type'  => 'id',
-            'len'   => '36',
+            'type' => 'id',
+            'len' => '36',
         ],
         //link to the campaigns
         'campaigns' => [
@@ -196,11 +185,11 @@ $dictionary['Mailbox'] = [
             'source' => 'non-db',
             'default' => true,
         ],
-        'log_level'   => [
-            'name'    => 'log_level',
-            'vname'   => 'LBL_LOG_LEVEL',
-            'type'    => 'enum',
-            'len'     => 1,
+        'log_level' => [
+            'name' => 'log_level',
+            'vname' => 'LBL_LOG_LEVEL',
+            'type' => 'enum',
+            'len' => 1,
             'options' => 'mailboxes_log_levels',
         ],
     ],
@@ -243,9 +232,6 @@ $dictionary['Mailbox'] = [
         ),
 
     ],
-
-    'indices' => [],
-
     //This enables optimistic locking for Saves From EditView
     'optimistic_locking' => true,
 ];

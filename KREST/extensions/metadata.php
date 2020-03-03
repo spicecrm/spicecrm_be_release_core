@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-require_once('KREST/handlers/module.php');
+// require_once('KREST/handlers/ModuleHandler.php');
 
-$KRESTModuleHandler = new KRESTModuleHandler($app);
+$KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($app);
 
 $KRESTManager->registerExtension('metadata', '1.0');
 

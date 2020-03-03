@@ -80,7 +80,7 @@ class OutputTemplate extends SugarBean
     }
 
 
-    public function translateBody($bean = null)
+    public function translateBody($bean = null, $bodyOnly = false)
     {
         if(!$bean)
         {
@@ -93,7 +93,12 @@ class OutputTemplate extends SugarBean
             throw new Exception("No Bean found, translation aborted!");
 
         $templateCompiler = new \SpiceCRM\includes\SpiceTemplateCompiler\Compiler();
-        $html = '<style>' . $this->getStyle() . '</style>' . $templateCompiler->compile('<body><header>'.html_entity_decode( $this->header ).'</header><footer>'.html_entity_decode( $this->footer ).'</footer><main>'.html_entity_decode( $this->body ).'</main></body>', $bean, $this->language );
+        if ($bodyOnly) {
+            $html = $templateCompiler->compile(html_entity_decode( $this->body), $bean, $this->language );
+        } else {
+            $html = '<style>' . $this->getStyle() . '</style>' . $templateCompiler->compile('<body><header>'
+                    .html_entity_decode( $this->header ).'</header><footer>'.html_entity_decode( $this->footer ).'</footer><main>'.html_entity_decode( $this->body ).'</main></body>', $bean, $this->language );
+        }
 
         return $html;
     }
@@ -139,7 +144,7 @@ class OutputTemplate extends SugarBean
         return $this->bean;
     }
 
-    private function getStyle()
+    public function getStyle()
     {
         $style = '';
         if (!empty($this->stylesheet_id)) {

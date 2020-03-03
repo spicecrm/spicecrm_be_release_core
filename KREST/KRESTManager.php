@@ -26,7 +26,7 @@ class KRESTManager {
     var $adminOnly = false;
     var $extensions = array();
 
-    public function __construct($theApp, $requestParams = array()) {
+    public function __construct($theApp = null, $requestParams = array()) {
         // link the app and the request paramas
         $this->app = $theApp;
         $this->requestParams = $requestParams;
@@ -162,7 +162,7 @@ class KRESTManager {
 
         // set for cors
         // header("Access-Control-Allow-Origin: *");
-        throw new KREST\UnauthorizedException('Authentication failed' . (isset($message{0}) ? ': ' . $message : '.'));
+        throw new \SpiceCRM\KREST\UnauthorizedException('Authentication failed' . (isset($message{0}) ? ': ' . $message : '.'));
     }
 
     // BEGMOD KORGOBJECTS change private to public..
@@ -180,12 +180,8 @@ class KRESTManager {
             }
 
             if (!empty($_SESSION['authenticated_user_id'])) {
-
                 global $current_user;
-                require_once('modules/Users/User.php');
-                $current_user = new User();
-                $current_user->retrieve($_SESSION['authenticated_user_id']);
-
+                $current_user = \BeanFactory::getBean('Users', $_SESSION['authenticated_user_id']);
                 return $session_id;
             }
         } elseif (!empty($_COOKIE[session_name()])) {
@@ -197,9 +193,7 @@ class KRESTManager {
             if (!empty($_SESSION['authenticated_user_id'])) {
 
                 global $current_user;
-                require_once('modules/Users/User.php');
-                $current_user = new User();
-                $current_user->retrieve($_SESSION['authenticated_user_id']);
+                $current_user = \BeanFactory::getBean('Users', $_SESSION['authenticated_user_id']);
 
                 return $_COOKIE[session_name()]; //PHPSESSID
             }
@@ -220,10 +214,7 @@ class KRESTManager {
             if (!empty($_SESSION['is_valid_session']) && $_SESSION['type'] == 'user') {
 
                 global $current_user;
-                require_once('modules/Users/User.php');
-                $current_user = new User();
-                $current_user->retrieve($_SESSION['user_id']);
-
+                $current_user = \BeanFactory::getBean('Users', $_SESSION['authenticated_user_id']);
                 return true;
             }
 
@@ -240,9 +231,9 @@ class KRESTManager {
         $success = false;
         $error = '';
         //rrs
-        $system_config = new Administration();
+        $system_config = new \Administration();
         $system_config->retrieveSettings('system');
-        $authController = new AuthenticationController();
+        $authController = new \AuthenticationController();
         $passwordEncrypted = true;
         //rrs
         //var_dump($user_auth);

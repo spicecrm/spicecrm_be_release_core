@@ -232,7 +232,7 @@ $dictionary['spiceattachments'] = [
 		[
 		    'name'	 => 'tatusrbean_idx',
 			'type'	 => 'index',
-			'fields' => ['bean_type', 'bean_id'],
+			'fields' => ['bean_type', 'bean_id', 'trdate'],
 		],
 		[
 		    'name'	 => 'tatselection_idx',

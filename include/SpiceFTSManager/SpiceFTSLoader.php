@@ -38,7 +38,7 @@ class SpiceFTSLoader{
     public $loader;
 
     public function __construct(){
-        $this->loader = new \SpiceCRM\modules\SystemUI\SpiceUILoader();
+
     }
 
 
@@ -84,6 +84,8 @@ class SpiceFTSLoader{
         $tables = array();
         $truncates = array();
         $inserts = array();
+
+        if(!$this->loader) $this->loader = new \SpiceCRM\modules\SystemUI\SpiceUILoader();
 
         //get data
         if(!$response = $this->loader->callMethod("GET", $endpoint)){

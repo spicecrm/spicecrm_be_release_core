@@ -137,7 +137,7 @@ class LogicHook
 //        }
 
 
-        if(!is_null($GLOBALS['db'])){
+        if ( isset( $GLOBALS['db'] ) and !is_null( $GLOBALS['db'] )) {
             $dbhooks = $GLOBALS['db'];
         }
 
@@ -176,7 +176,7 @@ class LogicHook
 //            $dbhooks = DBManagerFactory::getInstance();
 //        }
         $SpiceCRMHooks = [];
-        if( !is_null($dbhooks) && empty( $GLOBALS['installing'] )) {
+        if( isset( $dbhooks ) && empty( $GLOBALS['installing'] )) {
 
             if(empty($module_dir)){
 
@@ -254,17 +254,17 @@ class LogicHook
 		}
 	}
 
-	/**
-	 * This is called from call_custom_logic and actually performs the action as defined in the
-	 * logic hook. If the bean is null, then we assume this call was not made from a SugarBean Object and
-	 * therefore we do not pass it to the method call.
-	 *
-	 * @param array $hook_array
-	 * @param string $event
-	 * @param array $arguments
-	 * @param SugarBean $bean
-	 */
-	function process_hooks($hook_array, $event, $arguments){
+    /**
+     * This is called from call_custom_logic and actually performs the action as defined in the
+     * logic hook. If the bean is null, then we assume this call was not made from a SugarBean Object and
+     * therefore we do not pass it to the method call.
+     *
+     * @param array $hook_array
+     * @param string $event
+     * @param array $arguments
+     * @throws \SpiceCRM\KREST\Exception
+     */
+	public function process_hooks($hook_array, $event, $arguments){
 		// Now iterate through the array for the appropriate hook
 		if(!empty($hook_array[$event])){
 
@@ -306,11 +306,24 @@ class LogicHook
                     if(isset($GLOBALS['log'])){
 					    $GLOBALS['log']->debug('Creating new instance of hook class '.$hook_class.' without parameters');
                     }
-					$class = new $hook_class();
-					if(!is_null($this->bean))
-						$class->$hook_function($this->bean, $event, $arguments);
-					else
-						$class->$hook_function($event, $arguments);
+
+                    try {
+                        $class = new $hook_class();
+                        if (!is_null($this->bean)) {
+                            $class->$hook_function($this->bean, $event, $arguments);
+                        } else {
+                            $class->$hook_function($event, $arguments);
+                        }
+                    } catch (\SpiceCRM\includes\SpiceCRMExchange\MissingEwsCredentialsException $e) {
+                        // todo figure out if EWS should actually be turned on or off
+                        $krestException = new \SpiceCRM\KREST\Exception($e->getMessage(), $e->getCode());
+                        $krestException->setHttpCode($e->getCode());
+                        throw $krestException;
+                    } catch (\SpiceCRM\includes\SpiceCRMExchange\EwsConnectionException $e) {
+                        $krestException = new \SpiceCRM\KREST\Exception($e->getMessage(), $e->getCode());
+                        $krestException->setHttpCode($e->getCode());
+                        throw $krestException;
+                    }
 				}
 			}
 		}

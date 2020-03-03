@@ -1,8 +1,7 @@
 <?php
 
 namespace SpiceCRM\modules\CampaignTasks\KREST\controllers;
-
-require_once('KREST/handlers/module.php');
+use \SpiceCRM\KREST\handlers;
 
 class CampaignTasksKRESTController
 {
@@ -62,11 +61,18 @@ class CampaignTasksKRESTController
             throw (new \KREST\ForbiddenException("Forbidden to edit in module CampaignTasks."))->setErrorCode('noModuleEdit');
 
         // load the campaign task
-        $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaignid']);
+        $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
+
+        $status = 'targeted';
+        switch($campaignTask->campaigntask_type){
+            case 'Mail':
+                $status = 'sent';
+                break;
+        }
 
         // activate the campaigntask
-        $campaignTask->activate();
-        echo json_encode(array('success' => true, 'id' => $args['campaignid']));
+        $campaignTask->activate($status);
+        echo json_encode(array('success' => true, 'id' => $args['campaigntaskid']));
     }
 
 
@@ -94,7 +100,7 @@ class CampaignTasksKRESTController
     function sendCampaignTaskTestEmail($req, $res, $args)
     {
         $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
-        echo json_encode(array('success' => $campaignTask->sendTestEmail()));
+        return $res->withJson($campaignTask->sendTestEmail());
     }
 
     /**
@@ -110,5 +116,25 @@ class CampaignTasksKRESTController
         $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
         $campaignTask->activate('queued');
         echo json_encode(array('success' => true));
+    }
+
+    function getExportReports($req, $res, $args)
+    {
+        $retArray = [];
+
+        $report = \BeanFactory::getBean('KReports');
+        $reports = $report->get_full_list('name', "report_module = 'CampaignTasks' AND ( integration_params LIKE '%\"kexcelexport\":1%' OR integration_params LIKE '%\"kcsvexport\":1%')");
+        foreach($reports as $report){
+            $integrationPramns = json_decode(html_entity_decode($report->integration_params));
+            $retArray[] = [
+                'id' => $report->id,
+                'name' => $report->name,
+                'description' => $report->description,
+                'xls' => $integrationPramns->activePlugins->kexcelexport == 1 ? true : false,
+                'csv' => $integrationPramns->activePlugins->kcsvexport == 1 ? true : false
+            ];
+        }
+
+        return $res->withJson($retArray);
     }
 }

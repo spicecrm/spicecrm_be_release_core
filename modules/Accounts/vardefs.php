@@ -541,7 +541,15 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'relationship' => 'accounts_potentials_competitors',
             'module' => 'Accounts',
             'source' => 'non-db'
-        )
+        ),
+        'logo' => [
+            'name' => 'logo',
+            'vname' => 'LBL_LOGO',
+            'type' => 'image',
+            'source' => 'non-db',
+            'maxWidth' => 300,
+            'maxHeight' => 300
+        ]
     ),
     'indices' => array(
         array('name' => 'idx_accnt_id_del', 'type' => 'index', 'fields' => array('id', 'deleted')),
@@ -620,7 +628,7 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'relationship_type' => 'one-to-many',
             'relationship_role_column' => 'target_type', 'relationship_role_column_value' => 'Accounts'
         ),
-        'accounts_accountkpis' => array(
+                'accounts_accountkpis' => array(
             'lhs_module' => 'Accounts',
             'lhs_table' => 'accounts',
             'lhs_key' => 'id',
@@ -739,6 +747,17 @@ if (is_file("modules/ServiceEquipments/ServiceEquipment.php")) {
         'default' => false
     );
 }
+if (is_file("modules/ServiceLocations/ServiceLocation.php")) { // CR1000239
+    $dictionary['Account']['fields']['servicelocations'] = array(
+        'name' => 'servicelocations',
+        'module' => 'ServiceLocations',
+        'type' => 'link',
+        'relationship' => 'servicelocations_accounts',
+        'link_type' => 'one',
+        'source' => 'non-db',
+        'vname' => 'LBL_SERVICELOCATIONS',
+    );
+}
 if (is_file("modules/ProductVariants/ProductVariant.php")) {
     $dictionary['Account']['fields']['manufactures'] = array(
         'name' => 'manufactures',
@@ -766,3 +785,21 @@ global $dictionary;
 //END
 $dictionary['Account']['fields']['name']['importable'] = 'required';
 
+// CR1000336
+if(is_file('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')){
+    $dictionary['Account']['relationships']['account_systemdeploymentreleases'] = array(
+        'lhs_module' => 'Accounts', 'lhs_table' => 'accounts', 'lhs_key' => 'id',
+        'rhs_module' => 'SystemDeploymentReleases', 'rhs_table' => 'systemdeploymentreleases', 'rhs_key' => 'parent_id',
+        'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
+        'relationship_role_column_value' => 'Accounts'
+    );
+    $dictionary['Account']['fields']['systemdeploymentreleases'] = array(
+        'name' => 'systemdeploymentreleases',
+        'type' => 'link',
+        'relationship' => 'account_systemdeploymentreleases',
+        'module' => 'SystemDeploymentReleases',
+        'bean_name' => 'SystemDeploymentRelease',
+        'source' => 'non-db',
+        'vname' => 'LBL_SYSTEMDEPLOYMENTRELEASES',
+    );
+}

@@ -84,6 +84,7 @@ $app_list_strings = array(
         '' => '',
         'Sick leave' => 'مرض',
         'Vacation' => 'إجازة',
+        'HomeOffice' => 'من المنزل',
     ),
     'industry_dom' =>
         array(
@@ -2106,6 +2107,12 @@ $app_list_strings['kreportstatus'] = array(
     '1' => 'مسودة',
     '2' => 'إصدار محدود',
     '3' => 'إصدار عام'
+);
+
+$app_list_strings['report_type_dom'] = array(
+    'standard' => 'افتراضي',
+    'admin' => 'اداري',
+    'system' => 'نظام'
 );
 
 /** Proposals */

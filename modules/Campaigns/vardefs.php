@@ -193,6 +193,7 @@ $dictionary['Campaign'] = array('audited' => true,
         ),
         'prospectlists' => array(
             'name' => 'prospectlists',
+            'vname' => 'LBL_PROSPECTLISTS',
             'type' => 'link',
             'relationship' => 'prospect_list_campaigns',
             'source' => 'non-db',

@@ -31,7 +31,7 @@ class kreportpresentationplugin {
         
     }
     // function that should be overwritten if the Presentation Plugin provides a separate export to XLS and PDF
-    public function getExportData($thisReport, $dynamicols = '', $renderFields = true){
+    public function getExportData($thisReport, $dynamicols = '', $renderFields = true, $parentbean = null){
         return false;
     }
     

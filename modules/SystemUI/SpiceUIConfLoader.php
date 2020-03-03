@@ -66,7 +66,7 @@ class SpiceUIConfLoader
         'sysuirolemodules',
         'sysuiroles',
         'sysuiroutes',
-        'syshooks'
+        'syshooks',
     );
 
     /**

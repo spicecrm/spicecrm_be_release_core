@@ -71,26 +71,28 @@ $app->mode = 'production';
 chdir(dirname(__FILE__) . '/../');
 define('sugarEntry', 'SLIM');
 
-// initialize the Rest Manager
-// set a global transaction id
+// initialize the Rest Manager and make available globally
 require 'KREST/KRESTManager.php';
-$GLOBALS['transactionID'] = create_guid();
 $KRESTManager = new KRESTManager($app, $_GET);
+$GLOBALS['KRESTManager'] = $KRESTManager;
+
+// set a global transaction id
+$GLOBALS['transactionID'] = create_guid();
 
 if ( isset( $GLOBALS['sugar_config']['sessionMaxLifetime'] ))
     ini_set('session.gc_maxlifetime', $GLOBALS['sugar_config']['sessionMaxLifetime'] );
 
+// handle the error reporting for the REST APOI accoridng to the Config Settings
 if(isset($GLOBALS['sugar_config']['krest']['error_reporting']))
     error_reporting($GLOBALS['sugar_config']['krest']['error_reporting']);
-
 if(isset($GLOBALS['sugar_config']['krest']['display_errors']))
     ini_set('display_errors', $GLOBALS['sugar_config']['krest']['display_errors']);
 
+// check if the rate Limiter is active
 if ( @$GLOBALS['sugar_config']['krest']['rateLimiting']['active'] ) {
-    require_once 'handlers/KRESTRateLimiter.php';
     $app->add(
         function ( $request, $response, $next ) {
-            KRESTRateLimiter::check( $request->getMethod() );
+            \SpiceCRM\KREST\utils\KRESTRateLimiter::check($request->getMethod());
             return $response = $next( $request, $response );
         }
     );
@@ -156,7 +158,7 @@ try {
         $KRESTManager->authenticate();
     }
 }
-catch( KREST\Exception $exception ) { outputError( $exception ); }
+catch( SpiceCRM\KREST\Exception $exception ) { outputError( $exception ); }
 catch( Exception $exception ) { outputError( $exception ); }
 
 // specific handler for the files

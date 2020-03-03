@@ -402,6 +402,9 @@ function add_prospects_to_prospect_list($parent_id,$child_id)
     }
 }
 
+/*
+ * http://cve.mitre.org/cgi-bin/cvename.cgi?name=2020-8803
+ * culnearbility fix .. not needed any longer anyway
 function add_to_prospect_list($query_panel,$parent_module,$parent_type,$parent_id,$child_id,$link_attribute,$link_type,$parent)
 {
     $GLOBALS['log']->debug('add_prospects_to_prospect_list:parameters:'.$query_panel);
@@ -504,5 +507,5 @@ function save_from_report($report_id,$parent_id, $module_name, $relationship_att
         $focus->$relationship_attr_name->add($reportBean);
     }
 }
-
+*/
 ?>

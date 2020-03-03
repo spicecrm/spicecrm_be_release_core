@@ -13,7 +13,7 @@ class SystemUIModulesController
         $dbresult = $db->query("SELECT * FROM sysmodules");
         while ($m = $db->fetchByAssoc($dbresult)) {
             // check if we have the module or if it has been filtered out
-            if (!$m['acl'] || $current_user->is_admin || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
+            if (!$m['acl'] || ( isset( $current_user ) and $current_user->is_admin ) || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
                 $modules[$m['module']] = $m;
         }
 
@@ -21,7 +21,7 @@ class SystemUIModulesController
         $dbresult = $db->query("SELECT * FROM syscustommodules");
         while ($m = $db->fetchByAssoc($dbresult)) {
             // check if we have the module or if it has been filtered out
-            if (!$m['acl'] || $current_user->is_admin || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
+            if (!$m['acl'] || ( isset( $current_user ) and $current_user->is_admin  ) || $m['module'] == 'Home' || array_search($m['module'], $moduleList) !== false || array_search($m['module'], $modInvisList) !== false)
                 $modules[$m['module']] = $m;
         }
 

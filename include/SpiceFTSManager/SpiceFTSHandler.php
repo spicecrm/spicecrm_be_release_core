@@ -4,7 +4,8 @@ namespace SpiceCRM\includes\SpiceFTSManager;
 
 // require_once('include/SpiceFTSManager/ElasticHandler.php');
 require_once('include/MVC/View/views/view.list.php');
-require_once('KREST/handlers/module.php');
+
+// require_once('KREST/handlers/ModuleHandler.php');
 
 class SpiceFTSHandler
 {
@@ -13,10 +14,11 @@ class SpiceFTSHandler
         $this->elasticHandler = new ElasticHandler();
     }
 
-    static function checkGeo($module){
+    static function checkGeo($module)
+    {
         $settings = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexSettings($module);
 
-        return $settings['geosearch'] ? true: false;
+        return $settings['geosearch'] ? true : false;
     }
 
     function search($req, $res, $args)
@@ -61,14 +63,42 @@ class SpiceFTSHandler
     /*
     * static function to check if a module has a FTE definition
     */
-    static function checkModule($module)
+    static function checkModule($module, $checkIndex = false)
     {
         global $db;
 
-        if ($db->fetchByAssoc($db->query("SELECT * FROM sysfts WHERE module = '$module'")))
-            return true;
-        else
+        if ($db->fetchByAssoc($db->query("SELECT * FROM sysfts WHERE module = '$module'"))) {
+            if ($checkIndex) {
+                $elastichandler = new ElasticHandler();
+                return $elastichandler->checkIndex($module);
+            } else {
+                return true;
+            }
+        } else {
             return false;
+        }
+    }
+
+    /*
+    * static function to check if a module has a FTE definition
+    */
+    static function checkFilterDefs($module, $filterdefs)
+    {
+        // check that a filter def has been passed in
+        if (!$filterdefs) return true;
+
+        $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+        $sysFilter->filtermodule = $module;
+        $fields = $sysFilter->getFilterFieldsForGroup($filterdefs);
+
+        $beanHandler = new SpiceFTSBeanHandler($module);
+        $indexedFields = $beanHandler->mapModule();
+
+        foreach ($fields as $field) {
+            if (!isset($indexedFields[$field])) return false;
+        }
+
+        return true;
     }
 
     /**
@@ -346,6 +376,26 @@ class SpiceFTSHandler
 
     }
 
+    private function getSortArrayEntry($seed, $indexProperties, $sortfield, $sortdirection)
+    {
+        // replace by metadata sortfield definition
+        if ($seed->field_name_map[$sortfield]['sort_on']) {
+            $sortfield = $seed->field_name_map[$sortfield]['sort_on'];
+        }
+
+        // check that the field is here, is sortable and if aanother sort field is set
+        foreach ($indexProperties as $indexProperty) {
+            if ($indexProperty['fieldname'] == $sortfield) {
+                if ($indexProperty['metadata']['sort_on']) {
+                    return array($indexProperty['metadata']['sort_on'] . '.raw' => $sortdirection);
+                } else {
+                    return array($sortfield . '.raw' => $sortdirection);
+                }
+                break;
+            }
+        }
+    }
+
     /**
      *
      * function to search in a module
@@ -372,6 +422,7 @@ class SpiceFTSHandler
 
         $indexProperties = SpiceFTSUtils::getBeanIndexProperties($module);
         $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
+        $seed = \BeanFactory::getBean($module);
 
         $searchFields = array();
 
@@ -401,21 +452,14 @@ class SpiceFTSHandler
             $queryParam['_source'] = false;
         }
 
+        $queryParam['sort'] = [];
         if ($sort['sortfield'] && $sort['sortdirection']) {
-
-            // check that the field is here, is sortable and if aanother sort field is set
-            foreach ($indexProperties as $indexProperty) {
-                if ($indexProperty['fieldname'] == $sort['sortfield']) {
-                    if ($indexProperty['metadata']['sort_on']) {
-                        $queryParam['sort'] = array(array($indexProperty['metadata']['sort_on'] . '.raw' => $sort['sortdirection']));
-                    } else {
-                        $queryParam['sort'] = array(array($sort['sortfield'] . '.raw' => $sort['sortdirection']));
-                    }
-                    break;
-                }
+            $queryParam['sort'][] = $this->getSortArrayEntry($seed, $indexProperties, $sort['sortfield'], $sort['sortdirection']);
+        } elseif (is_array($sort) && count($sort) > 0) {
+            foreach ($sort as $sortparam) {
+                $queryParam['sort'][] = $this->getSortArrayEntry($seed, $indexProperties, $sortparam['sortfield'], $sortparam['sortdirection']);
             }
         }
-
 
 
         /**
@@ -481,9 +525,12 @@ class SpiceFTSHandler
 
         // if searchtags add an additional query for the must
         if ($searchtags) {
+            $tags = [];
+            foreach ($searchtags as $v) $tags[] = ['term' => ['tags.raw' => $v]];
             $queryParam['query']['bool']['must'][] = [
-                'terms' => [
-                    'tags' => $searchtags, // ['travelmaster', 'reisen']
+                'bool' => [
+                    'should' => $tags,
+                    'minimum_should_match' => 1
                 ]
             ];
         }
@@ -827,12 +874,23 @@ class SpiceFTSHandler
                 $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter']);
             }
 
+
+            if (!empty($params['listid'])) {
+                $listDef = $GLOBALS['db']->fetchByAssoc($GLOBALS['db']->query("SELECT * FROM sysmodulelists WHERE id = '{$params['listid']}'"));
+                $filterdefs = json_decode(html_entity_decode($listDef['filterdefs']));
+                if ($filterdefs) {
+                    $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+                    $addFilters[] = $sysFilter->buildElasticFilterForGroup($filterdefs);
+                }
+            }
+
             //check if we use a wildcard for the search
             $useWildcard = false;
             if (preg_match("/\*/", $searchterm))
                 $useWildcard = true;
 
-            if ($params['buckets']) {
+            $params['buckets'] = json_decode($params['buckets'], true);
+            if (count($params['buckets']) > 0) {
                 // gewt the full aggregates
                 $searchresultsraw = $this->searchModule($module, $searchterm, $searchtags, $aggregatesFilters, 0, 0, $sort, $addFilters, $useWildcard, $required);
                 $searchresults[$module] = $searchresultsraw['hits'] ?: ['hits' => [], 'total' => $searchresultsraw['hits']['total']];
@@ -845,9 +903,16 @@ class SpiceFTSHandler
                             $params['buckets']['bucketfield'] . '.raw' => $bucketitem['bucket']
                         )
                     );
+                    $addAggrs = [];
+                    if ($params['buckets']['buckettotal'])
+                    {
+                        foreach ($params['buckets']['buckettotal'] as $item)
+                        {
+                            $addAggrs['_bucket_agg_' . $item['name']] = [$item['function'] => ['field' => $item['name'] . '.agg']];
+                        }
+                    }
 
-                    $addAggregate = ['_bucket_agg' => ['sum' => ['field' => 'amount.agg']]];
-                    $searchresultsraw = $this->searchModule($module, $searchterm, $searchtags, $aggregatesFilters, $params['records'] ?: 5, $bucketitem['items'] ?: 0, $sort, array_merge($addFilters, $bucketfilters), $useWildcard, $required, true, $addAggregate);
+                    $searchresultsraw = $this->searchModule($module, $searchterm, $searchtags, $aggregatesFilters, $params['records'] ? : 5, $bucketitem['items'] ? : 0, $sort, array_merge($addFilters, $bucketfilters) , $useWildcard, $required, true, $addAggrs);
                     foreach ($searchresultsraw['hits']['hits'] as &$hit) {
                         $seed = \BeanFactory::getBean($module, $hit['_id']);
                         foreach ($seed->field_name_map as $field => $fieldData) {
@@ -856,7 +921,7 @@ class SpiceFTSHandler
                         }
 
                         // get the email addresses
-                        $krestHandler = new \KRESTModuleHandler();
+                        $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
                         $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($module, $hit['_id']);
 
                         $hit['acl'] = $this->get_acl_actions($seed);
@@ -869,8 +934,14 @@ class SpiceFTSHandler
                         $searchresults[$module]['hits'][] = $hit;
                     }
 
+                    $aggsArray = [];
+                    foreach (array_keys($addAggrs) as $aggregateKey)
+                    {
+                        $aggsArray[$aggregateKey] = $searchresultsraw['aggregations'][$aggregateKey]['value'] ? : $searchresultsraw['aggregations'][$aggregateKey][$aggregateKey]['value'];
+                    }
+
                     // update the bucket item
-                    $bucketitem['value'] = $searchresultsraw['aggregations']['_bucket_agg']['value'] ?: $searchresultsraw['aggregations']['_bucket_agg']['_bucket_agg']['value'];
+                    $bucketitem['values'] = $aggsArray;
                     $bucketitem['total'] = $searchresultsraw['hits']['total'];
                     $bucketitem['items'] = $bucketitem['items'] + count($searchresultsraw['hits']['hits']);
                 }
@@ -896,7 +967,7 @@ class SpiceFTSHandler
                     }
 
                     // get the email addresses
-                    $krestHandler = new \KRESTModuleHandler();
+                    $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
                     $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($module, $hit['_id']);
 
                     $hit['acl'] = $this->get_acl_actions($seed);
@@ -916,37 +987,32 @@ class SpiceFTSHandler
         return $searchresults;
     }
 
-    function exportGlobalSearchResults($module, $searchterm, $fields, $params, $aggregates = [], $sort = [], $required = [])
+
+    /**
+     * @param $modules
+     * @param $searchterm
+     * @param $params
+     * @param array $aggregates
+     * @param array $sort
+     * @param array $required
+     *
+     * @return array
+     */
+    function getModuleSearchResults($module, $searchterm, $searchtags, $params, $aggregates = [], $sort = [], $required = [])
     {
         global $current_user;
 
         $searchterm = strtolower(trim((string)$searchterm));
 
-        $exportresults = array();
-
-        if (!$GLOBALS['ACLController']->checkAccess($module, 'export', true))
-            return false;
-
-        $searchresultsraw = $this->getRawSearchResults($module, $searchterm, $params, $aggregates, 1000, 0, $sort, $required, false);
-
-        if ($searchresultsraw['error']) {
-            return $exportresults;
+        if (empty($modules)) {
+            $modulesArray = $this->getGlobalSearchModules();
+            $modArray = $modulesArray['modules'];
+        } else {
+            $modArray = explode(',', $modules);
         }
+        $searchresults = array();
 
-        // get the email addresses
-        $krestHandler = new \KRESTModuleHandler();
-        foreach ($searchresultsraw['hits']['hits'] as &$hit) {
-            $seed = \BeanFactory::getBean($module, $hit['_id']);
-            $exportresults[] = $krestHandler->mapBeanToArray($module, $seed, $fields);
-        }
-
-        return $exportresults;
-    }
-
-    function getRawSearchResults($module, $searchterm, $params, $aggregates = [], $size, $from, $sort = [], $required = [], $source = true)
-    {
-        global $current_user;
-
+        // prepare the aggregates
         $aggregatesFilters = array();
         foreach ($aggregates[$module] as $aggregate) {
             $aggregateDetails = explode('::', $aggregate);
@@ -955,18 +1021,76 @@ class SpiceFTSHandler
 
         // check if we have an owner set as parameter
         $addFilters = array();
+
+        /* removed - shoudl no longer be used ... iuse filters and groupscope instead
         if ($params['owner'] == 1) {
             $addFilters[] = array(
-                'term' => array(
-                    'assigned_user_id' => $current_user->id
+                'bool' => array(
+                    'should' => array(
+                        array(
+                            'term' => array(
+                                'assigned_user_id' => $current_user->id
+                            )
+                        ),
+                        array(
+                            'term' => array(
+                                'assigned_user_ids' => $current_user->id
+                            )
+                        )
+                    ),
+                    'minimum_should_match' => '1'
                 )
             );
+        }
+        */
+
+        // get the index settings
+        $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
+
+        // check for geotags
+        if ($params['searchgeo'] && $indexSettings['geosearch']) {
+            $addFilters[] = array(
+                "geo_distance" => [
+                    "distance" => $params['searchgeo']['radius'] . "km",
+                    "_location" => [
+                        "lat" => $params['searchgeo']['lat'],
+                        "lon" => $params['searchgeo']['lng'],
+                    ]
+                ]
+            );
+        }
+
+        // handle the filters
+        $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+        $sysFilter->filtermodule = $module;
+
+        // check if we have a filter passed in from the top
+        if (!empty($params['filter'])) {
+            $addFilters[] = $sysFilter->buildElasticFilterForGroup(json_decode(html_entity_decode($params['filter'])));
         }
 
         // check for modulefilter
         if (!empty($params['modulefilter'])) {
-            $sysFilter = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
             $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter']);
+        }
+
+        // check if we have a listid
+        if (!empty($params['listid'])) {
+            switch ($params['listid']) {
+                case 'owner':
+                    $filter = new \stdClass();
+                    $filter->groupscope = 'own';
+                    $addFilters[] = $sysFilter->buildElasticFilterForGroup($filter);
+                    break;
+                default:
+                    $listDef = $GLOBALS['db']->fetchByAssoc($GLOBALS['db']->query("SELECT * FROM sysmodulelists WHERE id = '{$params['listid']}'"));
+                    $filterdefs = json_decode(html_entity_decode($listDef['filterdefs']));
+                    if ($filterdefs) {
+                        $processedFilters = $sysFilter->buildElasticFilterForGroup($filterdefs);
+                        if (count($processedFilters) > 0) $addFilters[] = $processedFilters;
+                    }
+                    break;
+            }
         }
 
         //check if we use a wildcard for the search
@@ -974,243 +1098,395 @@ class SpiceFTSHandler
         if (preg_match("/\*/", $searchterm))
             $useWildcard = true;
 
-        $searchresultsraw = $this->searchModule($module, $searchterm, array(), $aggregatesFilters, $size, $from, $sort, $addFilters, $useWildcard, $required, $source);
+        $params['buckets'] = json_decode($params['buckets'], true);
+        if (count($params['buckets']) > 0) {
 
-        return $searchresultsraw;
+            $terms = [];
+            foreach ($params['buckets']['bucketitems'] as &$bucketitem) {
+                // collect the terms
+                $terms[] = $bucketitem['bucket'];
 
-    }
+                // build the bucket filter
+                $bucketfilters = [];
+                $bucketfilters[] = array(
+                    'term' => array(
+                        $params['buckets']['bucketfield'] . '.raw' => $bucketitem['bucket']
+                    )
+                );
 
-
-    private function get_acl_actions($bean)
-    {
-        $aclArray = [];
-        $aclActions = ['detail', 'edit', 'delete'];
-        foreach ($aclActions as $aclAction) {
-            if ($bean)
-                $aclArray[$aclAction] = $bean->ACLAccess($aclAction);
-            // $aclArray[$aclAction] = true;
-            else
-                $aclArray[$aclAction] = false;
-        }
-
-        return $aclArray;
-    }
-
-    private function get_acl_fieldaccess($bean)
-    {
-        global $current_user;
-
-        $aclArray = [];
-        if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFieldAccess')) {
-            $controlArray = [];
-            foreach ($GLOBALS['ACLController']->getFieldAccess($bean, 'display', false) as $field => $fieldcontrol) {
-                if (!isset($controlArray[$field]) || (isset($controlArray[$field]) && $fieldcontrol > $controlArray[$field]))
-                    $aclArray[$field] = $fieldcontrol;
-            }
-            foreach ($GLOBALS['ACLController']->getFieldAccess($bean, 'edit', false) as $field => $fieldcontrol) {
-                if (!isset($controlArray[$field]) || (isset($controlArray[$field]) && $fieldcontrol > $controlArray[$field]))
-                    $aclArray[$field] = $fieldcontrol;
-            }
-        }
-
-        return $aclArray;
-    }
-
-    function getSearchResults($module, $searchTerm, $page = 0, $aggregates = [])
-    {
-
-        $GLOBALS['app_list_strings'] = return_app_list_strings_language($GLOBALS['current_language']);
-        $seed = \BeanFactory::getBean($module);
-
-        $_REQUEST['module'] = $module;
-        $_REQUEST['query'] = true;
-        $_REQUEST['searchterm'] = $searchTerm;
-        $_REQUEST['search_form_view'] = 'fts_search';
-        $_REQUEST['searchFormTab'] = 'fts_search';
-
-        ob_start();
-        $vl = new \ViewList();
-        $vl->bean = $seed;
-        $vl->module = $module;
-        $GLOBALS['module'] = $module;
-        $GLOBALS['currentModule'] = $module;
-        $vl->preDisplay();
-        $vl->listViewPrepare();
-
-        // prepare the aggregates
-        $aggregatesFilters = array();
-        foreach ($aggregates as $aggregate) {
-            $aggregateDetails = explode('::', $aggregate);
-            $aggregatesFilters[$aggregateDetails[0]][] = $aggregateDetails[1];
-        }
-
-        // make the search
-        $searchresults = $this->searchModule($module, $searchTerm, array(), $aggregatesFilters, 25, $page * 25);
-
-        $rows = array();
-        foreach ($searchresults['hits']['hits'] as $searchresult) {
-            // todo: check why we need to decode here
-            /*
-            foreach ($searchresult['_source'] as $fieldName => $fieldValue) {
-                $searchresult['_source'][$fieldName] = utf8_decode($fieldValue);
-            }
-            */
-
-            $rows[] = $seed->convertRow($searchresult['_source']);
-        }
-
-        $vl->lv->setup($vl->bean, 'include/ListView/ListViewFTSTable.tpl', '', array('fts' => true, 'fts_rows' => $rows, 'fts_total' => $searchresults['hits']['total'], 'fts_offset' => $page * 25));
-        ob_end_clean();
-
-        return array(
-            'result' => $vl->lv->display(),
-            'aggregates' => $this->getArrgetgatesHTML($searchresults['aggregations'])
-        );
-    }
-
-    function indexBeans($packagesize, $toConsole = false )
-    {
-        global $db;
-
-        $beanCounter = 0;
-        $beans = $db->query("SELECT * FROM sysfts");
-        echo "Starting indexing (maximal $packagesize records).\n";
-        while ($bean = $db->fetchByAssoc($beans)) {
-            echo 'Indexing module ' . $bean['module'] . ': ';
-            $seed = \BeanFactory::getBean($bean['module']);
-
-            //in case of module mispelling, no bean will be found. Catch here
-            if (!$seed) {
-                echo "Module not found.\n";
-                continue;
-            }
-
-            $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL OR date_indexed <> ''))", 0, $packagesize - $beanCounter);
-            $numRows = $indexBeans->num_rows;
-            $counterIndexed = $counterDeleted = 0;
-            if ( $toConsole ) {
-                echo $numRows . ' records to do.';
-                if ( $numRows ) {
-                    $numRowsLength = strlen( $numRows ); // determine the maximum character number of the counter
-                    echo ' Finished ';
-                } else echo "\n";
-            }
-
-            while ($indexBean = $db->fetchByAssoc($indexBeans)) {
-                if ( $toConsole ) {
-                    if ( $counterIndexed + $counterDeleted > 0 ) echo str_repeat( chr( 8 ), $numRowsLength ); // delete previous counter output
-                    echo sprintf( "%${numRowsLength}d", $counterIndexed + $counterDeleted + 1 ); // output current counter
+//                 add the aggregate
+                $addAggrs = [];
+                if ($params['buckets']['buckettotal']) {
+                    foreach ($params['buckets']['buckettotal'] as $item) {
+                        $addAggrs['_bucket_agg_' . $item['name']] = [$item['function'] => ['field' => $item['name'] . '.agg']];
+                    }
                 }
-                if ($indexBean['deleted'] == 0) {
-                    $seed->retrieve($indexBean['id']);
-                    $this->indexBean($seed);
-                    $beanCounter++;
-                    $counterIndexed++;
-                } else {
-                    $seed->retrieve($indexBean['id'], true, false);
-                    $this->deleteBean($seed);
-                    $beanCounter++;
-                    $counterDeleted++;
+
+                // add the aggregates
+                $searchresultsraw = $this->searchModule($module, $searchterm, $searchtags, $aggregatesFilters, $params['records'] ?: 5, $bucketitem['items'] ?: 0, $sort, array_merge($addFilters, $bucketfilters), $useWildcard, $required, true, $addAggrs);
+                foreach ($searchresultsraw['hits']['hits'] as &$hit) {
+                    $searchresults['hits'][] = $hit;
                 }
+
+                // loop over the aggregate keys to get the searched values
+                $aggsArray = [];
+                foreach (array_keys($addAggrs) as $aggregateKey) {
+                    $aggsArray[$aggregateKey] = $searchresultsraw['aggregations'][$aggregateKey]['value'] ?: $searchresultsraw['aggregations'][$aggregateKey][$aggregateKey]['value'];
+                }
+
+                // update the bucket items
+                $bucketitem['values'] = $aggsArray;
+                $bucketitem['total'] = $searchresultsraw['hits']['total'];
+                $bucketitem['items'] = $bucketitem['items'] + count($searchresultsraw['hits']['hits']);
+
             }
-            if ( $numRows ) {
-                if ( $toConsole ) echo str_repeat( chr( 8 ), $numRowsLength+1 ).'!'; // delete previous/last counter output
-                echo " Indexed $counterIndexed, deleted $counterDeleted records.\n";
+
+            // get the total filtered by the list of buckets and the total aggregates
+            $bucketfilters = [];
+            $bucketfilters[] = array(
+                'terms' => array(
+                    $params['buckets']['bucketfield'] . '.raw' => $terms
+                )
+            );
+            $searchresultsraw = $this->searchModule($module, $searchterm, $searchtags, $aggregatesFilters, 0, 0, $sort, array_merge($addFilters, $bucketfilters), $useWildcard, $required);
+            $searchresults['total'] = $searchresultsraw['hits']['total'];
+            $searchresults['aggregations'] = $searchresultsraw['aggregations'];
+
+            // return the upodated bnucket items
+            $searchresults['buckets'] = $params['buckets'];
+        } else {
+                $searchresultsraw = $this->searchModule($module, $searchterm, $searchtags, $aggregatesFilters, $params['records'] ?: 5, $params['start'] ?: 0, $sort, $addFilters, $useWildcard, $required);
+                $searchresults = $searchresultsraw['hits'] ?: ['hits' => [], 'total' => $searchresultsraw['hits']['total']];
+
+                if ($searchresultsraw['error']) {
+                    // no error handling accepted... just trash it into some logs...
+                    // $GLOBALS['log']->fatal(json_encode($searchresultsraw['error']['root_cause']));
+                    //throw new Exception(json_encode($searchresultsraw['error']['root_cause']));
+                }
+                // add the aggregations
+                $searchresults['aggregations'] = $searchresultsraw['aggregations'];
             }
-            if ($beanCounter >= $packagesize) {
-                echo "Indexing incomplete closed, because scheduler package size ($packagesize) exceeded. Will continue next time.\n";
-                return true;
-            }
+
+            return $searchresults;
         }
-        echo 'Indexing finished. All done.';
-    }
 
-    /**
-     *
-     * @param $packagesize
-     * @param null $module added for CR1000257
-     * @return bool
-     */
-    function bulkIndexBeans($packagesize, $module = null, $toConsole = false )
-    {
-        global $timedate, $db, $sugar_config;
 
-        $beanCounter = 0;
-        // BEGIN CR1000257
-        $where = "";
-        if (!empty($module)) {
-            $where = " WHERE module='" . $module . "'";
+        function exportGlobalSearchResults($module, $searchterm, $fields, $params, $aggregates = [], $sort = [], $required = [])
+        {
+            global $current_user;
+
+            $searchterm = strtolower(trim((string)$searchterm));
+
+            $exportresults = array();
+
+            if (!$GLOBALS['ACLController']->checkAccess($module, 'export', true))
+                return false;
+
+            $searchresultsraw = $this->getRawSearchResults($module, $searchterm, $params, $aggregates, 1000, 0, $sort, $required, false);
+
+            if ($searchresultsraw['error']) {
+                return $exportresults;
+            }
+
+            // get the email addresses
+            $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+            foreach ($searchresultsraw['hits']['hits'] as &$hit) {
+                $seed = \BeanFactory::getBean($module, $hit['_id']);
+                $exportresults[] = $krestHandler->mapBeanToArray($module, $seed, $fields);
+            }
+
+            return $exportresults;
         }
-        // END
-        $order = empty($module) ? ' ORDER BY module ':'';
-        $beans = $db->query("SELECT * FROM sysfts".$where.$order);
-        echo "Starting indexing (maximal $packagesize records).\n";
 
-        $bulkCommitSize = ($sugar_config['fts']['bulkcommitsize'] ?: 1000);
-        $bulkItems = [];
-        $bulkUpdates = [
-            'indexed' => [],
-            'deleted' => []
-        ];
+        function getRawSearchResults($module, $searchterm, $params, $aggregates = [], $size, $from, $sort = [], $required = [], $source = true)
+        {
+            global $current_user;
 
-        while ($bean = $db->fetchByAssoc($beans)) {
-            echo 'Indexing module ' . $bean['module'] . ': ';
-            $seed = \BeanFactory::getBean($bean['module']);
-
-            //in case of module mispelling, no bean will be found. Catch here
-            if (!$seed) {
-                echo "Module not found.\n";
-                continue;
+            $aggregatesFilters = array();
+            foreach ($aggregates[$module] as $aggregate) {
+                $aggregateDetails = explode('::', $aggregate);
+                $aggregatesFilters[$aggregateDetails[0]][] = $aggregateDetails[1];
             }
 
-            $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed = '' OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL OR date_indexed <> ''))", 0, $packagesize);
-            $numRows = $indexBeans->num_rows;
-            $counterIndexed = $counterDeleted = 0;
-            if ( $toConsole ) {
-                echo $numRows . ' records to do.';
-                if ( $numRows ) {
-                    $numRowsLength = strlen( $numRows ); // determine the maximum character number of the counter
-                    echo ' Finished ';
-                } else echo "\n";
+
+            // check if we have an owner set as parameter
+            $addFilters = array();
+            if ($params['owner'] == 1) {
+                $addFilters[] = array(
+                    'term' => array(
+                        'assigned_user_id' => $current_user->id
+                    )
+                );
             }
 
-            while ($indexBean = $db->fetchByAssoc($indexBeans)) {
-                if ( $toConsole ) {
-                    if ( $counterIndexed + $counterDeleted > 0 ) echo str_repeat( chr( 8 ), $numRowsLength ); // delete previous counter output
-                    echo sprintf( "%${numRowsLength}d", $counterIndexed + $counterDeleted + 1 ); // output current counter
+            // check for modulefilter
+            if (!empty($params['modulefilter'])) {
+                $sysFilter = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+                $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter']);
+            }
+
+            //check if we use a wildcard for the search
+            $useWildcard = false;
+            if (preg_match("/\*/", $searchterm))
+                $useWildcard = true;
+
+            $searchresultsraw = $this->searchModule($module, $searchterm, array(), $aggregatesFilters, $size, $from, $sort, $addFilters, $useWildcard, $required, $source);
+
+            return $searchresultsraw;
+
+        }
+
+
+        private
+        function get_acl_actions($bean)
+        {
+            $aclArray = [];
+            $aclActions = ['detail', 'edit', 'delete'];
+            foreach ($aclActions as $aclAction) {
+                if ($bean)
+                    $aclArray[$aclAction] = $bean->ACLAccess($aclAction);
+                // $aclArray[$aclAction] = true;
+                else
+                    $aclArray[$aclAction] = false;
+            }
+
+            return $aclArray;
+        }
+
+        private
+        function get_acl_fieldaccess($bean)
+        {
+            global $current_user;
+
+            $aclArray = [];
+            if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFieldAccess')) {
+                $controlArray = [];
+                foreach ($GLOBALS['ACLController']->getFieldAccess($bean, 'display', false) as $field => $fieldcontrol) {
+                    if (!isset($controlArray[$field]) || (isset($controlArray[$field]) && $fieldcontrol > $controlArray[$field]))
+                        $aclArray[$field] = $fieldcontrol;
                 }
-                if ($indexBean['deleted'] == 0) {
-                    $seed->retrieve($indexBean['id']);
-                    $bulkItems[] = json_encode([
-                        'index' => [
-                            '_index' => $sugar_config['fts']['prefix'] . strtolower($bean['module']),
-                            '_type' => $bean['module'],
-                            '_id' => $seed->id
-                        ]
-                    ]);
-                    $beanHandler = new SpiceFTSBeanHandler($seed);
-                    $bulkItems[] = json_encode($beanHandler->normalizeBean());
-
-                    $bulkUpdates['indexed'][] = $seed->id;
-
-                    $beanCounter++;
-                    $counterIndexed++;
-                } else {
-                    $seed->retrieve($indexBean['id'], true, false);
-                    $bulkItems[] = json_encode([
-                        'delete' => [
-                            '_index' => $sugar_config['fts']['prefix'] . strtolower($bean['module']),
-                            '_type' => $bean['module'],
-                            '_id' => $seed->id
-                        ]
-                    ]);
-
-                    $bulkUpdates['deleted'][] = $seed->id;
-
-                    $beanCounter++;
-                    $counterDeleted++;
+                foreach ($GLOBALS['ACLController']->getFieldAccess($bean, 'edit', false) as $field => $fieldcontrol) {
+                    if (!isset($controlArray[$field]) || (isset($controlArray[$field]) && $fieldcontrol > $controlArray[$field]))
+                        $aclArray[$field] = $fieldcontrol;
                 }
-                if (count($bulkItems) >= $bulkCommitSize) {
+            }
+
+            return $aclArray;
+        }
+
+        function getSearchResults($module, $searchTerm, $page = 0, $aggregates = [])
+        {
+
+            $GLOBALS['app_list_strings'] = return_app_list_strings_language($GLOBALS['current_language']);
+            $seed = \BeanFactory::getBean($module);
+
+            $_REQUEST['module'] = $module;
+            $_REQUEST['query'] = true;
+            $_REQUEST['searchterm'] = $searchTerm;
+            $_REQUEST['search_form_view'] = 'fts_search';
+            $_REQUEST['searchFormTab'] = 'fts_search';
+
+            ob_start();
+            $vl = new \ViewList();
+            $vl->bean = $seed;
+            $vl->module = $module;
+            $GLOBALS['module'] = $module;
+            $GLOBALS['currentModule'] = $module;
+            $vl->preDisplay();
+            $vl->listViewPrepare();
+
+            // prepare the aggregates
+            $aggregatesFilters = array();
+            foreach ($aggregates as $aggregate) {
+                $aggregateDetails = explode('::', $aggregate);
+                $aggregatesFilters[$aggregateDetails[0]][] = $aggregateDetails[1];
+            }
+
+            // make the search
+            $searchresults = $this->searchModule($module, $searchTerm, array(), $aggregatesFilters, 25, $page * 25);
+
+            $rows = array();
+            foreach ($searchresults['hits']['hits'] as $searchresult) {
+                // todo: check why we need to decode here
+                /*
+                foreach ($searchresult['_source'] as $fieldName => $fieldValue) {
+                    $searchresult['_source'][$fieldName] = utf8_decode($fieldValue);
+                }
+                */
+
+                $rows[] = $seed->convertRow($searchresult['_source']);
+            }
+
+            $vl->lv->setup($vl->bean, 'include/ListView/ListViewFTSTable.tpl', '', array('fts' => true, 'fts_rows' => $rows, 'fts_total' => $searchresults['hits']['total'], 'fts_offset' => $page * 25));
+            ob_end_clean();
+
+            return array(
+                'result' => $vl->lv->display(),
+                'aggregates' => $this->getArrgetgatesHTML($searchresults['aggregations'])
+            );
+        }
+
+        function indexBeans($packagesize, $toConsole = false)
+        {
+            global $db;
+
+            $beanCounter = 0;
+            $beans = $db->query("SELECT * FROM sysfts");
+            echo "Starting indexing (maximal $packagesize records).\n";
+            while ($bean = $db->fetchByAssoc($beans)) {
+                echo 'Indexing module ' . $bean['module'] . ': ';
+                $seed = \BeanFactory::getBean($bean['module']);
+
+                //in case of module mispelling, no bean will be found. Catch here
+                if (!$seed) {
+                    echo "Module not found.\n";
+                    continue;
+                }
+
+                $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL  OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL))", 0, $packagesize - $beanCounter);
+                $numRows = $indexBeans->num_rows;
+                $counterIndexed = $counterDeleted = 0;
+                if ($toConsole) {
+                    echo $numRows . ' records to do.';
+                    if ($numRows) {
+                        $numRowsLength = strlen($numRows); // determine the maximum character number of the counter
+                        echo ' Finished ';
+                    } else echo "\n";
+                }
+
+                while ($indexBean = $db->fetchByAssoc($indexBeans)) {
+                    if ($toConsole) {
+                        if ($counterIndexed + $counterDeleted > 0) echo str_repeat(chr(8), $numRowsLength); // delete previous counter output
+                        echo sprintf("%${numRowsLength}d", $counterIndexed + $counterDeleted + 1); // output current counter
+                    }
+                    if ($indexBean['deleted'] == 0) {
+                        $seed->retrieve($indexBean['id']);
+                        $this->indexBean($seed);
+                        $beanCounter++;
+                        $counterIndexed++;
+                    } else {
+                        $seed->retrieve($indexBean['id'], true, false);
+                        $this->deleteBean($seed);
+                        $beanCounter++;
+                        $counterDeleted++;
+                    }
+                }
+                if ($numRows) {
+                    if ($toConsole) echo str_repeat(chr(8), $numRowsLength + 1) . '!'; // delete previous/last counter output
+                    echo " Indexed $counterIndexed, deleted $counterDeleted records.\n";
+                }
+                if ($beanCounter >= $packagesize) {
+                    echo "Indexing incomplete closed, because scheduler package size ($packagesize) exceeded. Will continue next time.\n";
+                    return true;
+                }
+            }
+            echo 'Indexing finished. All done.';
+        }
+
+        /**
+         *
+         * @param $packagesize
+         * @param null $module added for CR1000257
+         * @return bool
+         */
+        function bulkIndexBeans($packagesize, $module = null, $toConsole = false)
+        {
+            global $timedate, $db, $sugar_config;
+
+            $beanCounter = 0;
+            // BEGIN CR1000257
+            $where = "";
+            if (!empty($module)) {
+                $where = " WHERE module='" . $module . "'";
+            }
+            // END
+            $order = empty($module) ? ' ORDER BY module ' : '';
+            $beans = $db->query("SELECT * FROM sysfts" . $where . $order);
+            echo "Starting indexing (maximal $packagesize records).\n";
+
+            $bulkCommitSize = ($sugar_config['fts']['bulkcommitsize'] ?: 1000);
+            $bulkItems = [];
+            $bulkUpdates = [
+                'indexed' => [],
+                'deleted' => []
+            ];
+
+            while ($bean = $db->fetchByAssoc($beans)) {
+                echo 'Indexing module ' . $bean['module'] . ': ';
+                $seed = \BeanFactory::getBean($bean['module']);
+
+                //in case of module mispelling, no bean will be found. Catch here
+                if (!$seed) {
+                    echo "Module not found.\n";
+                    continue;
+                }
+
+                $indexBeans = $db->limitQuery("SELECT id, deleted FROM " . $seed->table_name . " WHERE (deleted = 0 AND (date_indexed IS NULL OR date_indexed < date_modified)) OR (deleted = 1 AND (date_indexed IS NOT NULL ))", 0, $packagesize);
+                $numRows = $indexBeans->num_rows;
+                $counterIndexed = $counterDeleted = 0;
+                if ($toConsole) {
+                    echo $numRows . ' records to do.';
+                    if ($numRows) {
+                        $numRowsLength = strlen($numRows); // determine the maximum character number of the counter
+                        echo ' Finished ';
+                    } else echo "\n";
+                }
+
+                while ($indexBean = $db->fetchByAssoc($indexBeans)) {
+                    if ($toConsole) {
+                        if ($counterIndexed + $counterDeleted > 0) echo str_repeat(chr(8), $numRowsLength); // delete previous counter output
+                        echo sprintf("%${numRowsLength}d", $counterIndexed + $counterDeleted + 1); // output current counter
+                    }
+                    if ($indexBean['deleted'] == 0) {
+                        $seed->retrieve($indexBean['id']);
+                        $bulkItems[] = json_encode([
+                            'index' => [
+                                '_index' => $sugar_config['fts']['prefix'] . strtolower($bean['module']),
+                                '_type' => $bean['module'],
+                                '_id' => $seed->id
+                            ]
+                        ]);
+                        $beanHandler = new SpiceFTSBeanHandler($seed);
+                        $bulkItems[] = json_encode($beanHandler->normalizeBean());
+
+                        $bulkUpdates['indexed'][] = $seed->id;
+
+                        $beanCounter++;
+                        $counterIndexed++;
+                    } else {
+                        $seed->retrieve($indexBean['id'], true, false);
+                        $bulkItems[] = json_encode([
+                            'delete' => [
+                                '_index' => $sugar_config['fts']['prefix'] . strtolower($bean['module']),
+                                '_type' => $bean['module'],
+                                '_id' => $seed->id
+                            ]
+                        ]);
+
+                        $bulkUpdates['deleted'][] = $seed->id;
+
+                        $beanCounter++;
+                        $counterDeleted++;
+                    }
+                    if (count($bulkItems) >= $bulkCommitSize) {
+                        $indexResponse = $this->elasticHandler->bulk($bulkItems);
+                        if (!$indexResponse->errors) {
+                            if (count($bulkUpdates['indexed']) > 0)
+                                $db->query("UPDATE " . $seed->table_name . " SET date_indexed = '" . $timedate->nowDb() . "' WHERE id IN ('" . implode("','", $bulkUpdates['indexed']) . "')");
+
+                            if (count($bulkUpdates['deleted']) > 0)
+                                $db->query("UPDATE " . $seed->table_name . " SET date_indexed = NULL WHERE id IN ('" . implode("','", $bulkUpdates['deleted']) . "')");
+
+                            $bulkUpdates = [
+                                'indexed' => [],
+                                'deleted' => []
+                            ];
+                        }
+                        $bulkItems = [];
+                    }
+                }
+
+                if (count($bulkItems) > 0) {
                     $indexResponse = $this->elasticHandler->bulk($bulkItems);
                     if (!$indexResponse->errors) {
                         if (count($bulkUpdates['indexed']) > 0)
@@ -1226,8 +1502,16 @@ class SpiceFTSHandler
                     }
                     $bulkItems = [];
                 }
-            }
 
+                if ($numRows) {
+                    if ($toConsole) echo str_repeat(chr(8), $numRowsLength + 1) . '!'; // delete previous/last counter output
+                    echo " Indexed $counterIndexed, deleted $counterDeleted records.\n";
+                }
+                if ($beanCounter >= $packagesize) {
+                    echo "Indexing incomplete closed, because scheduler package size ($packagesize) exceeded. Will continue next time.\n";
+                    return true;
+                }
+            }
             if (count($bulkItems) > 0) {
                 $indexResponse = $this->elasticHandler->bulk($bulkItems);
                 if (!$indexResponse->errors) {
@@ -1242,42 +1526,16 @@ class SpiceFTSHandler
                         'deleted' => []
                     ];
                 }
-                $bulkItems = [];
             }
-
-            if ( $numRows ) {
-                if ( $toConsole ) echo str_repeat( chr( 8 ), $numRowsLength+1 ).'!'; // delete previous/last counter output
-                echo " Indexed $counterIndexed, deleted $counterDeleted records.\n";
-            }
-            if ($beanCounter >= $packagesize) {
-                echo "Indexing incomplete closed, because scheduler package size ($packagesize) exceeded. Will continue next time.\n";
-                return true;
-            }
+            echo 'Indexing finished. All done.';
         }
-        if (count($bulkItems) > 0) {
-            $indexResponse = $this->elasticHandler->bulk($bulkItems);
-            if (!$indexResponse->errors) {
-                if (count($bulkUpdates['indexed']) > 0)
-                    $db->query("UPDATE " . $seed->table_name . " SET date_indexed = '" . $timedate->nowDb() . "' WHERE id IN ('" . implode("','", $bulkUpdates['indexed']) . "')");
 
-                if (count($bulkUpdates['deleted']) > 0)
-                    $db->query("UPDATE " . $seed->table_name . " SET date_indexed = NULL WHERE id IN ('" . implode("','", $bulkUpdates['deleted']) . "')");
-
-                $bulkUpdates = [
-                    'indexed' => [],
-                    'deleted' => []
-                ];
-            }
+        function getStats()
+        {
+            global $current_user;
+            if ($current_user->is_admin)
+                return $this->elasticHandler->getStats();
+            else
+                return [];
         }
-        echo 'Indexing finished. All done.';
     }
-
-    function getStats()
-    {
-        global $current_user;
-        if ($current_user->is_admin)
-            return $this->elasticHandler->getStats();
-        else
-            return [];
-    }
-}

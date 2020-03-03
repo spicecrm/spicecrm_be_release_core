@@ -1997,6 +1997,8 @@ $app_list_strings = array (
     'Closed Won' => '100',
     'Closed Lost' => '',
   ),
+
+
   'activity_dom' => 
   array (
     'Call' => 'Call',
@@ -4088,6 +4090,14 @@ $app_list_strings = array (
       'move' => 'Déplacer',
     'donothing' => 'Ne rien faire',
   ),
+
+    'salesdoc_doccategories' => array(
+        'QT' => 'Offre',
+        'OR' => 'Commande',
+        'IV' => 'Facture',
+        'CT' => 'Contrat'
+    ),
+
   'kbdocument_status_dom' => 
   array (
     'Draft' => 'Brouillon',
@@ -4401,12 +4411,40 @@ $app_list_strings['spiceaclobjects_types_dom'] = [
     //'5' => 'exclude (profile)'
 ];
 
+// CR1000333
+$app_list_strings['cruser_role_dom'] = [
+    'developer' => 'Développeur',
+    'tester' => 'Testeur',
+];
+
+$app_list_strings['crstatus_dom'] = [
+    '0' => 'créé',
+    '1' => 'mise en oeuvre',
+    '2' => 'unit tested',
+    '3' => 'integration test',
+    '4' => 'terminé', // was 3 before CR1000333
+    '5' => 'annulé / repoussé' // was 4 before CR1000333
+];
+
+$app_list_strings['crtype_dom'] = [
+    '0' => 'bug',
+    '1' => 'feature request',
+    '2' => 'change request',
+    '3' => 'hotfix'
+];
+
+// CR1000333
 $app_list_strings['deploymentrelease_status_dom'] = [
     ''         => '',
-    'planned'  => 'plannifié',
-    'released' => 'publié',
-    'canceled' => 'annulé',
+    'plan'  => 'planification', // value was planned before CR1000333
+    'develop'  => 'développement',
+    'prepare'    => 'environment',
+    'test'  => 'test',
+    'release' => 'publication',
+    'closed completed' => 'terminé', // value was released before CR1000333
+    'closed canceled' => 'annulé',
 ];
+
 
 $app_list_strings['product_status_dom'] = [
     'draft'    => 'brouillon',

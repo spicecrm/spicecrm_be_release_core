@@ -57,7 +57,7 @@ class KReportQueryArray
     {
         // set the various Fields
         $this->root_module = $rootModule;
-        $this->union_modules = $unionModules;
+        $this->union_modules = $unionModules == '{}' ? '' : $unionModules;
         $this->listArray = $listFields;
         $this->unionListArray = $unionListFields;
         $this->whereArray = $whereFields;

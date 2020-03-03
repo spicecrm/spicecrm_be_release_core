@@ -62,6 +62,53 @@ $dictionary['Meeting'] = [
             'len'    => '20',
             'source' => 'non-db',
         ],
+
+        // CR1000356
+        'meeting_user_status_accept' => [
+            'name'   => 'meeting_user_status_accept',
+            'vname'  => 'LBL_USER_STATUS_ACCEPT',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'meetings_users_status_accept',
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
+        ],
+        'meeting_user_status_decline' => [
+            'name'   => 'meeting_user_status_decline',
+            'vname'  => 'LBL_USER_STATUS_DECLINE',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'meetings_users_status_decline',
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
+        ],
+        'meeting_user_status_tentative' => [
+            'name'   => 'meeting_user_status_tentative',
+            'vname'  => 'LBL_USER_STATUS_TENTATIVE',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'meetings_users_status_tentative',
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
+        ],
+
+
+
         //bug 39559
         'set_accept_links' => [
             'name'   => 'accept_status',
@@ -124,9 +171,14 @@ $dictionary['Meeting'] = [
             'name'    => 'external_id',
             'vname'   => 'LBL_EXTERNALID',
             'type'    => 'varchar',
-            'len'     => 64,
+            'len'     => 255,
             'comment' => 'Meeting ID for external app API',
             'studio'  => 'false',
+        ],
+        'external_data' => [
+            'name'    => 'external_data',
+            'vname'   => 'LBL_EXTERNALDATA',
+            'type'    => 'text'
         ],
         'duration_hours' => [
             'name'    => 'duration_hours',
@@ -329,7 +381,14 @@ $dictionary['Meeting'] = [
             'source'       => 'non-db',
             'vname'        => 'LBL_CONTACTS',
             'module'       => 'Contacts',
-            'default'      => true
+            'default'      => true,
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            ),
         ],
         'parent_name' => [
             'name'        => 'parent_name',
@@ -349,7 +408,14 @@ $dictionary['Meeting'] = [
             'source'       => 'non-db',
             'vname'        => 'LBL_USERS',
             'module'       => 'Users',
-            'default'      => true
+            'default'      => true,
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
         ],
         'accounts' => [
             'name'         => 'accounts',

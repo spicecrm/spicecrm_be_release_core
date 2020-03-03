@@ -52,7 +52,7 @@ $app->group('/syslanguages', function () use ($app, $handler)
             throw (new KREST\ForbiddenException('No development privileges.'))->setErrorCode('notDeveloper');
 
         if ( $req->getParsedBodyParam('confirmed' ) !== true )
-            throw (new KREST\BadRequestException('Operation not confirmed.'))->setErrorCode('notConfirmed');
+            throw (new \SpiceCRM\KREST\BadRequestException('Operation not confirmed.'))->setErrorCode('notConfirmed');
 
         $result = $handler->transferFromFilesToDB( $args );
         if ( $result === false ) return $res->withJson(['success' => false]);

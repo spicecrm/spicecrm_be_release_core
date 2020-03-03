@@ -1075,6 +1075,8 @@ protected function checkQuery($sql, $object_name = false)
 	public function compareVarDefs($fielddef1, $fielddef2, $ignoreName = false)
 	{
 		foreach ( $fielddef1 as $key => $value ) {
+		    if($key == 'comment') continue;
+
 			if ($key == 'name' && $ignoreName)
 				continue;
             if (isset($fielddef2[$key]))

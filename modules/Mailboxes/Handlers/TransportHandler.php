@@ -2,6 +2,7 @@
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
 use SpiceCRM\modules\Mailboxes\MailboxLogTrait;
+use Mailbox;
 
 abstract class TransportHandler
 {
@@ -13,7 +14,7 @@ abstract class TransportHandler
     protected $incoming_settings = [];
     protected $outgoing_settings = [];
 
-    public function __construct(\Mailbox $mailbox)
+    public function __construct(Mailbox $mailbox)
     {
         $this->mailbox = $mailbox;
 
@@ -28,6 +29,8 @@ abstract class TransportHandler
 
     public function sendMail($email)
     {
+        global $timedate;
+
         if ($this->mailbox->active == false) {
             return [
                 'result'  => 'false',
@@ -48,6 +51,9 @@ abstract class TransportHandler
         }
 
         $message = $this->composeEmail($email);
+
+        // set the date sent
+        $email->date_sent = $timedate->nowDb();
 
         return $this->dispatch($message);
     }

@@ -118,6 +118,11 @@ $dictionary['spicebeanguidestages'] = array(
             'name' => 'stage_sequence',
             'type' => 'int'
         ),
+        'stage_bucket' => array(
+            'name' => 'stage_bucket',
+            'type' => 'varchar',
+            'len' => 50
+        ),
         'stage_color' => array(
             'name' => 'stage_color',
             'type' => 'varchar',
@@ -140,6 +145,12 @@ $dictionary['spicebeanguidestages'] = array(
         'not_in_kanban' => array(
             'name' => 'not_in_kanban',
             'type' => 'bool'
+        ),
+        'spicebeanguide_status' => array(
+            'name' => 'spicebeanguide_status',
+            'type' => 'varchar',
+            'len' => 4,
+            'comment' => 'vlaues are empty, won or lost, this influences the setup of the complete beanguide'
         )
     ),
    'indices' => array(

@@ -141,6 +141,14 @@ $dictionary['Project'] = array(
             'ignore_role' => true,
             'vname' => 'LBL_CONTACTS',
         ),
+        'users' => array(
+            'name' => 'users',
+            'type' => 'link',
+            'module' => 'Users',
+            'relationship' => 'projects_users',
+            'source' => 'non-db',
+            'vname' => 'LBL_USERS',
+        ),
         'opportunities' => array(
             'name' => 'opportunities',
             'type' => 'link',
@@ -224,6 +232,14 @@ $dictionary['Project'] = array(
             'source' => 'non-db',
             'module' => 'Documents',
             'vname' => 'LBL_DOCUMENTS',
+        ),
+        'scrumthemes' => array(
+            'name' => 'scrumthemes',
+            'type' => 'link',
+            'relationship' => 'project_scrumthemes',
+            'rname' => 'name',
+            'source' => 'non-db',
+            'module' => 'ScrumThemes'
         ),
 
     ),
@@ -398,3 +414,36 @@ if ($GLOBALS['sugar_flavor'] != 'CE')
     VardefManager::createVardef('Projects', 'Project', array('default', 'assignable', 'team_security'));
 else
     VardefManager::createVardef('Projects', 'Project', array('default', 'assignable'));
+
+global $dictionary;
+// CR1000336
+if(is_file('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')){
+    $dictionary['Project']['relationships']['account_systemdeploymentreleases'] = array(
+        'lhs_module' => 'Projects', 'lhs_table' => 'projects', 'lhs_key' => 'id',
+        'rhs_module' => 'SystemDeploymentReleases', 'rhs_table' => 'systemdeploymentreleases', 'rhs_key' => 'parent_id',
+        'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
+        'relationship_role_column_value' => 'Projects'
+    );
+    $dictionary['Project']['fields']['systemdeploymentreleases'] = array(
+        'name' => 'systemdeploymentreleases',
+        'type' => 'link',
+        'relationship' => 'project_systemdeploymentreleases',
+        'module' => 'SystemDeploymentReleases',
+        'bean_name' => 'SystemDeploymentRelease',
+        'source' => 'non-db',
+        'vname' => 'LBL_SYSTEMDEPLOYMENTRELEASES',
+    );
+}
+
+if(is_file('modules/SalesDocs/SalesDoc.php')) {
+    $dictionary['Project']['fields']['salesdocs'] = array(
+        'name' => 'salesdocs',
+        'type' => 'link',
+        'relationship' => 'salesdocs_projects_parent',
+        'module' => 'SalesDocs',
+        'bean_name' => 'SalesDoc',
+        'source' => 'non-db',
+        'vname' => 'LBL_SALESDOCS',
+    );
+}
+

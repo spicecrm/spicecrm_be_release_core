@@ -72,6 +72,13 @@ class SpiceFTSUtils
         return json_decode($response);
     }
 
+    /**
+     * retrievs and returns the index properties
+     *
+     * @param $module
+     * @param bool $overrideCache
+     * @return array|bool|mixed
+     */
     static function getBeanIndexProperties($module, $overrideCache = true)
     {
         global $db;
@@ -120,6 +127,33 @@ class SpiceFTSUtils
         return false;
     }
 
+    /**
+     * returns the infexed fields ona  bean (only for the root module
+     *
+     * @param $module
+     */
+    static function getBeanIndexedFields($module){
+        $fields = [];
+
+       $indexProperties = self::getBeanIndexProperties($module);
+       foreach($indexProperties as $indexProperty){
+           $path = explode('::', $indexProperty['path']);
+
+           // only 2 path records are allowed .. otherwise we ar not on root
+           if(count($path) > 2) continue;
+
+           $field = explode(':', $path[1])[1];
+           if($field) $fields[] = $field;
+       }
+       return $fields;
+    }
+
+    /**
+     * returns the index properties
+     *
+     * @param $module
+     * @return bool|mixed
+     */
     static function getBeanIndexSettings($module)
     {
         //BEGIN CR1000190

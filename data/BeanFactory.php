@@ -64,12 +64,18 @@ class BeanFactory {
      */
     public static function getBean($module, $id = null, $params = array(), $deleted = true)
     {
-    	
-    	// Check if params is an array, if not use old arguments
+        // log when this function is called without
+        if(is_array($params) && !key_exists('encode', $params) && !empty($id)){
+            $GLOBALS['log']->info(__CLASS__."::".__FUNCTION__."() was called for retrieve with id $id without encode value. Back trace:");
+            $GLOBALS['log']->info(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
+
+        }
+
+        // Check if params is an array, if not use old arguments
     	if (isset($params) && !is_array($params)) {
     		$params = array('encode' => $params);
     	}
-    	
+
     	// Pull values from $params array
     	$encode = isset($params['encode']) ? $params['encode'] : true;
     	$deleted = isset($params['deleted']) ? $params['deleted'] : $deleted;

@@ -118,6 +118,7 @@ $dictionary['CampaignTask'] = array(
         ),
         'prospectlists' => array(
             'name' => 'prospectlists',
+            'vname' => 'LBL_PROSPECTLISTS',
             'type' => 'link',
             'relationship' => 'prospect_list_campaigntasks',
             'source' => 'non-db'
@@ -145,7 +146,28 @@ $dictionary['CampaignTask'] = array(
             'module' => 'EventRegistrations',
             'relationship' => 'eventregistration_campaigntask_rel',
             'source' => 'non-db',
-        )
+        ),
+        'email_subject' => [
+            'name' => 'email_subject',
+            'vname' => 'LBL_SUBJECT',
+            'type' => 'varchar',
+            'comment' => 'the subject when an email is composed right in the campaigntask'
+        ],
+        'email_body' => [
+            'name' => 'email_body',
+            'vname' => 'LBL_EMAIL_BODY_PLAIN',
+            'type' => 'text',
+            'comment' => 'Plain text body to be used in resulting email',
+            'stylesheet_id_field' => 'email_stylesheet_id',
+            'comment' => 'the body when an email is composed right in the campaigntask'
+        ],
+        'email_stylesheet_id' => [
+            'name' => 'email_stylesheet_id',
+            'vname' => 'LBL_STYLESHEET',
+            'type' => 'varchar',
+            'len' => 36,
+            'comment' => 'the style id when an email is composed right in the campaigntask'
+        ]
     ),
     'relationships' => array(
         'campaign_campaigntasks' => [

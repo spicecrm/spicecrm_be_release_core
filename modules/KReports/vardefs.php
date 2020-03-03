@@ -31,15 +31,24 @@ $dictionary['KReport'] = array('table' => 'kreports',
             'type' => 'enum',
             'options' => 'kreportstatus',
             'len' => '1',
-            'vname' => 'LBL_REPORT_STATUS'
+            'vname' => 'LBL_STATUS'
+        ),
+        'report_type' => array(
+            'name' => 'report_type',
+            'type' => 'enum',
+            'options' => 'report_type_dom',
+            'len' => '50',
+            'vname' => 'LBL_TYPE'
         ),
         'union_modules' => array(
             'name' => 'union_modules',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
         ),
         'reportoptions' => array(
             'name' => 'reportoptions',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
             'vname' => 'LBL_REPORTOPTIONS'
         ),
         'listtype' => array(
@@ -65,37 +74,43 @@ $dictionary['KReport'] = array('table' => 'kreports',
             'type' => 'json',
             'dbtype' => 'text',
             'vname' => 'LBL_PRESENTATION_PARAMS',
-        ),   
+        ),
         'visualization_params' => array(
             'name' => 'visualization_params',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
             'vname' => 'LBL_VISUALIZATION_PARAMS',
         ),
         'integration_params' => array(
             'name' => 'integration_params',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
             'vname' => 'LBL_INTEGRATION_PARAMS',
-        ),        
+        ),
         'wheregroups' => array(
             'name' => 'wheregroups',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
             'vname' => 'LBL_WHEREGROUPS',
             //'default' => '[]', //text field can't have a default value
         ),
         'whereconditions' => array(
             'name' => 'whereconditions',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
             'vname' => 'LBL_WHERECONDITION',
             //'default' => '[]', //text field can't have a default value
         ),
         'listfields' => array(
             'name' => 'listfields',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
             'vname' => 'LBL_LISTFIELDS'
         ),
         'unionlistfields' => array(
             'name' => 'unionlistfields',
-            'type' => 'text',
+            'type' => 'json',
+            'dbtype' => 'text',
             'vname' => 'LBL_UNIONLISTFIELDS'
         ),
         'advancedoptions' => array(
@@ -111,14 +126,14 @@ $dictionary['KReport'] = array('table' => 'kreports',
         'category_name' => array(
             'name' => 'category_name',
             'type' => 'name',
-            'vname' => 'LBL_CATEGORIES_NAME',
+            'vname' => 'LBL_CATEGORY',
             'source' => 'non-db'
         ),
         'category_priority' => array(
             'name' => 'category_priority',
             'type' => 'int',
             'len' => 6,
-            'vname' => 'LBL_CATEGORIES_PRIORITY'
+            'vname' => 'LBL_PRIORITY'
         ),
     ),
     'indices' => array(

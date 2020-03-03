@@ -38,7 +38,13 @@ class pluginkcsvexportcontroller {
         if (isset($requestParams['dynamicoptions']))
             $thisReport->whereOverride = json_decode(html_entity_decode($requestParams['dynamicoptions']), true);
 
-        
+
+        //get parent bean
+        if (isset($requestParams['parentbeanId']) && isset($requestParams['parentbeanModule'])) {
+            $parentbean = BeanFactory::getBean($requestParams['parentbeanModule'], $requestParams['parentbeanId']);
+        }
+
+
         $dynamicolsOverride = '';
         if (isset($requestParams['dynamicols']) && $requestParams['dynamicols'] != '')
             $dynamicolsOverride = html_entity_decode($requestParams['dynamicols'], ENT_QUOTES, 'UTF-8');
@@ -50,7 +56,7 @@ class pluginkcsvexportcontroller {
         header('Content-type: application/ms-excel');
         header('Content-Disposition: attachment; filename=' . $filename);
 
-        $output = $thisReport->createCSV($dynamicolsOverride);
+        $output = $thisReport->createCSV($dynamicolsOverride, $parentbean);
 
         if ($requestParams['rawResult'])
             return $output;

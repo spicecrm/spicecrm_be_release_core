@@ -1054,7 +1054,7 @@ class KReport extends SugarBean
         }
     }
 
-    function createCSV($dynamicolsOverride = '')
+    function createCSV($dynamicolsOverride = '', $parentbean = null)
     {
         global $current_user;
         $this->tocsv = true;
@@ -1074,6 +1074,9 @@ class KReport extends SugarBean
                 }
             }
         }
+
+        // set a parentbean if we have one
+        if($parentbean) $reportParams['parentbean'] = $parentbean;
 
         $results = $this->getSelectionResults($reportParams);
 

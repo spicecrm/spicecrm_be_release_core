@@ -453,7 +453,7 @@ class User extends Person
 
 //        $emailExists = $this->retrieve_by_email_address($this->email1);
 //        if($emailExists)
-//            throw ( new KREST\BadRequestException("Email already exists."))->setErrorCode('duplicateEmail1');
+//            throw ( new \SpiceCRM\KREST\BadRequestException("Email already exists."))->setErrorCode('duplicateEmail1');
 
         $query = "SELECT count(id) as total from users WHERE " . self::getLicensedUsersWhere();
 
@@ -1989,7 +1989,7 @@ EOQ;
         $sql = 'SELECT id,user_name FROM users WHERE status = "Active" AND deleted = 0';
         if ( !empty( $userIdToIgnore ))
             $sql .= ' AND id <> "'.$db->quote( $userIdToIgnore ).'"';
-        $sql .= ' AND LOWER(user_name) = "'.$db->quote( mb_strtolower( $username ).'" LIMIT 1');
+        $sql .= ' AND LOWER(user_name) = "'.$db->quote( mb_strtolower( $username )).'" LIMIT 1';
         $user = $db->fetchOne( $sql );
         return $user !== false;
     }

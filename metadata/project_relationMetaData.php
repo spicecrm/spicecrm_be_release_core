@@ -37,7 +37,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 
 
-
+/*
 $dictionary['project_relation'] = array(
 	'table' => 'project_relation',
 	'fields' => array(
@@ -110,5 +110,5 @@ $dictionary['project_relation'] = array(
 
 		),
 );
-
+*/
 ?>

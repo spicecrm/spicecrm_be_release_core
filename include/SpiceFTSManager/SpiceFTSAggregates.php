@@ -35,6 +35,12 @@ class SpiceFTSAggregates
                     'metadata' => SpiceFTSUtils::getFieldIndexParams(null, $indexProperty['path'])
                 );
 
+                // check on sort parameters for aggregates
+                if(!empty($indexProperty['aggregatesortby']) && !empty($indexProperty['aggregatesort'])){
+                    $this->aggregateFields[str_replace('->', '-', $indexProperty['indexfieldname'])]['aggregatesortby'] = $indexProperty['aggregatesortby'];
+                    $this->aggregateFields[str_replace('->', '-', $indexProperty['indexfieldname'])]['aggregatesort'] = $indexProperty['aggregatesort'];
+                }
+
                 // check if we have aggParams
                 if ($indexProperty['aggregateaddparams']) {
                     $addParamsSting = html_entity_decode(base64_decode($indexProperty['aggregateaddparams']));
@@ -117,6 +123,9 @@ class SpiceFTSAggregates
                         'size' => isset($aggregateIndexFieldData['aggregatesize']) ? $aggregateIndexFieldData['aggregatesize'] : 10,
                         'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg'
                     ));
+                    if(!empty($aggregateIndexFieldData['aggregatesortby']) && !empty($aggregateIndexFieldData['aggregatesort'])){
+                        $aggParams['terms']['order'] = [$aggregateIndexFieldData['aggregatesortby'] => $aggregateIndexFieldData['aggregatesort']];
+                    }
                     break;
                 case 'range':
                     if (isset($aggregateIndexFieldData['aggParams']))

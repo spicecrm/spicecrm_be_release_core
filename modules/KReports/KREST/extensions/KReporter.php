@@ -70,9 +70,15 @@ $app->group('/KReporter', function () use ($app, $KRESTManager, $KReportRestHand
             $restHandler = new KReporterRESTHandler();
             echo json_encode($restHandler->getVizColors());
         });
-        $app->post('/savelayout', function ($req, $res, $args) use ($app, $KReportRestHandler) {
-            $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->saveStandardLayout($postBody['record'], $postBody['layout']));
+        $app->group('/savelayout', function () use ($app, $KRESTManager, $KReportRestHandler) {
+            $this->post('', function ($req, $res, $args) use ($app, $KReportRestHandler) {
+                $postBody = $req->getParsedBody();
+                echo json_encode($KReportRestHandler->saveStandardLayout($postBody['record'], $postBody['layout']));
+            });
+            $this->post('/{report_id}', function ($req, $res, $args) use ($app, $KReportRestHandler) {
+                $postBody = $req->getParsedBody();
+                echo json_encode($KReportRestHandler->saveStandardLayout($args['report_id'], $postBody['layout']));
+            });
         });
         $app->get('/config', function () use ($app, $KRESTManager) {
             $restHandler = new KReporterRESTHandler();
@@ -224,7 +230,7 @@ $app->group('/KReporter', function () use ($app, $KRESTManager, $KReportRestHand
                     echo json_encode($KReportRestHandler->getSavedFilters($requestParams));
                 });
             });
-            $app->group('/{savedfiltertId}', function() use ($app, $KRESTManager, $KReportRestHandler) {
+            $app->group('/{savedfilterId}', function() use ($app, $KRESTManager, $KReportRestHandler) {
                 $app->delete('', function($req, $res, $args) use ($app, $KRESTManager, $KReportRestHandler) {
                     $KReportRestHandler->deleteSavedFilter($args['savedfilterId']);
                 });

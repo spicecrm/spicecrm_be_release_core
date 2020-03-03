@@ -30,6 +30,8 @@ namespace SpiceCRM\includes\SpiceTemplateCompiler;
  *
  */
 
+use SpiceCRM\includes\SysModuleFilters\SysModuleFilters; // CR1000360
+
 class Compiler
 {
     var $additionalValues;
@@ -102,7 +104,16 @@ class Compiler
                     } else if($node->getAttribute('data-spicefor')){
                         $spicefor = $node->getAttribute('data-spicefor');
                         $forArray = explode(' as ', $spicefor);
-                        $linkedBeans = $this->getLinkedBeans($forArray[0], NULL, $beans);
+
+                        // CR1000360 check on params (like filter)
+                        $params = [];
+                        $forParams =  explode('|', $forArray[0]);
+                        $forArray[0] = $forParams[0];
+                        if(isset($forParams[1])){
+                            $params = $this->parsePipeToArray($forParams[1]);
+                        }
+
+                        $linkedBeans = $this->getLinkedBeans($forArray[0], NULL, $beans, $params); // CR1000360 added $params
                         foreach ($linkedBeans as $linkedBean) {
                             $elements[] = $this->createNewElement($node, array_merge($beans, [$forArray[1] => $linkedBean]));
                             // $response .= $this->processBlocks($this->getBlocks($contentString), array_merge($beans, [$forArray[1] => $linkedBean]), $lang);
@@ -144,10 +155,12 @@ class Compiler
      * recursive function to explode a locator string and return an aray of beans following the path
      *
      * @param $locator the string to find the link e.g. bean.contacts.calls
+     * @param $obj
      * @param $beans the current set of beans in teh scope of the locator string
+     * @param $params Array additional parameters to pass to get_linked_beans()
      * @return array of beans
      */
-    private function getLinkedBeans($locator, $obj = NULL, $beans = [])
+    private function getLinkedBeans($locator, $obj = NULL, $beans = [], $params = [])
     {
         $parts = explode('.', $locator);
 
@@ -163,7 +176,37 @@ class Compiler
 
         $obj->load_relationship($parts[1]);
         $relModule = $obj->{$parts[1]}->getRelatedModuleName();
-        $linkedBeans = $obj->get_linked_beans($parts[1], $relModule);
+
+        // CR1000360 additional params for get_linked_beans
+        $sort_array = [];
+        if(isset($params['sort_array'])) {
+            $sort_array = array_merge($sort_array, $params['sort_array']);
+        }
+        $begin_index = 0;
+        if(isset($params['begin_index'])) {
+            $begin_index = $params['begin_index'];
+        }
+        $end_index = -1;
+        if(isset($params['end_index'])) {
+            $end_index = $params['end_index'];
+        }
+        $deleted = 0;
+        if(isset($params['deleted'])) {
+            $deleted = $params['deleted'];
+        }
+        $optional_where = '';
+        if(isset($params['filter']) && !empty($params['filter'])) {
+            $filter = new SysModuleFilters();
+
+            if(isset($params['filterparams']) && $params['filterparams'] > 0){
+                $optional_where = $filter->generareWhereClauseForFilterId($params['filter'], '', $obj);
+            }
+            else{
+                $optional_where = $filter->generareWhereClauseForFilterId($params['filter']);
+            }
+        }
+
+        $linkedBeans = $obj->get_linked_beans($parts[1], $relModule, $sort_array, $begin_index, $end_index, $deleted, $optional_where); // CR1000360 added optional_where
 
         if (count($parts) > 2) {
             $deepLinkedBeans = [];
@@ -226,6 +269,15 @@ class Compiler
                 switch ($field['type']) {
                     case 'link':
                         $next_bean = $obj->get_linked_beans($field['name'], $field['bean_name'])[0];
+                        if ($next_bean) {
+                            $level++;
+                            return $loopThroughParts($next_bean, $level);
+                        } else {
+                            $value = '';
+                        }
+                        break;
+                    case 'relate':
+                        $next_bean = \BeanFactory::getBean($obj->field_defs[$part]['module'], $obj->{$obj->field_defs[$part]['id_name']});
                         if ($next_bean) {
                             $level++;
                             return $loopThroughParts($next_bean, $level);
@@ -383,7 +435,7 @@ class Compiler
                                 break;
                             default:
                                 // moved nl2br to only be added when non specific fields are parsed
-                                $value = nl2br($obj->{$part});
+                                $value = nl2br(html_entity_decode($obj->{$part}, ENT_QUOTES));
                                 break;
                         }
                     }
@@ -401,5 +453,26 @@ class Compiler
         $app_list_strings = return_app_list_strings_language($current_language);
 
         return $txt;
+    }
+
+    /**
+     * CR1000360 parse additional parameters passed in attribute
+     * Passed after pipe, using syntax key:value&key2:value2 ...
+     * value2 may be an urlencoded string to be able to pass json string like for sort_array
+     * example: data-spicefor="data-spicefor="account.salesdocs|filter:bddabddb-d13b-6594-90f6-a77af30be45f&limit:10&sort_array:%7B%22sortfield%22%3A%22salesdocnumber%22%2C%22sortdirection%22%3A%22desc%22%7D as salesdoc"
+     * @param $str
+     * @return array
+     */
+    private function parsePipeToArray($str) {
+        $parsed = [];
+        $pairs = explode("&", $str);
+        foreach($pairs as $pair){
+            $pairvalue = explode(":", $pair);
+            $parsed[$pairvalue[0]] = urldecode($pairvalue[1]);
+            if($json = json_decode($parsed[$pairvalue[0]], true)){
+                $parsed[$pairvalue[0]] = $json;
+            }
+        }
+        return $parsed;
     }
 }

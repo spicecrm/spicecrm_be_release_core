@@ -96,12 +96,13 @@ class ImapStructure
                 case self::TYPE_APPLICATION:
                 case self::TYPE_IMAGE:
                     $attachment = new Attachment($part);
-
-                    $file_body = $this->fetchFileBody($part, $parent_section . $section);
-
-                    $attachment->saveFile($file_body);
+                    $attachment->content = $this->fetchFileBody($part, $parent_section . $section);
+                    $attachment->saveFile();
+                    $attachment->initMimeType();
 
                     // todo make sure it always works
+
+                    /* removed since this is handled properly in teh retirve of the email replacing the files by filename from teh attachments as src tag
                     if ($part->ifid) { // inline images
                         $image_id = str_replace('<', '', str_replace('>', '', $part->id));
                         $this->email_body = str_replace(
@@ -110,6 +111,7 @@ class ImapStructure
                             $this->email_body
                         );
                     }
+                    */
 
                     array_push($this->attachments, $attachment);
                     break;

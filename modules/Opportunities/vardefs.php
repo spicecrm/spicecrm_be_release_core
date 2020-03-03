@@ -518,14 +518,6 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
             'bean_name' => 'OpportunityRevenueLine',
             'vname' => 'LBL_OPPORTUNITYREVENUELINES',
             'default' => true
-        ),
-        'salesdocs' => array(
-            'name' => 'salesdocs',
-            'type' => 'link',
-            'vname' => 'LBL_SALESDOCS',
-            'relationship' => 'opportunities_salesdocs',
-            'source' => 'non-db',
-            'module' => 'SalesDocs'
         )
     ),
     'indices' => array(
@@ -620,3 +612,16 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
 );
 VardefManager::createVardef('Opportunities', 'Opportunity', array('default', 'assignable',
 ));
+
+global $dictionary;
+if(is_file('modules/SalesDocs/SalesDoc.php')) {
+    $dictionary['Opportunity']['fields']['salesdocs'] = array(
+        'name' => 'salesdocs',
+        'type' => 'link',
+        'relationship' => 'salesdocs_opportunities_parent',
+        'module' => 'SalesDocs',
+        'bean_name' => 'SalesDoc',
+        'source' => 'non-db',
+        'vname' => 'LBL_SALESDOCS',
+    );
+}

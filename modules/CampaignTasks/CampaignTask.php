@@ -136,17 +136,19 @@ class CampaignTask extends SugarBean
         fclose($fh);
     }
 
-    function sendTestEmail()
+    function sendTestEmail($emailAddresses = [])
     {
+        $testCount = 0;
         $res = $this->db->query("SELECT plp.related_id, plp.related_type FROM prospect_list_campaigntasks plc INNER JOIN prospect_lists pl ON pl.list_type = 'test' AND plc.campaigntask_id = '{$this->id}' AND plc.prospect_list_id = pl.id INNER JOIN prospect_lists_prospects plp ON plp.prospect_list_id = pl.id WHERE plc.deleted = 0 AND pl.deleted = 0 AND plp.deleted = 0");
         while ($row = $this->db->fetchByAssoc($res)) {
+            $testCount++;
             $bean = BeanFactory::getBean($row['related_type'], $row['related_id']);
             if ($bean && $bean->hasEmails()) {
                 $this->sendEmail($bean, false, true);
             }
         }
 
-        return true;
+        return $testCount > 0 ? ['status' => 'success'] : ['status' => 'error', 'msg' => 'no targets found'] ;
     }
 
     function sendQueuedEmails(){
@@ -183,14 +185,22 @@ class CampaignTask extends SugarBean
 
     function sendEmail($seed, $saveEmail = false, $test = false)
     {
-        $tpl = BeanFactory::getBean('EmailTemplates', $this->email_template_id);
+
+        $tpl = BeanFactory::getBean('EmailTemplates');
+        if(!empty($this->email_template_id)){
+            $tpl->retrieve($this->email_template_id);
+        } else {
+            $tpl->subject = $this->email_subject;
+            $tpl->body_html = $this->email_body;
+            $tpl->style = $this->email_stylesheet_id;
+        }
         $parsedTpl = $tpl->parse($seed);
         $email = BeanFactory::getBean('Emails');
         $email->mailbox_id = $this->mailbox_id;
         $email->name = $parsedTpl['subject'];
 
         if($test)
-            $email->name = 'TEST: ' . $email->name;
+            $email->name = '[TEST] ' . $email->name;
 
         $email->body = $parsedTpl['body_html'];
         $primnaryAddress = $seed->emailAddress->getPrimaryAddress($seed);

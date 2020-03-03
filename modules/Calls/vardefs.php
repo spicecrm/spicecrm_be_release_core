@@ -102,7 +102,7 @@ $dictionary['Call'] = [
             'name'    => 'external_id',
             'vname'   => 'LBL_EXTERNALID',
             'type'    => 'varchar',
-            'len'     => 64,
+            'len'     => 160,
             'comment' => 'Call ID for external app API',
             'studio'  => 'false',
         ],
@@ -231,6 +231,51 @@ $dictionary['Call'] = [
             'len'    => '20',
             'source' => 'non-db',
         ],
+
+        // CR1000356
+        'call_user_status_accept' => [
+            'name'   => 'call_user_status_accept',
+            'vname'  => 'LBL_USER_STATUS_ACCEPT',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'calls_users_status_accept',
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
+        ],
+        'call_user_status_decline' => [
+            'name'   => 'call_user_status_decline',
+            'vname'  => 'LBL_USER_STATUS_DECLINE',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'calls_users_status_decline',
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
+        ],
+        'call_user_status_tentative' => [
+            'name'   => 'call_user_status_tentative',
+            'vname'  => 'LBL_USER_STATUS_TENTATIVE',
+            'type'   => 'link',
+            'source' => 'non-db',
+            'relationship' => 'calls_users_status_tentative',
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
+        ],
+
         //bug 39559
         'set_accept_links' => [
             'name'   => 'accept_status',
@@ -324,6 +369,13 @@ $dictionary['Call'] = [
             'vname'        => 'LBL_CONTACTS',
             'module'       => 'Contacts',
             'default'      => true,
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
         ],
         'users' => [
             'name'         => 'users',
@@ -333,6 +385,13 @@ $dictionary['Call'] = [
             'vname'        => 'LBL_USERS',
             'module'       => 'Users',
             'default'      => true,
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                )
+            )
         ],
         'notes' => [
             'name'         => 'notes',

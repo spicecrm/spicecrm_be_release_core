@@ -56,6 +56,17 @@ class SpiceFTSBeanHandler
                             // remove any potential duplicates
                             // $indexArray['_activityparentids'] = array_unique($indexArray['_activityparentids']);
                             break;
+                        case 'activityparticipant';
+                            // initialize if it is not an array yet
+                            if (!is_array($indexArray['_activityparticipantids'])) $indexArray['_activityparticipantids'] = [];
+
+                            // append or add the id
+                            if (is_array($indexValue['fieldvalue'])) {
+                                $indexArray['_activityparticipantids'] = array_merge($indexArray['_activityparticipantids'], $indexValue['fieldvalue']);
+                            } else {
+                                $indexArray['_activityparticipantids'][] = $indexValue['fieldvalue'];
+                            }
+                            break;
                         default:
                             $indexArray['_' . $indexProperty['activitytype']] = from_html($indexValue['fieldvalue']);
                             break;
@@ -198,6 +209,9 @@ class SpiceFTSBeanHandler
         $fieldName = '';
         $fieldValue = '';
         foreach ($pathRecords as $pathRecord) {
+
+
+
             $pathRecordDetails = explode(':', $pathRecord);
             switch ($pathRecordDetails[0]) {
                 case 'root':
@@ -249,12 +263,26 @@ class SpiceFTSBeanHandler
                     if (is_array($valueBean)) {
                         $valArray = array();
                         foreach ($valueBean as $thisValueBean) {
-                            $valArray[] = $this->mapDataType($thisValueBean->field_name_map[$pathRecordDetails[1]]['type'], $thisValueBean->{$pathRecordDetails[1]});
+                            // BEGIN CR1000343 handle function: enrich value for bean property before it is processed for indexing
+                            if(isset($indexproperty['function'])) {
+                                $valArray[] = $this->enrichDataByFunction($indexproperty);
+                            }
+                            // END
+                            else {
+                                $valArray[] = $this->mapDataType($thisValueBean->field_name_map[$pathRecordDetails[1]]['type'], $thisValueBean->{$pathRecordDetails[1]});
+                            }
                         }
                         $fieldValue = $valArray;
 
                     } else {
-                        $fieldValue = $this->mapDataType($valueBean->field_name_map[$pathRecordDetails[1]]['type'], $valueBean->{$pathRecordDetails[1]});
+                        // BEGIN CR1000343 handle function: enrich value for bean property before it is processed for indexing
+                        if(isset($indexproperty['function'])) {
+                            $fieldValue = $this->enrichDataByFunction($indexproperty);
+                        }
+                        // END
+                        else{
+                            $fieldValue = $this->mapDataType($valueBean->field_name_map[$pathRecordDetails[1]]['type'], $valueBean->{$pathRecordDetails[1]});
+                        }
                     }
 
                     // see if we have a related id for the field
@@ -264,10 +292,34 @@ class SpiceFTSBeanHandler
                     break;
             }
         }
+
+
+
+
+
         return array(
             'fieldname' => $fieldName,
             'fieldvalue' => $fieldValue
         );
+    }
+
+    /**
+     * CR1000343 handle function: enrich value for bean property before it is processed for indexing
+     */
+    private function enrichDataByFunction($indexproperty){
+        // extract class name
+        $functionData = explode("->", $indexproperty['function']);
+        if(count($functionData) != 2){
+            $functionData = explode("::", $indexproperty['function']);
+        }
+        // call
+        if(class_exists($functionData[0])){
+            $functionObj = new $functionData[0]();
+            if(method_exists($functionObj, $functionData[1])){
+                // overwrite value
+                return $functionObj->{$functionData[1]}($this->seed);
+            }
+        }
     }
 
     private function mapDataType($type, $value)
@@ -491,6 +543,12 @@ class SpiceFTSBeanHandler
                 );
                 break;
 
+            case 'activityparticipant':
+                $properties['_activityparticipantids'] = array(
+                    'type' => 'keyword',
+                    "index" => true
+                );
+                break;
         }
     }
 }

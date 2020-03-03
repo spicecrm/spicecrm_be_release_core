@@ -35,8 +35,8 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-
-class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEventInterface
+// todo move functions from GoogleCalendarEventInterface
+class Meeting extends SugarBean
 {
 	// Stored fields
 	var $id;
@@ -217,6 +217,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
 
         // Do any external API saving
         // Clear out the old external API stuff if we have changed types
+        /* retired for SpiceCRM .. if then this needs to be done via hooks
         if (isset($this->fetched_row) && $this->fetched_row['type'] != $this->type ) {
             $this->join_url = '';
             $this->host_url = '';
@@ -258,6 +259,7 @@ class Meeting extends SugarBean implements \SpiceCRM\modules\GoogleCalendar\Goog
 
             $api->logOff();
         }
+        */
 
         $return_id = parent::save($check_notify, $fts_index_bean);
 

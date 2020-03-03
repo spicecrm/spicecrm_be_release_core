@@ -3,7 +3,7 @@
 namespace SpiceCRM\modules\Users\KREST\controllers;
 
 use KREST\ForbiddenException;
-use KREST\NotFoundException;
+use SpiceCRM\KREST\NotFoundException;
 
 class UsersPreferencesKRESTController
 {

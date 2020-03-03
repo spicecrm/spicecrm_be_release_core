@@ -71,7 +71,7 @@ $app->group('/dashboards', function () use ($app) {
             $sql .= "', '" . $db->quote(json_encode($postbodyitem['componentconfig']));
             $sql .= "', '" . $db->quote(json_encode($postbodyitem['position']));
             $sql .= "', '" . $postbodyitem['dashlet_id'] . "')";
-            if( !$db->query($sql) ) throw ( new KREST\Exception( $db->last_error ))->setFatal(true);
+            if( !$db->query($sql) ) throw ( new \SpiceCRM\KREST\Exception( $db->last_error ))->setFatal(true);
         }
         return $res->withJson(array('status' => $status));
     });

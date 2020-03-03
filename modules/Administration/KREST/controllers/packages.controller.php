@@ -1,27 +1,8 @@
 <?php
-// require_once 'modules/SystemUI/SpiceUIConfLoader.php';
-// require_once 'modules/SystemLanguages/SpiceLanguageLoader.php';
 
 use SpiceCRM\modules\SystemUI\SpiceUIConfLoader;
 
 class PackageController {
-
-    var $confloader;
-    var $langloader;
-
-    function __construct()
-    {
-        global $current_user;
-        // this does not work
-        /*
-        if(!$current_user->is_admin) {
-            throw new KREST\NotFoundException("only admin access");
-        }
-        */
-
-        $this->confloader = new SpiceCRM\modules\SystemUI\SpiceUIConfLoader();
-        $this->langloader = new SpiceCRM\modules\SystemLanguages\SpiceLanguageLoader();
-    }
 
     function getRepoUrl($repoid){
         global $db;
@@ -60,6 +41,8 @@ class PackageController {
 
         $this->checkAdmin();
 
+        $confloader = new SpiceCRM\modules\SystemUI\SpiceUIConfLoader();
+
         $repourl = $this->getRepoUrl($args['repository']);
         // switched to curl
         // $getJSONcontent = file_get_contents("{$repourl}/config");
@@ -73,12 +56,12 @@ class PackageController {
         $getJSONcontent = curl_exec($curl);
 
         $content = json_decode($getJSONcontent);
-        if ($this->confloader->release === true) {
+        if ($confloader->release === true) {
             $content->versions = array();
             $content->versions[0]->version = $GLOBALS['sugar_version'];
         }
-        $content->loaded = $this->confloader->getCurrentConf();
-        $content->opencrs = $this->confloader->loader->hasOpenChangeRequest();
+        $content->loaded = $confloader->getCurrentConf();
+        $content->opencrs = $confloader->loader->hasOpenChangeRequest();
 
         return $res->write(json_encode($content));
     }
@@ -93,22 +76,31 @@ class PackageController {
     function deletePackage($req, $res, $args)
     {
         $this->checkAdmin();
-        return $res->write(json_encode(['response' => $this->confloader->deletePackage($args['package'])]));
+
+        $confloader = new SpiceCRM\modules\SystemUI\SpiceUIConfLoader();
+
+        if(!$confloader) $this->getLoaders();
+
+        return $res->write(json_encode(['response' => $confloader->deletePackage($args['package'])]));
     }
 
     function loadLanguage($req, $res, $args)
     {
         $this->checkAdmin();
+
         $langloader = new SpiceCRM\modules\SystemLanguages\SpiceLanguageLoader($this->getRepoUrl($args['repository']));
+
         return $res->write(json_encode($langloader->loadLanguage($args['language'])));
     }
 
     function deleteLanguage($req, $res, $args)
     {
         $this->checkAdmin();
-        return $res->write(json_encode(['success' => $this->langloader->deleteLanguage($args['language'])]));
-    }
 
+        $langloader = new SpiceCRM\modules\SystemLanguages\SpiceLanguageLoader();
+
+        return $res->write(json_encode(['success' => $langloader->deleteLanguage($args['language'])]));
+    }
 
 }
 

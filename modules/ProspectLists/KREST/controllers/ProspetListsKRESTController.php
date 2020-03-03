@@ -6,7 +6,7 @@ namespace SpiceCRM\modules\ProspectLists\KREST\controllers;
 
 use SpiceCRM\modules\SystemUI\SpiceUIConfLoader;
 
-require_once('KREST/handlers/module.php');
+// require_once('KREST/handlers/ModuleHandler.php');
 
 class ProspetListsKRESTController
 {
@@ -17,7 +17,7 @@ class ProspetListsKRESTController
 
         $requestParams = $_GET;
 
-        $KRESTModuleHandler = new \KRESTModuleHandler();
+        $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
 
         $pl = \BeanFactory::getBean('ProspectLists');
         $pl->name = $requestParams['targetlistname'];
@@ -84,7 +84,7 @@ class ProspetListsKRESTController
                     $db->query($query);
                     break;
                 default:
-                    $KRESTModuleHandler = new \KRESTModuleHandler();
+                    $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
                     $listid = $postBody['listid'];
                     $listDef = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulelists WHERE id = '$listid'"));
                     $seed = \BeanFactory::getBean($postBody['module']);

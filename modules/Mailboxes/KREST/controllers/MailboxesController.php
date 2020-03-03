@@ -2,6 +2,7 @@
 namespace SpiceCRM\modules\Mailboxes\KREST\controllers;
 
 use SpiceCRM\modules\Mailboxes\processors\MailboxProcessor;
+use BeanFactory;
 
 class MailboxesController
 {
@@ -28,7 +29,9 @@ class MailboxesController
     public function fetchEmails($req, $res, $args) {
         $id = $args['id'];
 
-        $mailbox = \BeanFactory::getBean('Mailboxes', $id);
+        set_time_limit(120);
+
+        $mailbox = \BeanFactory::getBean('Mailboxes', $id, ['encode' => false]);
 
         if ($mailbox->active == false) {
             return $res->write(json_encode([
@@ -88,29 +91,31 @@ class MailboxesController
      * @return mixed
      */
     public function testConnection($req, $res, $args) {
-        $params = $req->getQueryParams();
+        $params = $req->getParsedBody();
 
+        /*
         if ($params['mailbox_id'] == null) {
             return $res->write(json_encode([
                 'result' => false,
                 'errors' => 'No mailbox selected',
             ]));
+        }*/
+
+        $mailbox = BeanFactory::getBean('Mailboxes');
+        foreach ($params['data'] as $name => $value) {
+            if (isset($mailbox->field_name_map[$name])) {
+                $mailbox->$name = $value;
+            }
         }
-        if ($params['test_email'] == null) {
+
+        if (($mailbox->outbound_comm == 'single' || $mailbox->outbound_comm == 'mass') && $params['test_email'] == null) {
             return $res->write(json_encode([
                 'result' => false,
                 'errors' => 'No test email selected',
             ]));
         }
-//        if (!filter_var($params['test_email'], FILTER_VALIDATE_EMAIL)) {
-//            return $res->write(json_encode([
-//                'result' => false,
-//                'errors' => $params['test_email'] . ' is not a valid email address.',
-//            ]));
-//        }
-        $result = false;
 
-        $mailbox = \BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
+        $result = false;
 
         if ($mailbox->initTransportHandler()) {
             $result = $mailbox->transport_handler->testConnection($params['test_email']);
@@ -134,6 +139,28 @@ class MailboxesController
             'result' => true,
             'processors' => MailboxProcessor::all(),
         ]));
+    }
+
+    /**
+     * getMailboxTransports
+     *
+     * Returns a list of all Mailbox Transport Processors
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     */
+    public function getMailboxTransports($req, $res, $args) {
+        global $db;
+
+        $transports = [];
+        $transportsObj = $db->query("SELECT name, label, component FROM sysmailboxtransports UNION SELECT name, label, component FROM syscustommailboxtransports");
+        while($transport = $db->fetchByAssoc($transportsObj)){
+            $transports[] = $transport;
+        }
+
+        return $res->withJson($transports);
     }
 
     /**
@@ -217,27 +244,6 @@ class MailboxesController
         } catch (\Exception $e) {
             return $res->write(json_encode($e));
         }
-    }
-
-    /**
-     * getMailboxFolders
-     *
-     * Returns the mailbox folders
-     *
-     * @param $req
-     * @param $res
-     * @param $args
-     * @return mixed
-     */
-    public function getMailboxFolders($req, $res, $args) {
-        $params = $req->getQueryParams();
-
-        $mailbox = \BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
-        $mailbox->initTransportHandler();
-
-        $result = $mailbox->transport_handler->getMailboxes();
-
-        return $res->write(json_encode($result));
     }
 
     public function handleSendgridEvents($req, $res, $args) {
