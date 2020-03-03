@@ -170,7 +170,7 @@ $dictionary['Document'] = array('table' => 'documents',
         'document_revision_id' =>
             array(
                 'name' => 'document_revision_id',
-                'vname' => 'LBL_LATEST_REVISION',
+                'vname' => 'LBL_LATEST_REVISION_ID',
                 'type' => 'varchar',
                 'len' => '36',
                 'reportable' => false,
