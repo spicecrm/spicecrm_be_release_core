@@ -16,8 +16,6 @@
 
 use \SpiceCRM\KREST\handlers\UserHandler;
 
-require('KREST/handlers/UserHandler.php');
-
 $KRESTUserHandler = new UserHandler($app);
 
 $KRESTManager->registerExtension('login', '1.0');
