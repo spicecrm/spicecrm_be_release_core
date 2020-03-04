@@ -762,12 +762,15 @@ class MysqlManager extends DBManager
     {
         $dbtype = $fielddef1['type'];
         switch($dbtype){
-            case 'longtext' :
+            case 'longtext':
+            case 'mediumtext':
+            case 'text':
+            case 'tinytext':
                 $fieldtype = $this->getFieldType($fielddef2);
                 if(isset($fielddef2['len'])) {
                     switch ($fieldtype) {
                         case 'text':
-                            if ($fielddef2['len'] >= 0 && $fielddef2['len'] <= 255)
+                            if ($fielddef2['len'] > 0 && $fielddef2['len'] <= 255)
                                 $fieldtype = 'varchar';
                             elseif($fielddef2['len'] > 255 && $fielddef2['len'] <= 65535)
                                 $fieldtype =  'text';
@@ -781,10 +784,14 @@ class MysqlManager extends DBManager
                 break;
 
             case 'bigint':
+            case 'int':
+            case 'mediumint':
+            case 'smallint':
+            case 'tinyint':
                 $fieldtype = $this->getFieldType($fielddef2);
                 switch ($fieldtype) {
                     case 'int':
-                        if($fielddef2['len'] >= 0 && $fielddef2['len'] <= 4)
+                        if($fielddef2['len'] > 0 && $fielddef2['len'] <= 4)
                             $fieldtype =  'tinyint';
                         elseif($fielddef2['len'] > 4 && $fielddef2['len'] <= 6)
                             $fieldtype =  'smallint';
