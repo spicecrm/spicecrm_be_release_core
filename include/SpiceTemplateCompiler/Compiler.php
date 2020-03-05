@@ -230,18 +230,39 @@ class Compiler
 
         $conditionparts = explode(' ', $condition);
         switch ($conditionparts[1]) {
+            case '>':
+                return $this->getValue($conditionparts[0], $beans, false) > trim($conditionparts[2], "'");
+                break;
+            case '>=':
+                return $this->getValue($conditionparts[0], $beans, false) >= trim($conditionparts[2], "'");
+                break;
+            case '<':
+                return $this->getValue($conditionparts[0], $beans, false) < trim($conditionparts[2], "'");
+                break;
+            case '<=':
+                return $this->getValue($conditionparts[0], $beans, false) <= trim($conditionparts[2], "'");
+                break;
+            case '===':
+                return $this->getValue($conditionparts[0], $beans, false) === trim($conditionparts[2], "'");
+                break;
             case '==':
-                return $this->getValue($conditionparts[0], $beans) == trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, false) == trim($conditionparts[2], "'");
                 break;
             case '!=':
-                return $this->getValue($conditionparts[0], $beans) != trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, false) != trim($conditionparts[2], "'");
                 break;
         }
         return false;
 
     }
 
-    private function getValue($locator, $beans)
+    /**
+     * @param $locator
+     * @param $beans
+     * @param bool $keepFetchedRowValue // parameter added for CR1000371: enum value shall remain raw value when used in a condition. See processCondition()
+     * @return mixed|string
+     */
+    private function getValue($locator, $beans, $keepFetchedRowValue = false)
     {
         $parts = explode('.', $locator);
         $part = $parts[0];
@@ -258,7 +279,7 @@ class Compiler
          *          publisher = link -> load publisher ->
          *              name = attribute -> return value;
          */
-        $loopThroughParts = function ($obj, $level = 0) use (&$parts, &$loopThroughParts) {
+        $loopThroughParts = function ($obj, $level = 0, $keepFetchedRowValue) use (&$parts, &$loopThroughParts) {
             global $app_list_strings;
 
             $part = $parts[$level];
@@ -266,6 +287,7 @@ class Compiler
                 $value = $obj->{$part}();
             } else {
                 $field = $obj->field_defs[$part];
+                $GLOBALS['log']->fatal($field);
                 switch ($field['type']) {
                     case 'link':
                         $next_bean = $obj->get_linked_beans($field['name'], $field['bean_name'])[0];
@@ -286,17 +308,23 @@ class Compiler
                         }
                         break;
                     case 'enum':
-                        $value = $app_list_strings[$obj->field_defs[$part]['options']][$obj->{$part}];
+                        $value = $obj->{$part};
+                        if(!$keepFetchedRowValue) {
+                            $value = $app_list_strings[$obj->field_defs[$part]['options']][$obj->{$part}];
+                        }
                         break;
                     case 'multienum':
-                        $values = explode(',', $obj->{$part});
-                        foreach ($values as &$value) {
-                            $value = trim($value, '^');
-                            $value = $app_list_strings[$obj->field_defs[$part]['options']][$value];
+                        $value = $obj->{$part};
+                        if(!$keepFetchedRowValue) {
+                            $values = explode(',', $obj->{$part});
+                            foreach ($values as &$value) {
+                                $value = trim($value, '^');
+                                $value = $app_list_strings[$obj->field_defs[$part]['options']][$value];
+                            }
+                            $value = implode(', ', $values);
+                            // unencodeMultienum can't be used because of a different language...
+                            //$value = implode(', ', unencodeMultienum($obj->{$parts[$level]}));
                         }
-                        $value = implode(', ', $values);
-                        // unencodeMultienum can't be used because of a different language...
-                        //$value = implode(', ', unencodeMultienum($obj->{$parts[$level]}));
                         break;
                     default:
                         $value = $obj->{$part};
