@@ -31,6 +31,7 @@ $KRESTManager->registerExtension('core', '2.0', ['edit_mode' => $sugar_config['w
 $app->get('/', [new \SpiceCRM\KREST\controllers\coreController(), 'getExtensions']);
 
 $app->get('/language/{language}', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
+$app->get('/language/', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
 $app->get('/language', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
 
 /**
