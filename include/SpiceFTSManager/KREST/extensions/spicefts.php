@@ -50,4 +50,7 @@ $app->group('/fts', function () use ($app, $ftsManager)
     $app->get('/stats', function () use ($app, $ftsManager) {
         echo json_encode($ftsManager->getStats());
     });
+    $app->get('/fields/{module}', function ($req, $res, $args) use ($app, $ftsManager) {
+        return $res->withJson($ftsManager->getFTSModuleFields($args['module']));
+    });
 });
