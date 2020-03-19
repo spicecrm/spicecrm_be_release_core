@@ -54,11 +54,11 @@ class MediaFilesController
         $thumbSize = $args['thumbSize'];
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
         if ( !isset( $seed->width{0} ) or !isset( $seed->height{0} ))
-            list( $seed->width, $seed->height ) = getimagesize( MediaFile::getMediaPath( $seed->id ));
+            list( $seed->width, $seed->height ) = getimagesize( \MediaFile::getMediaPath( $seed->id ));
         if ( $thumbSize > $seed->width ) $thumbSize = $seed->width;
         $targetSize = $thumbSize;
-        if ( ! MediaFile::widthExists( $targetSize, $seed->id ) ) {
-            $bestSize = MediaFile::getBestThumbSize( $targetSize );
+        if ( ! \MediaFile::widthExists( $targetSize, $seed->id ) ) {
+            $bestSize = \MediaFile::getBestThumbSize( $targetSize );
             if ( $targetSize != $bestSize ) {
                 # Kepp this line! It might be needed later when caching will be implemented.
                 # $app->redirectTo( 'th', array( 'id' => $mediaId, 'maxSize' => $bestSize ), $status = 302 );
@@ -75,13 +75,13 @@ class MediaFilesController
     public function getImageWithMaxWidth( $req, $res, $args ) {
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
         if ( !isset( $seed->width{0} ) or !isset( $seed->height{0} ))
-            list( $seed->width, $seed->height ) = getimagesize( MediaFile::getMediaPath( $seed->id ));
+            list( $seed->width, $seed->height ) = getimagesize( \MediaFile::getMediaPath( $seed->id ));
         if ( $args['maxWidth'] >= $seed->width ) {
             $seed->deliverOriginal();
         } else {
             $targetWidth = $args['maxWidth'];
-            if ( ! MediaFile::widthExists( $targetWidth, $seed->id )) {
-                $bestWidth = MediaFile::getBestWidth( $targetWidth );
+            if ( ! \MediaFile::widthExists( $targetWidth, $seed->id )) {
+                $bestWidth = \MediaFile::getBestWidth( $targetWidth );
                 if ( $bestWidth >= $seed->width ) {
                     $seed->deliverOriginal();
                 } elseif ( $targetWidth != $bestWidth ) {
@@ -103,7 +103,7 @@ class MediaFilesController
     public function getImageWithMaxWidthAndHeight( $req, $res, $args ) {
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
         if ( !isset( $seed->width{0} ) or !isset( $seed->height{0} ))
-            list( $seed->width, $seed->height ) = getimagesize( MediaFile::getMediaPath( $seed->id ));
+            list( $seed->width, $seed->height ) = getimagesize( \MediaFile::getMediaPath( $seed->id ));
         if ( $args['maxWidth'] >= $seed->width and $args['maxHeight'] >= $seed->height ) {
             $seed->deliverOriginal();
         } else {
@@ -111,8 +111,8 @@ class MediaFilesController
             $heightRatio = $args['maxHeight']/$seed->height;
             $ratio = $widthRatio < $heightRatio ? $widthRatio : $heightRatio;
             $targetWidth = round( $seed->width*$ratio );
-            if ( ! MediaFile::widthExists( $targetWidth, $seed->id )) {
-                $bestWidth = MediaFile::getBestWidth( $targetWidth );
+            if ( ! \MediaFile::widthExists( $targetWidth, $seed->id )) {
+                $bestWidth = \MediaFile::getBestWidth( $targetWidth );
                 if ( $bestWidth >= $seed->width ) {
                     $seed->deliverOriginal();
                 } elseif ( $targetWidth != $bestWidth ) {

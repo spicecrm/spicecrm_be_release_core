@@ -216,24 +216,12 @@ $app->group('/KReporter', function () use ($app, $KRESTManager, $KReportRestHand
         });
 
         $app->group('/savedfilter', function () use ($app, $KRESTManager, $KReportRestHandler) {
-            $app->get('', function($req, $res, $args) use ($app, $KRESTManager, $KReportRestHandler) {
-//                file_put_contents("sugarcrm.log", "savedfilter\n", FILE_APPEND);
-                $requestParams = $_GET;
-                $requestParams['reportid'] = $args['reportId'];
-                echo json_encode($KReportRestHandler->getSavedFilters($requestParams));
-            });
-            $app->group('/assigneduserid/{assigneduserid}', function () use ($app, $KRESTManager, $KReportRestHandler) {
-                $app->get('', function($req, $res, $args) use ($app, $KRESTManager, $KReportRestHandler) {
-                    global $current_user;
-                    $requestParams = $_GET;
-                    $requestParams = array('reportid' => $args['reportId'], 'assigneduserid' => $args['assignedUserId'] == 'own' ? $current_user->id : $args['assignedUserId'], 'context' => $requestParams['context']);
-                    echo json_encode($KReportRestHandler->getSavedFilters($requestParams));
-                });
-            });
-            $app->group('/{savedfilterId}', function() use ($app, $KRESTManager, $KReportRestHandler) {
-                $app->delete('', function($req, $res, $args) use ($app, $KRESTManager, $KReportRestHandler) {
-                    $KReportRestHandler->deleteSavedFilter($args['savedfilterId']);
-                });
+            $app->get('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
+            $app->get('/assigneduserid/{assignedUserId}', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
+
+            $app->group('/{savedFilterId}', function() use ($app, $KRESTManager, $KReportRestHandler) {
+                $app->post('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'saveFilter']);
+                $app->delete('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'deleteFilter']);
             });
         });
 

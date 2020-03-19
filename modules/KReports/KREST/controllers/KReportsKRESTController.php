@@ -39,8 +39,10 @@ class KReportsKRESTController
     public function getReportCategories() {
         global $db;
         $list = [];
-        $query = $db->query("SELECT * FROM kreportcategories WHERE deleted <> 1");
-        while ($row = $db->fetchByAssoc($query)) $list[] = $row;
+        if($db->tableExists('kreportcategories')) {
+            $query = $db->query("SELECT * FROM kreportcategories WHERE deleted <> 1");
+            while ($row = $db->fetchByAssoc($query)) $list[] = $row;
+        }
         return $list;
     }
 }

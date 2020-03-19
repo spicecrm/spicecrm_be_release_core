@@ -133,9 +133,11 @@ class ModuleHandler
             $db->query("UPDATE sysmodulelists SET date_last_used='{$timedate->nowDb()}' WHERE id = '{$searchParams['listid']}'");
         }
 
+        $searchParams['start'] = $searchParams['offset']; // Temporary workaround because GET parameter "start" AND "offset" is used.
+
         // check if we have an ft config
         $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
-        if ($ftsHandler::checkModule($beanModule, true) && $ftsHandler::checkFilterDefs($beanModule, json_decode(html_entity_decode($listDef['filterdefs']))) && $ftsHandler::checkFilterDefs($beanModule, json_decode(html_entity_decode($searchParams['filter'])))) {
+        if ( @$searchParams['source'] !== 'db' and $ftsHandler::checkModule($beanModule, true) and $ftsHandler::checkFilterDefs($beanModule, json_decode(html_entity_decode($listDef['filterdefs']))) and $ftsHandler::checkFilterDefs($beanModule, json_decode(html_entity_decode($searchParams['filter'])))) {
             //  $results = $ftsHandler->getGlobalSearchResults([$beanModule], $searchParams['searchterm'])
             $searchParams['records'] = $searchParams['limit'];
             $result = $ftsHandler->getModuleSearchResults($beanModule, $searchParams['searchterm'], json_decode($searchParams['searchtags']), $searchParams, json_decode(html_entity_decode($searchParams['aggregates']), true), json_decode($searchParams['sortfields'], true) ?: []);
@@ -187,9 +189,9 @@ class ModuleHandler
                 $searchTermFields = $searchParams['searchtermfields'] ? json_decode(html_entity_decode($searchParams['searchtermfields']), true) : [];
 
                 // if no serachterm field has been sent .. use the unified search fields
-                if(count($searchTermFields) == 0){
-                    foreach($thisBean->field_name_map as $fieldname => $fielddata){
-                        if($fielddata['unified_search']){
+                if (count($searchTermFields) == 0) {
+                    foreach ($thisBean->field_name_map as $fieldname => $fielddata) {
+                        if ($fielddata['unified_search']) {
                             $searchTermFields[] = $fieldname;
                         }
                     }

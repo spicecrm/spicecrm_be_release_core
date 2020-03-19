@@ -231,25 +231,25 @@ class Compiler
         $conditionparts = explode(' ', $condition);
         switch ($conditionparts[1]) {
             case '>':
-                return $this->getValue($conditionparts[0], $beans, false) > trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, true) > trim($conditionparts[2], "'");
                 break;
             case '>=':
-                return $this->getValue($conditionparts[0], $beans, false) >= trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, true) >= trim($conditionparts[2], "'");
                 break;
             case '<':
-                return $this->getValue($conditionparts[0], $beans, false) < trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, true) < trim($conditionparts[2], "'");
                 break;
             case '<=':
-                return $this->getValue($conditionparts[0], $beans, false) <= trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, true) <= trim($conditionparts[2], "'");
                 break;
             case '===':
-                return $this->getValue($conditionparts[0], $beans, false) === trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, true) === trim($conditionparts[2], "'");
                 break;
             case '==':
-                return $this->getValue($conditionparts[0], $beans, false) == trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, true) == trim($conditionparts[2], "'");
                 break;
             case '!=':
-                return $this->getValue($conditionparts[0], $beans, false) != trim($conditionparts[2], "'");
+                return $this->getValue($conditionparts[0], $beans, true) != trim($conditionparts[2], "'");
                 break;
         }
         return false;
@@ -287,7 +287,6 @@ class Compiler
                 $value = $obj->{$part}();
             } else {
                 $field = $obj->field_defs[$part];
-                $GLOBALS['log']->fatal($field);
                 switch ($field['type']) {
                     case 'link':
                         $next_bean = $obj->get_linked_beans($field['name'], $field['bean_name'])[0];
@@ -334,7 +333,7 @@ class Compiler
             return $value;
         };
 
-        return $loopThroughParts($obj, 1);
+        return $loopThroughParts($obj, 1, $keepFetchedRowValue );
     }
 
     private function getObject($object, $beans)

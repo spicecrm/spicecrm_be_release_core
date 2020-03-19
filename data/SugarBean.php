@@ -1455,8 +1455,12 @@ class SugarBean
     {
 
         if ( isset( $this->newFromTemplate{0} ) ) {
-            $GLOBALS['cloningData'] = [ 'count' => 1, 'cloned' => [[ 'module' => $this->module_name, 'id' => $this->newFromTemplate, 'bean' => &$this, 'cloneId' => $this->id ]], 'custom' => null ];
-            $templateBean = BeanFactory::getBean( $this->module_name, $this->newFromTemplate );
+            // CRNR: 1000375: Bug Fix
+            // used "module_dir" instead of "module_name", because "OutputTemplates" has the field "module_name" in vardefs which
+            // overrides sugar bean variable "module_name".
+            // this fix should not have any side effects, as long as all extended beans has the variable "module_dir" set.
+            $GLOBALS['cloningData'] = [ 'count' => 1, 'cloned' => [[ 'module' => $this->module_dir, 'id' => $this->newFromTemplate, 'bean' => &$this, 'cloneId' => $this->id ]], 'custom' => null ];
+            $templateBean = BeanFactory::getBean( $this->module_dir, $this->newFromTemplate );
             $templateBean->cloneBeansOfAllLinks( $this );
         }
 

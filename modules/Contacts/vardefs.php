@@ -584,7 +584,14 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'module'       => 'SalesVouchers',
                 'source'       => 'non-db',
                 'vname'        => 'LBL_SALESVOUCHERS',
-            ]
+            ],
+            'emailschedules' => array(
+                'name' => 'emailschedules',
+                'type' => 'link',
+                'relationship' => 'emailschedules_contacts',
+                'source' => 'non-db',
+                'vname' => 'LBL_EMAILSCHEDULES',
+            ),
             /*
             'portal_user_id' => array(
                 'name' => 'portal_user_id',
@@ -859,6 +866,14 @@ if (is_file("modules/ServiceOrders/ServiceOrder.php")) {
         'module' => 'ServiceOrders',
         'default' => false
     );
+    $dictionary['Contact']['fields']['serviceorderitems'] = array(
+        'name' => 'serviceorderitems',
+        'type' => 'link',
+        'vname' => 'LBL_SERVICE_ORDER_ITEMS',
+        'relationship' => 'contacts_serviceorderitems',
+        'module' => 'ServiceOrderItems',
+        'source' => 'non-db',
+    );
 }
 if (is_file("modules/ServiceTickets/ServiceTicket.php")) {
     $dictionary['Contact']['fields']['servicetickets'] = array(
@@ -905,5 +920,16 @@ if (is_file("modules/ServiceEquipments/ServiceEquipment.php")) {
         'module' => 'ServiceEquipments',
         'default' => false
     );
+}
+
+if (is_file('modules/SalesVouchers/SalesVoucher.php')){
+    $dictionary['Contact']['fields']['salesvouchers'] = [
+        'name'         => 'salesvouchers',
+        'type'         => 'link',
+        'relationship' => 'contacts_salesvouchers',
+        'module'       => 'SalesVouchers',
+        'source'       => 'non-db',
+        'vname'        => 'LBL_SALESVOUCHERS',
+    ];
 }
 VardefManager::createVardef('Contacts', 'Contact', array('default', 'assignable', 'person'));

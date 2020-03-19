@@ -98,7 +98,7 @@ class ElasticHandler
         // determein if we send the wait_for param .. for activity stream
         $params = [];
         $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
-        if($indexSettings['waitfor']) $params['wait_for'] = true;
+        if($indexSettings['waitfor']) $params['refresh'] = 'wait_for';
 
         $response = $this->query('POST', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $data['id'], $params, $data);
         return $response;
@@ -106,7 +106,11 @@ class ElasticHandler
 
     function document_delete($module, $id)
     {
-        $response = $this->query('DELETE', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $id);
+        $params = [];
+        $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
+        if($indexSettings['waitfor']) $params['refresh'] = 'wait_for';
+
+        $response = $this->query('DELETE', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $id, $params);
         return $response;
     }
 
@@ -234,7 +238,13 @@ class ElasticHandler
 
         $cURL = $this->protocol . '://' . $this->server . ':' . $this->port . '/';
         if (!empty($url)) $cURL .=  $url;
-//        file_put_contents("sugarcrm.log", print_r($cURL, true)."\n", FILE_APPEND);
+
+        if(!empty($params)){
+            if(substr($cURL, -1 ) != '?')
+                $cURL.= '?';
+            $cURL.= http_build_query($params);
+        }
+
         $ch = curl_init($cURL);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);

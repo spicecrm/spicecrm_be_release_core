@@ -31,6 +31,9 @@ $KRESTManager->registerExtension('core', '2.0', ['edit_mode' => $sugar_config['w
 $app->get('/', [new \SpiceCRM\KREST\controllers\coreController(), 'getExtensions']);
 
 $app->get('/language/{language}', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
+/**
+ * fallback language routes in case no language value is found (asynchronous loading...)
+ */
 $app->get('/language/', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
 $app->get('/language', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
 
@@ -48,7 +51,7 @@ $app->get('/sysinfo', [new \SpiceCRM\KREST\controllers\coreController(), 'getSys
 /**
  * helper to generate a GUID
  */
-$app->get('/system/guis', [new \SpiceCRM\KREST\controllers\coreController(), 'generateGuid']);
+$app->get('/system/guid', [new \SpiceCRM\KREST\controllers\coreController(), 'generateGuid']);
 
 
 /**

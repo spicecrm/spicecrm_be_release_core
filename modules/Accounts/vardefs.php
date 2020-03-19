@@ -456,14 +456,7 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'relationship' => 'servicecalls_contacts',
             'source' => 'non-db'
         ),
-        'manufactured_products' => array(
-            'vname' => 'LBL_MANUFACTURED_PRODUCTS',
-            'name' => 'manufactured_products',
-            'type' => 'link',
-            'module' => 'Products',
-            'relationship' => 'manufacturer_products',
-            'source' => 'non-db'
-        ),
+
         'events_account_role' => array(
             'name' => 'events_account_role',
             'vname' => 'LBL_ROLE',
@@ -495,51 +488,10 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
                 ]
             ]
         ),
-        'bonuscards' => [
-            'name' => 'bonuscards',
-            'type' => 'link',
-            'relationship' => 'bonuscards_accounts',
-            'module' => 'BonusCards',
-            'bean_name' => 'BonusCard',
-            'source' => 'non-db',
-            'vname' => 'LBL_BONUSCARDS',
-        ],
         'prospectlists_accounts_quantity' => array(
             'name' => 'prospectlists_accounts_quantity',
             'vname' => 'LBL_QUANTITY',
             'type' => 'varchar',
-            'source' => 'non-db'
-        ),
-        'potentials' => array(
-            'name' => 'potentials',
-            'vname' => 'LBL_POTENTIALS',
-            'type' => 'link',
-            'relationship' => 'account_potentials',
-            'module' => 'Accounts',
-            'source' => 'non-db'
-        ),
-        'resellerpotentials' => array(
-            'name' => 'resellerpotentials',
-            'vname' => 'LBL_RESELLERPOTENTIALS',
-            'type' => 'link',
-            'relationship' => 'accounts_potentials_resellers',
-            'module' => 'Accounts',
-            'source' => 'non-db'
-        ),
-        'maincompetitorpotentials' => array(
-            'name' => 'maincompetitorpotentials',
-            'vname' => 'LBL_MAINCOMPETITORPOTENTIALS',
-            'type' => 'link',
-            'relationship' => 'potential_maincompetitor',
-            'module' => 'Accounts',
-            'source' => 'non-db'
-        ),
-        'ompetitorpotentials' => array(
-            'name' => 'ompetitorpotentials',
-            'vname' => 'LBL_COMPETITORPOTENTIALS',
-            'type' => 'link',
-            'relationship' => 'accounts_potentials_competitors',
-            'module' => 'Accounts',
             'source' => 'non-db'
         ),
         'logo' => [
@@ -628,22 +580,13 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'relationship_type' => 'one-to-many',
             'relationship_role_column' => 'target_type', 'relationship_role_column_value' => 'Accounts'
         ),
-                'accounts_accountkpis' => array(
+        'accounts_accountkpis' => array(
             'lhs_module' => 'Accounts',
             'lhs_table' => 'accounts',
             'lhs_key' => 'id',
             'rhs_module' => 'AccountKPIs',
             'rhs_table' => 'accountkpis',
             'rhs_key' => 'account_id',
-            'relationship_type' => 'one-to-many'
-        ),
-        'manufacturer_products' => array(
-            'lhs_module' => 'Accounts',
-            'lhs_table' => 'accounts',
-            'lhs_key' => 'id',
-            'rhs_module' => 'Products',
-            'rhs_table' => 'products',
-            'rhs_key' => 'manufacturer_id',
             'relationship_type' => 'one-to-many'
         ),
         'account_events' => array(
@@ -801,5 +744,75 @@ if(is_file('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')){
         'bean_name' => 'SystemDeploymentRelease',
         'source' => 'non-db',
         'vname' => 'LBL_SYSTEMDEPLOYMENTRELEASES',
+    );
+}
+
+if(is_file('modules/Potentials/Potential.php')){
+
+    $dictionary['Account']['fields']['potentials'] = array(
+        'name' => 'potentials',
+        'vname' => 'LBL_POTENTIALS',
+        'type' => 'link',
+        'relationship' => 'account_potentials',
+        'module' => 'Accounts',
+        'source' => 'non-db'
+    );
+    $dictionary['Account']['fields']['resellerpotentials'] = array(
+        'name' => 'resellerpotentials',
+        'vname' => 'LBL_RESELLERPOTENTIALS',
+        'type' => 'link',
+        'relationship' => 'accounts_potentials_resellers',
+        'module' => 'Accounts',
+        'source' => 'non-db'
+    );
+    $dictionary['Account']['fields']['maincompetitorpotentials'] = array(
+        'name' => 'maincompetitorpotentials',
+        'vname' => 'LBL_MAINCOMPETITORPOTENTIALS',
+        'type' => 'link',
+        'relationship' => 'potential_maincompetitor',
+        'module' => 'Accounts',
+        'source' => 'non-db'
+    );
+    $dictionary['Account']['fields']['ompetitorpotentials'] = array(
+        'name' => 'ompetitorpotentials',
+        'vname' => 'LBL_COMPETITORPOTENTIALS',
+        'type' => 'link',
+        'relationship' => 'accounts_potentials_competitors',
+        'module' => 'Accounts',
+        'source' => 'non-db'
+    );
+
+}
+
+if(is_file('modules/BonusCards/BonusCard.php')){
+    $dictionary['Account']['fields']['bonuscards'] = [
+        'name' => 'bonuscards',
+        'type' => 'link',
+        'relationship' => 'bonuscards_accounts',
+        'module' => 'BonusCards',
+        'bean_name' => 'BonusCard',
+        'source' => 'non-db',
+        'vname' => 'LBL_BONUSCARDS',
+    ];
+}
+
+if(is_file('modules/Products/Product.php')){
+    $dictionary['Account']['fields']['manufactured_products'] = array(
+        'vname' => 'LBL_MANUFACTURED_PRODUCTS',
+        'name' => 'manufactured_products',
+        'type' => 'link',
+        'module' => 'Products',
+        'relationship' => 'manufacturer_products',
+        'source' => 'non-db'
+    );
+
+    $dictionary['Account']['relationships']['manufacturer_products'] = array(
+        'lhs_module' => 'Accounts',
+        'lhs_table' => 'accounts',
+        'lhs_key' => 'id',
+        'rhs_module' => 'Products',
+        'rhs_table' => 'products',
+        'rhs_key' => 'manufacturer_id',
+        'relationship_type' => 'one-to-many'
     );
 }

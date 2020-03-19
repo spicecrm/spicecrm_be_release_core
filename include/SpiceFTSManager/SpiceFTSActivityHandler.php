@@ -337,7 +337,7 @@ class SpiceFTSActivityHandler
                 'start' => $hit['_source']['_activitydate'],
                 'end' => $hit['_source']['_activityenddate'],
                 'type' => $hit['_type'] == 'UserAbsences' ? 'absence' : 'event',
-                'data' => $moduleHandler->mapBeanToArray($hit['_type'], $seed, [], false, false, false)
+                'data' => $moduleHandler->mapBeanToArray($hit['_type'], $seed, [], false, false, true)
             ];
         }
 

@@ -1484,20 +1484,22 @@ $app_list_strings = array(
         'n' => 'when new'
     ),
     'workflowdefinition_emailtypes' => array(
-        '1' => 'user assgined to Task',
-        '2' => 'user assgined to Bean',
+        '1' => 'user assigned to Task',
+        '2' => 'user assigned to Bean',
         '3' => 'user created Bean',
         '4' => 'manager assigned to Bean',
         '5' => 'manager created Bean',
         '6' => 'email address',
-        '7' => 'system routine'
+        '7' => 'system routine',
+        '8' => 'user creator to Bean'
     ),
     'workflowdefinition_assgintotypes' => array(
         '1' => 'User',
         '2' => 'Workgroup',
         '3' => 'User assigned to Parent Object',
-        '4' => 'Manager of User assgined to Parent Object',
-        '5' => 'system routine'
+        '4' => 'Manager of User assigned to Parent Object',
+        '5' => 'system routine',
+        '6' => 'Creator',
     ),
     'workflowdefinition_conditionoperators' => array(
         'EQ' => '=',
@@ -4372,6 +4374,12 @@ $app_list_strings['scrum_status_dom'] = [
     'completed' => 'completed',
     'backlog' => 'backlog'
 ];
+
+$app_list_strings['emailschedule_status_dom'] = [
+    'queued' => 'queued',
+    'sent' => 'sent',
+];
+
 
 $app_list_strings['moduleList']['KReleasePackages'] = 'K Releasepackages';
 

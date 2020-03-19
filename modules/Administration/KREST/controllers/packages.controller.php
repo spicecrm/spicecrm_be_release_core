@@ -37,7 +37,7 @@ class PackageController {
 
     function getPackages($req, $res, $args)
     {
-        global $db;
+        global $db, $sugar_config;
 
         $this->checkAdmin();
 
@@ -63,6 +63,14 @@ class PackageController {
         $content->loaded = $confloader->getCurrentConf();
         $content->opencrs = $confloader->loader->hasOpenChangeRequest();
 
+        // CR1000338 disable blacklisted packages
+        if(isset( $sugar_config['packageloader']['blacklist']) && !empty($sugar_config['packageloader']['blacklist'])) {
+            foreach ($content->packages as $idx => $package) {
+                if (in_array($package->package, $sugar_config['packageloader']['blacklist'])) {
+                    $package->extensions = 'locked by admin'; // will disable package load since there is no KREST extension by that name
+                }
+            }
+        }
         return $res->write(json_encode($content));
     }
 
