@@ -8,7 +8,13 @@ class SystemUIRoutesController
     {
         global $db;
         $routeArray = array();
-        $routes = $db->query("SELECT * FROM sysuiroutes UNION SELECT * FROM sysuicustomroutes");
+        $columns = $db->get_columns('sysuiroutes');
+        $cols = array();
+        foreach($columns as $c => $col){
+            $cols[] = $col['name'];
+        }
+        $routes = $db->query("SELECT ".explode(',', $cols)." FROM sysuiroutes UNION SELECT ".explode(',', $cols)." FROM sysuicustomroutes");
+
         while ($route = $db->fetchByAssoc($routes)) {
 
             $routeArray[] = $route;
@@ -21,7 +27,13 @@ class SystemUIRoutesController
     {
         global $db;
         $routeArray = array();
-        $routes = $db->query("SELECT * FROM sysuiroutes UNION SELECT * FROM sysuicustomroutes");
+        $columns = $db->get_columns('sysuiroutes');
+        $cols = array();
+        foreach($columns as $c => $col){
+            $cols[] = $col['name'];
+        }
+        $routes = $db->query("SELECT ".explode(',', $cols)." FROM sysuiroutes UNION SELECT ".explode(',', $cols)." FROM sysuicustomroutes");
+
         while ($route = $db->fetchByAssoc($routes)) {
 
             $routeArray[] = $route;
