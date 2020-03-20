@@ -13,7 +13,7 @@ class SystemUIRoutesController
         foreach($columns as $c => $col){
             $cols[] = $col['name'];
         }
-        $routes = $db->query("SELECT ".explode(',', $cols)." FROM sysuiroutes UNION SELECT ".explode(',', $cols)." FROM sysuicustomroutes");
+        $routes = $db->query("SELECT ".implode(',', $cols)." FROM sysuiroutes UNION SELECT ".implode(',', $cols)." FROM sysuicustomroutes");
 
         while ($route = $db->fetchByAssoc($routes)) {
 
@@ -32,7 +32,7 @@ class SystemUIRoutesController
         foreach($columns as $c => $col){
             $cols[] = $col['name'];
         }
-        $routes = $db->query("SELECT ".explode(',', $cols)." FROM sysuiroutes UNION SELECT ".explode(',', $cols)." FROM sysuicustomroutes");
+        $routes = $db->query("SELECT ".implode(',', $cols)." FROM sysuiroutes UNION SELECT ".implode(',', $cols)." FROM sysuicustomroutes");
 
         while ($route = $db->fetchByAssoc($routes)) {
 
