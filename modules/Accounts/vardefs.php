@@ -448,14 +448,6 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'default' => true, //UI: load related beans on account load. module property required!
             'module' => 'AccountCCDetails'
         ),
-        'servicecalls' => array(
-            'vname' => 'LBL_SERVICECALLS',
-            'name' => 'servicecalls',
-            'type' => 'link',
-            'module' => 'ServiceCalls',
-            'relationship' => 'servicecalls_contacts',
-            'source' => 'non-db'
-        ),
 
         'events_account_role' => array(
             'name' => 'events_account_role',
@@ -814,5 +806,16 @@ if(is_file('modules/Products/Product.php')){
         'rhs_table' => 'products',
         'rhs_key' => 'manufacturer_id',
         'relationship_type' => 'one-to-many'
+    );
+}
+
+if(is_file('modules/ServiceCalls/ServiceCall.php')){
+    $dictionary['Account']['fields']['servicecalls'] = array(
+        'vname' => 'LBL_SERVICECALLS',
+        'name' => 'servicecalls',
+        'type' => 'link',
+        'module' => 'ServiceCalls',
+        'relationship' => 'servicecalls_accounts',
+        'source' => 'non-db'
     );
 }
