@@ -1452,6 +1452,12 @@ $dictionary['sysuicustomroutes'] = array(
             'default' => 0,
             'comment' => 'set to true to allow subtabs on this route'
         ),
+        'referencepath' => array(
+            'name' => 'referencepath',
+            'type' => 'varchar',
+            'len' => 255,
+            'comment' => 'a path that is then treated as one and the view is rendered in that window if one exists'
+        ),
         'aclaction' => array(
             'name' => 'aclaction',
             'type' => 'varchar',
