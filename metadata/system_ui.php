@@ -1440,6 +1440,24 @@ $dictionary['sysuicustomroutes'] = array(
             'type' => 'int',
             'len' => 1
         ),
+        'target' => array(
+            'name' => 'target',
+            'type' => 'varchar',
+            'len' => 1,
+            'comment' => 'the target for the tab in tabbed browsing, an be M for main, N for New or C for current'
+        ),
+        'subtabs' => array(
+            'name' => 'subtabs',
+            'type' => 'bool',
+            'default' => 0,
+            'comment' => 'set to true to allow subtabs on this route'
+        ),
+        'aclaction' => array(
+            'name' => 'aclaction',
+            'type' => 'varchar',
+            'len' => 100,
+            'comment' => 'the acl action to be checked when navigating to the route'
+        ),
         'version' => array(
             'name' => 'version',
             'type' => 'varchar',
@@ -1458,7 +1476,6 @@ $dictionary['sysuicustomroutes'] = array(
             'fields' => array('id'))
     )
 );
-
 
 $dictionary['sysmodules'] = array(
     'table' => 'sysmodules',
