@@ -1373,7 +1373,7 @@ $dictionary['sysuiroutes'] = array(
         ),
         'subtabs' => array(
             'name' => 'subtabs',
-            'type' => 'boolean',
+            'type' => 'bool',
             'default' => 0,
             'comment' => 'set to true to allow subtabs on this route'
         ),
