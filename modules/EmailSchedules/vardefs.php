@@ -14,14 +14,21 @@ $dictionary['EmailSchedule'] = array(
             'len' => '100',
             'vname' => 'LBL_NAME',
         ),
-        'subject' => array(
-        'name' => 'subject',
+        'email_schedule_status' => array(
+            'name' => 'email_schedule_status',
+            'type' => 'enum',
+            'options' => 'email_schedule_status_dom',
+            'len' => 50,
+            'vname' => 'LBL_STATUS',
+        ),
+        'email_subject' => array(
+        'name' => 'email_subject',
         'vname' => 'LBL_SUBJECT',
         'type' => 'varchar',
         'len' => '255',
         ),
-        'body' => array(
-            'name' => 'body',
+        'email_body' => array(
+            'name' => 'email_body',
             'vname' => 'LBL_EMAIL_BODY_PLAIN',
             'type' => 'text',
         ),
@@ -32,47 +39,14 @@ $dictionary['EmailSchedule'] = array(
             'dbtype' => 'varchar',
             'len' => 36
         ),
-        'emailschedule_template_id' => array(
-            'name' => 'emailschedule_template_id',
-            'vname' => 'LBL_EMAILTEMPLATE_ID',
+        'email_stylesheet_id' => array(
+            'name' => 'email_stylesheet_id',
+            'vname' => 'LBL_STYLESHEET',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'emailschedule_template_name' =>
-            array(
-                'name' => 'emailschedule_template_name',
-                'rname' => 'name',
-                'id_name' => 'emailschedule_template_id',
-                'vname' => 'LBL_EMAILTEMPLATE',
-                'type' => 'relate',
-                'table' => 'email_templates',
-                'isnull' => 'true',
-                'module' => 'EmailTemplates',
-                'dbType' => 'varchar',
-                'link' => 'emailtemplates',
-                'len' => '255',
-                'source' => 'non-db',
-            ),
-        'emailtemplates' => array(
-            'name' => 'emailtemplates',
-            'type' => 'link',
-            'relationship' => 'emailschedule_email_template',
-            'source' => 'non-db',
-            'module' => 'EmailTemaplates'
-        ),
-
-    ),
-    'relationships' => array(
-        'emailschedule_email_template' => array(
-            'lhs_module' => 'EmailTemplates',
-            'lhs_table' => 'email_templates',
-            'lhs_key' => 'id',
-            'rhs_module' => 'EmailSchedules',
-            'rhs_table' => 'emailschedules',
-            'rhs_key' => 'email_template_id',
-            'relationship_type' => 'one-to-many'
         )
     ),
+    'relationships' => array(),
     'indices' => array(),
 );
 

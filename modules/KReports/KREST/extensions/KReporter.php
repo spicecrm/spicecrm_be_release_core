@@ -215,18 +215,15 @@ $app->group('/KReporter', function () use ($app, $KRESTManager, $KReportRestHand
             });
         });
 
-        // KReporter more only
-        if(class_exists('SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController')) {
-            $app->group('/savedfilter', function () use ($app, $KRESTManager, $KReportRestHandler) {
-                $app->get('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
-                $app->get('/assigneduserid/{assignedUserId}', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
+        $app->group('/savedfilter', function () use ($app, $KRESTManager, $KReportRestHandler) {
+            $app->get('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
+            $app->get('/assigneduserid/{assignedUserId}', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
 
-                $app->group('/{savedFilterId}', function () use ($app, $KRESTManager, $KReportRestHandler) {
-                    $app->post('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'saveFilter']);
-                    $app->delete('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'deleteFilter']);
-                });
+            $app->group('/{savedFilterId}', function() use ($app, $KRESTManager, $KReportRestHandler) {
+                $app->post('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'saveFilter']);
+                $app->delete('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'deleteFilter']);
             });
-        }
+        });
 
         $app->get('/layout', function($req, $res, $args) use ($app, $KRESTManager) {
             $layout = array();
