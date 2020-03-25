@@ -80,6 +80,7 @@ $job_strings = [
     29 => 'schedulerTest',
 	30 => 'fullTextIndexBulk',
 	31 => 'generateQuestionnaireEvaluations',
+    32 => 'sendEmailScheduleEmails'
 ];
 
 function workflowHandler(){
@@ -623,7 +624,10 @@ function cleanJobQueue($job)
     $job->db->query("DELETE FROM {$job->table_name} WHERE status='done' AND date_modified < ".$job->db->convert($hard_cutoff_date, 'datetime'));
     return true;
 }
-
+/**
+ * Job 22
+ * sendCampaignTaskEmails
+ */
 function sendCampaignTaskEmails(){
     $campaignTask = BeanFactory::getBean('CampaignTasks');
     return $campaignTask->sendQueuedEmails();
@@ -738,6 +742,15 @@ function generateQuestionnaireEvaluations()
         QuestionnaireEvaluation::generateEvaluation('ServiceFeedbacks', $row['id'] );
     }
     return true;
+}
+
+/**
+ * Job 32
+ * sendEmailScheduleEmails
+ */
+function sendEmailScheduleEmails(){
+    $emailSchedule = BeanFactory::getBean('EmailSchedules');
+    return $emailSchedule->sendQueuedEmails();
 }
 
 if($scheduledtaskhandle = opendir('./modules/Schedulers/ScheduledTasks')) {
