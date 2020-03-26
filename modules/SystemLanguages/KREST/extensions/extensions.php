@@ -49,7 +49,7 @@ $app->group('/syslanguages', function () use ($app, $handler)
     $app->post( '/filesToDB', function( $req, $res, $args ) use($app, $handler) {
 
         if ( !$GLOBALS['current_user']->is_dev )
-            throw (new KREST\ForbiddenException('No development privileges.'))->setErrorCode('notDeveloper');
+            throw (new \SpiceCRM\KREST\ForbiddenException('No development privileges.'))->setErrorCode('notDeveloper');
 
         if ( $req->getParsedBodyParam('confirmed' ) !== true )
             throw (new \SpiceCRM\KREST\BadRequestException('Operation not confirmed.'))->setErrorCode('notConfirmed');
@@ -65,7 +65,7 @@ $app->group('/syslanguages', function () use ($app, $handler)
 $app->get('/syslanguage/{language}/{scope}/labels/untranslated', function($req, $res, $args) use($app, $handler){
     global $current_user;
     if (!$current_user->is_admin)
-        throw (new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        throw (new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
     echo json_encode($handler->getUntranslatedLabels($args['language'], $args['scope']));
 

@@ -507,7 +507,7 @@ class User extends Person
                 or ( $this->fetched_row['deleted'] != $this->deleted and $this->status == 'Active' ))
                 and self::usernameAlreadyExists( $this->user_name, $this->id ) ) {
 
-            throw ( new KREST\BadRequestException( 'User name \'' . $this->user_name . '\' already exists.' ) )->setErrorCode( 'duplicateUsername' );
+            throw ( new SpiceCRM\KREST\BadRequestException( 'User name \'' . $this->user_name . '\' already exists.' ) )->setErrorCode( 'duplicateUsername' );
 
         }
 

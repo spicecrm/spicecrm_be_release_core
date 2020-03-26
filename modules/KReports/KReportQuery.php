@@ -2267,10 +2267,16 @@ class KReportQuery
                 break;
             case 'last3month':
                 $dateArray = getdate();
-                //bug 2011-08-09 removed h:i:s from format
-                $fromDate = (($dateArray['mon'] - 3) < 1) ? date('Y-m-d', mktime(0, 0, 0, $dateArray['mon'] + 8, 1, $dateArray['year'] - 1)) : date('Y-m-d', mktime(0, 0, 0, $dateArray['mon'] - 3, 1, $dateArray['year']));
-                $toDate = date('Y-m-d', mktime(0, 0, 0, $dateArray['mon'], 1, $dateArray['year']));
+                // bug 2011-08-09 removed h:i:s from format
+                // BEGIN SPICEUI-331 fix calculation
+//                $fromDate = (($dateArray['mon'] - 3) < 1) ? date('Y-m-d', mktime(0, 0, 0, $dateArray['mon'] + 8, 1, $dateArray['year'] - 1)) : date('Y-m-d', mktime(0, 0, 0, $dateArray['mon'] - 3, 1, $dateArray['year']));
+//                $toDate = date('Y-m-d', mktime(0, 0, 0, $dateArray['mon'], 1, $dateArray['year']));
+                $dayStartThisMonth = new \DateTime(gmdate('Y-m-01'));
+                $toDate = $dayStartThisMonth->format('Y-m-d');
+                $dayStart3MonthsBefore = $dayStartThisMonth->sub(new \DateInterval("P3M"));
+                $fromDate = $dayStart3MonthsBefore->format('Y-m-d');
                 $thisWhereString .= ' >= \'' . $fromDate . ' 00:00:00\' AND ' . $this->get_field_name($path, $fieldname, $fieldid) . ' < \'' . $toDate . ' 00:00:00\'';
+                // END
                 break;
             case 'lastyear':
                 $dateArray = getdate();

@@ -27,7 +27,7 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
             // admin check
             global $current_user;
             if(!$current_user->is_admin) {
-                throw new \KREST\ForbiddenException();
+                throw new \SpiceCRM\KREST\ForbiddenException();
             }
 
             echo json_encode($spiceFTSManager->initialize());
@@ -41,7 +41,7 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
             // admin check
             global $current_user;
             if(!$current_user->is_admin) {
-                throw new \KREST\ForbiddenException();
+                throw new \SpiceCRM\KREST\ForbiddenException();
             }
 
             echo json_encode($spiceFTSManager->getFTSSettings($args['module']));
@@ -50,7 +50,7 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
             // admin check
             global $current_user;
             if(!$current_user->is_admin) {
-                throw new \KREST\ForbiddenException();
+                throw new \SpiceCRM\KREST\ForbiddenException();
             }
 
             echo json_encode($spiceFTSManager->deleteIndexSettings($args['module']));
@@ -59,7 +59,7 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
             // admin check
             global $current_user;
             if(!$current_user->is_admin) {
-                throw new \KREST\ForbiddenException();
+                throw new \SpiceCRM\KREST\ForbiddenException();
             }
             $items = $req->getParsedBody();
 
@@ -74,7 +74,7 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
                 // admin check
                 global $current_user;
                 if (!$current_user->is_admin) {
-                    throw new \KREST\ForbiddenException();
+                    throw new \SpiceCRM\KREST\ForbiddenException();
                 }
 
                 $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
@@ -96,7 +96,7 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
                 // admin check
                 global $current_user;
                 if(!$current_user->is_admin) {
-                    throw new \KREST\ForbiddenException();
+                    throw new \SpiceCRM\KREST\ForbiddenException();
                 }
 
                 echo json_encode($spiceFTSManager->deleteIndex($args['module']));
@@ -105,7 +105,7 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
                 // admin check
                 global $current_user;
                 if(!$current_user->is_admin) {
-                    throw new \KREST\ForbiddenException();
+                    throw new \SpiceCRM\KREST\ForbiddenException();
                 }
 
                 $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();

@@ -489,7 +489,35 @@ class Link2 {
             $result = $this->beans;
         }
 
+        // CR1000382 process sort hook
+        $this->processSortHook($result, $params);
+
         return $result;
+    }
+
+
+    /**
+     * CR1000382
+     * sort bean list after it has been retrieved
+     * might be interesting to sort on a specific property field (sortfield)
+     * This field will be a non-db field
+     * @param $results Array the current list of retrieved beans
+     * @param $params Array the one passed to getBeans()
+     */
+    function processSortHook(&$result, $params){
+        if(isset($params['sort']['sorthook']) && is_array($params['sort']['sorthook'])) {
+            $hooksortfield =  $params['sort']['sorthook']['sortfield'];
+            $hooksortdirection =  ($params['sort']['sorthook']['sortdirection'] ? strtolower($params['sort']['sorthook']['sortdirection']) : 'asc');
+            if(isset($hooksortfield)){
+                usort($result, function($a, $b) use ($hooksortfield, $hooksortdirection) {
+                    if ($a->$hooksortfield == $b->$hooksortfield) {
+                        return 0;
+                    }
+                    $cmp = $a->$hooksortfield <=> $b->$hooksortfield;
+                    return $hooksortdirection === 'asc' ? $cmp : -$cmp;
+                });
+            }
+        }
     }
 
 

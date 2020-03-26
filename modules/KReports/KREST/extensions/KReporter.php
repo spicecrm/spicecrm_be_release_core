@@ -192,7 +192,7 @@ $app->group('/KReporter', function () use ($app, $KRESTManager, $KReportRestHand
 
 
     $app->group('/{reportId}', function () use ($app, $KRESTManager, $KReportRestHandler) {
-        $app->get('', function($req, $res, $args) use ($app, $KRESTManager) {
+        $app->get('', function ($req, $res, $args) use ($app, $KRESTManager) {
             $thisReport = BeanFactory::getBean('KReports', $args['reportId']);
             $vizData = json_decode(html_entity_decode($thisReport->visualization_params, ENT_QUOTES, 'UTF-8'), true);
             $pluginManager = new KReportPluginManager();
@@ -200,30 +200,35 @@ $app->group('/KReporter', function () use ($app, $KRESTManager, $KReportRestHand
             echo json_encode($vizObject->getItem('', $thisReport, $vizData[1]['googlecharts']));
         });
         $app->group('/snapshot', function () use ($app, $KRESTManager) {
-            $app->get('', function($req, $res, $args) use ($app, $KRESTManager) {
+            $app->get('', function ($req, $res, $args) use ($app, $KRESTManager) {
                 $thisReport = new KReport();
                 $thisReport->retrieve($args['reportId']);
                 $requestParams = $_GET;
                 echo json_encode($thisReport->getSnapshots($requestParams['withoutActual']));
             });
             $app->group('/{snapshotId}', function () use ($app, $KRESTManager) {
-                $app->delete('', function($req, $res, $args) use ($app, $KRESTManager) {
+                $app->delete('', function ($req, $res, $args) use ($app, $KRESTManager) {
                     $thisReport = new KReport();
                     $thisReport->retrieve($args['reportId']);
                     $thisReport->deleteSnapshot($args['snapshotId']);
                 });
+                $app->get('/whereconditions', function ($req, $res, $args) use ($app, $KRESTManager) {
+                    echo json_encode(KReport::getSnapshotWhereClause($args['snapshotId']));
+                });
             });
         });
 
-        $app->group('/savedfilter', function () use ($app, $KRESTManager, $KReportRestHandler) {
-            $app->get('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
-            $app->get('/assigneduserid/{assignedUserId}', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
+        if (class_exists('SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController')) {
+            $app->group('/savedfilter', function () use ($app, $KRESTManager, $KReportRestHandler) {
+                $app->get('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
+                $app->get('/assigneduserid/{assignedUserId}', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'getSavedFilters']);
 
-            $app->group('/{savedFilterId}', function() use ($app, $KRESTManager, $KReportRestHandler) {
-                $app->post('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'saveFilter']);
-                $app->delete('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'deleteFilter']);
+                $app->group('/{savedFilterId}', function () use ($app, $KRESTManager, $KReportRestHandler) {
+                    $app->post('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'saveFilter']);
+                    $app->delete('', [new \SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController(), 'deleteFilter']);
+                });
             });
-        });
+        }
 
         $app->get('/layout', function($req, $res, $args) use ($app, $KRESTManager) {
             $layout = array();

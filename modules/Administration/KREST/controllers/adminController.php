@@ -11,7 +11,7 @@ class adminController
         $statsArray = [];
 
         if(!$current_user->is_admin) {
-           throw new \KREST\ForbiddenException();
+           throw new \SpiceCRM\KREST\ForbiddenException();
         }
 
         $stats = $db->query("SHOW TABLE STATUS");

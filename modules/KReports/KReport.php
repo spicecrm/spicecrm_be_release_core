@@ -314,9 +314,22 @@ class KReportPluginManager
 
     public function processPluginAction($pluginId, $pluginAction, $getParams)
     {
-        require_once($this->plugins[$pluginId]['plugindirectory'] . '/controller/plugin' . $this->plugins[$pluginId]['id'] . 'controller.php');
-        $controllerclass = 'plugin' . $this->plugins[$pluginId]['id'] . 'controller';
-        $pluginController = new $controllerclass();
+        // the namespace way
+        $namespaceclass = "\\SpiceCRM\\".preg_replace("|\/|", "\\", $this->plugins[$pluginId]['plugindirectory']);
+        $namespaceclass.= "\\controller\\plugin".$this->plugins[$pluginId]['id']."controller";
+
+        if(class_exists($namespaceclass)){
+            $pluginController = new $namespaceclass();
+        } else{
+            // the old way
+            $controllerclass = 'plugin' . $this->plugins[$pluginId]['id'] . 'controller';
+            if(!class_exists($controllerclass)){
+                require_once($this->plugins[$pluginId]['plugindirectory'] . '/controller/plugin' . $this->plugins[$pluginId]['id'] . 'controller.php');
+            }
+
+            $pluginController = new $controllerclass();
+        }
+
         return $pluginController->$pluginAction($getParams);
     }
 
@@ -946,7 +959,9 @@ class KReport extends SugarBean
         global $current_user, $mod_strings;
 
         // check if we have a custom SQL function -- then reset the value .. we do  not know how to format
-        $listFieldArray = $this->kQueryArray->queryArray ['root'] ['kQuery']->get_listfieldentry_by_fieldid($fieldID);
+        if($this->kQueryArray->queryArray['root']['kQuery']){
+            $listFieldArray = $this->kQueryArray->queryArray['root']['kQuery']->get_listfieldentry_by_fieldid($fieldID);
+        }
 
         // 2013-05-16 ... bug #480 since we might query for fields that are not in the report
         // those fields are created dynamically in the pivot for the grid ...
@@ -1427,7 +1442,7 @@ class KReport extends SugarBean
         if (!isset($parameters['limit']) || !KReportUtil::KReportValueIsIntegerOnly($parameters['limit']))
             $parameters['limit'] = 0;
         //handle snapshot_id content (added maretval 2019-05-03)
-        if ($snapshotid != '0' && !KReportUtil::ValueIsAnId($snapshotid))
+        if ($snapshotid != '0' && !KReportUtil::KReportValueIsAnId($snapshotid))
             $snapshotid = '0';
 
 
@@ -1492,6 +1507,22 @@ class KReport extends SugarBean
             }
         }
         return $retArray;
+    }
+
+    /**
+     * retrieve the where clause used when taking the snapshot to update where clause display when snapshotdata is loaded
+     * @param $snapshot_id
+     */
+    public static function getSnapshotWhereClause($snapshot_id){
+        global $db;
+        if($res = $db->query("SELECT snapshotquery FROM kreportsnapshots WHERE id='".$snapshot_id."'")){
+            while($row = $db->fetchByAssoc($res)){
+                if(!empty($row['snapshotquery'])){
+                    return json_decode_kinamu(html_entity_decode($row['snapshotquery'], ENT_QUOTES));
+                }
+            }
+        }
+        return [];
     }
 
     /*
@@ -1608,7 +1639,7 @@ class KReport extends SugarBean
         // create the snapshot record
         //2017-06-28 bug fix missing id matching for snapshotdata. Save queryArray
         $queryArray = $this->kQueryArray->queryArray;
-        $query = "INSERT INTO kreportsnapshots SET id='" . $snapshotID . "', snapshotdate ='" . gmdate('Y-m-d H:i:s') . "', report_id='" . $this->id . "', data='".$GLOBALS['db']->quote(base64_encode(serialize($queryArray)))."'";
+        $query = 'INSERT INTO kreportsnapshots SET id=\'' . $snapshotID . '\', snapshotdate =\'' . gmdate('Y-m-d H:i:s') . '\', report_id=\'' . $this->id . '\', snapshotquery = '.(!empty($this->whereOverride) ? '\''.$db->quote(json_encode_kinamu($this->whereOverride)).'\'' : 'NULL');
         $db->query($query);
     }
 

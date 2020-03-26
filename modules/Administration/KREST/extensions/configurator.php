@@ -5,7 +5,7 @@ $app->group('/configurator', function () use ($app) {
             global $current_user, $db, $sugar_config;
 
             # header("Access-Control-Allow-Origin: *");
-            if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
             $retArray = $sugar_config[$args['category']] ?: new stdClass();
 
@@ -22,7 +22,7 @@ $app->group('/configurator', function () use ($app) {
             global $current_user, $db, $sugar_config;
 
             # header("Access-Control-Allow-Origin: *");
-            if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
             $postBody = $req->getParsedBody();
 
@@ -46,7 +46,7 @@ $app->group('/configurator', function () use ($app) {
         global $current_user, $db;
 
         # header("Access-Control-Allow-Origin: *");
-        if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
         $retArray = [];
 
@@ -66,7 +66,7 @@ $app->group('/configurator', function () use ($app) {
         global $current_user, $db;
 
         # header("Access-Control-Allow-Origin: *");
-        if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
         include('modules/TableDictionary.php');
         foreach ($dictionary as $meta) {
@@ -99,7 +99,7 @@ $app->group('/configurator', function () use ($app) {
     $app->post('/{table}/{id}', function ($req, $res, $args) use ($app) {
         global $current_user, $db;
 
-        if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
         # header("Access-Control-Allow-Origin: *");
 
         $postBody = $req->getParsedBody();
@@ -157,7 +157,7 @@ $app->group('/configurator', function () use ($app) {
 
     $app->get('/load', function($req, $res, $args) use($app){
         global $current_user;
-        if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
         $params = $_GET;
         if(!class_exists('SpiceUIConfLoader', false))

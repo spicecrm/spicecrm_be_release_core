@@ -7,7 +7,7 @@ $app->get('/module/Schedulers/jobslist', function ($req, $res, $args) use ($app)
 });
 $app->post('/module/Schedulers/{sid}/runjob', function ($req, $res, $args) use ($app) {
     global $current_user;
-    if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+    if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
     $scheduler = BeanFactory::getBean('Schedulers', $args['sid']);
     $job = $scheduler->createJob();
     ob_start();
@@ -19,7 +19,7 @@ $app->post('/module/Schedulers/{sid}/runjob', function ($req, $res, $args) use (
 
 $app->post('/module/Schedulers/{sid}/schedulejob', function ($req, $res, $args) use ($app) {
     global $current_user, $timedate;
-    if (!$current_user->is_admin) throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+    if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
     $sugarJobQueue = new SugarJobQueue();
     $scheduler = BeanFactory::getBean('Schedulers', $args['sid']);

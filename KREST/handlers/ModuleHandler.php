@@ -778,11 +778,11 @@ class ModuleHandler
     {
         // acl check if user can get the detail
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
-            throw (new KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         // get the bean
         $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!isset($thisBean)) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         if ($params['module']) {
             $filterModule = $params['module'];
@@ -822,7 +822,7 @@ class ModuleHandler
         if ($sortingDefinition) $sortBySequenceField = false;
 
         if (!$GLOBALS['ACLController']->checkAccess($filterModule, 'list', true))
-            throw (new KREST\ForbiddenException('Forbidden to list in module ' . $filterModule . '.'))->setErrorCode('noModuleList');
+            throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to list in module ' . $filterModule . '.'))->setErrorCode('noModuleList');
 
         $filterBeans = $this->get_bean_list($filterModule, $params, $addWhere);
 
@@ -1026,7 +1026,7 @@ class ModuleHandler
         $retArray = array();
 
         $thisBean = \BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw (new KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!isset($thisBean->id)) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
