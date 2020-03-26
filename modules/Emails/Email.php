@@ -1146,7 +1146,6 @@ class Email extends SugarBean
             $this->saveEmailAddresses();
             // disable cache! timedate->now() return null at this time
             $timedate->allow_cache = false;
-            $this->date_sent = $timedate->now();
 
 
             $GLOBALS['log']->debug('-------------------------------> Email called save()');
@@ -1154,11 +1153,12 @@ class Email extends SugarBean
             // handle legacy concatenation of date and time fields
             //Bug 39503 - SugarBean is not setting date_sent when seconds missing
             if (empty($this->date_sent)) {
-                global $timedate;
-                $date_sent_obj = $timedate->fromUser($timedate->merge_date_time($this->date_start, $this->time_start), $current_user);
-                if (!empty($date_sent_obj) && ($date_sent_obj instanceof SugarDateTime)) {
-                    $this->date_sent = $date_sent_obj->asDb();
-                }
+                $this->date_sent = $timedate->now();
+//                global $timedate;
+//                $date_sent_obj = $timedate->fromUser($timedate->merge_date_time($this->date_start, $this->time_start), $current_user);
+//                if (!empty($date_sent_obj) && ($date_sent_obj instanceof SugarDateTime)) {
+//                    $this->date_sent = $date_sent_obj->asDb();
+//                }
             }
 
             parent::save($check_notify, $fts_index_bean);

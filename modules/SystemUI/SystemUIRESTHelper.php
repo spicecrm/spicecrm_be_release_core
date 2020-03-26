@@ -7,6 +7,6 @@ class SystemUIRESTHelper{
         if (!$GLOBALS['current_user']->is_admin)
             // set for cors
             // header("Access-Control-Allow-Origin: *");
-            throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
     }
 }

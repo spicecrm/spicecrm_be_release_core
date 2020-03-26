@@ -10,7 +10,7 @@ class CampaignTasksKRESTController
         global $timedate;
 
         if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'detail', true))
-            throw (new KREST\ForbiddenException("Forbidden for details in module CampaignTasks."))->setErrorCode('noModuleDetails');
+            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden for details in module CampaignTasks."))->setErrorCode('noModuleDetails');
 
         $getParams = $_GET;
         $now = $timedate->nowDb();
@@ -58,7 +58,7 @@ class CampaignTasksKRESTController
     {
         // ACL Check
         if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'edit', true))
-            throw (new \KREST\ForbiddenException("Forbidden to edit in module CampaignTasks."))->setErrorCode('noModuleEdit');
+            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit in module CampaignTasks."))->setErrorCode('noModuleEdit');
 
         // load the campaign task
         $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
@@ -80,7 +80,7 @@ class CampaignTasksKRESTController
     {
         // ACL Check
         if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'export', true))
-            throw (new \KREST\ForbiddenException("Forbidden to export for module CampaignTasks."));
+            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to export for module CampaignTasks."));
 
         // load the campaign task
         $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaignid']);

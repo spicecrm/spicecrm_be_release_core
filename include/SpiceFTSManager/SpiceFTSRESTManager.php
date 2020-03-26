@@ -21,7 +21,7 @@ class SpiceFTSRESTManager
         global $current_user;
 
         if(!$current_user->is_admin)
-            throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
             # header("Access-Control-Allow-Origin: *");
     }
 

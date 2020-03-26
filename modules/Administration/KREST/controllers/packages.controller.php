@@ -18,7 +18,7 @@ class PackageController {
     private function checkAdmin(){
         global $current_user;
         if(!$current_user->is_admin) {
-            throw new KREST\ForbiddenException();
+            throw new \SpiceCRM\KREST\ForbiddenException();
         }
     }
 

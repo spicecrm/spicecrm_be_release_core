@@ -17,7 +17,7 @@ class SystemUIRESTHandler
         if (!$GLOBALS['current_user']->is_admin)
             // set for cors
             // header("Access-Control-Allow-Origin: *");
-            throw ( new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
     }
 
     /**
@@ -727,7 +727,7 @@ class SystemUIRESTHandler
 
         if( $failed ) {
             var_dump($error);
-            throw ( new KREST\Exception($error))->setFatal(true);
+            throw ( new \SpiceCRM\KREST\Exception($error))->setFatal(true);
         }
 
         return true;

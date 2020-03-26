@@ -55,12 +55,12 @@ $app->group('/spiceui', function () use ($app, $uiRestHandler) {
             });
             $app->post('/{roleid}/{userid}/{default}', function ($req, $res, $args) use ($app, $uiRestHandler) {
                 global $current_user;
-                if (!$current_user->is_admin) throw (new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+                if (!$current_user->is_admin) throw (new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
                 echo json_encode($uiRestHandler->setUserRole($args));
             });
             $app->delete('/{roleid}/{userid}', function ($req, $res, $args) use ($app, $uiRestHandler) {
                 global $current_user;
-                if (!$current_user->is_admin) throw (new KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+                if (!$current_user->is_admin) throw (new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
                 echo json_encode($uiRestHandler->deleteUserRole($args));
             });
 

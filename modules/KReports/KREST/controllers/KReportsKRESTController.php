@@ -15,7 +15,7 @@ class KReportsKRESTController
      */
     public function getPublishedKReports($req, $res, $args) {
         if (!$GLOBALS['ACLController']->checkAccess('KReports', 'list', true))
-            throw (new KREST\ForbiddenException("Forbidden to list in module KReports."))->setErrorCode('noModuleList');
+            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to list in module KReports."))->setErrorCode('noModuleList');
         global $db;
         $list = [];
         $type = $db->quote($args['type']);

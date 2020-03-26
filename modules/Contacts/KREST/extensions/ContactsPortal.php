@@ -1,6 +1,11 @@
 <?php
 
-use \SpiceCRM\KREST\handlers\UserHandler;
+use SpiceCRM\KREST\handlers\UserHandler;
+
+use SpiceCRM\KREST\Exception;
+use SpiceCRM\KREST\NotFoundException;
+use SpiceCRM\KREST\ForbiddenException;
+use SpiceCRM\KREST\BadRequestException;
 
 $KRESTManager->registerExtension('portal', '1.0');
 
@@ -15,8 +20,8 @@ $app->get('/portal/{id}/portalaccess', function($req, $res, $args) use ( $app ) 
 
     $contact = BeanFactory::getBean('Contacts');
     $contact->retrieve( $args['id'] );
-    if ( !isset($contact->id )) throw ( new \SpiceCRM\KREST\NotFoundException('Contact not found.'))->setLookedFor(['id'=>$args['id'],'module'=>'Contacts']);
-    if ( !$contact->ACLAccess( 'edit' )) throw ( new KREST\ForbiddenException('Forbidden to edit contact.'))->setErrorCode('noRecordEdit');
+    if ( !isset($contact->id )) throw ( new NotFoundException('Contact not found.'))->setLookedFor(['id'=>$args['id'],'module'=>'Contacts']);
+    if ( !$contact->ACLAccess( 'edit' )) throw ( new ForbiddenException('Forbidden to edit contact.'))->setErrorCode('noRecordEdit');
 
     // get acl roles
     $roles = $db->query("SELECT id, name FROM acl_roles WHERE deleted = 0 ORDER BY name");
@@ -68,8 +73,8 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
 
     $contact = BeanFactory::getBean('Contacts');
     $contact->retrieve( $args['contactId'] );
-    if ( !isset( $contact->id )) throw ( new \SpiceCRM\KREST\NotFoundException('Contact not found.'))->setLookedFor([ 'id' => $args['contactId'], 'module' => 'Contacts' ]);
-    if ( !$contact->ACLAccess( 'edit' )) throw ( new KREST\ForbiddenException('Forbidden to edit contact.'))->setErrorCode('noModuleEdit');
+    if ( !isset( $contact->id )) throw ( new NotFoundException('Contact not found.'))->setLookedFor([ 'id' => $args['contactId'], 'module' => 'Contacts' ]);
+    if ( !$contact->ACLAccess( 'edit' )) throw ( new ForbiddenException('Forbidden to edit contact.'))->setErrorCode('noModuleEdit');
 
     $postParams = $req->getParsedBody();
     foreach ( $postParams as $k => $v ) $postParams[$k] = trim( $v );
@@ -78,25 +83,25 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
 
     if ( $args['action'] === 'update' ) {
         if ( !empty( $contact->portal_user_id ) ) $user->retrieve( $contact->portal_user_id );
-        if ( empty( $user->id ) ) throw ( new \SpiceCRM\KREST\NotFoundException( 'Portal user not found.' ) )->setLookedFor([ 'id' => $contact->portal_user_id, 'module' => 'Users' ]);
+        if ( empty( $user->id ) ) throw ( new NotFoundException( 'Portal user not found.' ) )->setLookedFor([ 'id' => $contact->portal_user_id, 'module' => 'Users' ]);
         $isNewUser = false;
     } else {
         $isNewUser = true;
         if ( !empty( $contact->portal_user_id ))
-            throw ( new \SpiceCRM\KREST\BadRequestException('Contact already has portal user data. Creation of another portal user is not possible.'))->setErrorCode('contactAlreadyHasPortalUser');
+            throw ( new BadRequestException('Contact already has portal user data. Creation of another portal user is not possible.'))->setErrorCode('contactAlreadyHasPortalUser');
     }
 
     if ( $db->fetchOne( sprintf('SELECT id FROM users WHERE user_name = "%s" AND id <> "%s" AND deleted = 0 LIMIT 1', $db->quote( $postParams['username']), $contact->portal_user_id )))
-        throw ( new \SpiceCRM\KREST\BadRequestException('User name already taken.'))->setErrorCode('usernameAlreadyTaken');
+        throw ( new BadRequestException('User name already taken.'))->setErrorCode('usernameAlreadyTaken');
     if ( empty( $postParams['username'] ))
-        throw ( new \SpiceCRM\KREST\BadRequestException('Missing user name.'))->setErrorCode('missingUserName');
+        throw ( new BadRequestException('Missing user name.'))->setErrorCode('missingUserName');
     if ( strlen( $postParams['username'] ) > $GLOBALS['dictionary']['User']['fields']['user_name']['len'] )
-        throw ( new \SpiceCRM\KREST\BadRequestException('User name to long (max. '.$GLOBALS['dictionary']['User']['fields']['user_name']['len'].' chars).'))->setErrorCode('usernameToLong');
+        throw ( new BadRequestException('User name to long (max. '.$GLOBALS['dictionary']['User']['fields']['user_name']['len'].' chars).'))->setErrorCode('usernameToLong');
     $user->user_name = $postParams['username'];
     if ( empty( $postParams['aclRole'] ))
-        throw ( new \SpiceCRM\KREST\BadRequestException('Missing acl role.'))->setErrorCode('missingAclRole');
+        throw ( new BadRequestException('Missing acl role.'))->setErrorCode('missingAclRole');
     if ( empty( $postParams['portalRole'] ))
-        throw ( new \SpiceCRM\KREST\BadRequestException('Missing portal role.'))->setErrorCode('missingPortalRole');
+        throw ( new BadRequestException('Missing portal role.'))->setErrorCode('missingPortalRole');
 
     $user->status = @$postParams['status'] ? 'Active':'Inactive';
 
@@ -104,11 +109,11 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
     $user->last_name = $contact->last_name;
 
     if ( $isNewUser and !isset( $postParams['password']{0} ) )
-        throw ( new \SpiceCRM\KREST\BadRequestException('Missing Password of New User'))->setErrorCode('missingPassword');
+        throw ( new BadRequestException('Missing Password of New User'))->setErrorCode('missingPassword');
 
     if ( isset( $postParams['password']{0} )) {
         if ( !preg_match( '/' . UserHandler::getPwdCheckRegex() . '/', $user->user_hash = User::getPasswordHash( $postParams['password'] ) ) )
-            throw ( new \SpiceCRM\KREST\BadRequestException('Password does not match the Guideline.'))->setErrorCode('invalidPassword');
+            throw ( new BadRequestException('Password does not match the Guideline.'))->setErrorCode('invalidPassword');
         $user->user_hash = User::getPasswordHash( $postParams['password'] );
         $user->pwd_last_changed = TimeDate::getInstance()->nowDb();
     }
@@ -131,7 +136,7 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
     } catch( Exception $e ) {
         $db->transactionRollback();
         $GLOBALS['log']->fatal( 'Create/Update portal user: Could not save user for contact ' . $args['contactId'] . '.' );
-        throw ( new \SpiceCRM\KREST\Exception( 'Could not save user. '.$e->getMessage() ));
+        throw ( new Exception( 'Could not save user. '.$e->getMessage() ));
     }
 
     /*
@@ -151,7 +156,7 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
         } catch( Exception $e ) {
             $db->transactionRollback();
             $GLOBALS['log']->fatal( 'Create/Edit portal user: Could not save contact '.$args['contactId'].'.' );
-            throw ( new \SpiceCRM\KREST\Exception( 'Could not save contact. '.$e->getMessage() ));
+            throw ( new Exception( 'Could not save contact. '.$e->getMessage() ));
         }
     }
 
@@ -165,7 +170,7 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
     if ( ! $user->aclroles->add( $postParams['aclRole'] )) {
         $db->transactionRollback();
         $GLOBALS['log']->fatal( 'Create/Edit portal user: Error assigning ACL role (ID: ' . $postParams['aclRole'] . ') for contact ' . $args['contactId'] . '.' );
-        throw ( new \SpiceCRM\KREST\Exception( 'Could not assign ACL role (ID: ' . $postParams['aclRole'] . ').' ) );
+        throw ( new Exception( 'Could not assign ACL role (ID: ' . $postParams['aclRole'] . ').' ) );
     }
     #$postParams['portalRole'].='x';
     // set the portal role
@@ -174,14 +179,14 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
     if ( !isset( $portalRoles[$postParams['portalRole']] )) {
         $db->transactionRollback();
         $GLOBALS['log']->fatal( 'Create/Edit portal user: Unknown portal role (ID: ' . $postParams['portalRole'] . ') for contact ' . $args['contactId'] . '.' );
-        throw ( new \SpiceCRM\KREST\Exception( 'Unknown portal role (ID: ' . $postParams['portalRole'] . ').' ) );
+        throw ( new Exception( 'Unknown portal role (ID: ' . $postParams['portalRole'] . ').' ) );
     }
     $db->query("DELETE FROM sysuiuserroles WHERE user_id = '$user->id'");
     $sqlResult = $db->query( sprintf('INSERT INTO sysuiuserroles ( id, user_id, sysuirole_id ) VALUES( "%s", "%s", "%s" )', create_guid(), $user->id, $db->quote( $postParams['portalRole'] )));
     if ( $db->getAffectedRowCount( $sqlResult ) != 1 ) {
         $db->transactionRollback();
         $GLOBALS['log']->fatal( 'Create/Edit portal user: Error assigning portal role (ID: ' . $postParams['portalRole'] . ') for contact ' . $args['contactId'] . '.' );
-        throw ( new \SpiceCRM\KREST\Exception( 'Could not assign portal role (ID: ' . $postParams['portalRole'] . ').' ) );
+        throw ( new Exception( 'Could not assign portal role (ID: ' . $postParams['portalRole'] . ').' ) );
     }
 
     $db->transactionCommit();
@@ -201,7 +206,7 @@ $app->get('/portal/{contactId}/testUsername', function( $req, $res, $args ) use 
     global $db;
 
     $contact = $db->fetchOne( sprintf('SELECT portal_user_id FROM contacts WHERE id = "%s" AND deleted = 0', $db->quote( $args['contactId'] )));
-    if ( !$contact ) throw ( new \SpiceCRM\KREST\NotFoundException( 'Contact Not Found' ))->setLookedFor(['id'=>$args['contactId'],'module'=>'Contacts']);
+    if ( !$contact ) throw ( new NotFoundException( 'Contact Not Found' ))->setLookedFor(['id'=>$args['contactId'],'module'=>'Contacts']);
 
     $user = $db->fetchOne( sprintf('SELECT id FROM users WHERE user_name = "%s" AND id <> "%s" AND deleted = 0 LIMIT 1', $db->quote( $req->getParam('username')), $contact['portal_user_id'] ));
 

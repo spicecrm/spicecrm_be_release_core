@@ -72,6 +72,13 @@ $dictionary['emailschedules_beans'] = array (
             'len'		=> '36',
             'comment' 	=> 'FK to various beans\'s tables',
         ),
+        array(
+            'name'		=> 'email_id',
+            'type'		=> 'varchar',
+            'dbType'	=> 'id',
+            'len'		=> '36',
+            'comment' 	=> 'FK to email table',
+        ),
         array (
             'name' => 'date_modified',
             'type' => 'datetime'
@@ -85,20 +92,6 @@ $dictionary['emailschedules_beans'] = array (
 
     ),
     'relationships' => array(
-        'emailschedules_contacts'	=> array(
-            'lhs_module'		=> 'EmailSchedules',
-            'lhs_table'			=> 'emailschedules',
-            'lhs_key'			=> 'id',
-            'rhs_module'		=> 'Contacts',
-            'rhs_table'			=> 'contacts',
-            'rhs_key'			=> 'id',
-            'relationship_type'	=> 'many-to-many',
-            'relationship_role_column' => 'bean_module',
-            'relationship_role_column_value' => 'Contacts',
-            'join_table'		=> 'emailschedules_beans',
-            'join_key_lhs'		=> 'emailschedule_id',
-            'join_key_rhs'		=> 'bean_id',
-        ),
     ),
     'indices' => array(
         array(
