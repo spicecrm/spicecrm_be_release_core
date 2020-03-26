@@ -1071,12 +1071,14 @@ class KReport extends SugarBean
 
     function createCSV($dynamicolsOverride = '', $parentbean = null)
     {
-        global $current_user;
+        global $current_user, $sugar_config;
         $this->tocsv = true;
 
         $header = '';
         $rows = '';
 
+        // SPICEUI-325 fallback delimiter when user pref is not set
+        $export_delimiter = (!empty($current_user->getPreference('export_delimiter')) ? $current_user->getPreference('export_delimiter') : $sugar_config['export_delimiter']);
 
         $reportParams = array('toCSV' => true);
         if ($dynamicolsOverride != '') {
@@ -1157,10 +1159,10 @@ class KReport extends SugarBean
                         if ($getHeader) {
                             foreach ($arrayList as $fieldId => $fieldArray)
                                 if ($fieldArray['fieldid'] == $key)
-                                    $header .= '"' .iconv("UTF-8", $current_user->getPreference('default_export_charset'), $fieldArray ['name']) . '"' . $current_user->getPreference('export_delimiter');
+                                    $header .= '"' .iconv("UTF-8", $current_user->getPreference('default_export_charset'), $fieldArray ['name']) . '"' . $export_delimiter;
                         }
 
-                        $rows .= '"' . iconv("UTF-8", $current_user->getPreference('default_export_charset') . '//IGNORE', preg_replace(array('/"/'), array('""'), strip_tags(html_entity_decode($value, ENT_QUOTES)))) . '"' . $current_user->getPreference(('export_delimiter'));
+                        $rows .= '"' . iconv("UTF-8", $current_user->getPreference('default_export_charset') . '//IGNORE', preg_replace(array('/"/'), array('""'), strip_tags(html_entity_decode($value, ENT_QUOTES)))) . '"' . $export_delimiter;
                     }
                 }
                 if ($getHeader)
