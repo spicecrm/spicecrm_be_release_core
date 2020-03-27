@@ -56,6 +56,8 @@ class ProspetListsKRESTController
 
         $postBody = $req->getParsedBody();
 
+        $beanModule = $postBody['module'];
+
         if (!$GLOBALS['ACLController']->checkAccess($postBody['module'], 'export', true))
             return false;
 
@@ -67,43 +69,49 @@ class ProspetListsKRESTController
 
         $seed = \BeanFactory::getBean($postBody['module']);
 
-        if($postBody['ids'] && is_array($postBody['ids']) && count($postBody['ids']) > 0){
-            $query = "INSERT INTO prospect_lists_prospects (id, prospect_list_id, related_id, related_type, date_modified, deleted) (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 FROM {$seed->table_name} WHERE id IN ('" . join("','", $postBody['ids']) . "'))";
-            $db->query($query);
-        } else {
-            switch ($postBody['listtype']) {
-                case 'all':
-                case 'owner':
-                    $ftshandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
-                    $rawResults = $ftshandler->getRawSearchResults($postBody['module'], $postBody['searchterm'], $postBody, [$postBody['module'] =>  $postBody['aggregates']], 1000, 0, $postBody['sort'], [], false);
-                    $prospectids = [];
-                    foreach ($rawResults['hits']['hits'] as &$hit) {
-                        $prospectids[] = $hit['_id'];
-                    }
-                    $query = "INSERT INTO prospect_lists_prospects (id, prospect_list_id, related_id, related_type, date_modified, deleted) (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 FROM {$seed->table_name} WHERE id IN ('" . join("','", $prospectids) . "'))";
-                    $db->query($query);
-                    break;
-                default:
-                    $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
-                    $listid = $postBody['listid'];
-                    $listDef = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulelists WHERE id = '$listid'"));
-                    $seed = \BeanFactory::getBean($postBody['module']);
-                    $filterdefs = json_decode(html_entity_decode(base64_decode($listDef['filterdefs'])), true);
-                    if ($filterdefs) {
-                        $listWhereClause = $KRESTModuleHandler->buildFilerdefsWhereClause($seed, $filterdefs, $addJoins);
-                    }
-                    if ($listDef['basefilter'] == 'own') {
-                        if ($listWhereClause != '') {
-                            $listWhereClause .= ' AND ';
-                        }
-                        $listWhereClause .= $seed->table_name . ".assigned_user_id='" . $current_user->id . "'";
-                    }
+        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        if (!empty($postBody['listid']) && $postBody['listid'] != 'owner' && $postBody['listid'] != 'all') {
+            // get the list defs
+            $listDef = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulelists WHERE id = '{$postBody['listid']}'"));
+        }
 
-                    $queryArray = $seed->create_new_list_query('', $listWhereClause, array(), array(), false, '', true, $seed, true);
-                    $query = "INSERT INTO prospect_lists_prospects (id, prospect_list_id, related_id, related_type, date_modified, deleted) (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 {$queryArray['from']} {$queryArray['where']})";
-                    $db->query($query);
-                    break;
+        $idList = [];
+        if($postBody['ids'] && is_array($postBody['ids']) && count($postBody['ids']) > 0){
+            // ToDo: sanitize IDs before insert -- check that it is really a GUID
+            foreach($postBody['ids']as $addID){
+                if(!preg_match('/[^A-Za-z\-0-9]/', $addID)){
+                    $idList[] = $addID;
+                }
             }
+        } else {
+            // check if we have an ft config
+            $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
+            if ( $ftsHandler::checkModule($beanModule, true) and $ftsHandler::checkFilterDefs($beanModule, json_decode(html_entity_decode($listDef['filterdefs']))) and $ftsHandler::checkFilterDefs($beanModule, json_decode(html_entity_decode($postBody['filter'])))) {
+                //  $results = $ftsHandler->getGlobalSearchResults([$beanModule], $searchParams['searchterm'])
+                $postBody['records'] = $GLOBALS['sugar_config']['getAllLimit'] ?: 10000;
+                $result = $ftsHandler->getModuleSearchResults($beanModule, $postBody['searchterm'], json_decode($postBody['searchtags']), $postBody, json_decode(html_entity_decode($postBody['aggregates']), true), json_decode($postBody['sortfields'], true) ?: []);
+
+                foreach ($result['hits'] as $hit) {
+                    $idList[] = $hit['_id'];
+                }
+
+            } else {
+
+                $queryResult = $moduleHandler->prepareBeanDBListQuery($beanModule, $seed, $listDef, $postBody);
+                $query = $queryResult['query'];
+                $addJoins = $queryResult['addjoins'];
+                $beanList = $seed->process_list_query($query, 0, -99);
+                foreach ($beanList['list'] as $thisBean) {
+                    // retrieve the bean to get the full fields
+                    $idList[] = $thisBean->id;
+                }
+            }
+        }
+
+        // check if we have a list of ids to add
+        if(count($idList) > 0){
+            $query = "INSERT INTO prospect_lists_prospects (id, prospect_list_id, related_id, related_type, date_modified, deleted) (SELECT DISTINCT uuid(), '$pl->id' prospectlistid, {$seed->table_name}.id, '{$postBody['module']}' module, now(), 0 FROM {$seed->table_name} WHERE id IN ('" . join("','", $idList) . "'))";
+            $db->query($query);
         }
 
         return $res->withJson(array(

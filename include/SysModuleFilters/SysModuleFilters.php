@@ -372,21 +372,38 @@ class SysModuleFilters
      * @param $filterId
      * @return array|string
      */
-    public function generareElasticFilterForFilterId($filterId)
+    public function generareElasticFilterForFilterId($filterId, $bean = null)
     {
         global $db;
 
-        $filter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="' . $db->quote($filterId) . '" UNION SELECT * FROM syscustommodulefilters WHERE id="' . $db->quote($filterId) . '"'));
-        if (!$filter) return '';
+        $dbfilter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="' . $db->quote($filterId) . '" UNION SELECT * FROM syscustommodulefilters WHERE id="' . $db->quote($filterId) . '"'));
+        if (!$dbfilter) return '';
 
-        $conditions = json_decode(html_entity_decode($filter['filterdefs']));
+        $conditions = json_decode(html_entity_decode($dbfilter['filterdefs']));
 
         // set id and module
         $this->filterid = $filterId;
-        $this->filtermodule = $filter['module'];
+        $this->filtermodule = $dbfilter['module'];
 
-        return $this->buildElasticFilterForGroup($conditions);
+        $filter = $this->buildElasticFilterForGroup($conditions);
 
+        // if we have a filter method, that method shoudl return an array of IDs
+        if (!empty($dbfilter['filtermethod'])) {
+            $filterMethodArray = explode('->', $dbfilter['filtermethod']);
+            $class = $filterMethodArray[0];
+            $method = $filterMethodArray[1];
+            if (class_exists($class)) {
+                $focus = new $class();
+                if (method_exists($focus, $method)) {
+                    $ids = $focus->$method();
+                    if (count($ids) > 0) {
+                        $filter['bool']['must'][] = ["terms" => ['id' => $ids]];
+                    }
+                }
+            }
+        }
+
+        return $filter;
     }
 
 

@@ -168,18 +168,16 @@ class ModuleHandler
 
 
     /**
-     * loads the list from the Database
+     * prepares the query for the Database Search
      *
+     * @param $beanModule
      * @param $thisBean
      * @param $listDef
      * @param $searchParams
+     * @return array
      */
-    private function getBeanDBList($beanModule, $thisBean, $listDef, $searchParams){
-        global $sugar_config, $dictionary;
-
-        $totalcount = 0;
-        $beanData = [];
-        $whereClauses = [];
+    public function prepareBeanDBListQuery($beanModule, $thisBean, $listDef, $searchParams){
+        global $dictionary;
 
         // build the where clause if searchterm is specified
         if (!empty($searchParams['searchterm'])) {
@@ -284,18 +282,18 @@ class ModuleHandler
                 $searchParams['orderby'] = ($searchParams['sortdirection'] ? strtoupper($searchParams['sortdirection']) : 'ASC');
             }
         } else if (!empty($searchParams['sortfields'])) {
-                $orderbys = [];
-                $sortFields = json_decode(html_entity_decode($searchParams['sortfields']), true);
-                foreach($sortFields as $sortField){
-                    $sf = $sortField['sortfield'];
-                    if (isset($dictionary[$thisBean->object_name]['fields'][$sortField['sortfield']]['sort_on']{0}))
-                        $sf = $dictionary[$thisBean->object_name]['fields'][$sortField['sortfield']]['sort_on'];
-                    if (isset($dictionary[$thisBean->object_name]['fields'][$sortField['sortfield']]['sort_on2']{0}))
-                        $sf .= ', ' . $dictionary[$thisBean->object_name]['fields'][$sortField['sortfield']]['sort_on2'];
+            $orderbys = [];
+            $sortFields = json_decode(html_entity_decode($searchParams['sortfields']), true);
+            foreach($sortFields as $sortField){
+                $sf = $sortField['sortfield'];
+                if (isset($dictionary[$thisBean->object_name]['fields'][$sortField['sortfield']]['sort_on']{0}))
+                    $sf = $dictionary[$thisBean->object_name]['fields'][$sortField['sortfield']]['sort_on'];
+                if (isset($dictionary[$thisBean->object_name]['fields'][$sortField['sortfield']]['sort_on2']{0}))
+                    $sf .= ', ' . $dictionary[$thisBean->object_name]['fields'][$sortField['sortfield']]['sort_on2'];
 
-                    $orderbys[] = $sf . ' ' . ($sortField['sortdirection'] ? strtoupper($sortField['sortdirection']) : 'ASC') ;
-                }
-                $searchParams['orderby'] =  implode(', ', $orderbys);
+                $orderbys[] = $sf . ' ' . ($sortField['sortdirection'] ? strtoupper($sortField['sortdirection']) : 'ASC') ;
+            }
+            $searchParams['orderby'] =  implode(', ', $orderbys);
         }
 
 
@@ -307,7 +305,22 @@ class ModuleHandler
         $queryArray['secondary_from'] .= ' ' . $addJoins;
 
         // build the query
-        $query = $queryArray['select'] . $queryArray['from'] . $queryArray['where'] . $queryArray['order_by'];
+        return ['query' => $queryArray['select'] . $queryArray['from'] . $queryArray['where'] . $queryArray['order_by'], 'addjoins' => $addJoins];
+    }
+
+    /**
+     * loads the list from the Database
+     *
+     * @param $thisBean
+     * @param $listDef
+     * @param $searchParams
+     */
+    private function getBeanDBList($beanModule, $thisBean, $listDef, $searchParams){
+        global $sugar_config, $dictionary;
+
+        $totalcount = 0;
+        $beanData = [];
+        $whereClauses = [];
 
         // process the query
         if (empty($searchParams['start']))
@@ -317,6 +330,9 @@ class ModuleHandler
             $searchParams['limit'] = $sugar_config['list_max_entries_per_page'] ?: 25;
 
 
+        $queryResult = $this->prepareBeanDBListQuery($beanModule, $thisBean, $listDef, $searchParams);
+        $query = $queryResult['query'];
+        $addJoins = $queryResult['addjoins'];
 
 
         $searchParams['buckets'] = json_decode($searchParams['buckets'], true);
@@ -420,6 +436,13 @@ class ModuleHandler
 
         $thisBean = \BeanFactory::getBean($beanModule);
 
+        if (!empty($searchParams['listid']) && $searchParams['listid'] != 'owner' && $searchParams['listid'] != 'all') {
+            // get the list defs
+            $listDef = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulelists WHERE id = '{$searchParams['listid']}'"));
+            // set the last used date
+            $db->query("UPDATE sysmodulelists SET date_last_used='{$timedate->nowDb()}' WHERE id = '{$searchParams['listid']}'");
+        }
+
         //var_dump($searchParams['fields'], html_entity_decode($searchParams['fields']));
         if ($searchParams['fields'] == '*') {
             // get all fields...
@@ -444,102 +467,46 @@ class ModuleHandler
             $filterFields[$returnField] = true;
         }
 
+        // the list of beans
+        $beans = [];
+
         // determine if we have selected ids to export or we export all
         if (isset($searchParams['ids']) && count($searchParams['ids']) > 0) {
 
             $searchParams['whereclause'] = "$thisBean->table_name.id in ('" . join("','", $searchParams['ids']) . "')";
 
             $queryArray = $thisBean->create_new_list_query($searchParams['orderby'], $searchParams['whereclause'], $filterFields, array(), false, '', true, $thisBean, true);
+
+            // build the query
+            $query = $queryArray['select'] . $queryArray['from'] . $queryArray['where'] . $queryArray['order_by'];
+            $beanList = $thisBean->process_list_query($query, 0, 1000, 1000);
+            foreach ($beanList['list'] as $thisBean) {
+                // retrieve the bean to get the full fields
+                $beans[] = $thisBean->retrieve();
+            }
         } else {
 
-            // shift in term
-            if (isset($searchParams['searchmyitems']))
-                $searchParams['owner'] = $searchParams['searchmyitems'];
+            // check if we have an ft config
+            $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
+            if ( @$searchParams['source'] !== 'db' and $ftsHandler::checkModule($beanModule, true) and $ftsHandler::checkFilterDefs($beanModule, json_decode(html_entity_decode($listDef['filterdefs']))) and $ftsHandler::checkFilterDefs($beanModule, json_decode(html_entity_decode($searchParams['filter'])))) {
+                //  $results = $ftsHandler->getGlobalSearchResults([$beanModule], $searchParams['searchterm'])
+                $searchParams['records'] = $GLOBALS['sugar_config']['getAllLimit'] ?: 10000;
+                $result = $ftsHandler->getModuleSearchResults($beanModule, $searchParams['searchterm'], json_decode($searchParams['searchtags']), $searchParams, json_decode(html_entity_decode($searchParams['aggregates']), true), json_decode($searchParams['sortfields'], true) ?: []);
+                foreach ($result['hits'] as $hit) {
+                    $beans[] = \BeanFactory::getBean($beanModule, $hit['_id']);
+                }
+            } else {
 
-            // handle true and false
-            if ($searchParams['owner'] === '0') $searchParams['owner'] = false;
-            if ($searchParams['owner'] === '1') $searchParams['owner'] = true;
-            if ($searchParams['creator'] === '0') $searchParams['creator'] = false;
-            if ($searchParams['creator'] === '1') $searchParams['creator'] = true;
-
-
-            $beanData = array();
-
-            // handle the listid
-            $listDef = $db->fetchByAssoc($db->query("SELECT * FROM sysmodulelists WHERE id = '" . $searchParams['listid'] . "'"));
-
-            // set the last used date on the list
-            $db->query("UPDATE sysmodulelists SET date_last_used='{$timedate->nowDb()}' WHERE id = '{$searchParams['listid']}'");
-
-            if ($listDef['basefilter'] == 'own')
-                $searchParams['owner'] = true;
-            $filterdefs = json_decode(html_entity_decode(base64_decode($listDef['filterdefs'])), true);
-            if ($filterdefs) {
-                $listWhereClause = $this->buildFilerdefsWhereClause($thisBean, $filterdefs, $addJoins);
-                if ($listWhereClause) {
-                    if ($searchParams['whereclause'] != '')
-                        $searchParams['whereclause'] .= ' AND ';
-
-                    $searchParams['whereclause'] .= '(' . $listWhereClause . ')';
+                $queryResult = $this->prepareBeanDBListQuery($beanModule, $thisBean, $listDef, $searchParams);
+                $query = $queryResult['query'];
+                $addJoins = $queryResult['addjoins'];
+                $beanList = $thisBean->process_list_query($query, 0, -99);
+                foreach ($beanList['list'] as $thisBean) {
+                    // retrieve the bean to get the full fields
+                    $beans[] = $thisBean->retrieve();
                 }
             }
-
-            // set the favorite as mandatory if search by favortes is set
-            if (isset($searchParams['owner']) || isset($searchParams['creator'])) {
-                $ownerclause = '';
-
-                if ($searchParams['owner'] && $searchParams['creator']) {
-                    $ownerclause .= "($thisBean->table_name.assigned_user_id='$current_user->id' OR $thisBean->table_name.created_by='$current_user->id')";
-                } else if ($searchParams['owner']) {
-                    $ownerclause .= "$thisBean->table_name.assigned_user_id='$current_user->id'";
-                } else if ($searchParams['creator']) {
-                    $ownerclause .= "$thisBean->table_name.created_by='$current_user->id'";
-                }
-
-                // if owner is explicitly set to false
-                if ($searchParams['owner'] === false) {
-                    if ($ownerclause != '')
-                        $ownerclause .= ' AND ';
-                    $ownerclause .= "$thisBean->table_name.assigned_user_id <> '$current_user->id'";
-                }
-                // if creator is explicitly set to false
-                if ($searchParams['creator'] === false) {
-                    if ($ownerclause != '')
-                        $ownerclause .= ' AND ';
-                    $ownerclause .= "$thisBean->table_name.created_by <> '$current_user->id'";
-                }
-
-                if ($ownerclause) {
-                    if ($searchParams['whereclause'] != '')
-                        $searchParams['whereclause'] .= ' AND ';
-
-                    $searchParams['whereclause'] .= $ownerclause;
-                }
-            }
-
-            //  addd a sort criteria
-            if (!empty($searchParams['sortfield'])) {
-                if (!json_decode(html_entity_decode($searchParams['sortfield']))) {
-                    $searchParams['orderby'] = '';
-                    $searchParams['orderby'] .= /* $thisBean->table_name . '.' . */
-                        $searchParams['sortfield'] . ' ' . ($searchParams['sortdirection'] ? strtoupper($searchParams['sortdirection']) : 'ASC');
-                } else {
-                    $sortObject = json_decode(html_entity_decode($searchParams['sortfield']));
-                    $searchParams['orderby'] =  $searchParams['sortdirection'] ? strtoupper($searchParams['sortdirection']) : 'ASC';
-                }
-            }
-
-            // $beanList = $thisBean->get_list($searchParams['orderby'], $searchParams['whereclause'], $searchParams['offset'], $searchParams['limit']);
-            $queryArray = $thisBean->create_new_list_query($searchParams['orderby'], $searchParams['whereclause'], $filterFields, array(), false, '', true, $thisBean, true);
-
-            // any additional joins we might have gotten
-            $queryArray['from'] .= ' ' . $addJoins;
-            $queryArray['secondary_from'] .= ' ' . $addJoins;
         }
-
-        // build the query
-        $query = $queryArray['select'] . $queryArray['from'] . $queryArray['where'] . $queryArray['order_by'];
-        $beanList = $thisBean->process_list_query($query, 0, 1000, 1000);
 
         // determine the delimiter
         $delimiter = \UserPreference::getDefaultPreference('export_delimiter');
@@ -554,13 +521,10 @@ class ModuleHandler
             if (in_array($GLOBALS['current_user']->getPreference('default_export_charset'), $supportedCharsets)) $charsetTo = $GLOBALS['current_user']->getPreference('default_export_charset');
         }
 
+        // prepare the output
         $fh = @fopen('php://output', 'w');
         fputcsv($fh, $returnFields, $delimiter);
-        foreach ($beanList['list'] as $thisBean) {
-
-            // retrieve the bean to get the full fields
-            $thisBean->retrieve();
-
+        foreach ($beans as $thisBean) {
             $entryArray = [];
             foreach ($returnFields as $returnField)
                 $entryArray[] = !empty($charsetTo) ? mb_convert_encoding($thisBean->$returnField, $charsetTo) : $thisBean->$returnField;

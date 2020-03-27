@@ -99,12 +99,11 @@ class EmailSchedulesKRESTController {
         $beanId = $postBody['beanId'];
         $module = $postBody['bean'];
         $links = $postBody['links'];
-
         $bean = \BeanFactory::getBean($module, $beanId);
         $bean->load_relationships();
         if(count($links) > 0) {
           foreach($links as $module) {
-             $relatedbeans = $bean->get_linked_beans(strtolower($module), $module);
+             $relatedbeans[] = $bean->get_linked_beans(strtolower($module), $module);
           }
         }
 
@@ -113,7 +112,9 @@ class EmailSchedulesKRESTController {
             $query = "INSERT INTO emailschedules_beans (id, emailschedule_status, emailschedule_id, bean_module, bean_id, date_modified, deleted) VALUES ";
             if(!empty($emailscheduleId)) {
                 foreach($relatedbeans as $relatedbean) {
-                    $query.= "(uuid(), 'queued', '$emailscheduleId', '$relatedbean->module_dir', '$relatedbean->id', now(), 0),";
+                    foreach($relatedbean as $relatedbeanentry) {
+                        $query.= "(uuid(), 'queued', '$emailscheduleId', '$relatedbeanentry->module_dir', '$relatedbeanentry->id', now(), 0),";
+                    }
                 }
                 if(!empty($query)) {
                 $query = substr_replace($query, ";", -1);
