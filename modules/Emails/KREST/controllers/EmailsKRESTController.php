@@ -160,6 +160,8 @@ class EmailsKRESTController
 
         $ftsManager = new SpiceFTSHandler();
 
+        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+
         // get the modules that are fts enabled and have a link to emails
         $modulesObject = $db->query("SELECT sysfts.module FROM relationships, sysfts
             WHERE lhs_module = 'Emails' AND module = rhs_module UNION SELECT sysfts.module
@@ -171,15 +173,19 @@ class EmailsKRESTController
         }
 
         $beans = [];
-        $results = $ftsManager->getGlobalSearchResults(implode(',', $modules), $postBody['searchterm'], $postBody);
+        $results = $ftsManager->getGlobalSearchResults(implode(',', $modules), $postBody['searchterm'], [], $postBody);
         foreach ($results as $module => $result) {
             foreach ($result['hits'] as $hit) {
-                $beans[] = [
-                    'id'           => $hit['_id'],
-                    'module'       => $module,
-                    'summary_text' => $hit['_source']['summary_text'],
-                    'score'        => $hit['_score']
-                ];
+                $seed = \BeanFactory::getBean($module, $hit['_id']);
+                if($seed){
+                    $beans[] = [
+                        'id'           => $hit['_id'],
+                        'module'       => $module,
+                        'summary_text' => $hit['_source']['summary_text'],
+                        'score'        => $hit['_score'],
+                        'data'         => $moduleHandler->mapBeanToArray($module, $seed)
+                    ];
+                }
             }
         }
 
@@ -269,9 +275,9 @@ class EmailsKRESTController
         $email = \BeanFactory::getBean('Emails');
         $email->convertMsgToEmail($attachment->filemd5);
 
-        $KRESTModuleHandler = new \KRESTModuleHandler();
+        $ModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
 
-        $emailResponse = $KRESTModuleHandler->mapBeanToArray('EMails', $email, array(), false, false);
+        $emailResponse = $ModuleHandler->mapBeanToArray('EMails', $email, array(), false, false);
 
         // prepare email addresses
         // email addresse temporär umschreiben ..

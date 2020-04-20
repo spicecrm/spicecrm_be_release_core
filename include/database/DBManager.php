@@ -3882,6 +3882,21 @@ protected function checkQuery($sql, $object_name = false)
 	 */
 	abstract public function get_columns($tablename);
 
+    /**
+     * Returns columns list for passed table.
+     *
+     * return will is a comma separeted list
+     * id,name,description...
+     *
+     * @param  string $tablename
+     * @param  string $delimiter optional Delimiter for lits item
+     * @param  string $fallback optional. Field list properly delimited in case something goes wrong during columns manipulation
+     * @return array
+     */
+    abstract public function get_columns_list($tablename, $delimiter = ', ', $fallback='*');
+
+
+
 	/**
 	 * Generates alter constraint statement given a table name and vardef definition.
 	 *

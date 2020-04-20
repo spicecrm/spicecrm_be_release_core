@@ -390,11 +390,15 @@ class M2MRelationship extends SugarRelationship
             if ($this->linkIsLHS($link)) {
                 if (is_null($sortFieldTable))$sortFieldTable = $this->def['rhs_table'];
                 $from .= " INNER JOIN " . $this->def['rhs_table'] . ' ON ' . $this->def['rhs_table'] . '.' . $this->def['rhs_key'] . ' = ' . $rel_table . '.' . $this->def['join_key_rhs'];
-                $sort = ' ORDER BY ' . $sortFieldTable . '.' . $sortField . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
+                if($params['sort']['sortfield']) { // CR1000382
+                    $sort = ' ORDER BY ' . $sortFieldTable . '.' . $sortField . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
+                }
             } else {
                 if (is_null($sortFieldTable))$sortFieldTable = $this->def['lhs_table'];
                 $from .= " INNER JOIN " . $this->def['lhs_table'] . ' ON ' . $this->def['lhs_table'] . '.' . $this->def['lhs_key'] . ' = ' . $rel_table . '.' . $this->def['join_key_lhs'];
-                $sort = ' ORDER BY ' . $sortFieldTable . '.' . $sortField . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
+                if($params['sort']['sortfield']) { // CR1000382
+                    $sort = ' ORDER BY ' . $sortFieldTable . '.' . $sortField . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
+                }
             }
 
 

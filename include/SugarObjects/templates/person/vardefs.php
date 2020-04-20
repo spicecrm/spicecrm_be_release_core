@@ -282,8 +282,7 @@ $vardefs = array(
         'gdpr_data_source' => array(
             'name' => 'gdpr_data_source',
             'vname' => 'LBL_GDPR_DATA_SOURCE',
-            'type' => 'varchar',
-            'len' => '100',
+            'type' => 'text',
             'audited' => true,
         ),
         'gdpr_marketing_agreement' => array(
@@ -296,8 +295,7 @@ $vardefs = array(
         'gdpr_marketing_source' => array(
             'name' => 'gdpr_marketing_source',
             'vname' => 'LBL_GDPR_MARKETING_SOURCE',
-            'type' => 'varchar',
-            'len' => '100',
+            'type' => 'text',
             'audited' => true,
         ),
         'primary_address_street' => array(

@@ -363,6 +363,14 @@ class SysModuleFilters
                 $date->sub(new \DateInterval("P{$condition->filtervalue}M"));
                 return "{$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 00:00:00'";
                 break;
+            case 'untilyesterday':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                return "({$tablename}.{$condition->field} < '" . $date->format('Y-m-d') . " 00:00:00')";
+                break;
+            case 'fromtomorrow':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                return "({$tablename}.{$condition->field} > '" . $date->format('Y-m-d') . " 23:59:59')";
+                break;
         }
     }
 
@@ -612,6 +620,14 @@ class SysModuleFilters
                 $date = new \DateTime(null, new \DateTimeZone('UTC'));
                 $date->sub(new \DateInterval("P{$condition->filtervalue}M"));
                 return ['range' => [$condition->field => ["gte" => $date->format('Y-m-d') . ' 23:59:59']]];
+                break;
+            case 'untilyesterday':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                return ['range' => [$condition->field => ["lt" => $date->format('Y-m-d') . ' 00:00:00']]];
+                break;
+            case 'fromtomorrow':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                return ['range' => [$condition->field => ["gt" => $date->format('Y-m-d') . ' 23:59:59']]];
                 break;
         }
     }

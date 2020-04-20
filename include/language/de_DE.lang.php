@@ -690,6 +690,11 @@ $app_list_strings = array(
 
     ),
 
+    'mailbox_message_types' => [
+        'sms'   => 'Text Messages',
+        'email' => 'Emails',
+    ],
+
     'issue_priority_default_key' => 'Medium',
     'issue_priority_dom' => array(
         'Urgent' => 'Dringend',

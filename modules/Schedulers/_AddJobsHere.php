@@ -80,7 +80,8 @@ $job_strings = [
     29 => 'schedulerTest',
 	30 => 'fullTextIndexBulk',
 	31 => 'generateQuestionnaireEvaluations',
-    32 => 'sendEmailScheduleEmails'
+    32 => 'sendEmailScheduleEmails',
+    33 => 'processExchangeSynchronization',
 ];
 
 function workflowHandler(){
@@ -751,6 +752,17 @@ function generateQuestionnaireEvaluations()
 function sendEmailScheduleEmails(){
     $emailSchedule = BeanFactory::getBean('EmailSchedules');
     return $emailSchedule->sendQueuedEmails();
+}
+
+/**
+ * Job 33
+ * processExchangeSynchronization
+ */
+function processExchangeSynchronization() {
+    $controller = new \SpiceCRM\includes\SpiceCRMExchange\Connectivity\SpiceCRMExchangeUserSyncConfigController();
+    $controller->processSynchronizations();
+
+    return true;
 }
 
 if($scheduledtaskhandle = opendir('./modules/Schedulers/ScheduledTasks')) {

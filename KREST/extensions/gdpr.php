@@ -23,4 +23,15 @@ $app->group('/gdpr', function () use ($app, $KRESTManager, $KRESTModuleHandler) 
             return json_encode([]);
         }
     });
+
+    /*
+     * Get the GDPR consent text for portal user from the CRM configuration.
+     */
+    $app->get('/portalGDPRconsentText', [new \SpiceCRM\KREST\controllers\gdprController(), 'getPortalGDPRconsentText']);
+
+    /*
+     * Saves the GDPR consent of a portal user.
+     */
+    $app->post('/portalGDPRconsent', [new \SpiceCRM\KREST\controllers\gdprController(), 'setPortalGDPRconsent']);
+
 });

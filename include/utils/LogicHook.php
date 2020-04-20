@@ -314,12 +314,12 @@ class LogicHook
                         } else {
                             $class->$hook_function($event, $arguments);
                         }
-                    } catch (\SpiceCRM\includes\SpiceCRMExchange\MissingEwsCredentialsException $e) {
+                    } catch (\SpiceCRM\includes\SpiceCRMExchange\Exceptions\MissingEwsCredentialsException $e) {
                         // todo figure out if EWS should actually be turned on or off
                         $krestException = new \SpiceCRM\KREST\Exception($e->getMessage(), $e->getCode());
                         $krestException->setHttpCode($e->getCode());
                         throw $krestException;
-                    } catch (\SpiceCRM\includes\SpiceCRMExchange\EwsConnectionException $e) {
+                    } catch (\SpiceCRM\includes\SpiceCRMExchange\Exceptions\EwsConnectionException $e) {
                         $krestException = new \SpiceCRM\KREST\Exception($e->getMessage(), $e->getCode());
                         $krestException->setHttpCode($e->getCode());
                         throw $krestException;

@@ -2,6 +2,8 @@
 
 namespace SpiceCRM\modules\SystemUI\KREST\controllers;
 
+use SpiceCRM\KREST\Exception;
+
 class SystemUIModelValidationsController
 {
     static function getAllModelValidations()
@@ -36,7 +38,11 @@ class SystemUIModelValidationsController
         $res = $db->query($sql);
         while($row = $db->fetchByAssoc($res, false))
         {
-            if( json_decode($row['valuations']) ){$row['valuations'] = json_decode($row['valuations']);}
+            try {
+                $row['valuations'] = json_decode( $row['valuations'] );
+            } catch( Exception $e ) {
+                $row['valuations'] = $row['valuations'];
+            }
             $return['conditions'][] = $row;
         }
 

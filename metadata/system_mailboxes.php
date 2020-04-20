@@ -22,6 +22,13 @@ $dictionary['sysmailboxtransports'] = array(
             'type' => 'varchar',
             'len' => 100
         ),
+        'message_type' => [
+            'name'     => 'message_type',
+            'vname'    => 'LBL_MESSAGE_TYPE',
+            'type'     => 'enum',
+            'options'  => 'mailbox_message_types',
+            'required' => true,
+        ],
         'version' => array(
             'name' => 'version',
             'type' => 'varchar',

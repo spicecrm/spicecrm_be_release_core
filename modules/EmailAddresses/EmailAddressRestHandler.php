@@ -66,8 +66,11 @@ class EmailAddressRestHandler
 
         foreach ($results as $bean_id => $result) {
             $bean = \BeanFactory::getBean($result['module'], $bean_id);
-            $results[$bean_id]['summary_text'] = $bean->get_summary_text();
-            $results[$bean_id]['summary_text'] = $bean->get_summary_text();
+            if($bean) {
+                $results[$bean_id]['summary_text'] = $bean->get_summary_text();
+            } else {
+                unset($results[$bean_id]);
+            }
         }
 
         return $results;

@@ -31,9 +31,38 @@ class SpiceFTSBeanHandler
 
     }
 
+    /**
+     * returns the aggregates defined for the bean
+     */
+    function getAggregates(){
+        $aggregates = [];
+        foreach ($this->indexProperties as $indexProperty) {
+            if(isset($indexProperty['aggregate'])){
+                $aggregates[] = [
+                    'fieldname' => $indexProperty['fieldname'],
+                    'indexfieldname' => $indexProperty['indexfieldname'],
+                    'fielddetails' => SpiceFTSUtils::getDetailsForField($indexProperty['path']),
+                    'type' => $indexProperty['aggregate'],
+                    'collapsed' => $indexProperty['aggregatecollapsed'] == 1 ? true : false,
+                    'priority' => $indexProperty['aggregatepriority']
+                ];
+            }
+        }
+        return $aggregates;
+    }
+
+    /**
+     * called to normalize the bean
+     *
+     * the function takes a bean and resolves the fts settings flatteing the relational structure building the elastic document
+     *
+     * @return array the array with the fields and values to be indexed by elastic
+     */
     function normalizeBean()
     {
-        $indexArray = array();
+        $indexArray = array(
+            '_module' => $this->seedModule
+        );
         foreach ($this->indexProperties as $indexProperty) {
             $indexValue = $this->getFieldValue($indexProperty);
             if ($indexValue['fieldvalue'] == '0' || !empty($indexValue['fieldvalue'])) {
@@ -369,7 +398,12 @@ class SpiceFTSBeanHandler
     {
         global $sugar_config;
         $indexProperties = SpiceFTSUtils::getBeanIndexProperties($this->seedModule, true);
-        $properties = array();
+        $properties = array(
+            '_module' => [
+                'type' => 'keyword',
+                'index' => false
+            ]
+        );
 
         foreach (SpiceFTSUtils::$standardFields as $standardField => $standardFieldData) {
             $properties[$standardField] = array(

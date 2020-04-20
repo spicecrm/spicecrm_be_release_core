@@ -133,6 +133,10 @@ class ModuleHandler
             $db->query("UPDATE sysmodulelists SET date_last_used='{$timedate->nowDb()}' WHERE id = '{$searchParams['listid']}'");
         }
 
+        if ( $searchParams['limit'] == -99 or $searchParams['limit'] === 'all' ) {
+            $searchParams['limit'] = $GLOBALS['sugar_config']['getAllLimit'] ?: 10000;
+        }
+
         $searchParams['start'] = $searchParams['offset']; // Temporary workaround because GET parameter "start" AND "offset" is used.
 
         // check if we have an ft config
@@ -144,6 +148,7 @@ class ModuleHandler
             $totalcount = $result['total'];
             foreach ($result['hits'] as $hit) {
                 $thisBean = \BeanFactory::getBean($beanModule, $hit['_id']);
+                if(!$thisBean) continue;
                 $beanData[] = $this->mapBeanToArray($beanModule, $thisBean, []);
             }
             $retArray['aggregations'] = $result['aggregations'];
@@ -218,6 +223,34 @@ class ModuleHandler
                 }
             }
         }
+
+        // get the index settings
+        $settings = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexSettings($beanModule);
+        // check for geotags
+        if ($searchParams['searchgeo'] && $settings['geosearch']) {
+            $searchParams['searchgeo'] = json_decode($searchParams['searchgeo']);
+            $geoCondition = "(6371*acos(cos(radians( {$searchParams['searchgeo']->lat}))*cos(radians({$thisBean->table_name}.{$settings['geolat']}))*cos(radians({$thisBean->table_name}.{$settings['geolng']})-radians({$searchParams['searchgeo']->lng}))+sin(radians({$searchParams['searchgeo']->lat}))*sin(radians({$thisBean->table_name}.{$settings['geolat']})))) < {$searchParams['searchgeo']->radius}";
+            $whereClauses[] = "({$geoCondition})";
+        }
+
+
+        if(!empty($searchParams['relatefilter'])){
+            $relateFilter = json_decode($searchParams['relatefilter']);
+            $relateSeed = \BeanFactory::getBean($relateFilter->module, $relateFilter->id);
+            $relateSeed->load_relationship($relateFilter->relationship);
+            $relatedBeans = $relateSeed->get_linked_beans($relateFilter->relationship, $relateSeed->field_name_map[$relateFilter->relationship]['module'], [], 0, -99);
+
+            // if we found none return false
+            if(count($relatedBeans) == 0) return false;
+
+            $relatedids = [];
+            foreach($relatedBeans as $relatedBean){
+                $relatedids[] = $relatedBean->id;
+            }
+            $addFilters[] = ["terms" => ["id" => $relatedids]];
+            $whereClauses[] = "({$thisBean->table_name}.id IN ('". implode("','", $relatedids)."'))";
+        }
+
 
         $moduleFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
         $moduleFilter->filtermodule = $beanModule;
@@ -331,6 +364,12 @@ class ModuleHandler
 
 
         $queryResult = $this->prepareBeanDBListQuery($beanModule, $thisBean, $listDef, $searchParams);
+
+        // if no query is returned return empty
+        if($queryResult === false){
+            return ['beanData' => [], 'totalCount' => 0, 'buckets' => $searchParams['buckets'] ?: []];
+        }
+
         $query = $queryResult['query'];
         $addJoins = $queryResult['addjoins'];
 
@@ -493,17 +532,21 @@ class ModuleHandler
                 $searchParams['records'] = $GLOBALS['sugar_config']['getAllLimit'] ?: 10000;
                 $result = $ftsHandler->getModuleSearchResults($beanModule, $searchParams['searchterm'], json_decode($searchParams['searchtags']), $searchParams, json_decode(html_entity_decode($searchParams['aggregates']), true), json_decode($searchParams['sortfields'], true) ?: []);
                 foreach ($result['hits'] as $hit) {
-                    $beans[] = \BeanFactory::getBean($beanModule, $hit['_id']);
+                    $thisBean = \BeanFactory::getBean($beanModule, $hit['_id']);
+                    if(!$thisBean) continue;
+                    $beans[] = $thisBean;
                 }
             } else {
 
                 $queryResult = $this->prepareBeanDBListQuery($beanModule, $thisBean, $listDef, $searchParams);
-                $query = $queryResult['query'];
-                $addJoins = $queryResult['addjoins'];
-                $beanList = $thisBean->process_list_query($query, 0, -99);
-                foreach ($beanList['list'] as $thisBean) {
-                    // retrieve the bean to get the full fields
-                    $beans[] = $thisBean->retrieve();
+                if($queryResult !== false){
+                    $query = $queryResult['query'];
+                    $addJoins = $queryResult['addjoins'];
+                    $beanList = $thisBean->process_list_query($query, 0, -99);
+                    foreach ($beanList['list'] as $thisBean) {
+                        // retrieve the bean to get the full fields
+                        $beans[] = $thisBean->retrieve();
+                    }
                 }
             }
         }
@@ -922,7 +965,7 @@ class ModuleHandler
     public function set_related($beanModule, $beanId, $linkName, $postparams)
     {
 
-        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true) && !$GLOBALS['ACLController']->checkAccess($beanModule, 'editrelated', true))
             throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
@@ -945,7 +988,7 @@ class ModuleHandler
             throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit in module $relModule."))->setErrorCode('noModuleEdit');
         }
 
-        if(!$GLOBALS['ACLController']->checkAccess($relModule, 'edit', true)){
+        if($GLOBALS['ACLController']->checkAccess($relModule, 'edit', true)){
             $beanResponse = $this->add_bean($relModule, $postparams['id'], $postparams);
         }
 

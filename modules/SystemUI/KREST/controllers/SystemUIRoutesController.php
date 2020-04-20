@@ -8,13 +8,13 @@ class SystemUIRoutesController
     {
         global $db;
         $routeArray = array();
-        $columns = $db->get_columns('sysuiroutes');
-        $cols = array();
-        foreach($columns as $c => $col){
-            $cols[] = $col['name'];
-        }
-        $routes = $db->query("SELECT ".implode(',', $cols)." FROM sysuiroutes UNION SELECT ".implode(',', $cols)." FROM sysuicustomroutes");
+        $routes = $db->query("SELECT * FROM sysuiroutes");
+        while ($route = $db->fetchByAssoc($routes)) {
 
+            $routeArray[] = $route;
+
+        }
+        $routes = $db->query("SELECT * FROM sysuicustomroutes");
         while ($route = $db->fetchByAssoc($routes)) {
 
             $routeArray[] = $route;
@@ -27,13 +27,13 @@ class SystemUIRoutesController
     {
         global $db;
         $routeArray = array();
-        $columns = $db->get_columns('sysuiroutes');
-        $cols = array();
-        foreach($columns as $c => $col){
-            $cols[] = $col['name'];
-        }
-        $routes = $db->query("SELECT ".implode(',', $cols)." FROM sysuiroutes UNION SELECT ".implode(',', $cols)." FROM sysuicustomroutes");
+        $routes = $db->query("SELECT * FROM sysuiroutes");
+        while ($route = $db->fetchByAssoc($routes)) {
 
+            $routeArray[] = $route;
+
+        }
+        $routes = $db->query("SELECT * FROM sysuicustomroutes");
         while ($route = $db->fetchByAssoc($routes)) {
 
             $routeArray[] = $route;

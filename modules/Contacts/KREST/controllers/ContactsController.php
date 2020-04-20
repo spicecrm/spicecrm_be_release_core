@@ -2,7 +2,7 @@
 namespace SpiceCRM\modules\Contacts\KREST\controllers;
 
 use BeanFactory;
-use SpiceCRM\includes\SpiceCRMExchange\SpiceCRMExchangeContacts;
+use SpiceCRM\includes\SpiceCRMExchange\ModuleHandlers\SpiceCRMExchangeContacts;
 
 class ContactsController
 {

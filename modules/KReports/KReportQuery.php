@@ -1372,6 +1372,13 @@ class KReportQuery
                     if (isset($this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['currency_id']) && ($thisListEntry['sqlfunction'] == '-' || strtoupper($thisListEntry['sqlfunction']) == 'SUM')){
                         $this->selectString .= ", " . $this->joinSegments[$pathName]['alias'] . "." . $this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['currency_id'] . " as '" . $thisListEntry['fieldid'] . "_curid'";
                     }
+                    // BEGIN currency id value for kreporter field: field contains a currency conversion.
+                    // Currency symbol will not be from record but from conversion
+                    // Use new property kreportcurrency_id and enter currency id in kreporter field vardefs
+                    elseif ($this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['type'] == 'kreporter' && isset($this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['kreportcurrency_id'])) {
+                        $this->selectString .= ", '" . $this->joinSegments[$pathName]['object']->field_name_map[$fieldArray[1]]['kreportcurrency_id'] . "' as '" . $thisListEntry['fieldid'] . "_curid'";
+                    }
+                    // END
                     // BEGIN CR1000035 currency field might not be linked to amount field.
                     elseif (isset($this->joinSegments[$pathName]['object']->field_name_map['currency_id']) ) {
                         $this->selectString .= ", " . $this->joinSegments[$pathName]['alias'] . ".currency_id as '" . $thisListEntry['fieldid'] . "_curid'";

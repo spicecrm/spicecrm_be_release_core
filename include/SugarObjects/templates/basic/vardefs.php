@@ -128,7 +128,6 @@ $vardefs = array(
                 'link' => 'modified_user_link',
                 'duplicate_merge' => 'disabled',
                 'massupdate' => false,
-                'duplicate_merge' => 'disabled',
                 'audited' => false
             ),
         'created_by' =>            array(
@@ -157,7 +156,6 @@ $vardefs = array(
                 'table' => 'users',
                 'id_name' => 'created_by',
                 'module' => 'Users',
-                'duplicate_merge' => 'disabled',
                 'importable' => 'false',
                 'massupdate' => false,
                 'duplicate_merge' => 'disabled'

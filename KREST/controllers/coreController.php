@@ -188,4 +188,8 @@ class coreController{
         return $res->withJson($responseArray);
     }
 
+    function getPortalGDPRagreementText() {
+        1;
+    }
+
 }

@@ -87,7 +87,7 @@ $server->register(
  */
 function login($user_auth, $application){
 	global $sugar_config, $system_config;
-
+    $GLOBALS['isSOAP'] = true;
 	$error = new SoapError();
 	$user = new User();
 	$success = false;

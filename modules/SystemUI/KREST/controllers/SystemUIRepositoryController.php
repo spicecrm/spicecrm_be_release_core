@@ -83,13 +83,25 @@ class SystemUIRepositoryController
      */
     static function getLibraries()
     {
-        global $db;
+        global $db, $sugar_config;
         
         $return = [];
         $sql = "SELECT * FROM (SELECT * FROM sysuilibs UNION SELECT * FROM sysuicustomlibs) libs ORDER BY libs.rank ASC";
         $res = $db->query($sql);
         while($row = $db->fetchByAssoc($res, false))
         {
+            // find any sugarconfig value that should be replaced while loading
+            $matches = [];
+            preg_match('/{(.*?)}/', $row['src'], $matches);
+            if(count($matches) == 2){
+                $configpathentries = explode('.', $matches[1]);
+                $configvalue = $sugar_config;
+                foreach($configpathentries as $configpathentry){
+                    $configvalue = $configvalue[$configpathentry];
+                }
+                $row['src'] = str_replace($matches[0], $configvalue, $row['src']);
+            }
+
             $return[$row['name']][] = ['loaded' => false, 'src' => $row['src']];
         }
 

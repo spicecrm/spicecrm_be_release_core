@@ -57,6 +57,11 @@ $dictionary['contacts_users'] = array(
             'name' => 'external_data',
             'type' => 'text'
         ),
+        'external_id' => [
+            'name' => 'external_id',
+            'type' => 'varchar',
+            'len'  => 165,
+        ],
         'date_modified' => array(
             'name' => 'date_modified',
             'type' => 'datetime'

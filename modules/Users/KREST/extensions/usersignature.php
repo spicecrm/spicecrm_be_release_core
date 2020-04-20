@@ -1,5 +1,4 @@
 <?php
-// require_once('KREST/handlers/ModuleHandler.php');
 
 $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($app);
 
@@ -24,7 +23,7 @@ $app->post('module/Users/{id}/signature', function($req, $res, $args) use ($app,
     if ($signature)
         $db->query("UPDATE users_signatures SET signature = '{$signatures['signature']}', signature_html = '{$signatures['signature_html']}' WHERE user_id='{$signature['id']}'");
     else
-        $db->query("INSER INTO users_signatures (id, deleted, user_id, signature, signatire_html) VALUES('" . create_guid() . "', 0, '{$args['id']}', '{$signatures['signature']}', '{$signatures['signature_html']}')");
+        $db->query("INSERT INTO users_signatures (id, deleted, user_id, signature, signatire_html) VALUES('" . create_guid() . "', 0, '{$args['id']}', '{$signatures['signature']}', '{$signatures['signature_html']}')");
 
     echo json_encode(
         array(

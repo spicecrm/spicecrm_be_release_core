@@ -10,11 +10,15 @@ class SpiceFavoritesKRESTController{
 
     static function addFavorite($req, $res, $args){
         \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::set_favorite($args['module'], $args['id']);
+
+        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+
         $bean = \BeanFactory::getBean($args['module'], $args['id']);
         return $res->write(json_encode(array(
             'module' => $args['module'],
             'id' => $args['id'],
-            'summary_text' => $bean->get_summary_text()
+            'summary_text' => $bean->get_summary_text(),
+            'data' => $moduleHandler->mapBeanToArray($args['module'], $bean)
         )));
     }
 

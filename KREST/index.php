@@ -157,9 +157,9 @@ try {
     if ($_SERVER['REQUEST_METHOD'] != 'OPTIONS') {
         $KRESTManager->authenticate();
     }
+} catch( SpiceCRM\KREST\Exception $exception ) {
+    outputError( $exception );
 }
-catch( SpiceCRM\KREST\Exception $exception ) { outputError( $exception ); }
-catch( Exception $exception ) { outputError( $exception ); }
 
 // specific handler for the files
 $KRESTManager->getProxyFiles();

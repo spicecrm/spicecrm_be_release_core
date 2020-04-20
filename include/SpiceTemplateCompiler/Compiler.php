@@ -103,14 +103,29 @@ class Compiler
                         }
                     } else if($node->getAttribute('data-spicefor')){
                         $spicefor = $node->getAttribute('data-spicefor');
-                        $forArray = explode(' as ', $spicefor);
 
-                        // CR1000360 check on params (like filter)
+                        // CR1000360
+                        // split looking for pipes
+                        $attributeParts = preg_split("/(\|)/", $spicefor);
+                        $countParts = count($attributeParts);
                         $params = [];
-                        $forParams =  explode('|', $forArray[0]);
-                        $forArray[0] = $forParams[0];
-                        if(isset($forParams[1])){
-                            $params = $this->parsePipeToArray($forParams[1]);
+
+                        // scenario 1: we have 1 parts only. This means NO additional parameters
+                        // $attributeParts[0] = bean.linkname as linkedbean (the full haystack returned when no match)
+                        if($countParts == 1){
+                            $forArray = explode(" as ", $attributeParts[0]);
+                        }
+
+                        // scenario 2: we have 3 parts. This means additional parameters
+                        // CR1000360 check on params (like filter)
+                        // $attributeParts[0] = bean.linkname
+                        // $attributeParts[1] = some_urlencode_sring (the string between the pipes)
+                        // $attributeParts[2] = as linkedbean
+                        if($countParts == 3){
+                            // string " as linkedbean" to "linkedbean"
+                            $attributeParts[2] = substr($attributeParts[2], 4, strlen($attributeParts[2]));
+                            $forArray = [$attributeParts[0], $attributeParts[2]];
+                            $params = $this->parsePipeToArray($attributeParts[1]);
                         }
 
                         $linkedBeans = $this->getLinkedBeans($forArray[0], NULL, $beans, $params); // CR1000360 added $params
@@ -186,10 +201,17 @@ class Compiler
         if(isset($params['begin_index'])) {
             $begin_index = $params['begin_index'];
         }
+
+        // end_index is deprecated. Keep for compatibility with older Templates
         $end_index = -1;
+        $limit = -1;
         if(isset($params['end_index'])) {
-            $end_index = $params['end_index'];
+            $limit = $params['end_index'];
         }
+        if(isset($params['limit'])) {
+            $limit = $params['limit'];
+        }
+
         $deleted = 0;
         if(isset($params['deleted'])) {
             $deleted = $params['deleted'];
@@ -206,7 +228,7 @@ class Compiler
             }
         }
 
-        $linkedBeans = $obj->get_linked_beans($parts[1], $relModule, $sort_array, $begin_index, $end_index, $deleted, $optional_where); // CR1000360 added optional_where
+        $linkedBeans = $obj->get_linked_beans($parts[1], $relModule, $sort_array, $begin_index, $limit, $deleted, $optional_where); // CR1000360 added optional_where
 
         if (count($parts) > 2) {
             $deepLinkedBeans = [];
@@ -292,7 +314,7 @@ class Compiler
                         $next_bean = $obj->get_linked_beans($field['name'], $field['bean_name'])[0];
                         if ($next_bean) {
                             $level++;
-                            return $loopThroughParts($next_bean, $level);
+                            return $loopThroughParts($next_bean, $level, $keepFetchedRowValue);
                         } else {
                             $value = '';
                         }

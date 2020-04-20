@@ -316,6 +316,29 @@ class PostgreSQLManager extends DBManager
         return $columns;
     }
 
+
+
+    /**
+     * Get a list of columns names for selects
+     * Convenient when you have a union query to ensure that column name have the same order
+     * @see DBManager::get_columns_list()
+     */
+    public function get_columns_list($tablename, $delimiter= ', ', $fallback ='*')
+    {
+        $columns = $this->get_columns($tablename);
+        $cols = array();
+        foreach($columns as $c => $col){
+            $cols[] = $col['name'];
+        }
+        $list = implode($delimiter, $cols);
+
+        // fall back in case no columns found or any other problem occured
+        if(!$list){
+            $list = $fallback;
+        }
+        return $list;
+    }
+
     /**
      * (non-PHPdoc)
      * @see DBManager::getFieldsArray()

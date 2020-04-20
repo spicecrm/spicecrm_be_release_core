@@ -262,7 +262,7 @@ class SpiceUIConfLoader
                 $truncates[] = "DELETE FROM $tb WHERE id=".$decodeData['id'];
 
                 //insert command
-                $inserts[] = "INSERT INTO $tb (" . implode(",", $referenceCols) . ") " .
+                $inserts[] = "INSERT INTO $tb (`" . implode("`, `", $referenceCols) . "`) " .
                     "VALUES(" . implode(",", array_values($decodeData)) . ")";
             }
         }

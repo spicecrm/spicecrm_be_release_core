@@ -49,13 +49,13 @@ class KReportPresentationManager {
         return $pluginObject->display($thisReport);
     }
     
-    public function getPresentationExport($thisReport, $dynamicols, $renderFields = true, $parentbean){
+    public function getPresentationExport($thisReport, $dynamicols, $renderFields = true, $parentbean = null, $pluginName = null){
         $listOptions = json_decode(html_entity_decode($thisReport->presentation_params), true);
         if(!empty($listOptions['plugin']))
             $pluginObject = $this->pluginManager->getPresentationObject($listOptions['plugin']);
         else
             $pluginObject = $this->pluginManager->getPresentationObject($thisReport->listtype);
-        return $pluginObject->getExportData($thisReport, $dynamicols, $renderFields, $parentbean);
+        return $pluginObject->getExportData($thisReport, $dynamicols, $renderFields, $parentbean, $pluginName);
     }
     
     public function getPresentationMetadata($thisReport) {

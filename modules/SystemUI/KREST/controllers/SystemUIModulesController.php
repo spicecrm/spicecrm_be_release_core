@@ -78,9 +78,11 @@ class SystemUIModulesController
                     $aclArray['list'] = true;
                 }
 
+                $ftsBeanHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSBeanHandler($seed);
                 // check if we have any ACL right
                 if ($module['module'] == 'Home' || $aclArray['list'] || $aclArray['view'] || $aclArray['edit']) {
                     $retArray[$module['module']] = array(
+                        'id' => $module['id'],
                         'icon' => $module['icon'],
                         'actionset' => $module['actionset'],
                         'module' => $module['module'],
@@ -99,7 +101,8 @@ class SystemUIModulesController
                         'acl' => $aclArray,
                         'acl_multipleusers' => $module['acl_multipleusers'],
                         'ftsactivities' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::checkActivities($module['module']),
-                        'ftsgeo' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler::checkGeo($module['module'])
+                        'ftsgeo' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler::checkGeo($module['module']),
+                        'ftsaggregates' => $ftsBeanHandler->getAggregates()
                     );
                 }
             }

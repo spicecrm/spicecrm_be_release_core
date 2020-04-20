@@ -1132,6 +1132,16 @@ class SugarBean
             } else {
                 // Link2 style
                 if ($end_index != -1 || !empty($deleted) || !empty($optional_where)) {
+
+                    // BEGIN CR1000382: move sort_array content to 'sorthook' when sortfield is non-db
+                    if(!empty($sort_array) && isset($sort_array['sortfield'])) {
+                        if(isset($this->field_defs[$sort_array['sortfield']]['source']) && $this->field_defs[$sort_array['sortfield']]['source'] == 'non-db') {
+                            $sorthook['sorthook'] = $sort_array;
+                            $sort_array = $sorthook;
+                        }
+                    }
+                    // END
+
                     return array_values($this->$field_name->getBeans(array(
                         'where' => $optional_where,
                         'deleted' => $deleted,

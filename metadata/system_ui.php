@@ -2953,7 +2953,7 @@ $dictionary['sysuimodelvalidationconditions'] = array(
             'name' => 'fieldname',
             'type' => 'varchar',
             'required' => true,
-            'len' => 50,
+            'len' => 255,
         ),
         'comparator' => array(
             'name' => 'comparator',
@@ -3001,7 +3001,7 @@ $dictionary['sysuimodelvalidationactions'] = array(
         'fieldname' => array(
             'name' => 'fieldname',
             'type' => 'varchar',
-            'len' => 20,
+            'len' => 255,
             'required' => true,
         ),
         'action' => array(

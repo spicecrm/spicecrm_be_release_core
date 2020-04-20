@@ -3,6 +3,7 @@ $elasticTokenizers = array(
     "spice_standard_all" => array(
         "type" => "standard",
         "min_gram" => "3",
+        "max_gram" => "20",
         "token_chars"=> [
             "letter",
             "digit",

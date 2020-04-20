@@ -91,5 +91,12 @@ return array(
             'bold_italic' => $distFontDir . 'DejaVuSerif-BoldItalic',
             'italic' => $distFontDir . 'DejaVuSerif-Italic',
             'normal' => $distFontDir . 'DejaVuSerif'
+        ),
+    'libre franklin' =>
+        array(
+            'bold' => $distFontDir . 'LibreFranklin-Bold',
+            'bold_italic' => $distFontDir . 'LibreFranklin-BoldItalic',
+            'italic' => $distFontDir . 'LibreFranklin-Italic',
+            'normal' => $distFontDir . 'LibreFranklin-Regular'
         )
 );

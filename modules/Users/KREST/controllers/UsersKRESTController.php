@@ -2,16 +2,16 @@
 
 namespace SpiceCRM\modules\Users\KREST\controllers;
 
-use KREST\BadRequestException;
-use KREST\ForbiddenException;
-use KREST\NotFoundException;
-use KRESTModuleHandler;
-use User;
+use \SpiceCRM\KREST\BadRequestException;
+use \SpiceCRM\KREST\ForbiddenException;
+use \SpiceCRM\KREST\NotFoundException;
+use \SpiceCRM\KREST\handlers\ModuleHandler;
+use \User;
 
 class UsersKRESTController {
 
     /**
-     * saveUser
+     * save User
      */
     public function saveUser( $req, $res, $args ) {
 
@@ -34,7 +34,7 @@ class UsersKRESTController {
             throw (new BadRequestException("Invalid email format."))->setErrorCode('invalidEmailFormat');
         }
 
-        $KRESTModuleHandler = new KRESTModuleHandler();
+        $KRESTModuleHandler = new ModuleHandler();
         $beanResponse = $KRESTModuleHandler->add_bean("Users", $args['id'], $params);
 
         return $res->withJson($beanResponse);

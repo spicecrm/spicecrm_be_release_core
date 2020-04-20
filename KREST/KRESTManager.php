@@ -332,8 +332,17 @@ class KRESTManager {
             'userid'         => $current_user->id,
             'user_image'     => $current_user->user_image,
             'dev'            => $current_user->is_dev,
-            'companycode_id' => $current_user->companycode_id
+            'companycode_id' => $current_user->companycode_id,
+            'obtainGDPRconsent' => false
         ];
+
+        // Is it a portal user? And the GDPR consent for portal users is configured?
+        if ( $current_user->portal_only and @$GLOBALS['sugar_config']['portal_gdpr']['obtain_consent'] ) {
+            $contactOfPortalUser = new \Contact();
+            $contactOfPortalUser->retrieve_by_string_fields([ 'portal_user_id' => $GLOBALS['current_user']->id ]);
+            // gdpr_marketing_agreement not 'g' and not 'r' indicates that the user has not yet been asked for consent of GDPR in general (data AND marketing)
+            if (( $contactOfPortalUser->gdpr_marketing_agreement !== 'g' and $contactOfPortalUser->gdpr_marketing_agreement !== 'r' ) and !$contactOfPortalUser->gdpr_data_agreement ) $loginData['obtainGDPRconsent'] = true;
+        }
 
         return $loginData;
     }

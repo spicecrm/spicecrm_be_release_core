@@ -37,7 +37,7 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 ********************************************************************************/
 
 $dictionary['emailschedules_beans'] = array (
-
+// TODO: EMAIL ID
     'table' => 'emailschedules_beans',
     'fields' => array(
         array (

@@ -30,6 +30,7 @@ class SpiceFTSAggregates
                     'field' => $indexProperty['indexfieldname'] . '.agg',
                     'name' => $indexProperty['name'],
                     'type' => $indexProperty['aggregate'],
+                    'aggregateempty' => $indexProperty['aggregateempty'],
                     'aggregatesize' => $indexProperty['aggregatesize'],
                     'aggregatepriority' => $indexProperty['aggregatepriority'],
                     'metadata' => SpiceFTSUtils::getFieldIndexParams(null, $indexProperty['path'])
@@ -65,6 +66,11 @@ class SpiceFTSAggregates
         return count($postFilter) > 0 ? $postFilter : false;
     }
 
+    /**
+     * build the aggregate filter based on the ggregates
+     *
+     * @return array
+     */
     function buildAggFilters(){
         $aggFilters = [];
         foreach ($this->aggregatesFilters as $aggregatesFilter => $aggregatesFilterValues) {
@@ -123,6 +129,12 @@ class SpiceFTSAggregates
                         'size' => isset($aggregateIndexFieldData['aggregatesize']) ? $aggregateIndexFieldData['aggregatesize'] : 10,
                         'field' => $aggregateIndexFieldData['indexfieldname'] . '.agg'
                     ));
+
+                    // check if we shoudl aggregate empty values
+                    if($aggregateIndexFieldData['aggregateempty']){
+                        $aggParams['terms']['missing'] = '#not#set#';
+                    }
+
                     if(!empty($aggregateIndexFieldData['aggregatesortby']) && !empty($aggregateIndexFieldData['aggregatesort'])){
                         $aggParams['terms']['order'] = [$aggregateIndexFieldData['aggregatesortby'] => $aggregateIndexFieldData['aggregatesort']];
                     }

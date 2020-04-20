@@ -139,7 +139,7 @@ class UsersPreferencesKRESTController
     public function getDefaultPreferences()
     {
         $prefs = [];
-        $prefNames = [ 'currency', 'datef', 'num_grp_sep', 'timef', 'timezone', 'default_currency_significant_digits', 'default_locale_name_format', 'week_day_start' ];
+        $prefNames = [ 'currency', 'datef', 'num_grp_sep', 'timef', 'timezone', 'default_currency_significant_digits', 'default_locale_name_format', 'week_day_start'];
         foreach ( $prefNames as $name ) {
             if ( isset( $GLOBALS['sugar_config'][$name]{0} )) $prefs[$name] = $GLOBALS['sugar_config'][$name];
         }

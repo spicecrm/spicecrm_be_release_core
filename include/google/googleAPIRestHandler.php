@@ -13,7 +13,7 @@ class googleAPIRestHandler
 
         $ch = curl_init();
         // https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=sol4 it&inputtype=textquery&fields=photos,formatted_address,name,place_id&key=AIzaSyCmw4Z9h4lf9eUGVyjKPyr9yr1s8WeXlPM
-        $url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key={$sugar_config['googleapikey']}&locationbias=".trim($locationbias)."&inputtype=textquery&fields=photos,formatted_address,name,place_id&input=" . urlencode($term);
+        $url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key={$sugar_config['googleapi']['mapskey']}&locationbias=".trim($locationbias)."&inputtype=textquery&fields=photos,formatted_address,name,place_id&input=" . urlencode($term);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -41,7 +41,7 @@ class googleAPIRestHandler
         );
 
         $ch = curl_init();
-        $url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" . $sugar_config['googleapikey'] . "&types=geocode&input=" . urlencode($term);
+        $url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" . $sugar_config['googleapi']['mapskey'] . "&types=geocode&input=" . urlencode($term);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -69,7 +69,7 @@ class googleAPIRestHandler
         );
 
         $ch = curl_init();
-        $url = "https://maps.googleapis.com/maps/api/place/details/json?key=" . $sugar_config['googleapikey'] . "&placeid=" . $placeid;
+        $url = "https://maps.googleapis.com/maps/api/place/details/json?key=" . $sugar_config['googleapi']['mapskey'] . "&placeid=" . $placeid;
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

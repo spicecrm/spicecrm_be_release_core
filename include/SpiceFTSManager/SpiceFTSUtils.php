@@ -116,6 +116,8 @@ class SpiceFTSUtils
                     }
                 }
 
+                // check if index exists
+
                 $_SESSION['SpiceFTS']['indexes'][$module]['properties'] = $modulePropertiesarray;
 
                 return $modulePropertiesarray;

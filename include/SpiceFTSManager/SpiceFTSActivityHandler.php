@@ -36,14 +36,16 @@ class SpiceFTSActivityHandler
         $queryModules = [];
         $postFilters = [];
 
+        // create an instance of the elastichandler
+        $elastichandler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
+
         foreach ($modules as $module => $moduleDetails) {
 
             // check acl access for the user as well as if a filter object is set
             //if(!$GLOBALS['ACLController']->checkACLAccess($module, 'list') || ($objects && count($objects) > 0 && array_search_insensitive($module, $objects) === false)){
-            if (!$GLOBALS['ACLController']->checkAccess($module, 'list')) {
+            if (!$GLOBALS['ACLController']->checkAccess($module, 'list') || !$elastichandler->checkIndex($module)) {
                 continue;
             }
-
 
             // if access is granted build the module query
             $beanHandler = new SpiceFTSBeanHandler($module);
@@ -103,7 +105,7 @@ class SpiceFTSActivityHandler
             'aggs' => [
                 'module' => [
                     'terms' => [
-                        'field' => '_type',
+                        'field' => $elastichandler->gettModuleTermFieldName(), //'_module' for ES7, '_type' for ES6
                         'size' => 10
                     ]
                 ],
@@ -141,12 +143,11 @@ class SpiceFTSActivityHandler
         $elastichandler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
         $results = json_decode($elastichandler->query('POST', join(',', $queryModules) . '/_search', null, $query), true);
 
-
         $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
 
         $items = [];
         foreach ($results['hits']['hits'] as &$hit) {
-            $seed = \BeanFactory::getBean($hit['_type'], $hit['_id']);
+            $seed = \BeanFactory::getBean($elastichandler->getHitModule($hit), $hit['_id']);
             foreach ($seed->field_name_map as $field => $fieldData) {
                 //if (!isset($hit['_source']{$field}))
                 $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
@@ -154,7 +155,7 @@ class SpiceFTSActivityHandler
 
             // get the email addresses
             $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
-            $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($hit['_type'], $hit['_id']);
+            $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($elastichandler->getHitModule($hit), $hit['_id']);
 
             $hit['acl'] = $krestHandler->get_acl_actions($seed);
             // $hit['acl_fieldcontrol'] = $krestHandler->get_acl_fieldaccess($seed);
@@ -165,10 +166,10 @@ class SpiceFTSActivityHandler
             }
             $items[] = [
                 'id' => $seed->id,
-                'module' => $hit['_type'],
+                'module' => $elastichandler->getHitModule($hit),
                 'date_activity' => $hit['_source']['_activitydate'],
                 'related_ids' => $hit['_source']['related_ids'],
-                'data' => $krestHandler->mapBeanToArray($hit['_type'], $seed, [], false, false, false)
+                'data' => $krestHandler->mapBeanToArray($elastichandler->getHitModule($hit), $seed, [], false, false, false)
             ];
         }
 
@@ -197,7 +198,7 @@ class SpiceFTSActivityHandler
             }
         }
 
-        return ['totalcount' => $results['hits']['total'], 'aggregates' => $aggregates, 'items' => $items];
+        return ['totalcount' => $elastichandler->getHitsTotalValue($results), 'aggregates' => $aggregates, 'items' => $items];
     }
 
     /**
@@ -316,13 +317,13 @@ class SpiceFTSActivityHandler
 
         $items = [];
         foreach ($results['hits']['hits'] as &$hit) {
-            $seed = \BeanFactory::getBean($hit['_type'], $hit['_id']);
+            $seed = \BeanFactory::getBean($elastichandler->getHitModule($hit), $hit['_id']);
             foreach ($seed->field_name_map as $field => $fieldData) {
                 //if (!isset($hit['_source']{$field}))
                 $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
             }
 
-            $hit['_source']['emailaddresses'] = $moduleHandler->getEmailAddresses($hit['_type'], $hit['_id']);
+            $hit['_source']['emailaddresses'] = $moduleHandler->getEmailAddresses($elastichandler->getHitModule($hit), $hit['_id']);
 
             $hit['acl'] = $moduleHandler->get_acl_actions($seed);
             // $hit['acl_fieldcontrol'] = $krestHandler->get_acl_fieldaccess($seed);
@@ -333,11 +334,11 @@ class SpiceFTSActivityHandler
             }
             $items[] = [
                 'id' => $seed->id,
-                'module' => $hit['_type'],
+                'module' => $elastichandler->getHitModule($hit),
                 'start' => $hit['_source']['_activitydate'],
                 'end' => $hit['_source']['_activityenddate'],
-                'type' => $hit['_type'] == 'UserAbsences' ? 'absence' : 'event',
-                'data' => $moduleHandler->mapBeanToArray($hit['_type'], $seed, [], false, false, true)
+                'type' => $elastichandler->getHitModule($hit) == 'UserAbsences' ? 'absence' : 'event',
+                'data' => $moduleHandler->mapBeanToArray($elastichandler->getHitModule($hit), $seed, [], false, false, true)
             ];
         }
 

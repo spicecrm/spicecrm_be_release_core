@@ -1702,7 +1702,7 @@ class KReport extends SugarBean
 
     function getListFieldsArray()
     {
-        $fieldArray = json_decode_kinamu(html_entity_decode($this->listfields, ENT_QUOTES, 'UTF-8'));
+        $fieldArray = json_decode(html_entity_decode($this->listfields, ENT_QUOTES, 'UTF-8'), true);
 
         foreach ($fieldArray as $fieldCount => $fieldData)
             $returnArray [$fieldData ['fieldid']] = $fieldData;

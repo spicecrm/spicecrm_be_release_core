@@ -12,11 +12,16 @@ class ElasticHandler
     var $ssl_verifyhost = 2;
     var $ssl_verifypeer = 1;
 
+    var $version = '7';
+
     var $standardSettings = array(
         "analysis" => array(
             "filter" => array(),
             "tokenizer" => array(),
             "analyzer" => array()
+        ),
+        'index' => array(
+            'max_ngram_diff' => 20,
         )
     );
 
@@ -30,11 +35,80 @@ class ElasticHandler
         if(isset($sugar_config['fts']['ssl_verifyhost'])){$this->ssl_verifyhost = $sugar_config['fts']['ssl_verifyhost'];}
         if(isset($sugar_config['fts']['ssl_verifypeer'])){$this->ssl_verifypeer = $sugar_config['fts']['ssl_verifypeer'];}
 
-
+        // get the elastic version - only themajor number is important
+        $version = $this->getVersion();
+        $this->version = substr($version, 0, 1);
 
         $this->buildSettings();
     }
 
+    /**
+     * returns the current elastic version
+     */
+    function getVersion(){
+        if(!isset($_SESSION['SpiceFTS']['elastic'])){
+            $response = json_decode($this->query('GET', ''));
+            $_SESSION['SpiceFTS']['elastic'] = $response;
+        }
+
+        return $_SESSION['SpiceFTS']['elastic']->version->number;
+    }
+
+    /**
+     * returns the current status of the elastic cluster
+     */
+    function getStatus(){
+        return  json_decode($this->query('GET', ''));
+    }
+
+    /**
+     * returns the module for the hit
+     * this is for 6 and 7 compatibility as the type has been removed with 7 and is no kept in teh source in attribute _module
+     *
+     * @param $hit
+     * @return mixed
+     */
+    function getHitModule($hit){
+        if($hit['_type'] != '_doc'){
+            return $hit['_type'];
+        } else {
+            return $hit['_source']['_module'];
+        }
+    }
+
+    /**
+     * returns the vale for aggs.module.terms.field
+     * this is for 6 and 7 compatibility as _type has been replaced by _module in 7
+     *
+     * @param $hit
+     * @return mixed
+     */
+    function gettModuleTermFieldName(){
+        if($this->version == '6'){
+            return '_type';
+        }
+        return '_module';
+    }
+
+    /**
+     * returns the total for hits
+     * this is for 6 and 7 compatibility
+     * Elastic 6 returns hits total as $response['hits']['total'] OR  $response['total']
+     * Elastic 7 returns hits total as $response['hits']['total']['value']
+     * This function will extract the value from proper array structure
+     * @param $queryResponse Array
+     * @return mixed
+     */
+    public function getHitsTotalValue($queryResponse){
+        if(is_integer($queryResponse['hits']['total'])){
+            return $queryResponse['hits']['total'];
+        }
+        return $queryResponse['hits']['total']['value'];
+    }
+
+    /**
+     * builds the settings based ont eh various files defined
+     */
     function buildSettings()
     {
         $elasticAnalyzers = array();
@@ -85,6 +159,11 @@ class ElasticHandler
         return $indexes;
     }
 
+    /**
+     * returns the stats for the index with the current prefix
+     *
+     * @return mixed
+     */
     function getStats()
     {
         $response = json_decode($this->query('GET',$this->indexPrefix . '*/_stats'), true);
@@ -93,24 +172,45 @@ class ElasticHandler
     }
 
 
+    /**
+     * index a document - create or update
+     *
+     * @param $module
+     * @param $data
+     * @return bool|string
+     */
     function document_index($module, $data)
     {
         // determein if we send the wait_for param .. for activity stream
         $params = [];
         $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
         if($indexSettings['waitfor']) $params['refresh'] = 'wait_for';
-
-        $response = $this->query('POST', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $data['id'], $params, $data);
+        if($this->version == '6') {
+            $response = $this->query('POST', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $data['id'], $params, $data);
+        } else {
+            $response = $this->query('POST', $this->indexPrefix . strtolower($module) . '/_doc/' . $data['id'], $params, $data);
+        }
         return $response;
     }
 
+    /**
+     * delete a document from the index
+     *
+     * @param $module
+     * @param $id
+     * @return bool|string
+     */
     function document_delete($module, $id)
     {
         $params = [];
         $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
         if($indexSettings['waitfor']) $params['refresh'] = 'wait_for';
 
-        $response = $this->query('DELETE', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $id, $params);
+        if($this->version == '6'){
+            $response = $this->query('DELETE', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $id, $params);
+        } else {
+            $response = $this->query('DELETE', $this->indexPrefix . strtolower($module) . '/_doc/' . $id, $params);
+        }
         return $response;
     }
 
@@ -184,15 +284,19 @@ class ElasticHandler
     }
 
 
-    function checkIndex($module){
-        $response = $this->query('GET', $this->indexPrefix . strtolower($module));
-        $response = json_decode($response);
-        if($response->{$this->indexPrefix . strtolower($module)})
-            return true;
-        else
-            return false;
+    /**
+     * checks the index and returns true or false if the index xists or does not exist
+     *
+     * @param $module
+     * @return bool
+     */
+    function checkIndex($module, $force = false){
+        if(!isset($_SESSION['SpiceFTS']['indexes'][$module]['exists'])) {
+            $response = json_decode($this->query('GET', $this->indexPrefix . strtolower($module)));
+            $_SESSION['SpiceFTS']['indexes'][$module]['exists'] = $response->{$this->indexPrefix . strtolower($module)} ? true : false;
+        }
+        return $_SESSION['SpiceFTS']['indexes'][$module]['exists'];
     }
-
 
     function deleteIndex($module)
     {
@@ -212,24 +316,52 @@ class ElasticHandler
         return $response;
     }
 
+    /**
+     * puts the mapping for a module and creates the index
+     * contains elastic 6 compatibility .. to be removed in future version
+     *
+     * @param $module
+     * @param $properties
+     * @return bool|string
+     */
     function putMapping($module, $properties)
     {
-        $mapping = array(
-            '_all' => array(
-                'analyzer' => 'spice_ngram'
-            ),
-            'properties' => $properties
-        );
-        $response = $this->query('PUT', SpiceFTSUtils::getIndexNameForModule($module), array(), array(
-                'settings' => $this->standardSettings,
-                'mappings' => array(
-                    $module => $mapping
+        if($this->version == '6'){
+            $mapping = array(
+                '_all' => array(
+                    'analyzer' => 'spice_ngram'
+                ),
+                'properties' => $properties
+            );
+            $response = $this->query('PUT', SpiceFTSUtils::getIndexNameForModule($module), array(), array(
+                    'settings' => $this->standardSettings,
+                    'mappings' => array(
+                        $module => $mapping
+                    )
                 )
-            )
-        );
+            );
+        } else {
+            $mapping = array(
+                'properties' => $properties
+            );
+            $response = $this->query('PUT', SpiceFTSUtils::getIndexNameForModule($module), array(), array(
+                    'settings' => $this->standardSettings,
+                    'mappings' => $mapping
+                )
+            );
+        }
         return $response;
     }
 
+    /**
+     * exeutes the query on the elastic index
+     *
+     * @param $method
+     * @param $url
+     * @param array $params
+     * @param array $body
+     * @return bool|string
+     */
     function query($method, $url, $params = array(), $body = array())
     {
         global $sugar_config;
@@ -315,6 +447,16 @@ class ElasticHandler
         return $resultdec;
     }
 
+    /**
+     * adds a log entry to the fts log
+     *
+     * @param $method
+     * @param $url
+     * @param null $status
+     * @param $request
+     * @param $response
+     * @return bool
+     */
     private function addLogEntry($method, $url, $status=null, $request, $response ) # , $rtlocal, $rtremote )
     {
         global $db, $timedate;

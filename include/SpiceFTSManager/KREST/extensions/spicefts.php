@@ -47,7 +47,13 @@ $app->group('/fts', function () use ($app, $ftsManager)
         $getParams = $_GET;
         echo json_encode($ftsManager->searchTerm( urlencode( $args['searchterm'] ), array(), $getParams['size'] ?: 10, $getParams['from'] ?: 0 ));
     });
+    $app->get('/status', function () use ($app, $ftsManager) {
+        echo json_encode(['version' => $ftsManager->getStatus(), 'stats' => $ftsManager->getStats()]);
+    });
     $app->get('/stats', function () use ($app, $ftsManager) {
         echo json_encode($ftsManager->getStats());
+    });
+    $app->get('/fields/{module}', function ($req, $res, $args) use ($app, $ftsManager) {
+        return $res->withJson($ftsManager->getFTSModuleFields($args['module']));
     });
 });

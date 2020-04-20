@@ -45,9 +45,10 @@ require_once 'include/SpiceAttachments/SpiceAttachments.php';
 
 class Mailbox extends SugarBean {
 
-	public $module_dir = 'Mailboxes';
-	public $table_name = "mailboxes";
+	public $module_dir  = 'Mailboxes';
+	public $table_name  = "mailboxes";
 	public $object_name = "Mailbox";
+	public $message_type;
 
 	public $transport_handler;
 
@@ -117,6 +118,8 @@ class Mailbox extends SugarBean {
         }
 
         $this->transport_handler = new $class_name($this);
+
+        $this->initMessageType();
 
         return true;
     }
@@ -381,26 +384,33 @@ class Mailbox extends SugarBean {
         return $result['cnt'];
     }
 
-    // todo just add a type field to the mailbox table, coz this is getting too messy
-    // and won't work for exclusively inbound mailboxes
+    /**
+     * Returns the table in which the messages for this mailbox are stored.
+     *
+     * @return string
+     */
     private function getMessagesTable() {
-        if ($this->outbound_comm == 'single_sms' || $this->outbound_comm == 'mass_sms') {
+        if ($this->getType() == 'sms') {
             return 'textmessages';
         }
-        if ($this->outbound_comm == 'single' || $this->outbound_comm == 'mass') {
+        if ($this->getType() == 'email') {
             return 'emails';
         }
         return '';
     }
 
+    /**
+     * Returns the message type for which the transport handler is used.
+     * In case there is no type set in the sysmailboxestransports table it uses email as default.
+     *
+     * @return string
+     */
     public function getType() {
-        if ($this->outbound_comm == 'single_sms' || $this->outbound_comm == 'mass_sms') {
-            return 'sms';
+        if ($this->message_type == '') {
+            $this->initMessageType();
         }
-        if ($this->outbound_comm == 'single' || $this->outbound_comm == 'mass') {
-            return 'email';
-        }
-        return '';
+
+        return $this->transport_handler->message_type ?? 'email';
     }
 
     /**
@@ -443,5 +453,26 @@ class Mailbox extends SugarBean {
         }
 
         return true;
+    }
+
+    /**
+     * Initialized the value of message_type which is stored for every transport handler in either the
+     * sysmailboxtransports or syscustommailboxtransports table.
+     */
+    private function initMessageType() {
+        $sql = "SELECT message_type FROM sysmailboxtransports WHERE name='" . $this->transport . "'";
+
+        $result = $this->db->query($sql);
+        $row = $this->db->fetchByAssoc($result);
+
+        if ($row['message_type'] == '') {
+            $sql = "SELECT message_type FROM syscustommailboxtransports WHERE name='" . $this->transport . "'";
+
+            $result = $this->db->query($sql);
+            $row = $this->db->fetchByAssoc($result);
+
+        }
+
+        $this->message_type = $row['message_type'];
     }
 }

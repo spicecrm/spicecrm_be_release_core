@@ -784,6 +784,11 @@ $app_list_strings = array(
 
         ),
 
+    'mailbox_message_types' => [
+        'sms'   => 'Text Messages',
+        'email' => 'Emails',
+    ],
+
     'issue_priority_default_key' => 'Medium',
     'issue_priority_dom' =>
         array(
@@ -4380,7 +4385,10 @@ $app_list_strings['emailschedule_status_dom'] = [
     'sent' => 'sent',
 ];
 
-
+$app_list_strings['email_schedule_status_dom'] = [
+    'open' => 'open',
+    'done' => 'done',
+];
 $app_list_strings['moduleList']['KReleasePackages'] = 'K Releasepackages';
 
 $app_list_strings['rpstatus_dom'] = array(
