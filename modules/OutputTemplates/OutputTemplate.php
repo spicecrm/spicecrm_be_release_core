@@ -57,14 +57,6 @@ class OutputTemplate extends SugarBean
     ];
     private $pdf_handler;
 
-    function __construct()
-    {
-        parent::__construct();
-        $class = @$GLOBALS['sugar_config']['outputtemplates']['pdf_handler_class'];
-        if(!$class) $class = '\SpiceCRM\modules\OutputTemplates\handlers\pdf\DomPdfHandler';
-        $this->pdf_handler = new $class($this);
-    }
-
     function get_summary_text()
     {
         return "$this->name";
@@ -108,13 +100,21 @@ class OutputTemplate extends SugarBean
         return $this->translateBody();
     }
 
+    private function setPDFHandler(){
+        $class = @$GLOBALS['sugar_config']['outputtemplates']['pdf_handler_class'];
+        if(!$class) $class = '\SpiceCRM\modules\OutputTemplates\handlers\pdf\DomPdfHandler';
+        $this->pdf_handler = new $class($this);
+    }
+
     public function download()
     {
+        $this->setPDFHandler();
         return $this->pdf_handler->toDownload();
     }
 
     private function saveAsTmpFile($filename = null)
     {
+        $this->setPDFHandler();
         return $this->pdf_handler->toTempFile($filename);
     }
 
@@ -125,6 +125,7 @@ class OutputTemplate extends SugarBean
 
     public function getPdfContent()
     {
+        $this->setPDFHandler();
         return $this->pdf_handler->__toString();
     }
 

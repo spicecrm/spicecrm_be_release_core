@@ -582,7 +582,10 @@ class SpiceFTSHandler
         // if yes add this here to the add filters
         if (!empty($indexSettings['globalfilter'])) {
             $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
-            $addFilters[] = $sysFilter->generareElasticFilterForFilterId($indexSettings['globalfilter']);
+            $filterForId =  $sysFilter->generareElasticFilterForFilterId($indexSettings['globalfilter']);
+            if(!empty($filterForId)) {
+                $addFilters[] = $filterForId;
+            }
         }
 
         // process additional filters

@@ -19,6 +19,44 @@ class OutputTemplatesController
 
     }
 
+    public function previewpdf($req, $res, $args)
+    {
+        $body = $req->getParsedBody();
+        $bean = \BeanFactory::getBean('OutputTemplates');
+
+        $bean->body = $body['body'];
+        $bean->header = $body['header'];
+        $bean->footer = $body['footer'];
+        $bean->stylesheet_id = $body['stylesheet_id'];
+
+        $bean->margin_left = $body['margin_left'];
+        $bean->margin_top = $body['margin_top'];
+        $bean->margin_right = $body['margin_right'];
+        $bean->margin_bottom = $body['margin_bottom'];
+        $bean->page_size = $body['page_size'];
+        $bean->page_orientation = $body['page_orientation'];
+
+        $bean->module_name = $body['parentype'];
+        $bean->bean_id = $body['parentid'];
+        $file = $bean->getPdfContent();
+        return $res->withJson(['content' => base64_encode($file)]);
+    }
+
+    public function previewhtml($req, $res, $args)
+    {
+        $body = $req->getParsedBody();
+        $bean = \BeanFactory::getBean('OutputTemplates');
+
+        $bean->body = $body['body'];
+        $bean->header = $body['header'];
+        $bean->footer = $body['footer'];
+        $bean->stylesheet_id = $body['stylesheet_id'];
+        $bean->module_name = $body['parentype'];
+        $bean->bean_id = $body['parentid'];
+        return $res->withJson(['content' => $bean->translateBody()]);
+
+    }
+
     public function convertToFormat($req, $res, $args)
     {
         $bean = \BeanFactory::getBean('OutputTemplates', $args['id']);
