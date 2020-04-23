@@ -285,9 +285,13 @@ class Mailbox extends SugarBean {
      * for a better future...
      * @return mixed
      */
-    public function getEmailAddress()
-    {
-        return $this->imap_pop3_username;
+    public function getEmailAddress() {
+        switch ($this->transport) {
+            case self::TRANSPORT_EWS:
+                return $this->ews_email ?? $this->ews_username;
+            default:
+                return $this->imap_pop3_username;
+        }
     }
 
     // todo find out where those settings are needed and if they're actually useful

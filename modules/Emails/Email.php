@@ -1126,7 +1126,7 @@ class Email extends SugarBean
 
             $this->from_addr_name = $this->cleanEmails($this->from_addr_name);
             if (empty($this->from_addr) && isset($mailbox)) {
-                $this->from_addr = $mailbox->imap_pop3_username;
+                $this->from_addr = $mailbox->getEmailAddress();
             } elseif (empty($this->from_addr) && !empty($this->from_addr_name)) {
                 $this->from_addr = $this->from_addr_name;
             } elseif (empty($this->from_addr)) {
