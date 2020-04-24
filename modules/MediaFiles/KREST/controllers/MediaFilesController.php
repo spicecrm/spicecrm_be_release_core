@@ -49,6 +49,11 @@ class MediaFilesController
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
         $seed->deliverOriginal();
     }
+    public function getMediaFileBase64( $req, $res, $args ) {
+        $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
+        $base64 = $seed->deliverOriginalBase64();
+        return $res->withJson(['img' => $base64]);
+    }
 
     public function getThumbnail( $req, $res, $args ) {
         $thumbSize = $args['thumbSize'];
@@ -128,11 +133,6 @@ class MediaFilesController
                 $seed->deliverSize( $targetWidth );
             }
         }
-    }
-
-    public function deleteMediaFile( $req, $res, $args ) {
-        //$params = json_decode( $app->request->getBody(), true );
-        $params = $req->getParams();
     }
 
 }
