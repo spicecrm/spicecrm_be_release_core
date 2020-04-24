@@ -39,22 +39,13 @@ $dictionary['MediaFile'] = array(
     'table' => 'mediafiles',
     'comment' => 'Media Files: Images, Audios, Videos, …',
     'fields' => array (
-        'mediatype' => array(
-            'name' => 'mediatype',
-            'vname' => 'LBL_MEDIATYPE',
-            'type' => 'enum',
-            'dbtype' => 'uint',
-            'options' => 'mediatypes_dom',
-            'isnull' => false,
-            'required' => true
-        ),
         'filetype' => array (
             'name' => 'filetype',
             'vname' => 'LBL_FILETYPE',
             'type' => 'varchar',
             'len' => 100,
             'isnull' => false,
-            'required' => true
+            'required' => false
         ),
         'alttext' => array(
             'name' => 'alttext',
@@ -152,7 +143,7 @@ $dictionary['MediaFile'] = array(
             'name' => 'thumbnail',
             'vname' => 'LBL_THUMBNAIL',
             'type' => 'text',
-            'source' => 'non-db'
+            // 'source' => 'non-db'
         ),
     ),
     'relationships' => array(
@@ -170,7 +161,6 @@ $dictionary['MediaFile'] = array(
         array( 'name' =>'idx_mediafiles_name', 'type' => 'index', 'fields' => array('name') ),
         array( 'name' =>'idx_mediafiles_upload_completed', 'type' => 'index', 'fields' => array('upload_completed') ),
         array( 'name' =>'idx_mediafiles_copyright_owner', 'type' => 'index', 'fields' => array('copyright_owner') ),
-        array( 'name' =>'idx_mediafiles_mediatype', 'type' => 'index', 'fields' => array('mediatype') ),
         array( 'name' =>'idx_mediafiles_deleted', 'type' => 'index', 'fields' => array('deleted') ),
         array( 'name' =>'idx_mediafiles_mediacategory', 'type' => 'index', 'fields' => array('mediacategory_id') )
     )

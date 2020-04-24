@@ -13,9 +13,9 @@ class MediaFile extends SugarBean {
     public $table_name = "mediafiles";
     public $object_name = "MediaFile";
     public $module_dir = 'MediaFiles';
-    private $imageQualities = array( 'bmp' => true, 'gif' => null, 'jpg' => 85, 'jpeg' => 85, 'png' => 9, 'webp' => 80 ); # for png: it´s not the quality, it´s the compression (lossless)
-    private $imageFunctions = array( 'bmp' => 'bmp', 'gif' => 'gif', 'jpg' => 'jpeg', 'jpeg' => 'jpeg', 'png' => 'png', 'webp' => 'webp' );
-    public $mediatype, $filetype, $width, $height, $hash, $name, $upload_completed;
+    private $imageQualities = array( 'image/bmp' => true, 'image/gif' => null, 'image/jpeg' => 85, 'image/png' => 9, 'image/webp' => 80 ); # for png: it´s not the quality, it´s the compression (lossless)
+    private $imageFunctions = array( 'image/bmp' => 'bmp', 'image/gif' => 'gif', 'image/jpeg' => 'jpeg', 'image/png' => 'png', 'image/webp' => 'webp' );
+    public $filetype, $width, $height, $hash, $name, $upload_completed;
 
     public function __construct() {
         $this->makeSureDirsExist();
@@ -36,7 +36,11 @@ class MediaFile extends SugarBean {
     public function save( $check_notify = false, $fts_index_bean = true ) {
         global $sugar_config;
 
-        if ( isset( $this->file{0} )) $this->storeMedia();
+        if ( isset( $this->file{0} )){
+            $fileContent = base64_decode($this->file);
+            $this->storeMedia($fileContent);
+            $this->thumbnail = $this->createThumbnail(base64_decode( $this->file ), $this->filetype);
+        }
 
         $returnOfSave = parent::save( $check_notify, $fts_index_bean );
 
@@ -55,13 +59,45 @@ class MediaFile extends SugarBean {
         return $returnOfSave;
     }
 
+    public function createThumbnail($image, $mime_type) {
+        $supportedimagetypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $filetypearray = explode('/', $mime_type);
+        if (count($filetypearray) == 2
+            && strtolower($filetypearray[0]) == 'image'
+            && array_search(strtolower($filetypearray[1]), $supportedimagetypes) >= 0) {
+            if (list($width, $height) = getimagesizefromstring($image)) {
+                if ($width > $height) {
+                    $newwidth = 600;
+                    $newheight = round(600 * $height / $width);
+                } else {
+                    $newwidth = round(600 * $width / $height);
+                    $newheight = 600;
+                }
+
+                $thumb = imagecreatetruecolor($newwidth, $newheight);
+                $source = imagecreatefromstring($image);
+                // create
+                imagecopyresized($thumb, $source, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+                ob_start();
+                imagejpeg($thumb);
+                $thumbnail = base64_encode(ob_get_contents());
+                ob_end_clean();
+                imagedestroy($thumb);
+
+                return $thumbnail;
+            }
+        }
+
+        return '';
+    }
+
     private function getBase64(){
         return base64_encode( file_get_contents( self::getMediaPath( $this->id )));
     }
 
     // Use thumbnailSizeAllowed() to check if generating a thumbnail in a specific size is allowed, before calling this method.
     public function generateThumb( $destSize ) {
-        $supportedImageTypes = ['jpeg', 'png', 'gif', 'bmp'];
+        $supportedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'];
         if ( in_array( $this->filetype, $supportedImageTypes )) {
             if ( !isset( $this->width{0} ) or !isset( $this->height{0} ))
                 list( $origWidth, $origHeight ) = getimagesize( self::getMediaPath( $this->id ));
@@ -99,7 +135,7 @@ class MediaFile extends SugarBean {
             $functionName = 'imagecreatefrom'.$this->imageFunctions[$this->filetype];
             $source = $functionName( self::getMediaPath( $this->id ));
 
-            if ( $this->filetype === 'png' ) {
+            if ( $this->filetype === 'image/png' ) {
                 imagealphablending( $thumb, false );
                 $color = imagecolortransparent( $thumb, imagecolorallocatealpha( $thumb, 0, 0, 0, 127 ) );
                 imagefill( $thumb, 0, 0, $color );
@@ -213,7 +249,7 @@ class MediaFile extends SugarBean {
 
     private function _generateSize( $requestedWidth, $requestedHeight ) {
 
-        $supportedImageTypes = ['jpeg', 'png', 'gif', 'bmp'];
+        $supportedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'];
 
         if ( !in_array( $this->filetype, $supportedImageTypes )) return false;
 
@@ -238,7 +274,7 @@ class MediaFile extends SugarBean {
         $functionName = 'imagecreatefrom'.$this->filetype;
         $source = $functionName( self::getMediaPath( $this->id ));
 
-        if ( $this->filetype === 'png' ) {
+        if ( $this->filetype === 'image/png' ) {
             imagealphablending( $image, false );
             $color = imagecolortransparent( $image, imagecolorallocatealpha( $image, 0, 0, 0, 127 ) );
             imagefill( $image, 0, 0, $color );
@@ -267,6 +303,16 @@ class MediaFile extends SugarBean {
         #header("Content-Length: " . filesize( self::getMediaPath( $this->id ))); // todo
         //header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + 2592000 )); // 1 month
         if ( isset( $this->hash{0} )) header( 'ETag: "'.$this->hash.'"' );
+    }
+
+    /**
+     * returns the original file base64 encoded
+     *
+     * @return string
+     */
+    public function deliverOriginalBase64() {
+        $data = file_get_contents(self::getMediaPath( $this->id ));
+        return base64_encode($data);
     }
 
     public function deliverOriginal() {
@@ -333,23 +379,15 @@ class MediaFile extends SugarBean {
         }
     }
 
-    public function storeMedia()
+    public function storeMedia($file)
     {
         $this->upload_completed = 1;
-        file_put_contents( self::getMediaPath( ( $this->id ) ), base64_decode( $this->file ) );
-        $this->filesize = filesize( self::getMediaPath( $this->id ) );
-        $this->hash = md5_file( self::getMediaPath( ( $this->id ) ) );
-        switch ( $this->mediatype ) {
-            case 1: // Image
-                list( $this->width, $this->height ) = getimagesize( self::getMediaPath( ( $this->id ) ) );
-                self::deleteVariants( $this->id );
-                break;
-            case 2: // Audio
-                break;
-            case 3: // Video
-                break;
-        }
-        unset( $this->file );
+        file_put_contents( self::getMediaPath( ( $this->id ) ), $file );
+        $this->filesize = strlen($file); // filesize( self::getMediaPath( $this->id ) );
+        $this->hash = md5($file);
+        list( $this->width, $this->height ) = getimagesizefromstring($file);
+        self::deleteVariants( $this->id );
+        // unset( $this->file );
     }
 
     public static function getMediaPath( $mediaId ) {
@@ -394,10 +432,14 @@ class MediaFile extends SugarBean {
         if ( $error ) sugar_die( 'Error with media file directory/directories. Please refer to sugarcrm.log (and error.log) for details.' );
     }
 
+
     public function fill_in_additional_detail_fields() {
         parent::fill_in_additional_detail_fields();
-        if ( !self::thumbExists( 150, $this->id )) $this->generateThumb( 150 );
-        $this->thumbnail = base64_encode( file_get_contents( self::getFolderOfThumbs() . '/' .$this->id . ".thumb" . 150 ));
+        if(empty($this->thumbnail)) {
+            if (!self::thumbExists(600, $this->id) && file_exists(self::getMediaPath($this->id))) $this->generateThumb(600);
+            $this->thumbnail = base64_encode(file_get_contents(self::getFolderOfThumbs() . '/' . $this->id . ".thumb" . 600));
+        }
     }
+
 
 }

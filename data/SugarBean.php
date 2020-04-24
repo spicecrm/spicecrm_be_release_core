@@ -1548,8 +1548,6 @@ class SugarBean
         // call the custom business logic
         $custom_logic_arguments['check_notify'] = $check_notify;
 
-        $this->save_or_delete_images();
-
         $this->call_custom_logic("before_save", $custom_logic_arguments);
         unset($custom_logic_arguments);
 
@@ -3860,8 +3858,6 @@ class SugarBean
         if (!empty($this->field_defs['modified_user_id']) && !empty($this->modified_user_id))
             $this->modified_by_name = get_assigned_user_name($this->modified_user_id);
 
-        $this->fill_in_images();
-
         $this->fill_in_additional_parent_fields();
     }
 
@@ -6064,44 +6060,5 @@ class SugarBean
      * Placeholder
      */
     public function onClone() { }
-
-    /**
-     * Retrieve images from the file system and fill them into the bean.
-     */
-    private function fill_in_images()
-    {
-        // To look for image fields loop through the fields definition in the vardefs file:
-        foreach ( $this->field_defs as $value ) {
-            if ( $value['type'] !== 'image' ) continue;
-            $filepathWithoutExtension = 'upload/' . $this->module_name . '___' . $this->id . '___' . $value['name'];
-            $files = glob( $filepathWithoutExtension.'.*' );
-            if ( count( $files ) and preg_match( '#\.(.+)$#', $files[0], $matches ) ) {
-                $this->{$value['name']} = $matches[1] . '|' . base64_encode( file_get_contents( $files[0] ) );
-            } else $this->{$value['name']} = null;
-        }
-    }
-
-    /**
-     * Save images from the bean to the file system.
-     */
-    private function save_or_delete_images()
-    {
-        // To look for image fields loop through the fields definition in the vardefs file:
-        foreach ( $this->field_defs as $value ) {
-            if ( $value['type'] !== 'image' or !isset( $this->{$value['name']} )) continue;
-            $filepathWithoutExtension = 'upload/' . $this->module_name . '___' . $this->id . '___' . $value['name'];
-            # An image is to be deleted:
-            if ( $this->{$value['name']} === '' ) {
-                foreach ( glob( $filepathWithoutExtension.'.*' ) as $filepath ) unlink( $filepath );
-            }
-            # A new image is to be saved:
-            if ( preg_match( '#^([^\|]+)\|(.+)$#', $this->{$value['name']}, $matches ) ) {
-                if ( file_put_contents( 'upload/' . $this->module_name . '___' . $this->id . '___' . $value['name'] . '.' . $matches[1], base64_decode( $matches[2] ) ) === false ) {
-                    throw new \SpiceCRM\KREST\Exception('Could not save image.');
-                }
-            }
-        }
-
-}
 
 }

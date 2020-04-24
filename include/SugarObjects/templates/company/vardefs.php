@@ -358,6 +358,14 @@ $vardefs = array(
                 'reportable' => false,
                 'massupdate' => false,
             ),
+        'company_logo' => [
+            'name' => 'company_logo',
+            'vname' => 'LBL_COMPANY_LOGO',
+            'type' => 'image',
+            'dbType' => 'longtext',
+            'maxWidth' => 300,
+            'maxHeight' => 300
+        ]
     ),
     'relationships' => array(
         strtolower($module) . '_email_addresses' =>

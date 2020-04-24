@@ -1465,11 +1465,14 @@ $app_list_strings = array(
         'v' => 'value',
         'p' => 'prercent'
     ),
+    // currently not necessary:
+    /*
     'mediatypes_dom' => array(
         1 => 'Bild',
         2 => 'Audio',
         3 => 'Video'
     ),
+    */
     'workflowftastktypes_dom' => array(
         'task' => 'Task',
         'decision' => 'Decision',

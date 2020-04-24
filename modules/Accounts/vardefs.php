@@ -493,15 +493,7 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'vname' => 'LBL_QUANTITY',
             'type' => 'varchar',
             'source' => 'non-db'
-        ),
-        'logo' => [
-            'name' => 'logo',
-            'vname' => 'LBL_LOGO',
-            'type' => 'image',
-            'source' => 'non-db',
-            'maxWidth' => 300,
-            'maxHeight' => 300
-        ]
+        )
     ),
     'indices' => array(
         array('name' => 'idx_accnt_id_del', 'type' => 'index', 'fields' => array('id', 'deleted')),

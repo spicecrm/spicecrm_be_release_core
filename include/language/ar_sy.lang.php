@@ -1259,11 +1259,14 @@ $app_list_strings = array(
         '60DN' => '60 يوم صافي',
         '60DN7D3' => '60 يوم صافي, 7 أيام 3%',
     ),
+    // currently not necessary:
+    /*
     'mediatypes_dom' => array(
         1 => 'صورة',
         2 => 'صوت',
         3 => 'فيديو'
     ),
+    */
     'workflowftastktypes_dom' => array(
         'task' => 'مهمة',
         'decision' => 'قرار',
