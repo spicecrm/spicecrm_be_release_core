@@ -106,6 +106,11 @@ $dictionary['Call'] = [
             'comment' => 'Call ID for external app API',
             'studio'  => 'false',
         ],
+        'external_data' => [
+            'name'    => 'external_data',
+            'vname'   => 'LBL_EXTERNALDATA',
+            'type'    => 'text'
+        ],
         'parent_type' => [
             'name'     => 'parent_type',
             'vname'    => 'LBL_PARENT_TYPE',
