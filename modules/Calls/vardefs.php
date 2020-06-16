@@ -67,14 +67,7 @@ $dictionary['Call'] = [
             'name'       => 'duration_minutes',
             'vname'      => 'LBL_DURATION_MINUTES',
             'type'       => 'int',
-            'function'   => [
-                'name'    => 'getDurationMinutesOptions',
-                'returns' => 'html',
-                'include' => 'modules/Calls/CallHelper.php',
-            ],
             'len'        => '2',
-            'group'      => 'duration_hours',
-            'importable' => 'required',
             'comment'    => 'Call duration, minutes portion',
         ],
         'date_start' => [
@@ -84,9 +77,7 @@ $dictionary['Call'] = [
             'dbType'              => 'datetime',
             'comment'             => 'Date in which call is schedule to (or did) start',
             'importable'          => 'required',
-            'required'            => true,
-            'enable_range_search' => true,
-            'options'             => 'date_range_search_dom',
+            'required'            => true
         ],
         'date_end' => [
             'name'                => 'date_end',
@@ -94,9 +85,7 @@ $dictionary['Call'] = [
             'type'                => 'datetimecombo',
             'dbType'              => 'datetime',
             'massupdate'          => false,
-            'comment'             => 'Date is which call is scheduled to (or did) end',
-            'enable_range_search' => true,
-            'options'             => 'date_range_search_dom',
+            'comment'             => 'Date is which call is scheduled to (or did) end'
         ],
         'external_id' => [
             'name'    => 'external_id',
@@ -142,8 +131,7 @@ $dictionary['Call'] = [
             'comment'    => 'The status of the call (Held, Not Held, etc.)',
             'required'   => true,
             'importable' => 'required',
-            'default'    => 'Planned',
-            'studio'     => ['detailview' => false],
+            'default'    => 'Planned'
         ],
         'direction' => [
             'name'    => 'direction',
@@ -370,6 +358,14 @@ $dictionary['Call'] = [
             'source'       => 'non-db',
             'vname'        => 'LBL_ACCOUNT',
         ],
+        'consumers' => [
+            'name'         => 'consumers',
+            'type'         => 'link',
+            'relationship' => 'consumers_calls',
+            'module'       => 'Consumers',
+            'source'       => 'non-db',
+            'vname'        => 'LBL_CONSUMERS',
+        ],
         'contacts' => [
             'name'         => 'contacts',
             'type'         => 'link',
@@ -583,6 +579,11 @@ $dictionary['Call'] = [
             'type'   => 'index',
             'fields' => ['assigned_user_id', 'deleted', 'status'],
         ],
+        [
+            'name' => 'idx_calls_external_id',
+            'type'   => 'index',
+            'fields' => ['external_id'],
+        ]
 
     ],
     'relationships' => [

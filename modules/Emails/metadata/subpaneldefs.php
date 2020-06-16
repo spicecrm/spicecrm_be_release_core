@@ -113,20 +113,21 @@ $layout_defs['Emails'] = array(
 				array('widget_class' => 'SubPanelTopSelectButton', 'mode'=>'MultiSelect')
 			),
 		),
-        'cases' => array(
-			'order' => 40,
-			'module' => 'Cases',
-			'sort_order' => 'desc',
-			'sort_by' => 'case_number',
-			'subpanel_name' => 'ForEmails',
-			'get_subpanel_data' => 'cases',
-			'add_subpanel_data' => 'case_id',
-			'title_key' => 'LBL_CASES_SUBPANEL_TITLE',
-			'top_buttons' => array(
-				array('widget_class' => 'SubPanelTopCreateButton'),
-				array('widget_class' => 'SubPanelTopSelectButton', 'mode'=>'MultiSelect')
-			),
-		),
+// CR1000426 cleanup backend, module Cases removed
+//        'cases' => array(
+//			'order' => 40,
+//			'module' => 'Cases',
+//			'sort_order' => 'desc',
+//			'sort_by' => 'case_number',
+//			'subpanel_name' => 'ForEmails',
+//			'get_subpanel_data' => 'cases',
+//			'add_subpanel_data' => 'case_id',
+//			'title_key' => 'LBL_CASES_SUBPANEL_TITLE',
+//			'top_buttons' => array(
+//				array('widget_class' => 'SubPanelTopCreateButton'),
+//				array('widget_class' => 'SubPanelTopSelectButton', 'mode'=>'MultiSelect')
+//			),
+//		),
         'users' => array(
 			'order' => 50,
 			'module' => 'Users',
@@ -140,20 +141,21 @@ $layout_defs['Emails'] = array(
 				array('widget_class' => 'SubPanelTopSelectButton', 'mode'=>'MultiSelect')
 			),
 		),
-        'bugs' => array(
-			'order' => 60,
-			'module' => 'Bugs',
-			'sort_order' => 'desc',
-			'sort_by' => 'bug_number',
-			'subpanel_name' => 'ForEmails',
-			'get_subpanel_data' => 'bugs',
-			'add_subpanel_data' => 'bug_id',
-			'title_key' => 'LBL_BUGS_SUBPANEL_TITLE',
-			'top_buttons' => array(
-				array('widget_class' => 'SubPanelTopCreateButton'),
-				array('widget_class' => 'SubPanelTopSelectButton', 'mode'=>'MultiSelect')
-			),
-		),
+// CR1000426 cleanup backend, module Bugs removed
+//        'bugs' => array(
+//			'order' => 60,
+//			'module' => 'Bugs',
+//			'sort_order' => 'desc',
+//			'sort_by' => 'bug_number',
+//			'subpanel_name' => 'ForEmails',
+//			'get_subpanel_data' => 'bugs',
+//			'add_subpanel_data' => 'bug_id',
+//			'title_key' => 'LBL_BUGS_SUBPANEL_TITLE',
+//			'top_buttons' => array(
+//				array('widget_class' => 'SubPanelTopCreateButton'),
+//				array('widget_class' => 'SubPanelTopSelectButton', 'mode'=>'MultiSelect')
+//			),
+//		),
 
 
         'projects' => array(

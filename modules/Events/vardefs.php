@@ -116,6 +116,13 @@ $dictionary['Event'] = array(
             'source' => 'non-db',
             'options' => 'events_contact_roles_dom'
         ),
+        'events_consumer_role' => array(
+            'name' => 'events_consumer_role',
+            'vname' => 'LBL_ROLE',
+            'type' => 'enum',
+            'source' => 'non-db',
+            'options' => 'events_consumer_roles_dom'
+        ),
         'accounts' => [
             'name' => 'accounts',
             'type' => 'link',
@@ -141,6 +148,20 @@ $dictionary['Event'] = array(
             'rel_fields' => [
                 'contact_role' => [
                     'map' => 'events_contact_role'
+                ]
+            ]
+        ],
+        'consumers' => [
+            'name' => 'consumers',
+            'type' => 'link',
+            'relationship' => 'events_consumers',
+            'module' => 'Consumers',
+            'bean_name' => 'Consumer',
+            'source' => 'non-db',
+            'vname' => 'LBL_CONSUMERS',
+            'rel_fields' => [
+                'consumer_role' => [
+                    'map' => 'events_consumer_role'
                 ]
             ]
         ],

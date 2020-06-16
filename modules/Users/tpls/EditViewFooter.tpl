@@ -238,10 +238,10 @@
                             <td scope="row" valign="top"><slot>{$MOD.LBL_EXPORT_CHARSET}:</slot>&nbsp;{sugar_help text=$MOD.LBL_EXPORT_CHARSET_DESC }</td>
                             <td ><slot><select tabindex='12' name="default_export_charset">{$EXPORT_CHARSET}</select></slot></td>
                             <td scope="row" valign="top">
-                            <slot>{$MOD.LBL_REMINDER}:</slot>&nbsp;{sugar_help text=$MOD.LBL_REMINDER_TEXT }
+{*                            <slot>{$MOD.LBL_REMINDER}:</slot>&nbsp;{sugar_help text=$MOD.LBL_REMINDER_TEXT }*}
                             </td>
                             <td valign="top"  nowrap>
-                                <slot>{include file="modules/Meetings/tpls/reminders.tpl"}</slot>
+{*                                <slot>{include file="modules/Meetings/tpls/reminders.tpl"}</slot>*}
                             </td>
                         </tr>
                         <tr>

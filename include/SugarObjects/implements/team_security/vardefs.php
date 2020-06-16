@@ -34,7 +34,7 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-
+/* ToDo: remove sometimes .. currently no longer needed
 $vardefs = array(
 'fields' => array(
 ), 
@@ -72,4 +72,5 @@ $vardefs = array(
 		),
 	)
 );
+*/
 ?>

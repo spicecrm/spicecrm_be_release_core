@@ -2897,7 +2897,7 @@ $dictionary['sysuimodelvalidations'] = array(
         'module' => array(
             'name' => 'module',
             'type' => 'varchar',
-            'len' => 20,
+            'len' => 100,
             'required' => true,
         ),
         'onevents' => array(
@@ -3287,3 +3287,104 @@ $dictionary['sysuihtmlformats'] = array(
             'fields' => array('id')),
     )
 );
+$dictionary['sysdialogmail_fieldmapping'] = array(
+    'table' => 'sysdialogmail_fieldmapping',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'module' => array(
+            'name' => 'module',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'spice' => array(
+            'name' => 'spice',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'dialogmail' => array(
+            'name' => 'dialogmail',
+            'type' => 'varchar',
+            'len' => 255
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysdialogmail_fieldmapping',
+            'type' => 'primary',
+            'fields' => array('id'))
+    )
+);
+
+$dictionary['syscleverreach_fieldmapping'] = array(
+    'table' => 'syscleverreach_fieldmapping',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'module' => array(
+            'name' => 'module',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'spice' => array(
+            'name' => 'spice',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'cleverreach' => array(
+            'name' => 'cleverreach',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'crtype' => array(
+            'name' => 'crtype',
+            'type' => 'varchar',
+            'len' => 255
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_syscleverreach_fieldmapping',
+            'type' => 'primary',
+            'fields' => array('id'))
+    )
+);
+
+$dictionary['sysmailchimp_fieldmapping'] = array(
+    'table' => 'sysmailchimp_fieldmapping',
+    'audited' => true,
+    'fields' => array(
+        'id' => array(
+            'name' => 'id',
+            'type' => 'id'
+        ),
+        'module' => array(
+            'name' => 'module',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'spice' => array(
+            'name' => 'spice',
+            'type' => 'varchar',
+            'len' => 255
+        ),
+        'mailchimp' => array(
+            'name' => 'mailchimp',
+            'type' => 'varchar',
+            'len' => 255
+        )
+    ),
+    'indices' => array(
+        array(
+            'name' => 'idx_sysmailchimp_fieldmapping',
+            'type' => 'primary',
+            'fields' => array('id'))
+    )
+);
+

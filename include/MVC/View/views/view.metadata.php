@@ -270,7 +270,7 @@ class VardefBrowser{
 		foreach($modules as $module){
 			if(!empty($GLOBALS['beanList'][$module])){
 				$object = $GLOBALS['beanList'][$module];
-				if($object == 'aCase')$object = 'Case';
+//				if($object == 'aCase')$object = 'Case';
 				VardefManager::loadVardef($module, $object);
 				if(empty($GLOBALS['dictionary'][$object]['fields'] ))continue;
 				foreach($GLOBALS['dictionary'][$object]['fields'] as $name=>$def){
@@ -304,7 +304,7 @@ class VardefBrowser{
 			foreach($modules as $module){
 				if(!empty($GLOBALS['beanList'][$module])){
 					$object = $GLOBALS['beanList'][$module];
-					if($object == 'aCase')$object = 'Case';
+//					if($object == 'aCase')$object = 'Case';
 					VardefManager::loadVardef($module, $object);
 					if(empty($GLOBALS['dictionary'][$object]['fields'] ))continue;
 					$defs[$module][$object] = $GLOBALS['dictionary'][$object];
@@ -320,7 +320,7 @@ class VardefBrowser{
 		foreach($modules as $module){
 			if(!empty($GLOBALS['beanList'][$module])){
 				$object = $GLOBALS['beanList'][$module];
-				if($object == 'aCase')$object = 'Case';
+//				if($object == 'aCase')$object = 'Case';
 				VardefManager::loadVardef($module, $object);
 				if(empty($GLOBALS['dictionary'][$object]['fields'] ))continue;
 				foreach($GLOBALS['dictionary'][$object]['fields'] as $name=>$def){

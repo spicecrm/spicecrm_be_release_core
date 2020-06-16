@@ -6,6 +6,7 @@ use Hfig\MAPI\Message\Attachment;
 use Ramsey\Uuid\Uuid;
 use Slim\Http\UploadedFile;
 use SpiceCRM\modules\Mailboxes\Handlers\EwsAttachment;
+use SpiceCRM\modules\Mailboxes\Handlers\GSuiteAttachment;
 use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachment;
 
 class SpiceAttachments {
@@ -347,45 +348,6 @@ class SpiceAttachments {
         return $attachmentArray;
     }
 
-    public static function saveEmailAttachmentFromGmail($beanName, $beanId, $payload) {
-        global $current_user, $db;
-        $guid = create_guid();
-
-        $filename = $payload['filename'];
-        $filesize = $payload['filesize'];
-        $md5 = md5($payload['md5_encoded']);
-        $content = $payload['content'];
-        $byte_content = self::toByteContent($content);
-
-        // if we have an image create a thumbnail
-        $mime_type = $payload['mimetype'];
-        //$mime_type = self::experimentalMimeType($filename);
-        $thumbnail = self::createThumbnail($md5, $mime_type);
-
-        $query = "INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, text, thumbnail, deleted, file_mime_type)" .
-            " VALUES ('{$guid}', '{$beanName}', '{$beanId}', '" . $current_user->id . "', '" . gmdate('Y-m-d H:i:s') .
-            " ', '{$filename}', {$filesize}, '{$md5}', '', '{$thumbnail}', 0, '{$mime_type}')";
-        $db->query($query);
-
-        $filepath = 'upload://' . $md5;
-        touch($filepath);
-        file_put_contents($filepath, $byte_content);
-
-        $attachments[] = array(
-            'id' => $guid,
-            'user_id' => $current_user->id,
-            'user_name' => $current_user->user_name,
-            'date' => $GLOBALS['timedate']->to_display_date_time(gmdate('Y-m-d H:i:s')),
-            'text' => $payload['content'],
-            'filename' => $payload['filename'],
-            'filesize' => $payload['filesize'],
-            'file_mime_type' => $payload['mimetype'],
-            'thumbnail' => $thumbnail,
-            'url' => "index.php?module=SpiceThemeController&action=attachment_download&id=" . $guid
-        );
-        return json_encode($attachments);
-    }
-
     public static function saveEmailAttachmentFromOutlook(\Email $email, OutlookAttachment $attachment) {
         $filepath = 'upload://' . $attachment->fileMd5;
         touch($filepath);
@@ -393,6 +355,19 @@ class SpiceAttachments {
         $byteContent = self::toByteContent($attachment->content);
         file_put_contents($filepath, $byteContent);
 
+        // if we have an image create a thumbnail
+        $attachment->thumbnail = self::createThumbnail($attachment->fileMd5, $attachment->fileMimeType);
+
+
+        return $attachment->save();
+    }
+
+    public static function saveEmailAttachmentFromGSuite(\Email $email, GSuiteAttachment $attachment) {
+        $filepath = 'upload://' . $attachment->fileMd5;
+        touch($filepath);
+
+        file_put_contents($filepath, $attachment->content);
+        $attachment->fileMimeType = mime_content_type($filepath);
         // if we have an image create a thumbnail
         $attachment->thumbnail = self::createThumbnail($attachment->fileMd5, $attachment->fileMimeType);
 

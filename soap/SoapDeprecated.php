@@ -163,11 +163,14 @@ $server->register(
     array('return'=>'xsd:string'),
     $NAMESPACE);
 
-$server->register(
-	'create_case',
-    array('user_name'=>'xsd:string','password'=>'xsd:string', 'name'=>'xsd:string'),
-    array('return'=>'xsd:string'),
-    $NAMESPACE);
+// CR1000426 cleanup backend, module Cases removed
+//$server->register(
+//	'create_case',
+//    array('user_name'=>'xsd:string','password'=>'xsd:string', 'name'=>'xsd:string'),
+//    array('return'=>'xsd:string'),
+//    $NAMESPACE);
+
+
 /**
  * Create a new session.  This method is required before calling any other functions.
  *
@@ -286,17 +289,19 @@ function add_contacts_matching_email_address(&$output_list, $email_address, &$se
 			$output_list[] = get_opportunity_array($opp, $msi_id);
 		}
 
-        $cases = $contact->get_linked_beans('cases','aCase');
-		foreach($cases as $case)
-		{
-			$output_list[] = get_case_array($case, $msi_id);
-		}
+// CR1000426 cleanup backend, module Cases removed
+//        $cases = $contact->get_linked_beans('cases','aCase');
+//		foreach($cases as $case)
+//		{
+//			$output_list[] = get_case_array($case, $msi_id);
+//		}
 
-		$bugs = $contact->get_linked_beans('bugs','Bug');
-		foreach($bugs as $bug)
-		{
-			$output_list[] = get_bean_array($bug, $msi_id, 'Bug');
-		}
+// CR1000426 cleanup backend, module Bugs removed
+//		$bugs = $contact->get_linked_beans('bugs','Bug');
+//		foreach($bugs as $bug)
+//		{
+//			$output_list[] = get_bean_array($bug, $msi_id, 'Bug');
+//		}
 
 		$projects = $contact->get_linked_beans('projects','Projects');
 		foreach($projects as $project)
@@ -386,17 +391,19 @@ function get_contact_relationships($user_name, $password, $id)
 			$output_list[] = get_opportunity_array($opp, $msi_id);
 		}
 
-        $cases = $seed_contact->get_linked_beans('cases','aCase');
-		foreach($cases as $case)
-		{
-			$output_list[] = get_case_array($case, $msi_id);
-		}
+// CR1000426 cleanup backend, module Cases removed
+//        $cases = $seed_contact->get_linked_beans('cases','aCase');
+//		foreach($cases as $case)
+//		{
+//			$output_list[] = get_case_array($case, $msi_id);
+//		}
 
-		$bugs = $seed_contact->get_linked_beans('bugs','Bug');
-		foreach($bugs as $bug)
-		{
-			$output_list[] = get_bean_array($bug, $msi_id, 'Bug');
-		}
+// CR1000426 cleanup backend, module Bugs removed
+//		$bugs = $seed_contact->get_linked_beans('bugs','Bug');
+//		foreach($bugs as $bug)
+//		{
+//			$output_list[] = get_bean_array($bug, $msi_id, 'Bug');
+//		}
 
 		$projects = $seed_contact->get_linked_beans('projects','Projects');
 		foreach($projects as $project)
@@ -709,60 +716,63 @@ function get_bean_array($value, $msi_id, $type){
  * @param int $msi_id -- Russult array index
  * @return An associated array containing the detail fields.
  */
-function get_case_array($value, $msi_id){
-	return Array("name1" => '',
-			"name2" => $value->get_summary_text(),
-			"association" => $value->account_name,
-			"type" => 'Case',
-			"id" => $value->id,
-			"msi_id" => $msi_id,
-			"email_address" => '');
+// CR1000426 cleanup backend, module Cases removed
+//function get_case_array($value, $msi_id){
+//	return Array("name1" => '',
+//			"name2" => $value->get_summary_text(),
+//			"association" => $value->account_name,
+//			"type" => 'Case',
+//			"id" => $value->id,
+//			"msi_id" => $msi_id,
+//			"email_address" => '');
+//}
 
-}
+// CR1000426 cleanup backend, module Bugs removed
+//function bug_by_search($name, $where = '', $msi_id='0')
+//{
+//	$seed = new Bug();
+//	if(!$seed->ACLAccess('ListView')){
+//		return array();
+//	}
+//	if($where == ''){
+//		$where = $seed->build_generic_where_clause($name);
+//	}
+//	$response = $seed->get_list("name", $where, 0);
+//	$list = $response['list'];
+//
+//	$output_list = Array();
+//
+//	// create a return array of names and email addresses.
+//	foreach($list as $value)
+//	{
+//		$output_list[] = get_bean_array($value, $msi_id, 'Bug');
+//	}
+//	return $output_list;
+//}
 
-function bug_by_search($name, $where = '', $msi_id='0')
-{
-	$seed = new Bug();
-	if(!$seed->ACLAccess('ListView')){
-		return array();
-	}
-	if($where == ''){
-		$where = $seed->build_generic_where_clause($name);
-	}
-	$response = $seed->get_list("name", $where, 0);
-	$list = $response['list'];
+// CR1000426 cleanup backend, module Cases removed
+//function case_by_search($name, $where = '', $msi_id='0')
+//{
+//	$seed = new aCase();
+//	if(!$seed->ACLAccess('ListView')){
+//		return array();
+//	}
+//	if($where == ''){
+//		$where = $seed->build_generic_where_clause($name);
+//	}
+//	$response = $seed->get_list("name", $where, 0);
+//	$list = $response['list'];
+//
+//	$output_list = Array();
+//
+//	// create a return array of names and email addresses.
+//	foreach($list as $value)
+//	{
+//		$output_list[] = get_case_array($value, $msi_id);
+//	}
+//	return $output_list;
+//}
 
-	$output_list = Array();
-
-	// create a return array of names and email addresses.
-	foreach($list as $value)
-	{
-		$output_list[] = get_bean_array($value, $msi_id, 'Bug');
-	}
-	return $output_list;
-}
-
-function case_by_search($name, $where = '', $msi_id='0')
-{
-	$seed = new aCase();
-	if(!$seed->ACLAccess('ListView')){
-		return array();
-	}
-	if($where == ''){
-		$where = $seed->build_generic_where_clause($name);
-	}
-	$response = $seed->get_list("name", $where, 0);
-	$list = $response['list'];
-
-	$output_list = Array();
-
-	// create a return array of names and email addresses.
-	foreach($list as $value)
-	{
-		$output_list[] = get_case_array($value, $msi_id);
-	}
-	return $output_list;
-}
 /**
  * Record and email message and associated it with the specified parent bean and contact ids.
  *
@@ -907,26 +917,28 @@ function create_account($user_name,$password, $name, $phone, $website)
 	return $account->id;
 
 }
-function create_case($user_name,$password, $name)
-{
-	if(!validate_user($user_name, $password)){
-		return 0;
-	}
+// CR1000426 cleanup backend, module Cases removed
+//function create_case($user_name,$password, $name)
+//{
+//	if(!validate_user($user_name, $password)){
+//		return 0;
+//	}
+//
+//	//todo make the activity body not be html encoded
+//
+//
+//	$seed_user = new User();
+//	$user_id = $seed_user->retrieve_user_id($user_name);
+//	$case = new aCase();
+//	if(!$case->ACLAccess('Save')){
+//		return -1;
+//	}
+//	$case->assigned_user_id = $user_id;
+//	$case->assigned_user_name = $user_name;
+//	$case->name = $name;
+//	return $case->save();
+//}
 
-	//todo make the activity body not be html encoded
-
-
-	$seed_user = new User();
-	$user_id = $seed_user->retrieve_user_id($user_name);
-	$case = new aCase();
-	if(!$case->ACLAccess('Save')){
-		return -1;
-	}
-	$case->assigned_user_id = $user_id;
-	$case->assigned_user_name = $user_name;
-	$case->name = $name;
-	return $case->save();
-}
 function create_opportunity($user_name,$password, $name, $amount)
 {
 	if(!validate_user($user_name, $password)){
@@ -958,11 +970,13 @@ function search($user_name, $password,$name){
 	    $list = array_merge($list, contact_by_search($single_name));
 	    $list = array_merge($list, lead_by_search($single_name));
 	    $list = array_merge($list, account_by_search($single_name));
-	    $list = array_merge($list, case_by_search($single_name));
+// CR1000426 cleanup backend, module Cases removed
+//	    $list = array_merge($list, case_by_search($single_name));
 	    $list = array_merge($list, opportunity_by_search($single_name));
-	    $list = array_merge($list, bug_by_search($single_name));
+// CR1000426 cleanup backend, module Bugs removed
+//	    $list = array_merge($list, bug_by_search($single_name));
     }
 	return $list;
 }
 
-?>
+

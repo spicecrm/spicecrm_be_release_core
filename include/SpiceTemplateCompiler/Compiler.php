@@ -482,6 +482,11 @@ class Compiler
                             case 'html':
                                 $value = html_entity_decode($obj->{$part});
                                 break;
+                            case 'image':
+                                if ( !empty( $obj->{$part} )) {
+                                    $value = '<img src="data:'.$obj->{$part}.'" style="max-width:100%;max-height:100%;margin:0">';
+                                }
+                                break;
                             default:
                                 // moved nl2br to only be added when non specific fields are parsed
                                 $value = nl2br(html_entity_decode($obj->{$part}, ENT_QUOTES));

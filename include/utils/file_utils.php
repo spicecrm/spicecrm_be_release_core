@@ -273,7 +273,6 @@ function getFiles(&$arr, $dir, $pattern = null) {
 
 /**
  * Function to split up large files for download
- * used in download.php
  * @param string $filename
  * @param int $retbytes
  */

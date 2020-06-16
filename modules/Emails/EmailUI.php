@@ -2023,21 +2023,22 @@ eoq;
 				$email->cc_addrs = "";
 			break;
 
-			case "replyCase":
-				$GLOBALS['log']->debug("EMAILUI: At reply case");
-				$header = $email->getReplyHeader();
-
-                $myCase = new aCase();
-                $myCase->retrieve($email->parent_id);
-                $myCaseMacro = $myCase->getEmailSubjectMacro();
-                $email->parent_name = $myCase->name;
-                $GLOBALS['log']->debug("****Case # : {$myCase->case_number} macro: $myCaseMacro");
-				if(!strpos($email->name, str_replace('%1',$myCase->case_number,$myCaseMacro))) {
-		        	$GLOBALS['log']->debug("Replacing");
-		            $email->name = str_replace('%1',$myCase->case_number,$myCaseMacro) . ' '. $email->name;
-		        }
-                $email->name = "{$mod_strings['LBL_RE']} {$email->name}";
-            break;
+// CR1000426 cleanup backend, module Cases removed
+//			case "replyCase":
+//				$GLOBALS['log']->debug("EMAILUI: At reply case");
+//				$header = $email->getReplyHeader();
+//
+//                $myCase = new aCase();
+//                $myCase->retrieve($email->parent_id);
+//                $myCaseMacro = $myCase->getEmailSubjectMacro();
+//                $email->parent_name = $myCase->name;
+//                $GLOBALS['log']->debug("****Case # : {$myCase->case_number} macro: $myCaseMacro");
+//				if(!strpos($email->name, str_replace('%1',$myCase->case_number,$myCaseMacro))) {
+//		        	$GLOBALS['log']->debug("Replacing");
+//		            $email->name = str_replace('%1',$myCase->case_number,$myCaseMacro) . ' '. $email->name;
+//		        }
+//                $email->name = "{$mod_strings['LBL_RE']} {$email->name}";
+//            break;
 		}
 
 		$html = trim($email->description_html);

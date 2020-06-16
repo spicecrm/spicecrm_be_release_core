@@ -42,9 +42,61 @@ class SpiceFTSHandler
         $postBody = $req->getParsedBody();
 
         $result = $this->getGlobalSearchResults($postBody['modules'], $postBody['searchterm'], json_decode($postBody['searchtags']), $postBody, $postBody['aggregates'], $postBody['sort']);
-        echo json_encode($result);
+        return $res->withJson($result);
     }
 
+    /**
+     * processes the search based on a passed in phone number .. used for the telephony integration
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     */
+    function searchPhone($req, $res, $args)
+    {
+        global $db;
+
+        $postBody = $req->getParsedBody();
+
+        // replace leading 00 with +
+        $phonenumber = $postBody['searchterm'];
+        if (substr($phonenumber, 0, 2) == 00) {
+            $phonenumber = '+' . substr($phonenumber, 2);
+        }
+
+        // determine the modules
+        // ToDo: move to fts utils and utilize cache
+        $searchresults = [];
+        $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $modulesObject = $db->query("SELECT * FROM sysfts");
+        while ($ftsmodule = $db->fetchByAssoc($modulesObject)) {
+            $ftsParams = json_decode(html_entity_decode($ftsmodule['settings']));
+            if ($ftsParams->phonesearch === true) {
+                $module = $ftsmodule['module'];
+                $searchresultsraw = $this->searchModuleByPhoneNumber($module, $phonenumber);
+
+                foreach ($searchresultsraw['hits']['hits'] as $hit) {
+                    $seed = \BeanFactory::getBean($module, $hit['_id']);
+                    $searchresults[] = [
+                        'id' => $hit['_id'],
+                        'module' => $module,
+                        'data' => $krestHandler->mapBeanToArray($module, $seed)
+                    ];
+                }
+            }
+        }
+
+        return $res->withJson($searchresults);
+    }
+
+    /**
+     * processes the export for an fts request
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     */
     function export($req, $res, $args)
     {
         $postBody = $req->getParsedBody();
@@ -472,14 +524,14 @@ class SpiceFTSHandler
         if ($sort['sortfield'] && $sort['sortdirection']) {
             // catch if entry is valid. Field name might habe changed
             $entry = $this->getSortArrayEntry($seed, $indexProperties, $sort['sortfield'], $sort['sortdirection']);
-            if(!empty($entry)){
+            if (!empty($entry)) {
                 $queryParam['sort'][] = $entry;
             }
         } elseif (is_array($sort) && count($sort) > 0) {
             foreach ($sort as $sortparam) {
                 // catch if entry is valid. Field name might habe changed
                 $entry = $this->getSortArrayEntry($seed, $indexProperties, $sortparam['sortfield'], $sortparam['sortdirection']);
-                if(!empty($entry)){
+                if (!empty($entry)) {
                     $queryParam['sort'][] = $entry;
                 }
             }
@@ -582,8 +634,8 @@ class SpiceFTSHandler
         // if yes add this here to the add filters
         if (!empty($indexSettings['globalfilter'])) {
             $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
-            $filterForId =  $sysFilter->generareElasticFilterForFilterId($indexSettings['globalfilter']);
-            if(!empty($filterForId)) {
+            $filterForId = $sysFilter->generareElasticFilterForFilterId($indexSettings['globalfilter']);
+            if (!empty($filterForId)) {
                 $addFilters[] = $filterForId;
             }
         }
@@ -646,6 +698,83 @@ class SpiceFTSHandler
 
         return $searchresults;
 
+    }
+
+    /**
+     *
+     * function to search in a module
+     *
+     * @param $module
+     * @param string $searchterm
+     * @param array $aggregatesFilters
+     * @param int $size
+     * @param int $from
+     * @param array $sort
+     * @param array $addFilters
+     * @param bool $useWildcard
+     * @param array $requiredFields
+     * @param array $source set to false if no source fields shopudl be returned
+     *
+     * @return array|mixed
+     */
+    function searchModuleByPhoneNumber($module, $searchterm = '')
+    {
+        global $current_user;
+
+        // get the app list srtings for the enum processing
+        $appListStrings = return_app_list_strings_language($GLOBALS['current_language']);
+
+        $indexProperties = SpiceFTSUtils::getBeanIndexProperties($module);
+        $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
+        $seed = \BeanFactory::getBean($module);
+
+        // build the query
+        $queryParam = array(
+            'size' => 50,
+            'from' => 0
+        );
+        $queryParam['_source'] = false;
+
+        $queryParam['query'] = array(
+            'bool' => [
+                'must' => [
+                    ['terms' => ['_phone' => [$searchterm]]]
+                ]
+            ]
+        );
+
+        // add ACL Check filters
+        if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFTSQuery')) {
+            $aclFilters = $GLOBALS['ACLController']->getFTSQuery($module);
+            if (count($aclFilters) > 0) {
+                // do not write empty entries
+                if (isset($aclFilters['should']) && count($aclFilters['should']) >= 1) {
+                    $queryParam['query']['bool']['filter']['bool']['should'] = $aclFilters['should'];
+                    $queryParam['query']['bool']['filter']['bool']['minimum_should_match'] = 1;
+                }
+                if (isset($aclFilters['must_not']) && count($aclFilters['must_not']) >= 1) {
+                    $queryParam['query']['bool']['filter']['bool']['must_not'] = $aclFilters['must_not'];
+                }
+                if (isset($aclFilters['must']) && count($aclFilters['must']) >= 1) {
+                    $queryParam['query']['bool']['filter']['bool']['must'] = $aclFilters['must'];
+                }
+
+            }
+        }
+
+        // check if we have a global filter for the module defined
+        // if yes add this here to the add filters
+        if (!empty($indexSettings['globalfilter'])) {
+            $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+            $filterForId = $sysFilter->generareElasticFilterForFilterId($indexSettings['globalfilter']);
+            if (!empty($filterForId)) {
+                $addFilters[] = $filterForId;
+            }
+        }
+
+        $searchresults = $this->elasticHandler->searchModule($module, $queryParam, 50, 0);
+
+        return $searchresults;
     }
 
     /**
@@ -898,7 +1027,7 @@ class SpiceFTSHandler
             // check for modulefilter
             if (!empty($params['modulefilter'])) {
                 $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
-                $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter']);
+                $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter'], $params['filtercontextbeanid']);
             }
 
 
@@ -1085,13 +1214,13 @@ class SpiceFTSHandler
             );
         }
 
-        if(!empty($params['relatefilter'])){
+        if (!empty($params['relatefilter'])) {
             $relateFilter = json_decode($params['relatefilter']);
             $relateSeed = \BeanFactory::getBean($relateFilter->module, $relateFilter->id);
             $relateSeed->load_relationship($relateFilter->relationship);
             $relatedBeans = $relateSeed->get_linked_beans($relateFilter->relationship, $relateSeed->field_name_map[$relateFilter->relationship]['module'], [], 0, -99);
             $relatedids = [];
-            foreach($relatedBeans as $relatedBean){
+            foreach ($relatedBeans as $relatedBean) {
                 $relatedids[] = $relatedBean->id;
             }
             $addFilters[] = ["terms" => ["id" => $relatedids]];
@@ -1108,7 +1237,7 @@ class SpiceFTSHandler
 
         // check for modulefilter
         if (!empty($params['modulefilter'])) {
-            $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter']);
+            $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter'], $params['filtercontextbeanid']);
         }
 
         // check if we have a listid
@@ -1257,8 +1386,8 @@ class SpiceFTSHandler
 
         // check for modulefilter
         if (!empty($params['modulefilter'])) {
-            $sysFilter = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
-            $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter']);
+            $sysFilter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+            $addFilters[] = $sysFilter->generareElasticFilterForFilterId($params['modulefilter'], $params['filtercontextbeanid']);
         }
 
         //check if we use a wildcard for the search
@@ -1476,7 +1605,7 @@ class SpiceFTSHandler
                 if ($indexBean['deleted'] == 0) {
                     $seed->retrieve($indexBean['id']);
 
-                    if($this->elasticHandler->version == '6'){
+                    if ($this->elasticHandler->version == '6') {
                         $bulkItems[] = json_encode([
                             'index' => [
                                 '_index' => $sugar_config['fts']['prefix'] . strtolower($bean['module']),
@@ -1595,7 +1724,8 @@ class SpiceFTSHandler
      *
      * @return array|bool|string
      */
-    function getStatus(){
+    function getStatus()
+    {
         global $current_user;
         if ($current_user->is_admin)
             return $this->elasticHandler->getStatus();

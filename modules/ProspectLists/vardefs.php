@@ -152,6 +152,12 @@ $dictionary['ProspectList'] = array(
             'type' => 'varchar',
             'source' => 'non-db'
         ),
+        'prospectlists_consumer_quantity' => array(
+            'name' => 'prospectlists_consumer_quantity',
+            'vname' => 'LBL_QUANTITY',
+            'type' => 'varchar',
+            'source' => 'non-db'
+        ),
         'prospects' => array(
             'name' => 'prospects',
             'type' => 'link',
@@ -167,6 +173,18 @@ $dictionary['ProspectList'] = array(
             'rel_fields' => [
                 'quantity' => [
                     'map' => 'prospectlists_contacts_quantity'
+                ]
+            ]
+        ),
+        'consumers' => array(
+            'name' => 'consumers',
+            'type' => 'link',
+            'vname' => 'LBL_CONSUMERS',
+            'relationship' => 'prospect_list_consumers',
+            'source' => 'non-db',
+            'rel_fields' => [
+                'quantity' => [
+                    'map' => 'prospectlists_consumer_quantity'
                 ]
             ]
         ),

@@ -81,32 +81,33 @@ $moduleFilters = array(
 			),
 		),
 	),
-	
-	'Cases' => array(
-		'display_default' => false,
-		'fields' => array(
-			'priority' => array(
-				'display_name' => 'Priority',
-				'name' => 'priority',
-				'vname' => 'LBL_PRIORITY',
-				'dbname' => 'priority',
-				'custom_table' => false,
-				'type' => 'multiselect',
-				'size' => '3',
-				'dropdown' => $app_list_strings['case_priority_dom'],
-			),
-			'status' => array(
-				'display_name' => 'Status',
-				'name' => 'status',
-				'vname' => 'LBL_STATUS',
-				'dbname' => 'status',
-				'custom_table' => false,
-				'type' => 'multiselect',
-				'size' => '3',
-				'dropdown' => $app_list_strings['case_status_dom'],
-			),
-		),
-	),
+
+// CR1000426 cleanup backend, module Cases removed
+//	'Cases' => array(
+//		'display_default' => false,
+//		'fields' => array(
+//			'priority' => array(
+//				'display_name' => 'Priority',
+//				'name' => 'priority',
+//				'vname' => 'LBL_PRIORITY',
+//				'dbname' => 'priority',
+//				'custom_table' => false,
+//				'type' => 'multiselect',
+//				'size' => '3',
+//				'dropdown' => $app_list_strings['case_priority_dom'],
+//			),
+//			'status' => array(
+//				'display_name' => 'Status',
+//				'name' => 'status',
+//				'vname' => 'LBL_STATUS',
+//				'dbname' => 'status',
+//				'custom_table' => false,
+//				'type' => 'multiselect',
+//				'size' => '3',
+//				'dropdown' => $app_list_strings['case_status_dom'],
+//			),
+//		),
+//	),
 	
 	'Opportunities' => array(
 		'display_default' => false,

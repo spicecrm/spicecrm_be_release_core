@@ -38,7 +38,8 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 $QCModules = array(
     'Bugs',
-    'Cases',
+// CR1000426 cleanup backend, module Cases removed
+//    'Cases',
     'Contacts',
     'Opportunities',
     'Leads',

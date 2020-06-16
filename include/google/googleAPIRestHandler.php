@@ -62,14 +62,14 @@ class googleAPIRestHandler
 
     public function getplacedetails($placeid)
     {
-        global $sugar_config;
+        global $sugar_config, $db;
 
         $results = array(
             'status' => 'NOK'
         );
 
         $ch = curl_init();
-        $url = "https://maps.googleapis.com/maps/api/place/details/json?key=" . $sugar_config['googleapi']['mapskey'] . "&placeid=" . $placeid;
+        $url = "https://maps.googleapis.com/maps/api/place/details/json?language=en&key=" . $sugar_config['googleapi']['mapskey'] . "&placeid=" . $placeid;
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -86,11 +86,18 @@ class googleAPIRestHandler
                     $addrArray[$resultType] = ['long' => $resultItem->long_name,'short' => $resultItem->short_name];
                 }
             }
+
+            // build state
+            $state = $db->fetchByAssoc($db->query("SELECT sc FROM syscountrystates WHERE cc='{$addrArray['country']['short']}' AND google_aa like '%{$addrArray['administrative_area_level_1']['short']}%'"));
+
             $results['status'] = 'OK';
             $results['address'] = array(
                 'street' => $addrArray['route']['long'] . ' ' . $addrArray['street_number']['long'],
+                'street_name' => $addrArray['route']['long'],
+                'street_number' => $addrArray['street_number']['long'],
                 'city' => $addrArray['locality']['long'],
-                'state' => $addrArray['administrative_area_level_1']['short'],
+                'district' => $addrArray['sublocality_level_1']['long'],
+                'state' => $state ? $state['sc'] : $addrArray['administrative_area_level_1']['short'],
                 'postalcode' => $addrArray['postal_code']['short'],
                 'country' => $addrArray['country']['short'],
                 'location' => $responseObject->result->geometry->location

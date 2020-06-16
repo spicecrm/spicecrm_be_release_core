@@ -39,10 +39,10 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 
+// CR100349 remove methods from install_utils.php that are required from classes in use
+//require_once('modules/Trackers/TrackerUtility.php');
 
-require_once('modules/Trackers/TrackerUtility.php');
-
-require_once('install/UserDemoData.php');
+require_once('install_cx/UserDemoData.php');
 
 class populateSeedData {
 

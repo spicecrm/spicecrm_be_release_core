@@ -81,13 +81,6 @@ $dictionary['MediaFile'] = array(
             'type' => 'ulong',
             'comment' => 'Filesize in KiloBytes'
         ),
-        'upload_completed' => array(
-            'name' => 'upload_completed',
-            'vname' => 'LBL_UPLOAD_COMPLETED',
-            'type' => 'bool',
-            'isnull' => false,
-            'default' => 0
-        ),
         'cdn' => array(
             'name' => 'cdn',
             'vname' => 'LBL_CDN',
@@ -142,8 +135,7 @@ $dictionary['MediaFile'] = array(
         'thumbnail' => array(
             'name' => 'thumbnail',
             'vname' => 'LBL_THUMBNAIL',
-            'type' => 'text',
-            // 'source' => 'non-db'
+            'type' => 'longtext'
         ),
     ),
     'relationships' => array(
@@ -159,7 +151,6 @@ $dictionary['MediaFile'] = array(
     ),
     'indices' => array (
         array( 'name' =>'idx_mediafiles_name', 'type' => 'index', 'fields' => array('name') ),
-        array( 'name' =>'idx_mediafiles_upload_completed', 'type' => 'index', 'fields' => array('upload_completed') ),
         array( 'name' =>'idx_mediafiles_copyright_owner', 'type' => 'index', 'fields' => array('copyright_owner') ),
         array( 'name' =>'idx_mediafiles_deleted', 'type' => 'index', 'fields' => array('deleted') ),
         array( 'name' =>'idx_mediafiles_mediacategory', 'type' => 'index', 'fields' => array('mediacategory_id') )

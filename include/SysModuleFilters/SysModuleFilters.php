@@ -403,7 +403,7 @@ class SysModuleFilters
             if (class_exists($class)) {
                 $focus = new $class();
                 if (method_exists($focus, $method)) {
-                    $ids = $focus->$method();
+                    $ids = $focus->$method($bean);
                     if (count($ids) > 0) {
                         $filter['bool']['must'][] = ["terms" => ['id' => $ids]];
                     }

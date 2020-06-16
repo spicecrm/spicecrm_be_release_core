@@ -180,8 +180,8 @@ class Localization
         if ( !is_array($load) ) {
 			// load default from config.php
 			$this->currencies['-99'] = array(
-				'name'		=> $sugar_config['default_currency_name'],
-				'symbol'	=> $sugar_config['default_currency_symbol'],
+				'name'		=> $sugar_config['currencies']['default_currency_name'],
+				'symbol'	=> $sugar_config['currencies']['default_currency_symbol'],
 				'conversion_rate' => 1
 				);
 

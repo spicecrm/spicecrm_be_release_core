@@ -976,18 +976,19 @@ class Email extends SugarBean
                 } // if
 
             } else {
-                if (!class_exists('aCase')) {
-
-                } else {
-                    $c = new aCase();
-                    if ($caseId = InboundEmail::getCaseIdFromCaseNumber($mail->Subject, $c)) {
-                        $c->retrieve($caseId);
-                        $c->load_relationship('emails');
-                        $c->emails->add($this->id);
-                        $this->parent_type = "Cases";
-                        $this->parent_id = $caseId;
-                    } // if
-                }
+// CR1000426 cleanup backend, module Cases removed
+//                if (!class_exists('aCase')) {
+//
+//                } else {
+//                    $c = new aCase();
+//                    if ($caseId = InboundEmail::getCaseIdFromCaseNumber($mail->Subject, $c)) {
+//                        $c->retrieve($caseId);
+//                        $c->load_relationship('emails');
+//                        $c->emails->add($this->id);
+//                        $this->parent_type = "Cases";
+//                        $this->parent_id = $caseId;
+//                    } // if
+//                }
 
             } // else
 
@@ -1200,13 +1201,16 @@ class Email extends SugarBean
 
             if ($result['result'] == true) {
                 $this->status      = 'sent';
-                $this->new_with_id = false;
-                parent::save($check_notify, $fts_index_bean);
+
             } else {
-                $this->status      = 'created';
-                $this->new_with_id = false;
-                parent::save($check_notify, $fts_index_bean);
+                if($result['errors']){
+                    $this->status = 'send_error';
+                } else {
+                    $this->status = 'created';
+                }
             }
+            $this->new_with_id = false;
+            parent::save($check_notify, $fts_index_bean);
 
             return $result;
         }

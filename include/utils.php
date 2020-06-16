@@ -3385,11 +3385,12 @@ function get_module_info($module_name) {
     //Get dictionary and focus data for module
     $vardef_name = $beanList[$module_name];
 
-    if ($vardef_name == "aCase") {
-        $class_name = "Case";
-    } else {
+// CR1000426 cleanup backend, module Cases removed
+//    if ($vardef_name == "aCase") {
+//        $class_name = "Case";
+//    } else {
         $class_name = $vardef_name;
-    }
+//    }
 
     if (!file_exists('modules/' . $module_name . '/' . $class_name . '.php')) {
         return;
@@ -3411,11 +3412,12 @@ function get_valid_bean_name($module_name) {
     global $beanList;
 
     $vardef_name = $beanList[$module_name];
-    if ($vardef_name == "aCase") {
-        $bean_name = "Case";
-    } else {
+// CR1000426 cleanup backend, module Cases removed
+//    if ($vardef_name == "aCase") {
+//        $bean_name = "Case";
+//    } else {
         $bean_name = $vardef_name;
-    }
+//    }
     return $bean_name;
 }
 
@@ -4890,4 +4892,161 @@ function floatAsString($float, $removeSeparator = false) {
         $s = str_replace(".", "", $s);
     }
     return $s;
+}
+
+// CR100349 remove methods from install_utils.php that are required from classes in use
+
+// Returns true if the given file/dir has been made writable (or is already
+// writable).
+function make_writable($file)
+{
+
+    $ret_val = false;
+    if(is_file($file) || is_dir($file))
+    {
+        if(is_writable($file))
+        {
+            $ret_val = true;
+        }
+        else
+        {
+            $original_fileperms = fileperms($file);
+
+            // add user writable permission
+            $new_fileperms = $original_fileperms | 0x0080;
+            @sugar_chmod($file, $new_fileperms);
+            clearstatcache();
+            if(is_writable($file))
+            {
+                $ret_val = true;
+            }
+            else
+            {
+                // add group writable permission
+                $new_fileperms = $original_fileperms | 0x0010;
+                @chmod($file, $new_fileperms);
+                clearstatcache();
+                if(is_writable($file))
+                {
+                    $ret_val = true;
+                }
+                else
+                {
+                    // add world writable permission
+                    $new_fileperms = $original_fileperms | 0x0002;
+                    @chmod($file, $new_fileperms);
+                    clearstatcache();
+                    if(is_writable($file))
+                    {
+                        $ret_val = true;
+                    }
+                }
+            }
+        }
+    }
+
+    return $ret_val;
+}
+
+function create_date($year=null,$mnth=null,$day=null)
+{
+    global $timedate;
+    $now = $timedate->getNow();
+    if ($day==null) $day=$now->day+mt_rand(0,365);
+    return $timedate->asDbDate($now->get_day_begin($day, $mnth, $year));
+}
+
+/**
+ * (re)write the web.config file to prevent browser access to the log file
+ */
+function handleWebConfig()
+{
+    if ( !isset($_SERVER['IIS_UrlRewriteModule']) ) {
+        return;
+    }
+
+    global $setup_site_log_dir;
+    global $setup_site_log_file;
+    global $sugar_config;
+
+    // Bug 36968 - Fallback to using $sugar_config values when we are not calling this from the installer
+    if (empty($setup_site_log_file)) {
+        $setup_site_log_file = $sugar_config['log_file'];
+        if ( empty($sugar_config['log_file']) ) {
+            $setup_site_log_file = 'sugarcrm.log';
+        }
+    }
+    if (empty($setup_site_log_dir)) {
+        $setup_site_log_dir = $sugar_config['log_dir'];
+        if ( empty($sugar_config['log_dir']) ) {
+            $setup_site_log_dir = '.';
+        }
+    }
+
+    $prefix = $setup_site_log_dir.empty($setup_site_log_dir)?'':'/';
+
+
+    $config_array = array(
+        array('1'=> $prefix.str_replace('.','\\.',$setup_site_log_file).'\\.*' ,'2'=>'log_file_restricted.html'),
+        array('1'=> $prefix.'install.log' ,'2'=>'log_file_restricted.html'),
+        array('1'=> $prefix.'upgradeWizard.log' ,'2'=>'log_file_restricted.html'),
+        array('1'=> $prefix.'emailman.log' ,'2'=>'log_file_restricted.html'),
+        array('1'=>'not_imported_.*.txt' ,'2'=>'log_file_restricted.html'),
+        array('1'=>'XTemplate/(.*)/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'data/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'examples/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'include/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'include/(.*)/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'log4php/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'log4php/(.*)/(.*)' ,'2'=>'index.php'),
+        array('1'=>'metadata/(.*)/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'modules/(.*)/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'soap/(.*).php' ,'2'=>'index.php'),
+        array('1'=>'cron.php' ,'2'=>'index.php'),
+        array('1'=> $sugar_config['upload_dir'].'.*' ,'2'=>'index.php'),
+    );
+
+
+    $xmldoc = new XMLWriter();
+    $xmldoc->openURI('web.config');
+    $xmldoc->setIndent(true);
+    $xmldoc->setIndentString(' ');
+    $xmldoc->startDocument('1.0','UTF-8');
+    $xmldoc->startElement('configuration');
+    $xmldoc->startElement('system.webServer');
+    $xmldoc->startElement('rewrite');
+    $xmldoc->startElement('rules');
+    for ($i = 0; $i < count($config_array); $i++) {
+        $xmldoc->startElement('rule');
+        $xmldoc->writeAttribute('name', "redirect$i");
+        $xmldoc->writeAttribute('stopProcessing', 'true');
+        $xmldoc->startElement('match');
+        $xmldoc->writeAttribute('url', $config_array[$i]['1']);
+        $xmldoc->endElement();
+        $xmldoc->startElement('action');
+        $xmldoc->writeAttribute('type', 'Redirect');
+        $xmldoc->writeAttribute('url', $config_array[$i]['2']);
+        $xmldoc->writeAttribute('redirectType', 'Found');
+        $xmldoc->endElement();
+        $xmldoc->endElement();
+    }
+    $xmldoc->endElement();
+    $xmldoc->endElement();
+    $xmldoc->startElement('caching');
+    $xmldoc->startElement('profiles');
+    $xmldoc->startElement('remove');
+    $xmldoc->writeAttribute('extension', ".php");
+    $xmldoc->endElement();
+    $xmldoc->endElement();
+    $xmldoc->endElement();
+    $xmldoc->startElement('staticContent');
+    $xmldoc->startElement("clientCache");
+    $xmldoc->writeAttribute('cacheControlMode', 'UseMaxAge');
+    $xmldoc->writeAttribute('cacheControlMaxAge', '30.00:00:00');
+    $xmldoc->endElement();
+    $xmldoc->endElement();
+    $xmldoc->endElement();
+    $xmldoc->endElement();
+    $xmldoc->endDocument();
+    $xmldoc->flush();
 }

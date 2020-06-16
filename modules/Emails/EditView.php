@@ -86,7 +86,7 @@ if(!empty($_REQUEST['load_id']) && !empty($beanList[$_REQUEST['load_module']])) 
         //If Opportunity or Case then Oppurtinity/Case->Accounts->(email_addr_bean_rel->email_addresses)
         //If Contacts, Leads etc.. then Contact->(email_addr_bean_rel->email_addresses)
     	$sugarEmailAddress = new SugarEmailAddress();
-    	if($class_name == 'Opportunity' || $class_name == 'aCase'){
+    	if($class_name == 'Opportunity'){
     		$account = new Account();
     		if($contact->account_id != null && $account->retrieve($contact->account_id)){
     			$sugarEmailAddress->handleLegacyRetrieve($account);
@@ -325,32 +325,32 @@ if(!empty($_REQUEST['parent_id']) && !empty($_REQUEST['parent_type'])) {
 	$focus->parent_type = $_REQUEST['parent_type'];
 }
 if(!empty($focus->parent_id) && !empty($focus->parent_type)) {
-	if($focus->parent_type == 'Cases') {
-
-		$myCase = new aCase();
-		$myCase->retrieve($focus->parent_id);
-		$myCaseMacro = $myCase->getEmailSubjectMacro();
-		if(isset($ieMail->name) && !empty($ieMail->name)) { // if replying directly to an InboundEmail
-			$oldEmailSubj = $ieMail->name;
-		} elseif(isset($_REQUEST['parent_name']) && !empty($_REQUEST['parent_name'])) {
-			$oldEmailSubj = $_REQUEST['parent_name'];
-		} else {
-			$oldEmailSubj = $focus->name; // replying to an email using old subject
-		}
-
-		if(!preg_match('/^re:/i', $oldEmailSubj)) {
-			$oldEmailSubj = 'RE: '.$oldEmailSubj;
-		}
-		$focus->name = $oldEmailSubj;
-
-		if(strpos($focus->name, str_replace('%1',$myCase->case_number,$myCaseMacro))) {
-			$name = $focus->name;
-		} else {
-			$name = $focus->name.' '.str_replace('%1',$myCase->case_number,$myCaseMacro);
-		}
-	} else {
+//	if($focus->parent_type == 'Cases') {
+//
+//		$myCase = new aCase();
+//		$myCase->retrieve($focus->parent_id);
+//		$myCaseMacro = $myCase->getEmailSubjectMacro();
+//		if(isset($ieMail->name) && !empty($ieMail->name)) { // if replying directly to an InboundEmail
+//			$oldEmailSubj = $ieMail->name;
+//		} elseif(isset($_REQUEST['parent_name']) && !empty($_REQUEST['parent_name'])) {
+//			$oldEmailSubj = $_REQUEST['parent_name'];
+//		} else {
+//			$oldEmailSubj = $focus->name; // replying to an email using old subject
+//		}
+//
+//		if(!preg_match('/^re:/i', $oldEmailSubj)) {
+//			$oldEmailSubj = 'RE: '.$oldEmailSubj;
+//		}
+//		$focus->name = $oldEmailSubj;
+//
+//		if(strpos($focus->name, str_replace('%1',$myCase->case_number,$myCaseMacro))) {
+//			$name = $focus->name;
+//		} else {
+//			$name = $focus->name.' '.str_replace('%1',$myCase->case_number,$myCaseMacro);
+//		}
+//	} else {
 		$name = $focus->name;
-	}
+//	}
 } else {
 	if(empty($focus->name)) {
 		$name = '';

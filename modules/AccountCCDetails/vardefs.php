@@ -48,7 +48,7 @@ $dictionary['AccountCCDetail'] = array(
         'companycode_id' => array(
             'name' => 'companycode_id',
             'type' => 'id',
-            'required' => true,
+            'required' => false,
         ),
         'companycode_name' => array(
             'name' => 'companycode_name',

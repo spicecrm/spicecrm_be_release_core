@@ -114,48 +114,50 @@ $layout_defs['Documents'] = array(
                     ),
                 ),
         ),
-        'cases' => array(
-            'order' => 50,
-            'module' => 'Cases',
-            'subpanel_name' => 'default',
-            'sort_order' => 'asc',
-            'sort_by' => 'id',
-            'title_key' => 'LBL_CASES_SUBPANEL_TITLE',
-            'get_subpanel_data' => 'cases',
-            'top_buttons' => 
-            array (
-                0 => 
-                array (
-                    'widget_class' => 'SubPanelTopButtonQuickCreate',
-                    ),
-                1 => 
-                array (
-                    'widget_class' => 'SubPanelTopSelectButton',
-                    'mode' => 'MultiSelect',
-                    ),
-                ),
-        ),
-        'bugs' => array(
-            'order' => 60,
-            'module' => 'Bugs',
-            'subpanel_name' => 'default',
-            'sort_order' => 'asc',
-            'sort_by' => 'id',
-            'title_key' => 'LBL_BUGS_SUBPANEL_TITLE',
-            'get_subpanel_data' => 'bugs',
-            'top_buttons' => 
-            array (
-                0 => 
-                array (
-                    'widget_class' => 'SubPanelTopButtonQuickCreate',
-                    ),
-                1 => 
-                array (
-                    'widget_class' => 'SubPanelTopSelectButton',
-                    'mode' => 'MultiSelect',
-                    ),
-                ),
-        ),
+// CR1000426 cleanup backend, module Cases removed
+//        'cases' => array(
+//            'order' => 50,
+//            'module' => 'Cases',
+//            'subpanel_name' => 'default',
+//            'sort_order' => 'asc',
+//            'sort_by' => 'id',
+//            'title_key' => 'LBL_CASES_SUBPANEL_TITLE',
+//            'get_subpanel_data' => 'cases',
+//            'top_buttons' =>
+//            array (
+//                0 =>
+//                array (
+//                    'widget_class' => 'SubPanelTopButtonQuickCreate',
+//                    ),
+//                1 =>
+//                array (
+//                    'widget_class' => 'SubPanelTopSelectButton',
+//                    'mode' => 'MultiSelect',
+//                    ),
+//                ),
+//        ),
+// CR1000426 cleanup backend, module Bugs removed
+//        'bugs' => array(
+//            'order' => 60,
+//            'module' => 'Bugs',
+//            'subpanel_name' => 'default',
+//            'sort_order' => 'asc',
+//            'sort_by' => 'id',
+//            'title_key' => 'LBL_BUGS_SUBPANEL_TITLE',
+//            'get_subpanel_data' => 'bugs',
+//            'top_buttons' =>
+//            array (
+//                0 =>
+//                array (
+//                    'widget_class' => 'SubPanelTopButtonQuickCreate',
+//                    ),
+//                1 =>
+//                array (
+//                    'widget_class' => 'SubPanelTopSelectButton',
+//                    'mode' => 'MultiSelect',
+//                    ),
+//                ),
+//        ),
 	),
 );
 ?>

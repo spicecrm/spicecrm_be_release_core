@@ -298,30 +298,24 @@ $dictionary['Document'] = array('table' => 'documents',
                 'source' => 'non-db',
                 'vname' => 'LBL_OPPORTUNITIES_SUBPANEL_TITLE',
             ),
-        'projects' =>
-            array(
-                'name' => 'projects',
-                'type' => 'link',
-                'relationship' => 'documents_projects',
-                'source' => 'non-db',
-                'vname' => 'LBL_PROJECTS_SUBPANEL_TITLE',
-            ),
-        'cases' =>
-            array(
-                'name' => 'cases',
-                'type' => 'link',
-                'relationship' => 'documents_cases',
-                'source' => 'non-db',
-                'vname' => 'LBL_CASES_SUBPANEL_TITLE',
-            ),
-        'bugs' =>
-            array(
-                'name' => 'bugs',
-                'type' => 'link',
-                'relationship' => 'documents_bugs',
-                'source' => 'non-db',
-                'vname' => 'LBL_BUGS_SUBPANEL_TITLE',
-            ),
+// CR1000426 cleanup backend, module Cases removed
+//        'cases' =>
+//            array(
+//                'name' => 'cases',
+//                'type' => 'link',
+//                'relationship' => 'documents_cases',
+//                'source' => 'non-db',
+//                'vname' => 'LBL_CASES_SUBPANEL_TITLE',
+//            ),
+// CR1000426 cleanup backend, module Bugs removed
+//        'bugs' =>
+//            array(
+//                'name' => 'bugs',
+//                'type' => 'link',
+//                'relationship' => 'documents_bugs',
+//                'source' => 'non-db',
+//                'vname' => 'LBL_BUGS_SUBPANEL_TITLE',
+//            ),
         'projects' =>
             array(
                 'name' => 'projects',

@@ -774,11 +774,6 @@ $dictionary['User'] = array(
             'massupdate' => false,
             'studio' => array('listview' => false, 'searchview' => false, 'formula' => false),
         ),
-        'gcal_sync_token' => [
-            'name' => 'gcal_sync_token',
-            'type' => 'varchar',
-            'len' => 64,
-        ],
         'prospect_lists' => array(
             'name' => 'prospect_lists',
             'type' => 'link',
@@ -1007,6 +1002,18 @@ if (file_exists('modules/SystemDeploymentCRs/SystemDeploymentCR.php')) {
         'comment' => '',
     ];
 
+}
+
+if (is_file("modules/ServiceEquipments/ServiceEquipment.php")) {
+    $dictionary['User']['fields']['serviceequipments'] = array(
+        'name' => 'serviceequipments',
+        'type' => 'link',
+        'relationship' => 'serviceequipments_users',
+        'source' => 'non-db',
+        'vname' => 'LBL_SERVICEEQUIPMENTS',
+        'module' => 'ServiceEquipments',
+        'default' => false
+    );
 }
 
 

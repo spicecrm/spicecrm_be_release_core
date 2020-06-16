@@ -38,6 +38,11 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 global $current_user, $sugar_version, $sugar_config, $beanFiles;
 
+// BEGIN CR1000426
+if($current_user->is_admin){
+    header("location:index.php?module=Administration");
+}
+// END
 
 require_once('include/MySugar/MySugar.php');
 
@@ -107,11 +112,7 @@ if(!$hasUserPreferences){
                                                             'height' => 315,
                                              ));
         */
-        $dashlets[create_guid()] = array ('className' => 'SugarFeedDashlet',
-            'module' => 'SugarFeed',
-            'forceColumn' => 1,
-            'fileLocation' => $dashletsFiles['SugarFeedDashlet']['file'],
-        );
+
         /* Removing Dashlets ... INSTALLER 21.07.2015
         $dashlets[create_guid()] = array('className' => 'iFrameDashlet',
                                          'module' => 'Home',
@@ -125,20 +126,20 @@ if(!$hasUserPreferences){
         foreach($defaultDashlets as $dashletName=>$module){
             // clint - fixes bug #20398
             // only display dashlets that are from visibile modules and that the user has permission to list
-            $myDashlet = new MySugar($module);
-            $displayDashlet = $myDashlet->checkDashletDisplay();
-            if (isset($dashletsFiles[$dashletName]) && $displayDashlet){
-                $options = array();
-                $prefsforthisdashlet = array_keys($prefstomove,$dashletName);
-                foreach ( $prefsforthisdashlet as $pref ) {
-                    $options[$pref] = $current_user->getPreference($pref);
-                }
-                $dashlets[create_guid()] = array('className' => $dashletName,
-                    'module' => $module,
-                    'forceColumn' => 0,
-                    'fileLocation' => get_custom_file_if_exists($dashletsFiles[$dashletName]['file']),
-                    'options' => $options);
-            }
+//            $myDashlet = new MySugar($module);
+//            $displayDashlet = $myDashlet->checkDashletDisplay();
+//            if (isset($dashletsFiles[$dashletName]) && $displayDashlet){
+//                $options = array();
+//                $prefsforthisdashlet = array_keys($prefstomove,$dashletName);
+//                foreach ( $prefsforthisdashlet as $pref ) {
+//                    $options[$pref] = $current_user->getPreference($pref);
+//                }
+//                $dashlets[create_guid()] = array('className' => $dashletName,
+//                    'module' => $module,
+//                    'forceColumn' => 0,
+//                    'fileLocation' => get_custom_file_if_exists($dashletsFiles[$dashletName]['file']),
+//                    'options' => $options);
+//            }
         }
 
         $count = 0;
@@ -250,44 +251,44 @@ foreach($pages[$activePage]['columns'] as $colNum => $column) {
 			elseif ( !empty($dashlets[$id]['module']) )
                 $module = $dashlets[$id]['module'];
 
-            $myDashlet = new MySugar($module);
-
-            if($myDashlet->checkDashletDisplay()) {
-
-                require_once(get_custom_file_if_exists($dashlets[$id]['fileLocation']));
-                $dashletClassName = $dashlets[$id]['className'];
-                $dashlet = new $dashletClassName($id, (isset($dashlets[$id]['options']) ? $dashlets[$id]['options'] : array()));
-                // Need to add support to dynamically display/hide dashlets
-                // If it has a method 'shouldDisplay' we will call it to see if we should display it or not
-                if (method_exists($dashlet,'shouldDisplay')) {
-                    if (!$dashlet->shouldDisplay()) {
-                        // This dashlet doesn't want us to show it, skip it.
-                        continue;
-                    }
-                }
-
-                array_push($dashletIds, $id);
-
-                $dashlets = $current_user->getPreference('dashlets', 'Home'); // Using hardcoded 'Home' because DynamicAction.php $_REQUEST['module'] value is always Home
-                $lvsParams = array();
-                if(!empty($dashlets[$id]['sort_options'])){
-                    $lvsParams = $dashlets[$id]['sort_options'];
-                }
-
-                $dashlet->process($lvsParams);
-                try {
-                    $display[$colNum]['dashlets'][$id]['display'] = $dashlet->display();
-                    $display[$colNum]['dashlets'][$id]['displayHeader'] = $dashlet->getHeader();
-                    $display[$colNum]['dashlets'][$id]['displayFooter'] = $dashlet->getFooter();
-                    if($dashlet->hasScript) {
-                        $display[$colNum]['dashlets'][$id]['script'] = $dashlet->displayScript();
-                    }
-                } catch (Exception $ex) {
-                    $display[$colNum]['dashlets'][$id]['display'] = $ex->getMessage();
-                    $display[$colNum]['dashlets'][$id]['displayHeader'] = $dashlet->getHeader();
-                    $display[$colNum]['dashlets'][$id]['displayFooter'] = $dashlet->getFooter();
-                }
-            }
+//            $myDashlet = new MySugar($module);
+//
+//            if($myDashlet->checkDashletDisplay()) {
+//
+//                require_once(get_custom_file_if_exists($dashlets[$id]['fileLocation']));
+//                $dashletClassName = $dashlets[$id]['className'];
+//                $dashlet = new $dashletClassName($id, (isset($dashlets[$id]['options']) ? $dashlets[$id]['options'] : array()));
+//                // Need to add support to dynamically display/hide dashlets
+//                // If it has a method 'shouldDisplay' we will call it to see if we should display it or not
+//                if (method_exists($dashlet,'shouldDisplay')) {
+//                    if (!$dashlet->shouldDisplay()) {
+//                        // This dashlet doesn't want us to show it, skip it.
+//                        continue;
+//                    }
+//                }
+//
+//                array_push($dashletIds, $id);
+//
+//                $dashlets = $current_user->getPreference('dashlets', 'Home'); // Using hardcoded 'Home' because DynamicAction.php $_REQUEST['module'] value is always Home
+//                $lvsParams = array();
+//                if(!empty($dashlets[$id]['sort_options'])){
+//                    $lvsParams = $dashlets[$id]['sort_options'];
+//                }
+//
+//                $dashlet->process($lvsParams);
+//                try {
+//                    $display[$colNum]['dashlets'][$id]['display'] = $dashlet->display();
+//                    $display[$colNum]['dashlets'][$id]['displayHeader'] = $dashlet->getHeader();
+//                    $display[$colNum]['dashlets'][$id]['displayFooter'] = $dashlet->getFooter();
+//                    if($dashlet->hasScript) {
+//                        $display[$colNum]['dashlets'][$id]['script'] = $dashlet->displayScript();
+//                    }
+//                } catch (Exception $ex) {
+//                    $display[$colNum]['dashlets'][$id]['display'] = $ex->getMessage();
+//                    $display[$colNum]['dashlets'][$id]['displayHeader'] = $dashlet->getHeader();
+//                    $display[$colNum]['dashlets'][$id]['displayFooter'] = $dashlet->getFooter();
+//                }
+//            }
         }
     }
 }

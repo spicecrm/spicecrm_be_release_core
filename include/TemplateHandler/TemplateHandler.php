@@ -119,9 +119,10 @@ class TemplateHandler
             global $dictionary, $beanList, $app_strings, $mod_strings;
             $mod = $beanList[$module];
 
-            if($mod == 'aCase') {
-                $mod = 'Case';
-            }
+// CR1000426 cleanup backend, module Cases removed
+//            if($mod == 'aCase') {
+//                $mod = 'Case';
+//            }
 
             $defs = $dictionary[$mod]['fields'];
             $defs2 = array();
@@ -222,9 +223,9 @@ class TemplateHandler
             global $dictionary, $beanList, $app_strings, $mod_strings;
             $mod = $beanList[$module];
 
-            if($mod == 'aCase') {
-                $mod = 'Case';
-            }
+//            if($mod == 'aCase') {
+//                $mod = 'Case';
+//            }
 
             $defs = $dictionary[$mod]['fields'];
             $contents .= '{literal}';

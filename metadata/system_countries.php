@@ -1,91 +1,91 @@
 <?php
-/*
+
 $dictionary['syscountries'] = array(
     'table' => 'syscountries',
+    'comment' => 'holds a list fo all countries for selecttion and translation',
     'fields' => array(
         'id' => array(
             'name' => 'id',
             'type' => 'id'
         ),
-        'cca2' => array(
-            'name' => 'name',
+        'cc' => array(
+            'name' => 'cc',
             'type' => 'varchar',
-            'len' => 2
+            'len' => 2,
+            'comment' => 'the 2 digit country code according to ISO3166'
         ),
-        'cca3' => array(
-            'name' => 'name',
+        'e164' => array(
+            'name' => 'e164',
             'type' => 'varchar',
-            'len' => 3
-        ),
-        'ccn3' => array(
-            'name' => 'name',
-            'type' => 'varchar',
-            'len' => 3
+            'len' => 3,
+            'comment' => 'the e164 country code for the country'
         ),
         'label' => array(
             'name' => 'label',
             'type' => 'varchar',
-            'len' => 14
+            'len' => 50,
+            'comment' => 'the name of the label for language dependent display of the country name'
         ),
-        'rank' => array(
-            'name' => 'rank',
-            'type' => 'int',
-            'default' => 50,
-        ),
+        'addressformat' => array(
+            'name' => 'addressformat',
+            'type' => 'varchar',
+            'len' => 250,
+            'comment' => 'the format of the address like {street}, {postalcode} {city}, {statename}, {countryname}'
+        )
     ),
     'indices' => array(
         array(
             'name' => 'idx_syscountries',
             'type' => 'primary',
             'fields' => array('id')
-        ),
-        array(
-            'name' => 'idx_syssystags_rank',
-            'type' => 'index',
-            'fields' => array('rank')
-        ),
-    ),
+        )
+    )
 );
 
 $dictionary['syscountrystates'] = array(
     'table' => 'syscountrystates',
+    'comment' => 'holds states per country - subdivision according to ISO3166-2',
     'fields' => array(
         'id' => array(
             'name' => 'id',
             'type' => 'id'
         ),
-        'syscountry_id' => array(
-            'name' => 'syscountry_id',
+        'cc' => array(
+            'name' => 'cc',
             'type' => 'varchar',
-            'len' => 36,
+            'len' => 2,
+            'comment' => 'the 2 digit country code according to ISO3166'
         ),
-        'csc' => array(
-            'name' => 'name',
+        'sc' => array(
+            'name' => 'sc',
             'type' => 'varchar',
-            'len' => 10,
+            'len' => 5,
+            'comment' => 'the subdivison code used internally - used for SAP Integration as SAP uses different values'
+        ),
+        'iso3166' => array(
+            'name' => 'iso3166',
+            'type' => 'varchar',
+            'len' => 5,
+            'comment' => 'the subdivison code according to ISO3166'
+        ),
+        'google_aa' => array(
+            'name' => 'google_aa',
+            'type' => 'varchar',
+            'len' => 25,
+            'comment' => 'the subdivison code according to Google which is not necessarily conforming'
         ),
         'label' => array(
             'name' => 'label',
             'type' => 'varchar',
-            'len' => 25,
-        ),
-        'rank' => array(
-            'name' => 'rank',
-            'type' => 'int',
-            'default' => 50,
-        ),
+            'len' => 50,
+            'comment' => 'the name of the label for language dependent display of the state/subdivision name'
+        )
     ),
     'indices' => array(
         array(
             'name' => 'idx_syscountrystates',
             'type' => 'primary',
             'fields' => array('id')
-        ),
-        array(
-            'name' => 'idx_syscountrystates_rank',
-            'type' => 'index',
-            'fields' => array('rank')
-        ),
+        )
     )
 );
-*/

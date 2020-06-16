@@ -101,7 +101,7 @@ class Account extends Company {
 
 	// These are for related fields
 	var $opportunity_id;
-	var $case_id;
+//	var $case_id;
 	var $contact_id;
 	var $task_id;
 	var $note_id;
@@ -113,7 +113,7 @@ class Account extends Company {
 	var $assigned_user_name;
 	var $account_id = '';
 	var $account_name = '';
-	var $bug_id ='';
+//	var $bug_id ='';
 	var $module_dir = 'Accounts';
 	var $emailAddress;
 
@@ -123,9 +123,12 @@ class Account extends Company {
 	var $importable = true;
 	var $new_schema = true;
 	// This is used to retrieve related fields from form posts.
-	var $additional_column_fields = Array('assigned_user_name', 'assigned_user_id', 'opportunity_id', 'bug_id', 'case_id', 'contact_id', 'task_id', 'note_id', 'meeting_id', 'call_id', 'email_id', 'parent_name', 'member_id'
+	var $additional_column_fields = Array('assigned_user_name', 'assigned_user_id', 'opportunity_id',
+//        'bug_id', 'case_id',
+        'contact_id', 'task_id', 'note_id', 'meeting_id', 'call_id', 'email_id', 'parent_name', 'member_id'
 	);
-	var $relationship_fields = Array('opportunity_id'=>'opportunities', 'bug_id' => 'bugs', 'case_id'=>'cases',
+	var $relationship_fields = Array('opportunity_id'=>'opportunities',
+        //'bug_id' => 'bugs', 'case_id'=>'cases',
 									'contact_id'=>'contacts', 'task_id'=>'tasks', 'note_id'=>'notes',
 									'meeting_id'=>'meetings', 'call_id'=>'calls', 'email_id'=>'emails','member_id'=>'members',
 									'project_id'=>'projects',
@@ -168,13 +171,14 @@ class Account extends Company {
 
 
 
-	function clear_account_case_relationship($account_id='', $case_id='')
-	{
-		if (empty($case_id)) $where = '';
-		else $where = " and id = '$case_id'";
-		$query = "UPDATE cases SET account_name = '', account_id = '' WHERE account_id = '$account_id' AND deleted = 0 " . $where;
-		$this->db->query($query,true,"Error clearing account to case relationship: ");
-	}
+// CR1000426 cleanup backend, module Cases removed
+//	function clear_account_case_relationship($account_id='', $case_id='')
+//	{
+//		if (empty($case_id)) $where = '';
+//		else $where = " and id = '$case_id'";
+//		$query = "UPDATE cases SET account_name = '', account_id = '' WHERE account_id = '$account_id' AND deleted = 0 " . $where;
+//		$this->db->query($query,true,"Error clearing account to case relationship: ");
+//	}
 
 	/**
 	* This method is used to provide backward compatibility with old data that was prefixed with http://

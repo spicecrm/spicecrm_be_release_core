@@ -47,6 +47,9 @@ class DomPdfHandler extends LibPdfHandler
         // set page format
         $this->class_instance->setPaper($this->template->page_size ?: 'A4', $this->template->page_orientation == 'L' ? 'landscape' : 'portrait');
 
+        // set DPI
+        // $this->class_instance->set_option( 'dpi', 300 );
+
         // render the PDF
         $this->class_instance->render();
         $this->content = $this->class_instance->output();

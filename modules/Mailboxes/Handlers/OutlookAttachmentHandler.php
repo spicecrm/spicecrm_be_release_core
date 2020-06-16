@@ -24,7 +24,7 @@ class OutlookAttachmentHandler
         $this->ewsUrl = $attachmentData['ewsUrl'];
         $this->token  = $attachmentData['attachmentToken'];
 
-        foreach ($attachmentData['outlookAttachments'] as $item) {
+        foreach ($attachmentData['attachments'] as $item) {
             $attachment = new OutlookAttachment($item, $this->email);
             array_push($this->attachments, $attachment);
         }

@@ -103,7 +103,7 @@ class ElasticHandler
         if(is_integer($queryResponse['hits']['total'])){
             return $queryResponse['hits']['total'];
         }
-        return $queryResponse['hits']['total']['value'];
+        return $queryResponse['hits']['total']['value'] ?: 0;
     }
 
     /**

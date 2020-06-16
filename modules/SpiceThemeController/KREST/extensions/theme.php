@@ -1,6 +1,6 @@
 <?php
 
-$KRESTManager->registerExtension('theme', '1.0');
+$KRESTManager->registerExtension('spice_theme', '1.0');
 
 $app->group('/theme', function () use ($app) {
     /* THEME FUNCTIONS */
@@ -44,9 +44,9 @@ $app->group('/theme', function () use ($app) {
         echo $SpiceThemeController->changeGroup($args['currentModule'], $args['newGroup']);
     });
     $app->get('/getMenu/{activeModule}/{currentModule}', function($req, $res, $args) use ($app) {
-        require_once('modules/SpiceThemeController/SpiceThemeController.php');
-        $SpiceThemeController = new SpiceThemeController();
-        echo $SpiceThemeController->getMenu($args['activeModule'], $args['currentModule']);
+//        require_once('modules/SpiceThemeController/SpiceThemeController.php');
+//        $SpiceThemeController = new SpiceThemeController();
+//        echo $SpiceThemeController->getMenu($args['activeModule'], $args['currentModule']);
     });
 
 

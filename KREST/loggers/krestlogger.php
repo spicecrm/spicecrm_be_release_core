@@ -22,6 +22,7 @@ $mw = function ($request, $response, $next)
 
     $log->ip = $request->getServerParam('REMOTE_ADDR');
     $log->get_params = json_encode($_GET);
+    $log->headers =  json_encode($request->getHeaders());
     $log->post_params = $request->getBody()->getContents();
     $log->requested_at = gmdate('Y-m-d H:i:s');
     // $current_user is an empty beansobject if the current route doesn't need any authentication...

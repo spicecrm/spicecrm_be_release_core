@@ -925,17 +925,17 @@ class Scheduler extends SugarBean {
         $sched14->catch_up          = '0';
         $sched14->save();
 
-        $sched15 = new Scheduler();
-        $sched15->name               = $mod_strings['LBL_OOTB_SUGARFEEDS'];
-        $sched15->job                = 'function::trimSugarFeeds';
-        $sched15->date_time_start    = create_date(2015,1,1) . ' ' . create_time(0,0,1);
-        $sched15->date_time_end      = create_date(2030,12,31) . ' ' . create_time(23,59,59);
-        $sched15->job_interval       = '0::2::1::*::*';
-        $sched15->status             = 'Active';
-        $sched15->created_by         = '1';
-        $sched15->modified_user_id   = '1';
-        $sched15->catch_up           = '1';
-        $sched15->save();
+//        $sched15 = new Scheduler();
+//        $sched15->name               = $mod_strings['LBL_OOTB_SUGARFEEDS'];
+//        $sched15->job                = 'function::trimSugarFeeds';
+//        $sched15->date_time_start    = create_date(2015,1,1) . ' ' . create_time(0,0,1);
+//        $sched15->date_time_end      = create_date(2030,12,31) . ' ' . create_time(23,59,59);
+//        $sched15->job_interval       = '0::2::1::*::*';
+//        $sched15->status             = 'Active';
+//        $sched15->created_by         = '1';
+//        $sched15->modified_user_id   = '1';
+//        $sched15->catch_up           = '1';
+//        $sched15->save();
 
         $sched16 = new Scheduler();
         $sched16->name				= $mod_strings['LBL_OOTB_FTS_INDEX'];

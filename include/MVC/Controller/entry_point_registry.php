@@ -43,19 +43,13 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * Contributor(s): ______________________________________..
  ********************************************************************************/
 $entry_point_registry = array(
+	'krest' => array('file' => 'include/SpiceInstaller/SpiceInstaller.php', 'auth' => false),
 	'emailImage' => array('file' => 'modules/EmailMan/EmailImage.php', 'auth' => false),
-	'download' => array('file' => 'download.php', 'auth' => true),
-	'export' => array('file' => 'export.php', 'auth' => true),
 	'export_dataset' => array('file' => 'export_dataset.php', 'auth' => true),
 	'Changenewpassword' => array('file' => 'modules/Users/Changenewpassword.php', 'auth' => false),
 	'GeneratePassword' => array('file' => 'modules/Users/GeneratePassword.php', 'auth' => false),
-	'vCard' => array('file' => 'vCard.php', 'auth' => true),
-	'pdf' => array('file' => 'pdf.php', 'auth' => true),
 	'minify' => array('file' => 'jssource/minify.php', 'auth' => true),
-    'json_server' => array('file' => 'json_server.php', 'auth' => true),
     'get_url' => array('file' => 'get_url.php', 'auth' => true),
-	'HandleAjaxCall' => array('file' => 'HandleAjaxCall.php', 'auth' => true),
-	'TreeData' => array('file' => 'TreeData.php', 'auth' => true),
     'image' => array('file' => 'modules/Campaigns/image.php', 'auth' => false),
     'campaign_trackerv2' => array('file' => 'modules/Campaigns/Tracker.php', 'auth' => false),
     'WebToLeadCapture' => array('file' => 'modules/Campaigns/WebToLeadCapture.php', 'auth' => false),

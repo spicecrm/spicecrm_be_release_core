@@ -611,7 +611,7 @@ class Importer
 
         // Add ID to User's Last Import records
         if ( $newRecord )
-            $this->importSource->writeRowToLastImport( $_REQUEST['import_module'],($focus->object_name == 'Case' ? 'aCase' : $focus->object_name),$focus->id);
+            $this->importSource->writeRowToLastImport( $_REQUEST['import_module'], $focus->object_name, $focus->id);
 
     }
 

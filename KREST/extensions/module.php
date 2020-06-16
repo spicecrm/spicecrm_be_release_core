@@ -169,12 +169,6 @@ $app->group('/module', function () use ($app, $KRESTManager, $ModuleHandler) {
                     echo json_encode($ModuleHandler->delete_related($args['beanName'], $args['beanId'], $args['linkname'], $params));
                 });
             });
-            $app->group('/filtered', function () use ($app, $ModuleHandler) {
-                $app->get('', function ($req, $res, $args) use ($app, $ModuleHandler) {
-                    $getParams = $_GET;
-                    echo json_encode($ModuleHandler->get_filtered($args['beanName'], $args['beanId'], $getParams));
-                });
-            });
             $app->post('/merge_bean', function ($req, $res, $args) use ($app, $ModuleHandler) {
                 $postBody = $body = $req->getParsedBody();
                 $postParams = $_GET;

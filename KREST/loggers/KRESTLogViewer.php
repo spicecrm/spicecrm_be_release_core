@@ -131,7 +131,7 @@ class KRESTLogViewer {
     function getFullLine( $lineId ) {
         global $db;
 
-        $sql = 'SELECT id, route, method, args as routeArgs, get_params as urlParams, post_params as postParams, response, user_id as uid, UNIX_TIMESTAMP(requested_at) as dtx, http_status_code as status, transaction_id as tid FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
+        $sql = 'SELECT id, route, method, headers, args as routeArgs, get_params as urlParams, post_params as postParams, response, user_id as uid, UNIX_TIMESTAMP(requested_at) as dtx, http_status_code as status, transaction_id as tid FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
 
         $line = $db->fetchOne( $sql );
         if ( $line === false )

@@ -189,6 +189,14 @@ $dictionary['Task'] = ['table' => 'tasks',
             'source'       => 'non-db',
             'vname'        => 'LBL_ACCOUNT',
         ],
+        'consumers' => [
+            'name'         => 'consumers',
+            'type'         => 'link',
+            'relationship' => 'consumers_tasks',
+            'module'       => 'Consumers',
+            'source'       => 'non-db',
+            'vname'        => 'LBL_CONSUMERS',
+        ],
         'opportunities' => [
             'name'         => 'opportunities',
             'type'         => 'link',
@@ -196,20 +204,22 @@ $dictionary['Task'] = ['table' => 'tasks',
             'source'       => 'non-db',
             'vname'        => 'LBL_OPPORTUNITY',
         ],
-        'cases' => [
-            'name'         => 'cases',
-            'type'         => 'link',
-            'relationship' => 'case_tasks',
-            'source'       => 'non-db',
-            'vname'        => 'LBL_CASE',
-        ],
-        'bugs' => [
-            'name'         => 'bugs',
-            'type'         => 'link',
-            'relationship' => 'bug_tasks',
-            'source'       => 'non-db',
-            'vname'        => 'LBL_BUGS',
-        ],
+// CR1000426 cleanup backend, module Cases removed
+//        'cases' => [
+//            'name'         => 'cases',
+//            'type'         => 'link',
+//            'relationship' => 'case_tasks',
+//            'source'       => 'non-db',
+//            'vname'        => 'LBL_CASE',
+//        ],
+// CR1000426 cleanup backend, module Bugs removed
+//        'bugs' => [
+//            'name'         => 'bugs',
+//            'type'         => 'link',
+//            'relationship' => 'bug_tasks',
+//            'source'       => 'non-db',
+//            'vname'        => 'LBL_BUGS',
+//        ],
         'leads' => [
             'name'         => 'leads',
             'type'         => 'link',
@@ -327,6 +337,11 @@ $dictionary['Task'] = ['table' => 'tasks',
             'type'   => 'index',
             'fields' => ['assigned_user_id', 'deleted', 'status'],
         ], //for UI assistant
+        [
+            'name'   => 'idx_task_external_id',
+            'type'   => 'index',
+            'fields' => ['external_id'],
+        ]
     ],
 
     //This enables optimistic locking for Saves From EditView

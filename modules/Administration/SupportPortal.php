@@ -153,7 +153,6 @@ switch ($_REQUEST['view']) {
 								'configurator' => array(array('name' => 'Administration', 'anchor' => '1878359')),
 								'upgradewizard' => array(array('name' => 'Administration', 'anchor' => '1878359')),
 								'schedulers' => array(array('name' => 'Administration', 'anchor' => '1878359')),
-								'sugarfeed' => array(array('name' => 'Administration', 'anchor' => '1878359')),
 								'connectors' => array(array('name' => 'Administration', 'anchor' => '1878359')),
 								'trackers' => array(array('name' => 'Administration', 'anchor' => '1878359')),
 								'currencies' => array(array('name' => 'Administration', 'anchor' => '1878359')),

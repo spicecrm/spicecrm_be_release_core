@@ -38,8 +38,8 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 echo getClassicModuleTitle('Administration', array($mod_strings['LBL_REBUILD_SCHEDULERS_TITLE']), false);
 
 if(isset($_REQUEST['perform_rebuild']) && $_REQUEST['perform_rebuild'] == 'true') {
-	
-	require_once('install/install_utils.php');
+    // CR100349 remove methods from install_utils.php that are required from classes in use
+	require_once('include/utils.php');
 	$focus = new Scheduler();
 	$focus->rebuildDefaultSchedulers();
 	

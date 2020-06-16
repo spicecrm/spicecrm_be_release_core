@@ -116,6 +116,18 @@ $dictionary['CampaignTask'] = array(
             'vname' => 'LBL_CONTENT',
             'type' => 'text'
         ),
+        'ext_id' => array (
+            'name' => 'ext_id',
+            'vname' => 'LBL_EXT_ID',
+            'type' => 'varchar',
+            'len' => '50'
+        ),
+        'mailing_id' => array (
+            'name' => 'mailing_id',
+            'vname' => 'LBL_MAILING_ID',
+            'type' => 'varchar',
+            'len' => '50'
+        ),
         'prospectlists' => array(
             'name' => 'prospectlists',
             'vname' => 'LBL_PROSPECTLISTS',

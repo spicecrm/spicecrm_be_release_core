@@ -78,9 +78,6 @@ class RepairAndClear
             case 'clearDashlets':
                 $this->clearDashlets();
                 break;
-            case 'clearSugarFeedCache':
-                $this->clearSugarFeedCache();
-                break;
             case 'clearThemeCache':
                 $this->clearThemeCache();
                 break;
@@ -103,7 +100,6 @@ class RepairAndClear
                 $this->clearJsLangFiles();
                 $this->clearLanguageCache();
                 $this->clearDashlets();
-                $this->clearSugarFeedCache();
                 $this->clearSmarty();
                 $this->clearThemeCache();
                 $this->clearXMLfiles();
@@ -277,13 +273,7 @@ class RepairAndClear
 		if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_CLEARTHEMECACHE']}</h3>";
 		SugarThemeRegistry::clearAllCaches();
 	}
-	public function clearSugarFeedCache()
-	{
-		global $mod_strings;
-		if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_CLEARSUGARFEEDCACHE']}</h3>";
 
-        SugarFeed::flushBackendCache();
-	}
 	public function clearTpls()
 	{
 		global $mod_strings;

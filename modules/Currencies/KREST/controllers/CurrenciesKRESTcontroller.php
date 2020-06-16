@@ -10,7 +10,7 @@ class CurrenciesKRESTcontroller{
         $retArray = [array(
             'id' => '-99',
             'name' => $currency->getDefaultCurrencyName(),
-            'iso' =>  $currency->getDefaultISO4217(),
+            'iso4217' =>  $currency->getDefaultISO4217(),
             'symbol' => $currency->getDefaultCurrencySymbol(),
             'conversion_rate' => 1
         )];
@@ -20,4 +20,26 @@ class CurrenciesKRESTcontroller{
         }
         return $retArray;
     }
+
+    public function addCurrency($req, $res, $args) {
+        global $current_user;
+        $currency = \BeanFactory::getBean('Currencies');
+        $postBody = $req->getParsedBody();
+
+        $currency->name = $postBody['name'];
+        $currency->status = 'Active';
+        $currency->symbol = $postBody['symbol'];
+        $currency->iso4217 = $postBody['iso'];
+        $currency->created_by = $current_user->id;
+
+        if(!$currency->save()) {
+            $outcome = false;
+        } else {
+            $outcome = true;
+        }
+
+        return $res->withJson(array('status' => $outcome));
+    }
+
+
 }

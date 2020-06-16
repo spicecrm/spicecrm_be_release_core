@@ -21,6 +21,12 @@ $vardefs = array(
             'merge_filter' => 'selected', //field will be enabled for merge and will be a part of the default search criteria..other valid values for this property are enabled and disabled, default value is disabled.
             //property value is case insensitive.
         ),
+        'name_2' => array(
+            'name' => 'name_2',
+            'type' => 'varchar',
+            'len' => 50,
+            'vname' => 'LBL_NAME_2',
+        ),
         strtolower($object_name) . '_type' => array(
             'name' => strtolower($object_name) . '_type',
             'vname' => 'LBL_TYPE',
@@ -63,7 +69,7 @@ $vardefs = array(
         ),
         'billing_address_street' => array(
             'name' => 'billing_address_street',
-            'vname' => 'LBL_STREET',
+            'vname' => 'LBL_BILLING_ADDRESS_STREET',
             'type' => 'varchar',
             'len' => '150',
             'comment' => 'The street address used for billing address',
@@ -72,24 +78,34 @@ $vardefs = array(
         ),
         'billing_address_street_2' => array(
             'name' => 'billing_address_street_2',
-            'vname' => 'LBL_STREET_2',
+            'vname' => 'LBL_BILLING_ADDRESS_STREET_2',
             'type' => 'varchar',
-            'len' => '150',
-            'source' => 'non-db',
+            'len' => '80',
         ),
         'billing_address_street_3' => array(
             'name' => 'billing_address_street_3',
-            'vname' => 'LBL_STREET_3',
+            'vname' => 'LBL_BILLING_ADDRESS_STREET_3',
             'type' => 'varchar',
-            'len' => '150',
-            'source' => 'non-db',
+            'len' => '80',
         ),
         'billing_address_street_4' => array(
             'name' => 'billing_address_street_4',
-            'vname' => 'LBL_STREET_4',
+            'vname' => 'LBL_BILLING_ADDRESS_STREET_4',
             'type' => 'varchar',
-            'len' => '150',
-            'source' => 'non-db',
+            'len' => '80',
+        ),
+        'billing_address_street_number' => array(
+            'name' => 'billing_address_street_number',
+            'vname' => 'LBL_BILLING_ADDRESS_STREET_NUMBER',
+            'type' => 'varchar',
+            'len' => 10
+        ),
+        'billing_address_street_number_suffix' => array(
+            'name' => 'billing_address_street_suffix',
+            'vname' => 'LBL_BILLING_ADDRESS_STREET_NUMBER_SUFFIX',
+            'type' => 'varchar',
+            'len' => 25,
+            'comment' => 'additonal info to the street like Appartmnent, Floor, etc'
         ),
         'billing_address_attn' => array(
             'name' => 'billing_address_attn',
@@ -108,6 +124,14 @@ $vardefs = array(
             'comment' => 'The city used for billing address',
             'group' => 'billing_address',
             'merge_filter' => 'enabled',
+        ),
+        'billing_address_district' => array(
+            'name' => 'billing_address_district',
+            'vname' => 'LBL_BILLING_ADDRESS_DISTRICT',
+            'type' => 'varchar',
+            'len' => 100,
+            'group' => 'billing_address',
+            'comment' => 'The district used for the billing address',
         ),
         'billing_address_state' => array(
             'name' => 'billing_address_state',
@@ -157,6 +181,11 @@ $vardefs = array(
             'vname' => 'LBL_BILLING_ADDRESS_LONGITUDE',
             'type' => 'double',
             'group' => 'billing_address'
+        ),
+        'billing_address_georesult' => array(
+            'name' => 'billing_address_georesult',
+            'vname' => 'LBL_BILLING_ADDRESS_GEORESULT',
+            'type' => 'text'
         ),
         'rating' => array(
             'name' => 'rating',
@@ -232,22 +261,31 @@ $vardefs = array(
             'name' => 'shipping_address_street_2',
             'vname' => 'LBL_SHIPPING_ADDRESS_STREET_2',
             'type' => 'varchar',
-            'len' => 150,
-            'source' => 'non-db',
+            'len' => 80
         ),
         'shipping_address_street_3' => array(
             'name' => 'shipping_address_street_3',
             'vname' => 'LBL_SHIPPING_ADDRESS_STREET_3',
             'type' => 'varchar',
-            'len' => 150,
-            'source' => 'non-db',
+            'len' => 80
         ),
         'shipping_address_street_4' => array(
             'name' => 'shipping_address_street_4',
             'vname' => 'LBL_SHIPPING_ADDRESS_STREET_4',
             'type' => 'varchar',
-            'len' => 150,
-            'source' => 'non-db',
+            'len' => 80
+        ),
+        'shipping_address_street_number' => array(
+            'name' => 'shipping_address_street_number',
+            'vname' => 'LBL_SHIPPING_ADDRESS_STREET_NUMBER',
+            'type' => 'varchar',
+            'len' => 10
+        ),
+        'shipping_address_street_number_suffix' => array(
+            'name' => 'shipping_address_street_number_suffix',
+            'vname' => 'LBL_SHIPPING_ADDRESS_STREET_NUMBER_SUFFIX',
+            'type' => 'varchar',
+            'len' => 25
         ),
         'shipping_address_attn' => array(
             'name' => 'shipping_address_attn',
@@ -266,6 +304,14 @@ $vardefs = array(
             'group' => 'shipping_address',
             'comment' => 'The city used for the shipping address',
             'merge_filter' => 'enabled',
+        ),
+        'shipping_address_district' => array(
+            'name' => 'shipping_address_district',
+            'vname' => 'LBL_SHIPPING_ADDRESS_DISTRICT',
+            'type' => 'varchar',
+            'len' => 100,
+            'group' => 'shipping_address',
+            'comment' => 'The district used for the shipping address',
         ),
         'shipping_address_state' => array(
             'name' => 'shipping_address_state',
@@ -313,6 +359,11 @@ $vardefs = array(
             'vname' => 'LBL_SHIPPING_ADDRESS_LONGITUDE',
             'type' => 'double',
             'group' => 'shipping_address'
+        ),
+        'shipping_address_georesult' => array(
+            'name' => 'shipping_address_georesult',
+            'vname' => 'LBL_BILLING_ADDRESS_GEORESULT',
+            'type' => 'text'
         ),
         'email1' => array(
             'name' => 'email1',

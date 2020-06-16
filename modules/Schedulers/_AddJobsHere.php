@@ -67,7 +67,7 @@ $job_strings = [
     12 => 'sendEmailReminders',
     14 => 'cleanJobQueue',
     15 => 'removeDocumentsFromFS',
-    16 => 'trimSugarFeeds',
+//    16 => 'trimSugarFeeds',
 	20 => 'fullTextIndex',
 	21 => 'kdeploymentmwnotification',
     22 => 'sendCampaignTaskEmails',
@@ -81,7 +81,7 @@ $job_strings = [
 	30 => 'fullTextIndexBulk',
 	31 => 'generateQuestionnaireEvaluations',
     32 => 'sendEmailScheduleEmails',
-    33 => 'processExchangeSynchronization',
+    50 => 'resyncEwsSubscriptions'
 ];
 
 function workflowHandler(){
@@ -535,26 +535,26 @@ function removeDocumentsFromFS()
 + * this will trim all records in sugarfeeds table that are older than 30 days or specified interval
 + */
 
-function trimSugarFeeds()
-{
-    global $sugar_config, $timedate;
-    $GLOBALS['log']->info('----->Scheduler fired job of type trimSugarFeeds()');
-    $db = DBManagerFactory::getInstance();
-
-    //get the pruning interval from globals if it's specified
-    $prune_interval = !empty($GLOBALS['sugar_config']['sugarfeed_prune_interval']) && is_numeric($GLOBALS['sugar_config']['sugarfeed_prune_interval']) ? $GLOBALS['sugar_config']['sugarfeed_prune_interval'] : 30;
-
-
-    //create and run the query to delete the records
-    $timeStamp = $db->convert("'". $timedate->asDb($timedate->getNow()->get("-".$prune_interval." days")) ."'" ,"datetime");
-    $query = "DELETE FROM sugarfeed WHERE date_modified < $timeStamp";
-
-
-    $GLOBALS['log']->info("----->Scheduler is about to trim the sugarfeed table by running the query $query");
-    $db->query($query);
-
-    return true;
-}
+//function trimSugarFeeds()
+//{
+//    global $sugar_config, $timedate;
+//    $GLOBALS['log']->info('----->Scheduler fired job of type trimSugarFeeds()');
+//    $db = DBManagerFactory::getInstance();
+//
+//    //get the pruning interval from globals if it's specified
+//    $prune_interval = !empty($GLOBALS['sugar_config']['sugarfeed_prune_interval']) && is_numeric($GLOBALS['sugar_config']['sugarfeed_prune_interval']) ? $GLOBALS['sugar_config']['sugarfeed_prune_interval'] : 30;
+//
+//
+//    //create and run the query to delete the records
+//    $timeStamp = $db->convert("'". $timedate->asDb($timedate->getNow()->get("-".$prune_interval." days")) ."'" ,"datetime");
+//    $query = "DELETE FROM sugarfeed WHERE date_modified < $timeStamp";
+//
+//
+//    $GLOBALS['log']->info("----->Scheduler is about to trim the sugarfeed table by running the query $query");
+//    $db->query($query);
+//
+//    return true;
+//}
 
 /*
  * Job 20 .. rzun the full text indexer
@@ -755,15 +755,17 @@ function sendEmailScheduleEmails(){
 }
 
 /**
- * Job 33
- * processExchangeSynchronization
+ * Job 50
+ *
+ * Resynchronizes lost EWS subscriptions.
+ * @return bool
+ * @throws Exception
  */
-function processExchangeSynchronization() {
-    $controller = new \SpiceCRM\includes\SpiceCRMExchange\Connectivity\SpiceCRMExchangeUserSyncConfigController();
-    $controller->processSynchronizations();
-
+function resyncEwsSubscriptions() {
+    \SpiceCRM\includes\SpiceCRMExchange\Connectivity\SpiceCRMExchangeSubscriptions::resyncAll();
     return true;
 }
+
 
 if($scheduledtaskhandle = opendir('./modules/Schedulers/ScheduledTasks')) {
     while (false !== ($scheduledtaskfile = readdir($scheduledtaskhandle))) {

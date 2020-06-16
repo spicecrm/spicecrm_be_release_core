@@ -206,7 +206,7 @@ $app_list_strings = array(
             'SystemDeploymentCRs' => 'Change Request',
             'SystemDeploymentReleases' => 'Release',
             'Potentials' => 'Potential',
-    ),
+        ),
 
     'checkbox_dom' => array(
         '' => '',
@@ -215,7 +215,7 @@ $app_list_strings = array(
     ),
 
     //e.g. en franï¿½ais 'Analyst'=>'Analyste',
-    'account_type_dom' =>        array(
+    'account_type_dom' => array(
         '' => '',
         'Analyst' => 'Analyst',
         'Competitor' => 'Competitor',
@@ -228,31 +228,37 @@ $app_list_strings = array(
         'Reseller' => 'Reseller',
         'Other' => 'Other',
     ),
-    'account_user_roles_dom' =>        array(
+    'account_user_roles_dom' => array(
         '' => '',
         'am' => 'Account Manager',
         'se' => 'Support Engineer',
         'es' => 'Executive Sponsor'
     ),
-    'events_account_roles_dom' =>        array(
+    'events_account_roles_dom' => array(
         '' => '',
         'organizer' => 'Organizer',
         'sponsor' => 'Sponsor',
         'caterer' => 'Caterer'
     ),
-    'events_contact_roles_dom' =>        array(
+    'events_contact_roles_dom' => array(
         '' => '',
         'organizer' => 'Organizer',
         'speaker' => 'Speaker',
         'moderator' => 'Moderator',
     ),
-    'userabsences_type_dom' =>        array(
+    'events_consumer_roles_dom' => array(
+        '' => '',
+        'organizer' => 'Organizer',
+        'speaker' => 'Speaker',
+        'moderator' => 'Moderator',
+    ),
+    'userabsences_type_dom' => array(
         '' => '',
         'Sick leave' => 'Sick leave',
         'Vacation' => 'Vacation',
         'HomeOffice' => 'Home Office',
     ),
-    'userabsences_status_dom' =>        array(
+    'userabsences_status_dom' => array(
         '' => '',
         'created' => 'Created',
         'submitted' => 'Submitted',
@@ -263,73 +269,69 @@ $app_list_strings = array(
     ),
 
     //e.g. en espaï¿½ol 'Apparel'=>'Ropa',
-    'industry_dom' =>
-        array(
-            '' => '',
-            'Apparel' => 'Apparel',
-            'Banking' => 'Banking',
-            'Biotechnology' => 'Biotechnology',
-            'Chemicals' => 'Chemicals',
-            'Communications' => 'Communications',
-            'Construction' => 'Construction',
-            'Consulting' => 'Consulting',
-            'Education' => 'Education',
-            'Electronics' => 'Electronics',
-            'Energy' => 'Energy',
-            'Engineering' => 'Engineering',
-            'Entertainment' => 'Entertainment',
-            'Environmental' => 'Environmental',
-            'Finance' => 'Finance',
-            'Government' => 'Government',
-            'Healthcare' => 'Healthcare',
-            'Hospitality' => 'Hospitality',
-            'Insurance' => 'Insurance',
-            'Machinery' => 'Machinery',
-            'Manufacturing' => 'Manufacturing',
-            'Media' => 'Media',
-            'Not For Profit' => 'Not For Profit',
-            'Recreation' => 'Recreation',
-            'Retail' => 'Retail',
-            'Shipping' => 'Shipping',
-            'Technology' => 'Technology',
-            'Telecommunications' => 'Telecommunications',
-            'Transportation' => 'Transportation',
-            'Utilities' => 'Utilities',
-            'Other' => 'Other',
-        ),
+    'industry_dom' => array(
+        '' => '',
+        'Apparel' => 'Apparel',
+        'Banking' => 'Banking',
+        'Biotechnology' => 'Biotechnology',
+        'Chemicals' => 'Chemicals',
+        'Communications' => 'Communications',
+        'Construction' => 'Construction',
+        'Consulting' => 'Consulting',
+        'Education' => 'Education',
+        'Electronics' => 'Electronics',
+        'Energy' => 'Energy',
+        'Engineering' => 'Engineering',
+        'Entertainment' => 'Entertainment',
+        'Environmental' => 'Environmental',
+        'Finance' => 'Finance',
+        'Government' => 'Government',
+        'Healthcare' => 'Healthcare',
+        'Hospitality' => 'Hospitality',
+        'Insurance' => 'Insurance',
+        'Machinery' => 'Machinery',
+        'Manufacturing' => 'Manufacturing',
+        'Media' => 'Media',
+        'Not For Profit' => 'Not For Profit',
+        'Recreation' => 'Recreation',
+        'Retail' => 'Retail',
+        'Shipping' => 'Shipping',
+        'Technology' => 'Technology',
+        'Telecommunications' => 'Telecommunications',
+        'Transportation' => 'Transportation',
+        'Utilities' => 'Utilities',
+        'Other' => 'Other',
+    ),
     'lead_source_default_key' => 'Self Generated',
-    'lead_source_dom' =>
-        array(
-            '' => '',
-            'Cold Call' => 'Cold Call',
-            'Existing Customer' => 'Existing Customer',
-            'Self Generated' => 'Self Generated',
-            'Employee' => 'Employee',
-            'Partner' => 'Partner',
-            'Public Relations' => 'Public Relations',
-            'Direct Mail' => 'Direct Mail',
-            'Conference' => 'Conference',
-            'Trade Show' => 'Trade Show',
-            'Web Site' => 'Web Site',
-            'Word of mouth' => 'Word of mouth',
-            'Email' => 'Email',
-            'Campaign' => 'Campaign',
-            'Other' => 'Other',
-        ),
-    'opportunity_type_dom' =>
-        array(
-            '' => '',
-            'Existing Business' => 'Existing Business',
-            'New Business' => 'New Business',
-        ),
-    'roi_type_dom' =>
-        array(
-            'Revenue' => 'Revenue',
-            'Investment' => 'Investment',
-            'Expected_Revenue' => 'Expected Revenue',
-            'Budget' => 'Budget',
+    'lead_source_dom' => array(
+        '' => '',
+        'Cold Call' => 'Cold Call',
+        'Existing Customer' => 'Existing Customer',
+        'Self Generated' => 'Self Generated',
+        'Employee' => 'Employee',
+        'Partner' => 'Partner',
+        'Public Relations' => 'Public Relations',
+        'Direct Mail' => 'Direct Mail',
+        'Conference' => 'Conference',
+        'Trade Show' => 'Trade Show',
+        'Web Site' => 'Web Site',
+        'Word of mouth' => 'Word of mouth',
+        'Email' => 'Email',
+        'Campaign' => 'Campaign',
+        'Other' => 'Other',
+    ),
+    'opportunity_type_dom' => array(
+        '' => '',
+        'Existing Business' => 'Existing Business',
+        'New Business' => 'New Business',
+    ),
+    'roi_type_dom' => array(
+        'Revenue' => 'Revenue',
+        'Investment' => 'Investment',
+        'Expected_Revenue' => 'Expected Revenue',
+        'Budget' => 'Budget',
 
-        ),
+    ),
     //Note:  do not translate opportunity_relationship_type_default_key
 //       it is the key for the default opportunity_relationship_type_dom value
     'opportunity_relationship_type_default_key' => 'Primary Decision Maker',
@@ -524,6 +526,7 @@ $app_list_strings = array(
     ),
     'interpretationsuggestions_dom' => array(
         'top3' => 'top 3',
+        'top3_bottom2' => 'top 3 + bottom 2',
         'top5' => 'top 5',
         'over20' => 'up from 20 points',
         'over30' => 'up from 30 points',
@@ -572,6 +575,7 @@ $app_list_strings = array(
         array(
             'Planned' => 'Planned',
             'Held' => 'Held',
+            'Cancelled' => 'Cancelled',
             'Not Held' => 'Not Held',
         ),
     'extapi_meeting_password' =>
@@ -588,6 +592,7 @@ $app_list_strings = array(
         array(
             'Planned' => 'Planned',
             'Held' => 'Held',
+            'Cancelled' => 'Cancelled',
             'Not Held' => 'Not Held',
         ),
     'call_direction_default' => 'Outbound',
@@ -606,12 +611,15 @@ $app_list_strings = array(
             'Recycled' => 'Recycled',
             'Dead' => 'Dead',
         ),
-    'lead_classification_dom' =>
-        array(
-            'cold' => 'cold',
-            'warm' => 'warm',
-            'hot' => 'hot'
-        ),
+    'lead_classification_dom' => array(
+        'cold' => 'cold',
+        'warm' => 'warm',
+        'hot' => 'hot'
+    ),
+    'lead_type_dom' => array(
+        'b2b' => 'business',
+        'b2c' => 'consumer'
+    ),
     'gender_list' =>
         array(
             'male' => 'Male',
@@ -784,8 +792,18 @@ $app_list_strings = array(
 
         ),
 
+    'parent_type_display_serviceorder' => array(
+        'SalesDocs' => 'Sales Documents',
+        'ServiceTickets' => 'Service Tickets',
+    ),
+
+    'record_type_display_serviceorder' => array(
+        'SalesDocs' => 'Sales Documents',
+        'ServiceTickets' => 'Service Tickets',
+    ),
+
     'mailbox_message_types' => [
-        'sms'   => 'Text Messages',
+        'sms' => 'Text Messages',
         'email' => 'Emails',
     ],
 
@@ -1535,12 +1553,12 @@ $app_list_strings = array(
         'L' => 'Landscape'
     ),
     // dropdown status for costcenter module
-    'costcenter_status_dom'=> array(
-    'active' => 'Active',
-    'inactive' => 'Inactive'
+    'costcenter_status_dom' => array(
+        'active' => 'Active',
+        'inactive' => 'Inactive'
     ),
     // dropdown status for serviceorderitems module
-    'serviceorderitem_status_dom'=> array(
+    'serviceorderitem_status_dom' => array(
         'active' => 'Active',
         'inactive' => 'Inactive'
     )
@@ -1691,8 +1709,8 @@ $app_strings = array(
     'LBL_EMAIL_ADDRESS_BOOK_SELECT_TITLE' => 'Select Email Recipients',
     'LBL_EMAIL_ADDRESS_BOOK_TITLE' => 'Address Book',
     'LBL_EMAIL_REPORTS_TITLE' => 'Reports',
-    'LBL_EMAIL_ADDRESS_BOOK_TITLE_ICON' => SugarThemeRegistry::current()->getImage('icon_email_addressbook', "", null, null, ".gif", 'Address Book') . ' Address Book',
-    'LBL_EMAIL_ADDRESS_BOOK_TITLE_ICON_SHORT' => SugarThemeRegistry::current()->getImage('icon_email_addressbook', 'align=absmiddle border=0', 14, 14, ".gif", ''),
+    'LBL_EMAIL_ADDRESS_BOOK_TITLE_ICON' => 'Address Book',
+    'LBL_EMAIL_ADDRESS_BOOK_TITLE_ICON_SHORT' => '',
     'LBL_EMAIL_REMOVE_SMTP_WARNING' => 'Warning! The outbound account you are trying to delete is associated to an existing inbound account.  Are you sure you want to continue?',
     'LBL_EMAIL_ADDRESSES' => 'Email',
     'LBL_EMAIL_ADDRESS_PRIMARY' => 'Email Address',
@@ -1792,8 +1810,8 @@ $app_strings = array(
     'LBL_EMAIL_ERROR_TRASH_FOLDER' => 'Trash Folder is required.',
     'LBL_EMAIL_ERROR_VIEW_RAW_SOURCE' => 'This information is not available',
     'LBL_EMAIL_ERROR_NO_OUTBOUND' => 'No outgoing mail server specified.',
-    'LBL_EMAIL_FOLDERS' => SugarThemeRegistry::current()->getImage('icon_email_folder', 'align=absmiddle border=0', null, null, ".gif", '') . 'Folders',
-    'LBL_EMAIL_FOLDERS_SHORT' => SugarThemeRegistry::current()->getImage('icon_email_folder', 'align=absmiddle border=0', null, null, ".gif", ''),
+    'LBL_EMAIL_FOLDERS' => 'Folders',
+    'LBL_EMAIL_FOLDERS_SHORT' => '',
     'LBL_EMAIL_FOLDERS_ACTIONS' => 'Move To',
     'LBL_EMAIL_FOLDERS_ADD' => 'Add',
     'LBL_EMAIL_FOLDERS_ADD_DIALOG_TITLE' => 'Add New Folder',
@@ -1920,8 +1938,8 @@ $app_strings = array(
     'LBL_EMAIL_SAVE_DRAFT' => 'Save Draft',
 
     'LBL_EMAIL_SEARCHING' => 'Conducting Search',
-    'LBL_EMAIL_SEARCH' => SugarThemeRegistry::current()->getImage('Search', 'align=absmiddle border=0', null, null, ".gif", ''),
-    'LBL_EMAIL_SEARCH_SHORT' => SugarThemeRegistry::current()->getImage('Search', 'align=absmiddle border=0', null, null, ".gif", ''),
+    'LBL_EMAIL_SEARCH' => '',
+    'LBL_EMAIL_SEARCH_SHORT' => '',
     'LBL_EMAIL_SEARCH_ADVANCED' => 'Advanced Search',
     'LBL_EMAIL_SEARCH_DATE_FROM' => 'Date From',
     'LBL_EMAIL_SEARCH_DATE_UNTIL' => 'Date Until',
@@ -4218,6 +4236,7 @@ $app_list_strings['emailTemplates_type_list'] = array(
     '' => '',
     'campaign' => 'Campaign',
     'email' => 'Email',
+    'notification' => 'Notification',
     'bean2mail' => 'send Bean via mail',
     'sendCredentials' => 'Send credentials',
     'sendTokenForNewPassword' => 'Send the token, when password is lost'
@@ -4548,6 +4567,25 @@ $app_list_strings['mailboxes_smtp_encryption_dom'] = [
 
 $app_strings = array_merge($app_strings, $addAppStrings);
 
+if (file_exists('modules/ServiceEquipments/ServiceEquipment.php')) {
+    $app_list_strings['serviceequipment_status_dom'] = [
+        'new' => 'new',
+        'offsite' => 'off site',
+        'onsite' => 'on site',
+        'inactive' => 'inactive',
+    ];
+    $app_list_strings['maintenance_cycle_dom'] = array(
+        '12' => 'once a year',
+        '6' => 'twice a year',
+        '3' => '3 times a year',
+        '24' => 'every second year',
+    );
+    $app_list_strings['counter_unit_dom'] = array( //uomunits value
+        'M' => 'meters',
+        'STD' => 'hours',
+    );
+}
+
 if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
     $app_list_strings['serviceorder_status_dom'] = array(
         'new' => 'New',
@@ -4559,6 +4597,16 @@ if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
     $app_list_strings['parent_type_display']['ServiceOrders'] = 'Serviceaufträge';
     $app_list_strings['record_type_display']['ServiceOrders'] = 'Serviceaufträge';
     $app_list_strings['record_type_display_notes']['ServiceOrders'] = 'Serviceaufträge';
+
+    $app_list_strings['serviceorder_user_role_dom'] = [
+        'operator' => 'operator',
+        'assistant' => 'assistant',
+    ];
+
+    $app_list_strings['serviceorderitem_parent_type_display'] = [
+        'Products' => 'Products',
+        'ProductVariants' => 'Product Variants',
+    ];
 }
 if (file_exists('modules/ServiceTickets/ServiceTicket.php')) {
     $app_list_strings['serviceticket_status_dom'] = array(
@@ -4611,10 +4659,10 @@ if (file_exists('modules/ServiceFeedbacks/ServiceFeedback.php')) {
 }
 
 $app_list_strings['mailboxes_transport_dom'] = [
-    'imap'     => 'IMAP/SMTP',
-    'mailgun'  => 'Mailgun',
+    'imap' => 'IMAP/SMTP',
+    'mailgun' => 'Mailgun',
     'sendgrid' => 'Sendgrid',
-    'twillio'  => 'Twillio',
+    'twillio' => 'Twillio',
 ];
 
 $app_list_strings['mailboxes_log_levels'] = [
@@ -4624,23 +4672,23 @@ $app_list_strings['mailboxes_log_levels'] = [
 ];
 
 $app_list_strings['mailboxes_outbound_comm'] = [
-    'no'         => 'Not Allowed',
-    'single'     => 'Only Single Emails',
-    'mass'       => 'Single and Mass Emails',
+    'no' => 'Not Allowed',
+    'single' => 'Only Single Emails',
+    'mass' => 'Single and Mass Emails',
     'single_sms' => 'Only Single Text Messages (SMS)',
-    'mass_sms'   => 'Single and Mass Text Messages (SMS)',
+    'mass_sms' => 'Single and Mass Text Messages (SMS)',
 ];
 
 include('include/SpiceBeanGuides/SpiceBeanGuideLanguage.php');
 
 $app_list_strings['output_template_types'] = [
-    ''      => '',
+    '' => '',
     'email' => 'email',
-    'pdf'   => 'PDF',
+    'pdf' => 'PDF',
 ];
 
 $app_list_strings['languages'] = [
-    ''   => '',
+    '' => '',
     'de' => 'german',
     'en' => 'english',
 ];
@@ -4657,19 +4705,19 @@ $app_list_strings['spiceaclobjects_types_dom'] = [
 
 // CR1000333
 $app_list_strings['deploymentrelease_status_dom'] = [
-    ''         => '',
-    'plan'  => 'plan', // value was planned before CR1000333
-    'develop'  => 'develop',
-    'prepare'    => 'prepare',
-    'test'  => 'test',
+    '' => '',
+    'plan' => 'plan', // value was planned before CR1000333
+    'develop' => 'develop',
+    'prepare' => 'prepare',
+    'test' => 'test',
     'release' => 'release',
     'closed completed' => 'completed', // value was released before CR1000333
     'closed canceled' => 'canceled',
 ];
 
 $app_list_strings['product_status_dom'] = [
-    'draft'    => 'draft',
-    'active'   => 'active',
+    'draft' => 'draft',
+    'active' => 'active',
     'inactive' => 'inactive',
 ];
 
@@ -4679,8 +4727,8 @@ $app_list_strings['textmessage_direction'] = [
 ];
 
 $app_list_strings['textmessage_delivery_status'] = [
-    'draft'  => 'Draft',
-    'sent'   => 'Sent',
+    'draft' => 'Draft',
+    'sent' => 'Sent',
     'failed' => 'Failed',
 ];
 

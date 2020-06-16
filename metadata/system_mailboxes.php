@@ -10,7 +10,7 @@ $dictionary['sysmailboxtransports'] = array(
         'name' => array(
             'name' => 'name',
             'type' => 'varchar',
-            'len' => 10
+            'len' => 16
         ),
         'label' => array(
             'name' => 'label',

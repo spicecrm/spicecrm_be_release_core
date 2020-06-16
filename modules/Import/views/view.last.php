@@ -162,7 +162,8 @@ class ImportViewLast extends ImportView
             $params['overrideOrder'] = true;
             if(!empty($_REQUEST['sortOrder'])) $params['sortOrder'] = $_REQUEST['sortOrder'];
         }
-        $beanname = ($this->bean->object_name == 'Case' ? 'aCase' : $this->bean->object_name);
+//        $beanname = ($this->bean->object_name == 'Case' ? 'aCase' : $this->bean->object_name);
+        $beanname = $this->bean->object_name;
         // add users_last_import joins so we only show records done in this import
         $params['custom_from']  = ', users_last_import';
         $params['custom_where'] = " AND users_last_import.assigned_user_id = '{$GLOBALS['current_user']->id}'

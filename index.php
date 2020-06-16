@@ -36,7 +36,7 @@ if(!defined('sugarEntry'))define('sugarEntry', true);
 ********************************************************************************/
 
 
-include ('include/MVC/preDispatch.php');
+//include ('include/MVC/preDispatch.php');
 $startTime = microtime(true);
 
 require_once('include/entryPoint.php');

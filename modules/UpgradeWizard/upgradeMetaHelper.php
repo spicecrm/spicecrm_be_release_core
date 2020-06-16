@@ -316,7 +316,8 @@ function getAllCustomizedModules() {
 					$newFile = $this->upgrade_dir.'/modules/'.$module_name.'/metadata/'.$lowerCaseView.'defs.php';
 					$evfp = fopen($newFile,'w');
 
-					$bean_name = $bean_name == 'aCase' ? 'Case' : $bean_name;
+// CR1000426 cleanup backend, module Cases removed
+//					$bean_name = $bean_name == 'aCase' ? 'Case' : $bean_name;
 					fwrite($evfp, $parser->parse($file,
 											$dictionary[$bean_name]['fields'],
 											$module_name,

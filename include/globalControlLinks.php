@@ -51,11 +51,12 @@ if(isset( $sugar_config['disc_client']) && $sugar_config['disc_client']){
 	require_once('modules/Sync/headermenu.php');
 }
 
-
-$global_control_links['employees'] = array(
-'linkinfo' => array($app_strings['LBL_EMPLOYEES']=> 'index.php?module=Employees&action=index&query=true'),
-'submenu' => ''
-);
+// BEGIN CR1000426
+// $global_control_links['employees'] = array(
+// 'linkinfo' => array($app_strings['LBL_EMPLOYEES']=> 'index.php?module=Employees&action=index&query=true'),
+// 'submenu' => ''
+// );
+// END
 if (
         is_admin($current_user)
 
@@ -64,11 +65,12 @@ if (
 'linkinfo' => array($app_strings['LBL_ADMIN'] => 'index.php?module=Administration&action=index'),
 'submenu' => ''
 );
-$global_control_links['training'] = array(
-'linkinfo' => array($app_strings['LBL_TRAINING'] => 'javascript:void(window.open(\'http://support.sugarcrm.com\'))'),
-'submenu' => ''
- );
-
+// BEGIN CR1000426
+//$global_control_links['training'] = array(
+//'linkinfo' => array($app_strings['LBL_TRAINING'] => 'javascript:void(window.open(\'http://support.sugarcrm.com\'))'),
+//'submenu' => ''
+// );
+// END
 /* no longer goes in the menubar - now implemented in the bottom bar.
 $global_control_links['help'] = array(
     'linkinfo' => array($app_strings['LNK_HELP'] => ' javascript:void window.open(\'index.php?module=Administration&action=SupportPortal&view=documentation&version='.$sugar_version.'&edition='.$sugar_flavor.'&lang='.$current_language.'&help_module='.$GLOBALS['module'].'&help_action='.$action.'&key='.$server_unique_key.'\')'),

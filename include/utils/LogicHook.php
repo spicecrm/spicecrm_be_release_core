@@ -282,13 +282,15 @@ class LogicHook
 
 			foreach($process_order as $hook_index){
 				$hook_details = $hook_array[$event][$hook_index];
-				if(!file_exists($hook_details[2])){
-                    if(isset($GLOBALS['log'])){
-					    $GLOBALS['log']->error('Unable to load custom logic file: '.$hook_details[2]);
+				if(!empty($hook_details[2])) {
+                    if (!file_exists($hook_details[2])) {
+                        if (isset($GLOBALS['log'])) {
+                            $GLOBALS['log']->error('Unable to load custom logic file: ' . $hook_details[2]);
+                        }
+                        continue;
                     }
-					continue;
-				}
-				include_once($hook_details[2]);
+                    include_once($hook_details[2]);
+                }
 				$hook_class = $hook_details[3];
 				$hook_function = $hook_details[4];
 

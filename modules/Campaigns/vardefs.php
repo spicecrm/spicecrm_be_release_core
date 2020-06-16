@@ -259,6 +259,15 @@ $dictionary['Campaign'] = array('audited' => true,
             'link_class' => 'ProspectLink',
             'link_file' => 'modules/Campaigns/ProspectLink.php'
         ),
+        'consumers' => array(
+            'name' => 'consumers',
+            'type' => 'link',
+            'relationship' => 'campaign_consumers',
+            'source' => 'non-db',
+            'vname' => 'LBL_CONSUMERS',
+            'link_class' => 'ProspectLink',
+            'link_file' => 'modules/Campaigns/ProspectLink.php'
+        ),
         'accounts' => array(
             'name' => 'accounts',
             'type' => 'link',
@@ -437,6 +446,10 @@ $dictionary['Campaign'] = array('audited' => true,
 
         'campaign_contacts' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
             'rhs_module' => 'Contacts', 'rhs_table' => 'contacts', 'rhs_key' => 'campaign_id',
+            'relationship_type' => 'one-to-many'),
+
+        'campaign_consumers' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
+            'rhs_module' => 'Consumers', 'rhs_table' => 'consumers', 'rhs_key' => 'campaign_id',
             'relationship_type' => 'one-to-many'),
 
         'campaign_leads' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',

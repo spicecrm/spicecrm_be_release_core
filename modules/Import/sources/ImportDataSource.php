@@ -186,8 +186,9 @@ abstract class ImportDataSource implements Iterator
         $last_import->deleted = null;
         $last_import->assigned_user_id = $GLOBALS['current_user']->id;
         $last_import->import_module = $import_module;
-        if ( $module == 'Case' )
-            $module = 'aCase';
+// CR1000426 cleanup backend, module Cases removed
+//        if ( $module == 'Case' )
+//            $module = 'aCase';
         
         $last_import->bean_type = $module;
         $last_import->bean_id = $id;

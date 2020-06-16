@@ -198,43 +198,6 @@ class Task extends SugarBean
         return "$this->name";
     }
 
-    function create_export_query(&$order_by, &$where, $relate_link_join = '')
-    {
-        $custom_join = $this->getCustomJoin(true, true, $where);
-        $custom_join['join'] .= $relate_link_join;
-        $contact_required = stristr($where, "contacts");
-        if ($contact_required) {
-            $query = "SELECT tasks.*, contacts.first_name, contacts.last_name, users.user_name as assigned_user_name ";
-            $query .= $custom_join['select'];
-            $query .= " FROM contacts, tasks ";
-            $where_auto = "tasks.contact_id = contacts.id AND tasks.deleted=0 AND contacts.deleted=0";
-        } else {
-            $query = 'SELECT tasks.*, users.user_name as assigned_user_name ';
-            $query .= $custom_join['select'];
-            $query .= ' FROM tasks ';
-            $where_auto = "tasks.deleted=0";
-        }
-
-
-        $query .= $custom_join['join'];
-        $query .= "  LEFT JOIN users ON tasks.assigned_user_id=users.id ";
-
-        if ($where != "")
-            $query .= "where $where AND " . $where_auto;
-        else
-            $query .= "where " . $where_auto;
-
-        $order_by = $this->process_order_by($order_by);
-        if (empty($order_by)) {
-            $order_by = 'tasks.name';
-        }
-        $query .= ' ORDER BY ' . $order_by;
-
-        return $query;
-
-    }
-
-
     function fill_in_additional_list_fields()
     {
         $this->fill_in_additional_detail_fields();
@@ -317,7 +280,7 @@ class Task extends SugarBean
         }
     }
 
-
+    /*
     protected function formatStartAndDueDates(&$task_fields, $dbtime, $override_date_for_subpanel)
     {
         global $timedate;
@@ -343,7 +306,9 @@ class Task extends SugarBean
             $task_fields['DATE_START'] = "<font class='$taskClass'>$date_due</font>";
         }
     }
+    */
 
+    /*
     function get_list_view_data()
     {
         global $action, $currentModule, $focus, $current_module_strings, $app_list_strings, $timedate;
@@ -400,6 +365,7 @@ class Task extends SugarBean
 
         return $task_fields;
     }
+    */
 
     function set_notification_body($xtpl, $task)
     {

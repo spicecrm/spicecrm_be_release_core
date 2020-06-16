@@ -37,7 +37,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 
 
-
-require_once('install/install_utils.php');
+// CR100349 remove methods from install_utils.php that are required from classes in use
+require_once('include/utils.php');
 
 handleWebConfig();

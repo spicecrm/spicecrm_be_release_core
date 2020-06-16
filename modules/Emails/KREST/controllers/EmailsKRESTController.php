@@ -10,6 +10,7 @@ use SpiceCRM\KREST\NotFoundException;
 use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
 use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachmentHandler;
+use SpiceCRM\modules\Mailboxes\Handlers\GSuiteAttachmentHandler;
 use UploadFile;
 
 class EmailsKRESTController
@@ -35,11 +36,12 @@ class EmailsKRESTController
         global $db;
 
         $message_id = filter_var($postBody['message_id'], FILTER_SANITIZE_STRING);
+        $thread_id = filter_var($postBody['thread_id'], FILTER_SANITIZE_STRING);
 
         $email = BeanFactory::getBean('Emails');
 
         // get linked items
-        if ($email->retrieve_by_string_fields(['message_id' => $message_id])) {
+        if ($email->retrieve_by_string_fields(['message_id' => $message_id]) || $email->retrieve_by_string_fields(['thread_id' => $thread_id])) {
             $result['email_id']    = $email->id;
             $result['attachments'] = $email->getExternalAttachments();
             $linkedBeansObj = $db->query("SELECT bean_module, bean_id FROM emails_beans WHERE email_id = '$email->id'");
@@ -88,13 +90,13 @@ class EmailsKRESTController
      * @return array|string
      * @throws Exception
      */
-    public function saveAttachments($req, $res, $args) {
+    public function saveOutlookAttachments($req, $res, $args) {
         $postBody = $req->getParsedBody();
 
         $emailId = filter_var($postBody['email_id'], FILTER_SANITIZE_STRING);
         $email = \BeanFactory::getBean('Emails', $emailId);
 
-        if (isset($postBody['outlookAttachments'])) {
+        if (isset($postBody['attachments'])) {
             return $res->write(json_encode($this->handleOutlookAttachments($email, $postBody)));
         } else {
             // todo correct http status
@@ -103,21 +105,69 @@ class EmailsKRESTController
     }
 
     /**
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return array|string
+     * @throws Exception
+     */
+    public function saveGSuiteAttachments($req, $res, $args) {
+        $postBody = $req->getParsedBody();
+
+        $emailId = filter_var($postBody['email_id'], FILTER_SANITIZE_STRING);
+        $email = \BeanFactory::getBean('Emails', $emailId);
+
+        if (isset($postBody['attachments'])) {
+            return $res->write(json_encode($this->handleGSuiteAttachments($email, $postBody)));
+        } else {
+            // todo correct http status
+            return $res->write(json_encode("Error: No Outlook Attachments found"));
+        }
+    }
+
+    /**
+     * saveOutlookEmailWithBeans
+     *
+     * Saves an Email sent by external add-ons Outlook
+     * and additionally saves the Email to Bean relations.
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     */
+    public function saveOutlookEmailWithBeans($req, $res, $args) {
+        $postBody = $req->getParsedBody();
+        $this->saveEmailWithBeans($postBody, $res, 'outlook');
+    }
+
+    /**
+     * saveGSuiteEmailWithBeans
+     *
+     * Saves an Email sent by external add-ons Outlook
+     * and additionally saves the Email to Bean relations.
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     */
+    public function saveGSuiteEmailWithBeans($req, $res, $args) {
+        $postBody = $req->getParsedBody();
+        $this->saveEmailWithBeans($postBody, $res, 'gsuite');
+    }
+
+    /**
      * saveEmailWithBeans
      *
      * Saves an Email sent by external add-ons (Gmail, Outlook)
      * and additionally saves the Email to Bean relations.
      *
-     * Available in KREST as POST under /module/Emails/groupware/saveemailwithbeans
-     *
-     * @param $req
+     * @param $postBody
      * @param $res
-     * @param $args
+     * @param $source
      * @return mixed
      * @throws Exception
      */
-    public function saveEmailWithBeans($req, $res, $args) {
-        $postBody = $req->getParsedBody();
+    public function saveEmailWithBeans($postBody, $res, $source) {
 
         if (!isset($postBody['email'])) {
             throw new \Exception('Email missing');
@@ -126,7 +176,7 @@ class EmailsKRESTController
             throw new \Exception('Beans missing');
         }
 
-        $email = $this->externalDataToEmail($postBody['email'], $postBody['beans']);
+        $email = $this->externalDataToEmail($postBody['email'], $postBody['beans'], $source);
 
         $result  = [];
         $isFirst = true;
@@ -333,19 +383,22 @@ class EmailsKRESTController
      *
      * @param $data
      * @param $beans
+     * @param $source
      * @return Email
      * @throws Exception
      */
-    private function externalDataToEmail($data, $beans) {
+    private function externalDataToEmail($data, $beans, $source) {
+        global $current_user;
         try {
             $email = Email::findByMessageId($data['message_id']);
-
+            if (!$email) throw new Exception(false);
             return $email;
         } catch (Exception $e) {
             $email = \BeanFactory::getBean('Emails');
 
             $email->name          = $data['subject'];
             $email->body          = $data['body'];
+            $email->thread_id    = $data['thread_id'];
             $email->message_id    = $data['message_id'];
             $email->date_sent     = date('Y-m-d H:i:s', strtotime($data['date']));
             $email->type          = Email::TYPE_INBOUND;
@@ -369,21 +422,21 @@ class EmailsKRESTController
                 $email->bcc_addrs = $data['bcc'];
             }
 
+            $email->assigned_user_id = $current_user->id;
+            $email->set_created_by = true;
+            $email->modified_user_id = $current_user->id;
+
             $email->save();
         }
 
-        /**
-         * Deal with the Outlook add-in attachments
-         */
-        if (isset($data['outlookAttachments'])) {
-            $this->handleOutlookAttachments($email, $data);
-        }
+        switch ($source) {
+            case 'outlook':
+                $this->handleOutlookAttachments($email, $data);
+                break;
+            case 'gsuite':
+                $this->handleGSuiteAttachments($email, $data);
+                break;
 
-        /**
-         * Deal with the GMail plugin attachments
-         */
-        if (isset($data['googleAttachments'])) {
-            $this->handleGmailAttachments($email, $data['googleAttachments']);
         }
 
         return $email;
@@ -448,6 +501,21 @@ class EmailsKRESTController
      */
     private function handleOutlookAttachments(Email $email, $attachmentData) {
         $attachmentHandler = new OutlookAttachmentHandler($email, $attachmentData);
+        return $attachmentHandler->saveAttachments();
+    }
+
+    /**
+     * handleGSuiteAttachments
+     *
+     * Initializes the GSuiteAttachmentHandler and saves the GSuite attachments
+     *
+     * @param Email $email
+     * @param $attachmentData
+     * @return array
+     * @throws Exception
+     */
+    private function handleGSuiteAttachments(Email $email, $attachmentData) {
+        $attachmentHandler = new GSuiteAttachmentHandler($email, $attachmentData);
         return $attachmentHandler->saveAttachments();
     }
 

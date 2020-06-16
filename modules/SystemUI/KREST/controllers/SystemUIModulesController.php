@@ -80,7 +80,7 @@ class SystemUIModulesController
 
                 $ftsBeanHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSBeanHandler($seed);
                 // check if we have any ACL right
-                if ($module['module'] == 'Home' || $aclArray['list'] || $aclArray['view'] || $aclArray['edit']) {
+                if ($module['module'] == 'Home' || $aclArray['list'] ||$aclArray['listrelated'] || $aclArray['view'] || $aclArray['edit']) {
                     $retArray[$module['module']] = array(
                         'id' => $module['id'],
                         'icon' => $module['icon'],

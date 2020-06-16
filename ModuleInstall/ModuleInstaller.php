@@ -1785,11 +1785,11 @@ class ModuleInstaller{
 		global $sugar_config;
 
 		//Check for new module extensions
-		$this->rebuild_modules();
+//		$this->rebuild_modules();
 
 		$this->rebuild_languages($sugar_config['languages']);
 		$this->rebuild_extensions();
-		$this->rebuild_dashletcontainers();
+//		$this->rebuild_dashletcontainers();
 		$this->rebuild_relationships();
 		$this->rebuild_tabledictionary();
         $this->reset_opcodes();

@@ -318,8 +318,13 @@ class MysqliManager extends MysqlManager
 	    }
 
 		// cn: using direct calls to prevent this from spamming the Logs
-	    mysqli_query($this->database,"SET CHARACTER SET utf8");
-	    $names = "SET NAMES 'utf8'";
+        // CR1000349 mysql8 compatibility: remove hardcoded charset
+        $charset = $this->getOption('charset');
+        if(empty($charset)) {
+            $charset = 'utf8';
+        }
+	    mysqli_query($this->database,"SET CHARACTER SET ".$charset."");
+	    $names = "SET NAMES '$charset'";
 	    $collation = $this->getOption('collation');
 	    if(!empty($collation)) {
 	        $names .= " COLLATE '$collation'";

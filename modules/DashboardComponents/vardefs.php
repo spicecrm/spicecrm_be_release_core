@@ -48,11 +48,6 @@ $dictionary['DashboardComponent'] = array(
                 'type' => 'varchar',
                 'len' => 36
             ),
-            'position' => array(
-                'name' => 'position',
-                'type' => 'varchar',
-                'len' => 200
-            ),
             'component' => array(
                 'name' => 'component',
                 'type' => 'varchar',

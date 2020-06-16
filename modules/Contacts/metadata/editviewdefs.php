@@ -36,8 +36,8 @@
 
 $viewdefs['Contacts']['EditView'] = array(
     'templateMeta' => array('form'=>array('hidden'=>array('<input type="hidden" name="opportunity_id" value="{$smarty.request.opportunity_id}">',
-    											          '<input type="hidden" name="case_id" value="{$smarty.request.case_id}">',
-    											          '<input type="hidden" name="bug_id" value="{$smarty.request.bug_id}">',
+//    											          '<input type="hidden" name="case_id" value="{$smarty.request.case_id}">',
+//    											          '<input type="hidden" name="bug_id" value="{$smarty.request.bug_id}">',
     											          '<input type="hidden" name="email_id" value="{$smarty.request.email_id}">',
     											          '<input type="hidden" name="inbound_email_id" value="{$smarty.request.inbound_email_id}">')),
 							'maxColumns' => '2',

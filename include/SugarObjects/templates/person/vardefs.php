@@ -307,7 +307,20 @@ $vardefs = array(
             'comment' => 'Street address for primary address',
             'merge_filter' => 'enabled',
         ),
-
+        'primary_address_street_number' => array(
+            'name' => 'primary_address_street_number',
+            'vname' => 'LBL_PRIMARY_ADDRESS_STREET_NUMBER',
+            'type' => 'varchar',
+            'len' => '10',
+            'comment' => 'Street number for primary address'
+        ),
+        'primary_address_street_number_suffix' => array(
+            'name' => 'primary_address_street_number_suffix',
+            'vname' => 'LBL_PRIMARY_ADDRESS_STREET_NUMBER_SUFFIX',
+            'type' => 'varchar',
+            'len' => '25',
+            'comment' => 'additonal infop on the number like Appartment or similar'
+        ),
         'primary_address_attn' => array(
             'name' => 'primary_address_attn',
             'vname' => 'LBL_PRIMARY_ADDRESS_ATTN',
@@ -322,15 +335,13 @@ $vardefs = array(
                 'name' => 'primary_address_street_2',
                 'vname' => 'LBL_PRIMARY_ADDRESS_STREET_2',
                 'type' => 'varchar',
-                'len' => '150',
-                'source' => 'non-db',
+                'len' => '80',
             ),
         'primary_address_street_3' => array(
             'name' => 'primary_address_street_3',
             'vname' => 'LBL_PRIMARY_ADDRESS_STREET_3',
             'type' => 'varchar',
-            'len' => '150',
-            'source' => 'non-db',
+            'len' => '80',
         ),
         'primary_address_city' => array(
             'name' => 'primary_address_city',
@@ -340,6 +351,13 @@ $vardefs = array(
             'group' => 'primary_address',
             'comment' => 'City for primary address',
             'merge_filter' => 'enabled',
+        ),
+        'primary_address_district' => array(
+            'name' => 'primary_address_district',
+            'vname' => 'LBL_PRIMARY_ADDRESS_DISTRICT',
+            'type' => 'varchar',
+            'len' => '100',
+            'comment' => 'District for primary address',
         ),
         'primary_address_state' => array(
             'name' => 'primary_address_state',
@@ -404,20 +422,32 @@ $vardefs = array(
             'comment' => 'Street address for alternate address',
             'merge_filter' => 'enabled',
         ),
+        'alt_address_street_number' => array(
+            'name' => 'alt_address_street_number',
+            'vname' => 'LBL_ALT_ADDRESS_STREET_NUMBER',
+            'type' => 'varchar',
+            'len' => '10',
+            'comment' => 'Street number for alternate address',
+        ),
+        'alt_address_street_number_suffix' => array(
+            'name' => 'alt_address_street_number_suffix',
+            'vname' => 'LBL_ALT_ADDRESS_STREET_NUMBER_SUFFIX',
+            'type' => 'varchar',
+            'len' => '25',
+            'comment' => 'Add Street number info like Appartmenr or similar',
+        ),
         'alt_address_street_2' =>
             array(
                 'name' => 'alt_address_street_2',
                 'vname' => 'LBL_ALT_ADDRESS_STREET_2',
                 'type' => 'varchar',
-                'len' => '150',
-                'source' => 'non-db',
+                'len' => '80'
             ),
         'alt_address_street_3' => array(
             'name' => 'alt_address_street_3',
             'vname' => 'LBL_ALT_ADDRESS_STREET_3',
             'type' => 'varchar',
-            'len' => '150',
-            'source' => 'non-db',
+            'len' => '80'
         ),
         'alt_address_attn' => array(
             'name' => 'alt_address_attn',
@@ -433,6 +463,13 @@ $vardefs = array(
             'group' => 'alt_address',
             'comment' => 'City for alternate address',
             'merge_filter' => 'enabled',
+        ),
+        'alt_address_district' => array(
+            'name' => 'alt_address_district',
+            'vname' => 'LBL_ALT_ADDRESS_DISTRICT',
+            'type' => 'varchar',
+            'len' => '100',
+            'comment' => 'District for alternate address'
         ),
         'alt_address_state' => array(
             'name' => 'alt_address_state',

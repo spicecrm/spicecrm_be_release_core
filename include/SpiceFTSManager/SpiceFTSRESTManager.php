@@ -57,7 +57,8 @@ class SpiceFTSRESTManager
             $scheduler->date_time_end = "";
         }
         else{
-            if(!function_exists('create_date')) require_once 'install/install_utils.php';
+            // CR100349 remove methods from install_utils.php that are required from classes in use
+            if(!function_exists('create_date')) require_once 'include/utils.php';
             $scheduler = \BeanFactory::newBean('Schedulers');
             $scheduler->name = (!empty($mod_strings['LBL_OOTB_FTS_INDEX']) ? $mod_strings['LBL_OOTB_FTS_INDEX'] : "SpiceCRM Full Text Indexing");
             $scheduler->date_time_start = create_date(date('Y'),date('n'),date('d')) . ' ' . create_time(0,0,1);

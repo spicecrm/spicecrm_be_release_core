@@ -94,16 +94,16 @@ class Contact extends Person {
 	var $portal_active;
 	var $contacts_users_id;
 	// These are for related fields
-	var $bug_id;
+//	var $bug_id;
 	var $account_name;
 	var $account_id;
 	var $report_to_name;
 	var $opportunity_role;
 	var $opportunity_rel_id;
 	var $opportunity_id;
-	var $case_role;
-	var $case_rel_id;
-	var $case_id;
+//	var $case_role;
+//	var $case_rel_id;
+//	var $case_id;
 	var $task_id;
 	var $note_id;
 	var $meeting_id;
@@ -135,10 +135,18 @@ class Contact extends Person {
 	var $importable = true;
 
 	// This is used to retrieve related fields from form posts.
-	var $additional_column_fields = Array('bug_id', 'assigned_user_name', 'account_name', 'account_id', 'opportunity_id', 'case_id', 'task_id', 'note_id', 'meeting_id', 'call_id', 'email_id'
+	var $additional_column_fields = Array(
+//	    'bug_id',
+        'assigned_user_name', 'account_name', 'account_id', 'opportunity_id',
+//        'case_id',
+        'task_id', 'note_id', 'meeting_id', 'call_id', 'email_id'
 	);
 
-	var $relationship_fields = Array('account_id'=> 'accounts','bug_id' => 'bugs', 'call_id'=>'calls','case_id'=>'cases','email_id'=>'emails',
+	var $relationship_fields = Array('account_id'=> 'accounts',
+//        'bug_id' => 'bugs',
+        'call_id'=>'calls',
+//        'case_id'=>'cases',
+        'email_id'=>'emails',
 								'meeting_id'=>'meetings','note_id'=>'notes','task_id'=>'tasks', 'opportunity_id'=>'opportunities', 'contacts_users_id' => 'user_sync'
 								);
 

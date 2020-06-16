@@ -47,10 +47,8 @@ $moduleList[] = 'Calendar';
 $moduleList[] = 'Calls';
 $moduleList[] = 'Meetings';
 $moduleList[] = 'Tasks';
-$moduleList[] = 'Notes';
 $moduleList[] = 'Leads';
 $moduleList[] = 'Contacts';
-$moduleList[] = 'Accounts';
 $moduleList[] = 'Opportunities';
 
 
@@ -61,7 +59,6 @@ $moduleList[] = 'ProspectLists';
 
 $moduleList[] = 'Documents';
 $moduleList[] = 'Cases';
-$moduleList[] = 'Projects';
 $moduleList[] = 'Bugs';
 
 
@@ -70,32 +67,29 @@ $moduleList[] = 'Bugs';
 // to create a new module's bean class, add the bean definition here
 $beanList = array();
 //ACL Objects
+$beanList['Relationships'] = 'Relationship';
 $beanList['ACLRoles'] = 'ACLRole';
 $beanList['ACLActions'] = 'ACLAction';
 //END ACL OBJECTS
 $beanList['Leads'] = 'Lead';
-$beanList['Cases'] = 'aCase';
-$beanList['Bugs'] = 'Bug';
+// CR1000426 cleanup backend, module Cases removed
+//$beanList['Cases'] = 'aCase';
+// CR1000426 cleanup backend, module Bugs removed
+//$beanList['Bugs'] = 'Bug';
 $beanList['ProspectLists'] = 'ProspectList';
 $beanList['Prospects'] = 'Prospect';
-$beanList['Projects'] = 'Project';
-$beanList['ProjectTasks'] = 'ProjectTask';
 $beanList['Campaigns'] = 'Campaign';
 $beanList['EmailMarketing'] = 'EmailMarketing';
-$beanList['CampaignLog'] = 'CampaignLog';
-$beanList['CampaignTrackers'] = 'CampaignTracker';
 $beanList['Releases'] = 'Release';
 $beanList['Groups'] = 'Group';
 $beanList['EmailMan'] = 'EmailMan';
 $beanList['Schedulers'] = 'Scheduler';
 $beanList['SchedulersJobs'] = 'SchedulersJob';
 $beanList['Contacts'] = 'Contact';
-$beanList['Accounts'] = 'Account';
-$beanList['DynamicFields'] = 'DynamicField';
-$beanList['EditCustomFields'] = 'FieldsMetaData';
+$beanList['DynamicFields'] = 'FieldsMetaData';
+//$beanList['EditCustomFields'] = 'FieldsMetaData';
 $beanList['Opportunities'] = 'Opportunity';
 $beanList['EmailTemplates'] = 'EmailTemplate';
-$beanList['Notes'] = 'Note';
 $beanList['Calls'] = 'Call';
 $beanList['Emails'] = 'Email';
 $beanList['Meetings'] = 'Meeting';
@@ -104,20 +98,20 @@ $beanList['Users'] = 'User';
 $beanList['UserAccessLogs'] = 'UserAccessLog';
 $beanList['Currencies'] = 'Currency';
 $beanList['Trackers'] = 'Tracker';
-$beanList['Connectors'] = 'Connectors';
+//$beanList['Connectors'] = 'Connectors';
 $beanList['Import_1'] = 'ImportMap';
 $beanList['Import_2'] = 'UsersLastImport';
 $beanList['Versions'] = 'Version';
 $beanList['Administration'] = 'Administration';
 $beanList['vCals'] = 'vCal';
-$beanList['CustomFields'] = 'CustomFields';
+//$beanList['CustomFields'] = 'CustomFields';
 
 
 $beanList['Documents'] = 'Document';
 $beanList['DocumentRevisions'] = 'DocumentRevision';
 $beanList['Roles'] = 'Role';
 
-$beanList['Audit'] = 'Audit';
+//$beanList['Audit'] = 'Audit';
 
 // deferred
 //$beanList['Queues'] = 'Queue';
@@ -131,7 +125,6 @@ $beanList['UserQuotas'] = 'UserQuota';
 $beanList['MergeRecords'] = 'MergeRecord';
 $beanList['EmailAddresses'] = 'EmailAddress';
 $beanList['EmailText'] = 'EmailText';
-$beanList['Relationships'] = 'Relationship';
 $beanList['Employees'] = 'Employee';
 
 
@@ -143,35 +136,31 @@ $beanFiles = array();
 $beanFiles['ACLAction'] = 'modules/ACLActions/ACLAction.php';
 $beanFiles['ACLRole'] = 'modules/ACLRoles/ACLRole.php';
 $beanFiles['Relationship'] = 'modules/Relationships/Relationship.php';
-
 $beanFiles['Lead'] = 'modules/Leads/Lead.php';
-$beanFiles['aCase'] = 'modules/Cases/Case.php';
-$beanFiles['Bug'] = 'modules/Bugs/Bug.php';
+// CR1000426 cleanup backend, module Cases removed
+//$beanFiles['aCase'] = 'modules/Cases/Case.php';
+// CR1000426 cleanup backend, module Bugs removed
+//$beanFiles['Bug'] = 'modules/Bugs/Bug.php';
+$beanFiles['User'] = 'modules/Users/User.php';
 $beanFiles['Group'] = 'modules/Groups/Group.php';
-$beanFiles['CampaignLog'] = 'modules/CampaignLog/CampaignLog.php';
-$beanFiles['Project'] = 'modules/Projects/Project.php';
-$beanFiles['ProjectTask'] = 'modules/ProjectTasks/ProjectTask.php';
 $beanFiles['Campaign'] = 'modules/Campaigns/Campaign.php';
 $beanFiles['ProspectList'] = 'modules/ProspectLists/ProspectList.php';
 $beanFiles['Prospect'] = 'modules/Prospects/Prospect.php';
 
 $beanFiles['EmailMarketing'] = 'modules/EmailMarketing/EmailMarketing.php';
-$beanFiles['CampaignTracker'] = 'modules/CampaignTrackers/CampaignTracker.php';
 $beanFiles['Release'] = 'modules/Releases/Release.php';
 $beanFiles['EmailMan'] = 'modules/EmailMan/EmailMan.php';
 
 $beanFiles['Scheduler'] = 'modules/Schedulers/Scheduler.php';
 $beanFiles['SchedulersJob'] = 'modules/SchedulersJobs/SchedulersJob.php';
 $beanFiles['Contact'] = 'modules/Contacts/Contact.php';
-$beanFiles['Account'] = 'modules/Accounts/Account.php';
 $beanFiles['Opportunity'] = 'modules/Opportunities/Opportunity.php';
 $beanFiles['EmailTemplate'] = 'modules/EmailTemplates/EmailTemplate.php';
-$beanFiles['Note'] = 'modules/Notes/Note.php';
 $beanFiles['Call'] = 'modules/Calls/Call.php';
 $beanFiles['Email'] = 'modules/Emails/Email.php';
 $beanFiles['Meeting'] = 'modules/Meetings/Meeting.php';
 $beanFiles['Task'] = 'modules/Tasks/Task.php';
-$beanFiles['User'] = 'modules/Users/User.php';
+
 $beanFiles['UserAccessLog'] = 'modules/UserAccessLogs/UserAccessLog.php';
 $beanFiles['Employee'] = 'modules/Employees/Employee.php';
 $beanFiles['Currency'] = 'modules/Currencies/Currency.php';
@@ -189,7 +178,7 @@ $beanFiles['Role'] = 'modules/Roles/Role.php';
 
 $beanFiles['Document'] = 'modules/Documents/Document.php';
 $beanFiles['DocumentRevision'] = 'modules/DocumentRevisions/DocumentRevision.php';
-$beanFiles['FieldsMetaData'] = 'modules/DynamicFields/FieldsMetaData.php';
+//$beanFiles['FieldsMetaData'] = 'modules/DynamicFields/FieldsMetaData.php';
 //$beanFiles['Audit']           = 'modules/Audit/Audit.php';
 
 // deferred
@@ -217,30 +206,33 @@ $beanFiles['Configurator'] = 'modules/Configurator/Configurator.php';
 
 // added these lists for security settings for tabs
 $modInvisList = array('Administration', 'Currencies', 'CustomFields', 'Connectors',
-    'Dropdown', 'Dynamic', 'DynamicFields', 'DynamicLayout', 'EditCustomFields',
-    'Help', 'Import', 'MySettings', 'EditCustomFields', 'FieldsMetaData',
+    'Dropdown', 'Dynamic',
+    //'DynamicFields',
+    'DynamicLayout', 'EditCustomFields',
+    'Help', 'Import', 'MySettings',
+//    'EditCustomFields',
+//    'FieldsMetaData',
     'UpgradeWizard', 'Trackers', 'Connectors', 'Employees', 'Calendar',
     'Releases', 'Sync',
-    'Users', 'Versions', 'LabelEditor', 'Roles', 'EmailMarketing'
+    'Users', 'Versions',  'Roles', 'EmailMarketing'
 , 'OptimisticLock', 'TeamMemberships', 'TeamSets', 'TeamSetModule', 'Audit', 'MailMerge', 'MergeRecords', 'EmailAddresses', 'EmailText',
     'Schedulers', 'Schedulers_jobs', /*'Queues',*/
     'EmailTemplates',
-    'CampaignTrackers', 'CampaignLog', 'EmailMan', 'Prospects', 'ProspectLists',
+     'EmailMan', 'Prospects', 'ProspectLists',
     'Groups', 'InboundEmail',
     'ACLActions', 'ACLRoles',
     'DocumentRevisions',
-    'ProjectTask', 'UserAccessLogs', 'UserQuotas', 'KReleasePackages'
+    'UserAccessLogs', 'UserQuotas', 'KReleasePackages'
 );
 $adminOnlyList = array(
     //module => list of actions  (all says all actions are admin only)
     //'Administration'=>array('all'=>1, 'SupportPortal'=>'allow'),
     'Dropdown' => array('all' => 1),
     'Dynamic' => array('all' => 1),
-    'DynamicFields' => array('all' => 1),
+//    'DynamicFields' => array('all' => 1),
     'Currencies' => array('all' => 1),
-    'EditCustomFields' => array('all' => 1),
-    'FieldsMetaData' => array('all' => 1),
-    'LabelEditor' => array('all' => 1),
+//    'EditCustomFields' => array('all' => 1),
+//    'FieldsMetaData' => array('all' => 1),
     'ACL' => array('all' => 1),
     'ACLActions' => array('all' => 1),
     'ACLRoles' => array('all' => 1),
@@ -259,8 +251,6 @@ $modInvisList[] = 'UserQuotas';
 $modInvisList[] = 'SavedSearch';
 // deferred
 //$modInvisList[] = 'Queues';
-$modInvisList[] = 'Studio';
-$modInvisList[] = 'ModuleBuilder';
 $modInvisList[] = 'Connectors';
 
 $report_include_modules = array();
@@ -275,36 +265,20 @@ $report_include_modules['ProductTypes'] = 'ProductType';
 $report_include_modules['Trackers'] = 'Tracker';
 
 
-$beanList['SugarFeed'] = 'SugarFeed';
-$beanFiles['SugarFeed'] = 'modules/SugarFeed/SugarFeed.php';
-$modInvisList[] = 'SugarFeed';
 
 // This is the mapping for modules that appear under a different module's tab
 // Be sure to also add the modules to $modInvisList, otherwise their tab will still appear
 $GLOBALS['moduleTabMap'] = array(
     'UpgradeWizard' => 'Administration',
     'EmailMan' => 'Administration',
-    'ModuleBuilder' => 'Administration',
     'Configurator' => 'Administration',
-    'Studio' => 'Administration',
     'Currencies' => 'Administration',
     'SugarFeed' => 'Administration',
     'DocumentRevisions' => 'Documents',
     'EmailTemplates' => 'Emails',
     'EmailMarketing' => 'Campaigns',
 );
-$beanList['EAPM'] = 'EAPM';
-$beanFiles['EAPM'] = 'modules/EAPM/EAPM.php';
-$modules_exempt_from_availability_check['EAPM'] = 'EAPM';
-$modInvisList[] = 'EAPM';
-$beanList['OAuthKeys'] = 'OAuthKey';
-$beanFiles['OAuthKey'] = 'modules/OAuthKeys/OAuthKey.php';
-$modules_exempt_from_availability_check['OAuthKeys'] = 'OAuthKeys';
-$modInvisList[] = 'OAuthKeys';
-$beanList['OAuthTokens'] = 'OAuthToken';
-$beanFiles['OAuthToken'] = 'modules/OAuthTokens/OAuthToken.php';
-$modules_exempt_from_availability_check['OAuthTokens'] = 'OAuthTokens';
-$modInvisList[] = 'OAuthTokens';
+
 
 
 //Object list is only here to correct for modules that break
@@ -325,24 +299,6 @@ $moduleList[] = 'Proposals';
 $beanList['Proposals'] = 'Proposal';
 $beanFiles['Proposal'] = 'modules/Proposals/Proposal.php';
 
-/** include CompetitorAssessments **/
-$moduleList[] = 'CompetitorAssessments';
-$beanList['CompetitorAssessments'] = 'CompetitorAssessment';
-$beanFiles['CompetitorAssessment'] = 'modules/CompetitorAssessments/CompetitorAssessment.php';
-
-/** include EventRegistrations **/
-$moduleList[] = 'EventRegistrations';
-$beanList['EventRegistrations'] = 'EventRegistration';
-$beanFiles['EventRegistration'] = 'modules/EventRegistrations/EventRegistration.php';
-
-/** include Dashboards **/
-$moduleList[] = 'Dashboards';
-$beanList['Dashboards'] = 'Dashboard';
-$beanFiles['Dashboard'] = 'modules/Dashboards/Dashboard.php';
-
-$moduleList[] = 'DashboardComponents';
-$beanList['DashboardComponents'] = 'DashboardComponents';
-$beanFiles['DashboardComponent'] = 'modules/DashboardComponents/DashboardComponent.php';
 
 $moduleList[] = 'Mailboxes';
 $beanList['Mailboxes'] = 'Mailbox';

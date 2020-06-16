@@ -629,8 +629,6 @@ class Link {
 		}
 		$query.=' WHERE '.$this->_relationship->rhs_table.".id='".$where_key_value."'";
 
-		$GLOBALS['log']->fatal("Relationship Query ".$query);
-
 		$result=$this->_db->query($query, true);
 	}
 
@@ -647,7 +645,7 @@ class Link {
 	   	if (!empty($this->_relationship->relationship_role_column)) {
 	   		$bean->{$this->_relationship->relationship_role_column}=$this->_relationship->relationship_role_column_value;
 	   	}
-	   	$GLOBALS['log']->fatal("Adding many to one bean based {$bean->module_dir} {$bean->id}");
+
 	   	$bean->save();
 	}
 
@@ -948,7 +946,6 @@ class Link {
 		}
 		//if query string is not empty execute it.
 		if (isset($query)) {
-            $GLOBALS['log']->fatal('Link.Delete:Delete Query: '.$query);
 			$this->_db->query($query,true);
 		}
 		$custom_logic_arguments = array();

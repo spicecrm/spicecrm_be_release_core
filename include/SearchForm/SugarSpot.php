@@ -307,10 +307,11 @@ class SugarSpot
             $seed = new $class();
             if(!$seed->ACLAccess('ListView')) continue;
 
-            if ($class == 'aCase')
-            {
-                $class = 'Case';
-            }
+// CR1000426 cleanup backend, module Cases removed
+//            if ($class == 'aCase')
+//            {
+//                $class = 'Case';
+//            }
 
             foreach($searchFields[$moduleName] as $k=>$v)
             {

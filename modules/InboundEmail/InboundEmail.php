@@ -3536,19 +3536,20 @@ class InboundEmail extends SugarBean {
     function handleCaseAssignment($email)
     {
         self::logDeprecated();
-        $c = new aCase();
-        if ($caseId = $this->getCaseIdFromCaseNumber($email->name, $c)) {
-            $c->retrieve($caseId);
-            $email->retrieve($email->id);
-            //assign the case info to parent id and parent type so that the case can be linked to the email on Email Save
-            $email->parent_type = "Cases";
-            $email->parent_id = $caseId;
-            // assign the email to the case owner
-            $email->assigned_user_id = $c->assigned_user_id;
-            $email->save();
-            $GLOBALS['log']->debug('InboundEmail found exactly 1 match for a case: ' . $c->name);
-            return true;
-        } // if
+// CR1000426 cleanup backend, module Cases removed
+//        $c = new aCase();
+//        if ($caseId = $this->getCaseIdFromCaseNumber($email->name, $c)) {
+//            $c->retrieve($caseId);
+//            $email->retrieve($email->id);
+//            //assign the case info to parent id and parent type so that the case can be linked to the email on Email Save
+//            $email->parent_type = "Cases";
+//            $email->parent_id = $caseId;
+//            // assign the email to the case owner
+//            $email->assigned_user_id = $c->assigned_user_id;
+//            $email->save();
+//            $GLOBALS['log']->debug('InboundEmail found exactly 1 match for a case: ' . $c->name);
+//            return true;
+//        } // if
         return false;
     }
 

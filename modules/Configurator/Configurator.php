@@ -179,8 +179,9 @@ class Configurator {
 		}
 		return $sugar_config;
 	}
+	// CR100349 remove methods from install_utils.php that are required from classes in use
 	function saveOverride($override) {
-        require_once('install/install_utils.php');
+        require_once('include/utils.php');
 	    if ( !file_exists('config_override.php') ) {
 	    	touch('config_override.php');
 	    }

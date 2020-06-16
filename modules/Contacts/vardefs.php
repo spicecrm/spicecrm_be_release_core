@@ -246,13 +246,14 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'vname' => 'LBL_EMAIL_ADDRESS_PRIMARY',
                 'duplicate_merge' => 'disabled',
             ),
-            'bugs' => array(
-                'name' => 'bugs',
-                'type' => 'link',
-                'relationship' => 'contacts_bugs',
-                'source' => 'non-db',
-                'vname' => 'LBL_BUGS',
-            ),
+// CR1000426 cleanup backend, module Bugs removed
+//            'bugs' => array(
+//                'name' => 'bugs',
+//                'type' => 'link',
+//                'relationship' => 'contacts_bugs',
+//                'source' => 'non-db',
+//                'vname' => 'LBL_BUGS',
+//            ),
             'calls' => array(
                 'name' => 'calls',
                 'type' => 'link',
@@ -268,13 +269,14 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'source' => 'non-db',
                 'vname' => 'LBL_CALLS',
             ),
-            'cases' => array(
-                'name' => 'cases',
-                'type' => 'link',
-                'relationship' => 'contacts_cases',
-                'source' => 'non-db',
-                'vname' => 'LBL_CASES',
-            ),
+// CR1000426 cleanup backend, module Cases removed
+//            'cases' => array(
+//                'name' => 'cases',
+//                'type' => 'link',
+//                'relationship' => 'contacts_cases',
+//                'source' => 'non-db',
+//                'vname' => 'LBL_CASES',
+//            ),
             'direct_reports' => array(
                 'name' => 'direct_reports',
                 'type' => 'link',
@@ -796,7 +798,14 @@ if (is_file("modules/SalesDocs/SalesDoc.php")) {
         'module' => 'SalesDocs',
         'source' => 'non-db',
     );
-
+    $dictionary['Contact']['fields']['salesdocs'] = array(
+        'name' => 'salesdocs',
+        'type' => 'link',
+        'vname' => 'LBL_SALESDOCS',
+        'relationship' => 'salesdocs_contacts',
+        'module' => 'SalesDocs',
+        'source' => 'non-db',
+    );
 }
 if (is_file("modules/ContactsOnlineProfiles/ContactsOnlineProfile.php")) {
     $dictionary['Contact']['fields']['contactsonlineprofiles'] = array(

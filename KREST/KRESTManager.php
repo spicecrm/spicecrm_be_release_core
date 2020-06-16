@@ -30,7 +30,6 @@ class KRESTManager {
         // link the app and the request paramas
         $this->app = $theApp;
         $this->requestParams = $requestParams;
-
         // some general global settings
         // disable fixup format added to pürevent fixup format in sugarbean .. invalidates float based on user settings
         global $disable_date_format, $disable_fixup_format;

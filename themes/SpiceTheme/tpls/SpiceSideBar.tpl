@@ -22,13 +22,13 @@
     {/if}
 {/foreach}
 
-{$jsIncludes}
-{$jsAfterLoad}
-<script tyle="text/javascript">
-    var load_closed = {if $config_load_closed}true{else}false{/if} ;
-    var currentModule = '{$currentModule}' ;
-    var currentRecord = '{$currentRecord}' ;
-    var currentAction = '{$currentAction}' ;
-    var subpanelsTabbed = {if $subpanelsTabbed}true{else}false{/if} ;
-</script>
-</div>
+{*{$jsIncludes}*}
+{*{$jsAfterLoad}*}
+{*<script tyle="text/javascript">*}
+{*    var load_closed = {if $config_load_closed}true{else}false{/if} ;*}
+{*    var currentModule = '{$currentModule}' ;*}
+{*    var currentRecord = '{$currentRecord}' ;*}
+{*    var currentAction = '{$currentAction}' ;*}
+{*    var subpanelsTabbed = {if $subpanelsTabbed}true{else}false{/if} ;*}
+{*</script>*}
+{*</div>*}

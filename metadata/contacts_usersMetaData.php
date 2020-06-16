@@ -94,6 +94,11 @@ $dictionary['contacts_users'] = array(
             'name' => 'idx_contacts_users',
             'type' => 'alternate_key',
             'fields' => array('contact_id', 'user_id')
+        ),
+        array(
+            'name'   => 'idx_contacts_users_external_id',
+            'type'   => 'index',
+            'fields' => ['external_id'],
         )
     ),
     'relationships' => array(

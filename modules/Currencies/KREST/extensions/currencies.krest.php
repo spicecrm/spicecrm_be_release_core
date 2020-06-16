@@ -11,10 +11,11 @@ $app->group('/currencies', function () use ($app) {
         $retArray = [array(
             'id' => '-99',
             'name' => $currency->getDefaultCurrencyName(),
-            'iso' =>  $currency->getDefaultISO4217(),
+            'iso4217' =>  $currency->getDefaultISO4217(),
             'symbol' => $currency->getDefaultCurrencySymbol(),
             'conversion_rate' => 1
         )];
+
 
         $dbCurrencies = $db->query("SELECT * FROM currencies");
         while($dbCurrency = $db->fetchByAssoc($dbCurrencies)){
@@ -23,4 +24,6 @@ $app->group('/currencies', function () use ($app) {
 
         echo json_encode($retArray);
     });
+    $app->get('/defaultcurrency',[new SpiceCRM\modules\Currencies\KREST\controllers\CurrenciesKRESTcontroller(), 'getDefaultCurrency']);
+    $app->post('/add', [new SpiceCRM\modules\Currencies\KREST\controllers\CurrenciesKRESTcontroller(), 'addCurrency']);
 });

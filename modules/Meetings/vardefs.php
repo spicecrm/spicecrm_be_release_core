@@ -428,6 +428,14 @@ $dictionary['Meeting'] = [
             'source'       => 'non-db',
             'vname'        => 'LBL_ACCOUNT',
         ],
+        'consumers' => [
+            'name'         => 'consumers',
+            'type'         => 'link',
+            'relationship' => 'consumers_meetings',
+            'module'       => 'Consumers',
+            'source'       => 'non-db',
+            'vname'        => 'LBL_CONSUMERS',
+        ],
         'leads' => [
             'name'         => 'leads',
             'type'         => 'link',
@@ -614,6 +622,11 @@ $dictionary['Meeting'] = [
             'type'   => 'index',
             'fields' => ['date_start'],
         ],
+        [
+            'name' => 'idx_meet_external_id',
+            'type'   => 'index',
+            'fields' => ['external_id'],
+        ]
     ],
 //This enables optimistic locking for Saves From EditView
     'optimistic_locking' => true,

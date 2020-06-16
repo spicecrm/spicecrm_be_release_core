@@ -13,7 +13,8 @@ if (!defined('sugarEntry') || !sugarEntry)
  * All Rights Reserved.
  * ***************************************************************************** */
 
-require_once('modules/DynamicFields/DynamicField.php');
+// CR1000349 spiceinstaller
+//require_once('modules/DynamicFields/DynamicField.php');
 require_once("data/Relationships/RelationshipFactory.php");
 require_once 'modules/UserPreferences/UserPreference.php';
 
@@ -431,8 +432,9 @@ class SugarBean
      */
     function setupCustomFields($module_name, $clean_load = true)
     {
-        $this->custom_fields = new DynamicField($module_name);
-        $this->custom_fields->setup($this);
+        // CR1000349 spiceinstaller
+//        $this->custom_fields = new DynamicField($module_name);
+//        $this->custom_fields->setup($this);
     }
 
     /**
@@ -1122,8 +1124,9 @@ class SugarBean
     function get_linked_beans($field_name, $bean_name, $sort_array = array(), $begin_index = 0, $end_index = -1, $deleted = 0, $optional_where = "")
     {
         //if bean_name is Case then use aCase
-        if ($bean_name == "Case")
-            $bean_name = "aCase";
+// CR1000426 cleanup backend, module Cases removed
+//        if ($bean_name == "Case")
+//            $bean_name = "aCase";
 
         if ($this->load_relationship($field_name)) {
             if ($this->$field_name instanceof Link) {
@@ -1159,8 +1162,8 @@ class SugarBean
     function get_linked_beans_count($field_name, $bean_name, $deleted = 0, $optional_where = "")
     {
         //if bean_name is Case then use aCase
-        if ($bean_name == "Case")
-            $bean_name = "aCase";
+//        if ($bean_name == "Case")
+//            $bean_name = "aCase";
 
         if ($this->load_relationship($field_name)) {
             if ($this->$field_name instanceof Link) {
@@ -1443,7 +1446,8 @@ class SugarBean
                 $this->db->dropTable($this);
             if ($this->db->tableExists($this->table_name . '_cstm')) {
                 $this->db->dropTableName($this->table_name . '_cstm');
-                DynamicField::deleteCache();
+                // CR1000349 spiceinstaller
+//                DynamicField::deleteCache();
             }
             if ($this->db->tableExists($this->get_audit_table_name())) {
                 $this->db->dropTableName($this->get_audit_table_name());
@@ -1587,7 +1591,7 @@ class SugarBean
         $this->auditDataChanges = $auditDataChanges;
         //END
 
-        $this->_sendNotifications($check_notify);
+        $this->createNotification($check_notify);
 
         if ($isUpdate) {
             $this->db->update($this);
@@ -2305,6 +2309,8 @@ class SugarBean
 
     /**
      * Determines which users receive a notification
+     *
+     * todo Meeting and Calls too
      */
     function get_notification_recipients()
     {
@@ -6060,5 +6066,14 @@ class SugarBean
      * Placeholder
      */
     public function onClone() { }
+
+    protected function createNotification($check_notify) {
+        global $current_user;
+        if ($check_notify && $this->assigned_user_id != $current_user->id
+            && $this->assigned_user_id != $this->fetched_row['assigned_user_id'] ) {
+            $notification = new SpiceCRM\includes\SpiceNotifications\SpiceNotifications($this);
+            $notification->saveNotification();
+        }
+    }
 
 }

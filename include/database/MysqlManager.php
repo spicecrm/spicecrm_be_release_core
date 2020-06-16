@@ -546,6 +546,7 @@ class MysqlManager extends DBManager
 		}
 
 		// cn: using direct calls to prevent this from spamming the Logs
+
 	    mysql_query("SET CHARACTER SET utf8", $this->database);
 	    $names = "SET NAMES 'utf8'";
 	    $collation = $this->getOption('collation');
@@ -749,10 +750,16 @@ class MysqlManager extends DBManager
 
 		// cn: bug 9873 - module tables do not get created in utf8 with assoc collation
 		$collation = $this->getOption('collation');
+        // CR1000349 mysql8 compatibility: remove hardcoded charset
+		$charset = $this->getOption('charset');
 		if(empty($collation)) {
 		    $collation = 'utf8_general_ci';
 		}
-		$sql = "CREATE TABLE $tablename ($columns $keys) CHARACTER SET utf8 COLLATE $collation";
+        if(empty($charset)) {
+            $charset = 'utf8';
+        }
+
+		$sql = "CREATE TABLE $tablename ($columns $keys) CHARACTER SET $charset COLLATE $collation";
 
 		if (!empty($engine))
 			$sql.= " ENGINE=$engine";

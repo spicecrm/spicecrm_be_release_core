@@ -80,6 +80,12 @@ $app_list_strings = array(
         'speaker' => 'متحدث',
         'moderator' => 'مشرف',
     ),
+    'events_consumer_roles_dom' =>        array(
+        '' => '',
+        'organizer' => 'منظّم',
+        'speaker' => 'متحدث',
+        'moderator' => 'مشرف',
+    ),
     'userabsences_type_dom' =>        array(
         '' => '',
         'Sick leave' => 'مرض',

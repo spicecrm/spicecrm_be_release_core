@@ -358,11 +358,14 @@ $query .= 			"LEFT JOIN users
         		$this->probability = $prob_arr[$this->sales_stage];
         }
 
-		require_once('modules/Opportunities/SaveOverload.php');
+        //US DOLLAR
+        if(isset($this->amount) && !number_empty($this->amount)){
+            $currency = new Currency();
+            $currency->retrieve($this->currency_id);
+            $this->amount_usdollar = $currency->convertToDollar($this->amount);
+        }
 
-		perform_save($this);
-
-		if(!$this->in_save && ($this->sales_stage != $this->fetched_row['sales_stage'] || $this->date_closed != $this->fetched_row['date_closed'] || $this->probability != $this->fetched_row['probability'] || $this->forecast != $this->fetched_row['forecast'])){
+        if(!$this->in_save && ($this->sales_stage != $this->fetched_row['sales_stage'] || $this->date_closed != $this->fetched_row['date_closed'] || $this->probability != $this->fetched_row['probability'] || $this->forecast != $this->fetched_row['forecast'])){
 		    $oppStage = BeanFactory::getBean('OpportunityStages');
 		    if($oppStage){
 		        if(empty($this->id)){

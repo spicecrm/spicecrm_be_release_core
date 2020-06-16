@@ -34,5 +34,6 @@ if (SUGAR.ajaxUI && !SUGAR.ajaxUI.hist_loaded)
 {/literal}
 
 <div id="main">
-    <div id="content" {if !$AUTHENTICATED}class="noLeftColumn"{else}class="{if $sideBarClosed == 'true'}noLeftColumn{else}wLeftColumn{/if}"{/if}>
+{*    <div id="content" {if !$AUTHENTICATED}class="noLeftColumn"{else}class="{if $sideBarClosed == 'true'}noLeftColumn{else}wLeftColumn{/if}"{/if}>*}
+    <div id="content" class="noLeftColumn">
         <table style="width:100%"><tr><td>

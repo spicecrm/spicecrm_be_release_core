@@ -39,7 +39,8 @@ class SystemUIModelValidationsController
         while($row = $db->fetchByAssoc($res, false))
         {
             try {
-                $row['valuations'] = json_decode( $row['valuations'] );
+                $decoded = json_decode( $row['valuations'] );
+                $row['valuations'] = $decoded ?: $row['valuations'];
             } catch( Exception $e ) {
                 $row['valuations'] = $row['valuations'];
             }

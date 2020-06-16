@@ -114,7 +114,7 @@ class Currency extends SugarBean
      */
 	function getDefaultCurrencyName(){
 		global $sugar_config;
-		return $sugar_config['default_currency_name'];
+		return $sugar_config['currencies']['default_currency_name'] ?: $sugar_config['default_currency_name'];
 	}
 
     /**
@@ -125,7 +125,7 @@ class Currency extends SugarBean
      */
 	function getDefaultCurrencySymbol(){
 		global $sugar_config;
-		return $sugar_config['default_currency_symbol'];
+		return $sugar_config['currencies']['default_currency_symbol'] ?: $sugar_config['default_currency_symbol'];
 	}
 
     /**
@@ -136,7 +136,7 @@ class Currency extends SugarBean
      */
 	function getDefaultISO4217(){
 		global $sugar_config;
-		return $sugar_config['default_currency_iso4217'];
+		return $sugar_config['currencies']['default_currency_iso4217'] ?: $sugar_config['default_currency_iso4217'];
 	}
 
     function getISO4217ById($currencyID){

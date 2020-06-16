@@ -79,18 +79,23 @@ class EmailSchedule extends SugarBean
         while ($queuedEmail = $this->db->fetchByAssoc($queuedEmails)) {
             $seed = BeanFactory::getBean($queuedEmail['bean_module'], $queuedEmail['bean_id']);
             $emailscheduleID = $queuedEmail['emailschedule_id'];
+
             if (empty($seed)) {
-                return false;
+                $this->db->query("UPDATE emailschedules_beans SET emailschedule_status = 'error' WHERE emailschedule_id='$emailscheduleID'");
             } else {
                 $email = $this->sendEmail($seed, $emailscheduleID, true);
                 if($email == false) {
-                    return false;
+                    $this->db->query("UPDATE emailschedules_beans SET emailschedule_status = 'error' WHERE emailschedule_id='$emailscheduleID'");
                 } else {
                     $this->db->query("UPDATE emailschedules_beans SET emailschedule_status = 'sent', email_id='$email->id' WHERE emailschedule_id='$emailscheduleID'");
-                    $this->db->query("UPDATE emailschedules SET email_schedule_status = 'done' WHERE id='$emailscheduleID'");
                 }
             }
-
+            $query = "SELECT * from emailschedules_beans WHERE emailschedule_status = 'queued' AND emailschedule_id ='$emailscheduleID'";
+            $query = $this->db->query($query);
+            $row = $this->db->fetchByAssoc($query);
+            if(empty($row)) {
+                $this->db->query("UPDATE emailschedules SET email_schedule_status = 'done' WHERE id='$emailscheduleID'");
+            }
         }
         return true;
     }

@@ -47,7 +47,7 @@ if(!defined('JSMIN_AS_LIB'))
     define('JSMIN_AS_LIB', true);
 
 require_once("include/SugarTheme/cssmin.php");
-require_once("jssource/jsmin.php");
+//require_once("jssource/jsmin.php");
 require_once('include/utils/sugar_file_utils.php');
 
 /**
@@ -1019,11 +1019,11 @@ EOHTML;
         $jsFilePath = create_cache_directory($fullFileName);
 
         // minify the js
-        if ( !inDeveloperMode()&& !sugar_is_file(str_replace('.js','-min.js',$jsFilePath)) ) {
+        /*if ( !inDeveloperMode()&& !sugar_is_file(str_replace('.js','-min.js',$jsFilePath)) ) {
             $jsFileContents = SugarMin::minify($jsFileContents);
             $jsFilePath = str_replace('.js','-min.js',$jsFilePath);
             $fullFileName = str_replace('.js','-min.js',$fullFileName);
-        }
+        }*/
 
         // now write the js to cache
         sugar_file_put_contents($jsFilePath,$jsFileContents);

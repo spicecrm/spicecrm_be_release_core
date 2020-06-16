@@ -44,40 +44,25 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 /**
  * Known Entry Points as of 4.5
- * acceptDecline.php
- * campaign_tracker.php
- * campaign_trackerv2.php
  * cron.php
  * dictionary.php
- * download.php
  * emailmandelivery.php
  * export_dataset.php
- * export.php
- * image.php
  * index.php
- * install.php
  * json.php
- * json_server.php
- * leadCapture.php
  * maintenance.php
- * metagen.php
- * pdf.php
  * phprint.php
  * process_queue.php
  * process_workflow.php
- * removeme.php
  * schedulers.php
  * soap.php
  * su.php
  * sugar_version.php
- * TreeData.php
  * tree_level.php
  * tree.php
  * vcal_server.php
- * vCard.php
  * zipatcher.php
- * WebToLeadCapture.php
- * HandleAjaxCall.php */
+ */
 /*
  * for 50, added:
  * minify.php
@@ -86,6 +71,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * for 510, added:
 * dceActionCleanup.php
 */
+
 $GLOBALS['starttTime'] = microtime(true);
 
 set_include_path(
@@ -98,11 +84,6 @@ if (!defined('PHP_VERSION_ID')) {
     define('PHP_VERSION_ID', ($version_array[0] * 10000 + $version_array[1] * 100 + $version_array[2]));
 }
 
-if (empty($GLOBALS['installing']) && !file_exists('config.php')) {
-    header('Location: install.php');
-    exit ();
-}
-
 
 // config|_override.php
 if (is_file('config.php')) {
@@ -113,10 +94,7 @@ if (is_file('config.php')) {
 if (is_file('config_override.php')) {
     require_once('config_override.php');
 }
-if (empty($GLOBALS['installing']) && empty($sugar_config['dbconfig']['db_name'])) {
-    header('Location: install.php');
-    exit ();
-}
+
 
 if (!empty($sugar_config['xhprof_config'])) {
     require_once 'include/SugarXHprof/SugarXHprof.php';
@@ -168,7 +146,9 @@ require_once('modules/Trackers/TrackerManager.php');
 
 
 // require_once('modules/ACL/ACLController.php');
-$controllerfile = isset( $sugar_config['acl']['controller']{0} ) ? $sugar_config['acl']['controller'] : 'modules/ACL/ACLController.php';
+//CR1000428: SpiceACL controller is now default controller (release 2020.02.001)
+//$controllerfile = isset( $sugar_config['acl']['controller']{0} ) ? $sugar_config['acl']['controller'] : 'modules/ACL/ACLController.php';
+$controllerfile = isset( $sugar_config['acl']['controller']{0} ) ? $sugar_config['acl']['controller'] : 'modules/SpiceACL/SpiceACLController.php';
 require_once ($controllerfile);
 
 require_once('modules/Administration/Administration.php');

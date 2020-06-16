@@ -15,7 +15,7 @@ class MediaFile extends SugarBean {
     public $module_dir = 'MediaFiles';
     private $imageQualities = array( 'image/bmp' => true, 'image/gif' => null, 'image/jpeg' => 85, 'image/png' => 9, 'image/webp' => 80 ); # for png: it´s not the quality, it´s the compression (lossless)
     private $imageFunctions = array( 'image/bmp' => 'bmp', 'image/gif' => 'gif', 'image/jpeg' => 'jpeg', 'image/png' => 'png', 'image/webp' => 'webp' );
-    public $filetype, $width, $height, $hash, $name, $upload_completed;
+    public $filetype, $width, $height, $hash, $name;
 
     public function __construct() {
         $this->makeSureDirsExist();
@@ -44,7 +44,7 @@ class MediaFile extends SugarBean {
 
         $returnOfSave = parent::save( $check_notify, $fts_index_bean );
 
-        if ( $this->upload_completed && isset( $sugar_config['mediafiles']['cdnurl']{0} )) {
+        if ( isset( $sugar_config['mediafiles']['cdnurl']{0} )) {
             $chf = curl_init();
             curl_setopt($chf, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($chf, CURLOPT_SSL_VERIFYPEER, false);
@@ -59,12 +59,11 @@ class MediaFile extends SugarBean {
         return $returnOfSave;
     }
 
-    public function createThumbnail($image, $mime_type) {
-        $supportedimagetypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $filetypearray = explode('/', $mime_type);
-        if (count($filetypearray) == 2
-            && strtolower($filetypearray[0]) == 'image'
-            && array_search(strtolower($filetypearray[1]), $supportedimagetypes) >= 0) {
+    public function createThumbnail( $image, $mimetype ) {
+        $mimetype = strtolower( $mimetype );
+
+        if ( isset( $this->imageFunctions[$mimetype] )) {
+
             if (list($width, $height) = getimagesizefromstring($image)) {
                 if ($width > $height) {
                     $newwidth = 600;
@@ -76,13 +75,22 @@ class MediaFile extends SugarBean {
 
                 $thumb = imagecreatetruecolor($newwidth, $newheight);
                 $source = imagecreatefromstring($image);
-                // create
-                imagecopyresized($thumb, $source, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+
+                if ( $mimetype === 'image/png' ) {
+                    imagealphablending( $thumb, false );
+                    $color = imagecolortransparent( $thumb, imagecolorallocatealpha( $thumb, 0, 0, 0, 127 ));
+                    imagefill( $thumb, 0, 0, $color );
+                    imagesavealpha( $thumb, true );
+                }
+
+                imagecopyresized( $thumb, $source, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+
                 ob_start();
-                imagejpeg($thumb);
-                $thumbnail = base64_encode(ob_get_contents());
+                $functionName = 'image'.$this->imageFunctions[$mimetype];
+                $functionName( $thumb, null, $this->imageQualities[$mimetype] );
+                $thumbnail = base64_encode( ob_get_contents() );
                 ob_end_clean();
-                imagedestroy($thumb);
+                imagedestroy( $thumb );
 
                 return $thumbnail;
             }
@@ -271,7 +279,7 @@ class MediaFile extends SugarBean {
 
         $filename = self::getFolderOfSizes() . '/' . $this->id . '.w' . $requestedWidth;
         $image = imagecreatetruecolor( $requestedWidth, $requestedHeight );
-        $functionName = 'imagecreatefrom'.$this->filetype;
+        $functionName = 'imagecreatefrom'.$this->imageFunctions[$this->filetype];
         $source = $functionName( self::getMediaPath( $this->id ));
 
         if ( $this->filetype === 'image/png' ) {
@@ -337,12 +345,6 @@ class MediaFile extends SugarBean {
             if ( $db->getAffectedRowCount( $result )) self::_deleteMediaPhysical( $mediaId );
     }
 
-    public static function cancelUpload( $mediaId ) {
-        global $current_user, $db;
-        $result = $db->query( 'DELETE FROM mediafiles WHERE id="'.$mediaId.'" AND upload_completed <> 1'.( !$current_user->is_admin ? ' AND user_id="' . $current_user->id . '"' : '' ));
-        if ( $db->getAffectedRowCount( $result )) self::_deleteMediaPhysical( $mediaId );
-    }
-
     private static function _deleteMediaPhysical( $mediaId ) {
         if ( @$GLOBALS['sugar_config']['media_files_no_trash'] ) unlink( self::getMediaPath( $mediaId ));
         else rename( self::getMediaPath( $mediaId ), self::getFolderOfTrash().$mediaId.'.'.microtime() );
@@ -353,14 +355,6 @@ class MediaFile extends SugarBean {
         if ( is_dir( $memmy = self::getFolderOfThumbs())) array_map( 'unlink', glob( $memmy.$mediaId.'.*' ));
         if ( is_dir( $memmy = self::getFolderOfSizes())) array_map( 'unlink', glob( $memmy.$mediaId.'.*' ));
     }
-
-    public static function completeUpload( $mediaId ) {
-        global $current_user, $db;
-        $result = $db->query( 'UPDATE mediafiles SET upload_completed = 1 WHERE id="'.$mediaId.'"'.( !$current_user->is_admin ? ' AND user_id="'.$current_user->id.'"':'' ));
-        return $db->getAffectedRowCount($result) == 1;
-    }
-
-    // public static deleteUnfinishedUploads()
 
     public static function uploadMedia() {
         $upload_file = new UploadFile( 'file' );
@@ -379,9 +373,8 @@ class MediaFile extends SugarBean {
         }
     }
 
-    public function storeMedia($file)
+    public function storeMedia( $file )
     {
-        $this->upload_completed = 1;
         file_put_contents( self::getMediaPath( ( $this->id ) ), $file );
         $this->filesize = strlen($file); // filesize( self::getMediaPath( $this->id ) );
         $this->hash = md5($file);
@@ -435,11 +428,10 @@ class MediaFile extends SugarBean {
 
     public function fill_in_additional_detail_fields() {
         parent::fill_in_additional_detail_fields();
-        if(empty($this->thumbnail)) {
-            if (!self::thumbExists(600, $this->id) && file_exists(self::getMediaPath($this->id))) $this->generateThumb(600);
-            $this->thumbnail = base64_encode(file_get_contents(self::getFolderOfThumbs() . '/' . $this->id . ".thumb" . 600));
+        if ( empty( $this->thumbnail )) {
+            if (!self::thumbExists( 600, $this->id) && file_exists(self::getMediaPath( $this->id ))) $this->generateThumb( 600 );
+            $this->thumbnail = base64_encode( file_get_contents( self::getFolderOfThumbs() . '/' . $this->id . '.thumb' . 600 ));
         }
     }
-
 
 }

@@ -43,9 +43,10 @@ $custom_fields = new DynamicField($module);
 if(!empty($module)){
 			$class_name = $beanList[$module];
 			$class_file = $class_name;
-			if($class_file == 'aCase'){
-				$class_file = 'Case';	
-			}
+// CR1000426 cleanup backend, module Cases removed
+//			if($class_file == 'aCase'){
+//				$class_file = 'Case';
+//			}
 			require_once("modules/$module/$class_file.php");
 			$mod = new $class_name();
 			$custom_fields->setup($mod);

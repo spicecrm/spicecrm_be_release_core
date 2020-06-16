@@ -89,21 +89,13 @@ class Call extends SugarBean
     var $assigned_user_name;
     var $note_id;
     var $outlook_id;
-    var $update_vcal = true;
+
+
+    var $update_vcal = false;
+
     var $contacts_arr;
     var $users_arr;
     var $leads_arr;
-    var $default_call_name_values = array(
-        'Assemble catalogs',
-        'Make travel arrangements',
-        'Send a letter',
-        'Send contract',
-        'Send fax',
-        'Send a follow-up letter',
-        'Send literature',
-        'Send proposal',
-        'Send quote'
-    );
     var $minutes_value_default = 15;
     var $minutes_values = array('0' => '00', '15' => '15', '30' => '30', '45' => '45');
     var $table_name = "calls";
@@ -117,39 +109,10 @@ class Call extends SugarBean
     var $syncing = false;
     var $recurring_source;
 
-    // This is used to retrieve related fields from form posts.
-    var $additional_column_fields = array(
-        'assigned_user_name',
-        'assigned_user_id',
-        'contact_id',
-        'user_id',
-        'contact_name'
-    );
-    var $relationship_fields = array(
-        'account_id' => 'accounts',
-        'opportunity_id' => 'opportunities',
-        'contact_id' => 'contacts',
-        'case_id' => 'cases',
-        'user_id' => 'users',
-        'assigned_user_id' => 'users',
-        'note_id' => 'notes',
-        'lead_id' => 'leads',
-    );
 
     function __construct()
     {
         parent::__construct();
-        global $app_list_strings;
-
-        $this->setupCustomFields('Calls');
-
-        foreach ($this->field_defs as $field) {
-            $this->field_name_map[$field['name']] = $field;
-        }
-
-
-        if (!empty($GLOBALS['app_list_strings']['duration_intervals']))
-            $this->minutes_values = $GLOBALS['app_list_strings']['duration_intervals'];
     }
 
     /**
@@ -174,13 +137,14 @@ class Call extends SugarBean
         }
         return parent::ACLAccess($view, $is_owner);
     }
+
     // save date_end by calculating user input
     // this is for calendar
     function save($check_notify = FALSE, $fts_index_bean = TRUE)
     {
-        global $timedate, $current_user;
+        global $timedate;
 
-        if (isset($this->date_start) && isset($this->duration_hours) && isset($this->duration_minutes)) {
+        if (isset($this->date_start) && !isset($this->date_end) && isset($this->duration_hours) && isset($this->duration_minutes)) {
             $td = $timedate->fromDb($this->date_start);
             if ($td) {
                 $this->duration_hours = (int) $this->duration_hours;
@@ -189,44 +153,11 @@ class Call extends SugarBean
             }
         }
 
-        if (!empty($_REQUEST['send_invites']) && $_REQUEST['send_invites'] == '1') {
-            $check_notify = true;
-        } else {
-            $check_notify = false;
-        }
-        if (empty($_REQUEST['send_invites'])) {
-            if (!empty($this->id)) {
-                $old_record = new Call();
-                $old_record->retrieve($this->id);
-                $old_assigned_user_id = $old_record->assigned_user_id;
-            }
-            if ((empty($this->id) && isset($_REQUEST['assigned_user_id']) && !empty($_REQUEST['assigned_user_id']) && $GLOBALS['current_user']->id != $_REQUEST['assigned_user_id']) || (isset($old_assigned_user_id) && !empty($old_assigned_user_id) && isset($_REQUEST['assigned_user_id']) && !empty($_REQUEST['assigned_user_id']) && $old_assigned_user_id != $_REQUEST['assigned_user_id'])) {
-                $this->special_notification = true;
-                if (!isset($GLOBALS['resavingRelatedBeans']) || $GLOBALS['resavingRelatedBeans'] == false) {
-                    $check_notify = true;
-                }
-                if (isset($_REQUEST['assigned_user_name'])) {
-                    $this->new_assigned_user_name = $_REQUEST['assigned_user_name'];
-                }
-            }
-        }
         if (empty($this->status)) {
             $this->status = $this->getDefaultStatus();
         }
 
-        // prevent a mass mailing for recurring meetings created in Calendar module
-        if (empty($this->id) && !empty($_REQUEST['module']) && $_REQUEST['module'] == "Calendar" && !empty($_REQUEST['repeat_type']) && !empty($this->repeat_parent_id)) {
-            $check_notify = false;
-        }
-        /*nsingh 7/3/08  commenting out as bug #20814 is invalid
-        if($current_user->getPreference('reminder_time')!= -1 &&  isset($_POST['reminder_checked']) && isset($_POST['reminder_time']) && $_POST['reminder_checked']==0  && $_POST['reminder_time']==-1){
-            $this->reminder_checked = '1';
-            $this->reminder_time = $current_user->getPreference('reminder_time');
-        }*/
-
         $return_id = parent::save($check_notify, $fts_index_bean);
-        global $current_user;
-
 
         // check if contact_id is set
         if (!empty($this->contact_id)) {
@@ -234,78 +165,13 @@ class Call extends SugarBean
             $this->contacts->add($this->contact_id);
         }
 
+        /*
         if ($this->update_vcal) {
             vCal::cache_sugar_vcal($current_user);
         }
+        */
 
         return $return_id;
-    }
-
-    /**
-     * toEvent
-     *
-     * Converts the Bean into a Google Calendar Event
-     * 
-     * @return \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent
-     */
-    public function toEvent() {
-        $timeZone = new DateTimeZone('UTC');
-        $startDate = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_start, $timeZone);
-        $endDate   = DateTime::createFromFormat('Y-m-d H:i:s', $this->date_end, $timeZone);
-
-        $eventParams = [
-            'id'      => $this->external_id,
-            'summary' => $this->name,
-            'start'   => [
-                'dateTime' => $startDate->format(DateTime::RFC3339),
-            ],
-            'end'     => [
-                'dateTime' => $endDate->format(DateTime::RFC3339),
-            ],
-            'description' => $this->description,
-            'location'    => $this->getEventLocation(),
-        ];
-
-        $event = new \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent($eventParams);
-
-        return $event;
-    }
-
-    /**
-     * fromEvent
-     *
-     * Converts a Google Calendar Event into the Beans
-     *
-     * @param \SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event
-     */
-    public function fromEvent(\SpiceCRM\modules\GoogleCalendar\GoogleCalendarEvent $event) {
-        $startDate = new \DateTime($event->start->dateTime);
-        $endDate   = new \DateTime($event->end->dateTime);
-
-        $this->name        = $event->summary;
-        $this->date_start  = $startDate->format('Y-m-d H:i:s');
-        $this->date_end    = $endDate->format('Y-m-d H:i:s');
-        $this->external_id = $event->id;
-        $this->justSave();
-    }
-
-    /**
-     * No idea if this breaks anything
-     */
-    public function justSave() {
-        parent::save();
-    }
-
-    /**
-     * getEventLocation
-     *
-     * Assembles the location string for the Google Calendar Event
-     *
-     * @return string
-     */
-    private function getEventLocation() {
-        $contact = BeanFactory::getBean('Contacts', $this->contact_id);
-        return $contact->full_name . ', ' . $contact->phone_work . ', ' . $contact->phone_mobile;
     }
 
     /** Returns a list of the associated contacts
@@ -331,121 +197,30 @@ class Call extends SugarBean
         return "$this->name";
     }
 
-    function create_list_query($order_by, $where, $show_deleted = 0)
-    {
-        $custom_join = $this->getCustomJoin();
-        $query = "SELECT ";
-        $query .= "
-			calls.*,";
-        if (preg_match("/calls_users\.user_id/", $where)) {
-            $query .= "calls_users.required,
-				calls_users.accept_status,";
-        }
-
-        $query .= "
-			users.user_name as assigned_user_name";
-        $query .= $custom_join['select'];
-
-        // this line will help generate a GMT-metric to compare to a locale's timezone
-
-        if (preg_match("/contacts/", $where)) {
-            $query .= ", contacts.first_name, contacts.last_name";
-            $query .= ", contacts.assigned_user_id contact_name_owner";
-        }
-        $query .= " FROM calls ";
-
-        if (preg_match("/contacts/", $where)) {
-            $query .= "LEFT JOIN calls_contacts
-	                    ON calls.id=calls_contacts.call_id
-	                    LEFT JOIN contacts
-	                    ON calls_contacts.contact_id=contacts.id ";
-        }
-        if (preg_match('/calls_users\.user_id/', $where)) {
-            $query .= "LEFT JOIN calls_users
-			ON calls.id=calls_users.call_id and calls_users.deleted=0 ";
-        }
-        $query .= "
-			LEFT JOIN users
-			ON calls.assigned_user_id=users.id ";
-        $query .= $custom_join['join'];
-        $where_auto = '1=1';
-        if ($show_deleted == 0) {
-            $where_auto = " $this->table_name.deleted=0  ";
-        } else if ($show_deleted == 1) {
-            $where_auto = " $this->table_name.deleted=1 ";
-        }
-
-        //$where_auto .= " GROUP BY calls.id";
-
-        if ($where != "")
-            $query .= "where $where AND " . $where_auto;
-        else
-            $query .= "where " . $where_auto;
-
-        $order_by = $this->process_order_by($order_by);
-        if (empty($order_by)) {
-            $order_by = 'calls.name';
-        }
-        $query .= ' ORDER BY ' . $order_by;
-
-        return $query;
-    }
-
-    function create_export_query(&$order_by, &$where, $relate_link_join = '')
-    {
-        $custom_join = $this->getCustomJoin(true, true, $where);
-        $custom_join['join'] .= $relate_link_join;
-        $contact_required = stristr($where, "contacts");
-        if ($contact_required) {
-            $query = "SELECT calls.*, contacts.first_name, contacts.last_name, users.user_name as assigned_user_name ";
-            $query .= $custom_join['select'];
-            $query .= " FROM contacts, calls, calls_contacts ";
-            $where_auto = "calls_contacts.contact_id = contacts.id AND calls_contacts.call_id = calls.id AND calls.deleted=0 AND contacts.deleted=0";
-        } else {
-            $query = 'SELECT calls.*, users.user_name as assigned_user_name ';
-            $query .= $custom_join['select'];
-            $query .= ' FROM calls ';
-            $where_auto = "calls.deleted=0";
-        }
-
-
-        $query .= "  LEFT JOIN users ON calls.assigned_user_id=users.id ";
-
-        $query .= $custom_join['join'];
-
-        if ($where != "")
-            $query .= "where $where AND " . $where_auto;
-        else
-            $query .= "where " . $where_auto;
-
-        $order_by = $this->process_order_by($order_by);
-        if (empty($order_by)) {
-            $order_by = 'calls.name';
-        }
-        $query .= ' ORDER BY ' . $order_by;
-
-        return $query;
-    }
-
-
+    /**
+     *
+     * @return bool|void
+     */
     function fill_in_additional_detail_fields()
     {
         global $locale;
         parent::fill_in_additional_detail_fields();
-        if (!empty($this->contact_id)) {
-            $query = "SELECT first_name, last_name FROM contacts ";
-            $query .= "WHERE id='$this->contact_id' AND deleted=0";
-            $result = $this->db->limitQuery($query, 0, 1, true, " Error filling in additional detail fields: ");
 
-            // Get the contact name.
-            $row = $this->db->fetchByAssoc($result);
-            $GLOBALS['log']->info("additional call fields $query");
-            if ($row != null) {
-                $this->contact_name = $locale->getLocaleFormattedName($row['first_name'], $row['last_name'], '', '');
-                $GLOBALS['log']->debug("Call($this->id): contact_name = $this->contact_name");
-                $GLOBALS['log']->debug("Call($this->id): contact_id = $this->contact_id");
-            }
-        }
+        // @deprecated
+        // if (!empty($this->contact_id)) {
+        // $query = "SELECT first_name, last_name FROM contacts ";
+        // $query .= "WHERE id='$this->contact_id' AND deleted=0";
+        // $result = $this->db->limitQuery($query, 0, 1, true, " Error filling in additional detail fields: ");
+
+        // // Get the contact name.
+        // $row = $this->db->fetchByAssoc($result);
+        // $GLOBALS['log']->info("additional call fields $query");
+        // if ($row != null) {
+        // $this->contact_name = $locale->getLocaleFormattedName($row['first_name'], $row['last_name'], '', '');
+        // $GLOBALS['log']->debug("Call($this->id): contact_name = $this->contact_name");
+        // $GLOBALS['log']->debug("Call($this->id): contact_id = $this->contact_id");
+        // }
+        // }
         if (!isset($this->duration_minutes)) {
             $this->duration_minutes = $this->minutes_value_default;
         }
@@ -495,66 +270,12 @@ class Call extends SugarBean
         }
         $this->email_reminder_checked = $this->email_reminder_time == -1 ? false : true;
 
-        if (isset ($_REQUEST['parent_type']) && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'SubpanelEdits')) {
-            $this->parent_type = $_REQUEST['parent_type'];
-        } elseif (is_null($this->parent_type)) {
-            $this->parent_type = $app_list_strings['record_type_default_key'];
-        }
-    }
-
-
-    function get_list_view_data()
-    {
-        $call_fields = $this->get_list_view_array();
-        global $app_list_strings, $focus, $action, $currentModule;
-        if (isset($focus->id)) $id = $focus->id;
-        else $id = '';
-        if (isset($this->parent_type) && $this->parent_type != null) {
-            $call_fields['PARENT_MODULE'] = $this->parent_type;
-        }
-        if ($this->status == "Planned") {
-            //cn: added this if() to deal with sequential Closes in Meetings.  this is a hack to a hack (formbase.php->handleRedirect)
-            if (empty($action))
-                $action = "index";
-
-            $setCompleteUrl = "<a id='{$this->id}' onclick='SUGAR.util.closeActivityPanel.show(\"{$this->module_dir}\",\"{$this->id}\",\"Held\",\"listview\",\"1\");'>";
-            if ($this->ACLAccess('edit')) {
-                $call_fields['SET_COMPLETE'] = $setCompleteUrl . SugarThemeRegistry::current()->getImage("close_inline", " border='0'", null, null, '.gif', translate('LBL_CLOSEINLINE')) . "</a>";
-            } else {
-                $call_fields['SET_COMPLETE'] = '';
-            }
-        }
-        global $timedate;
-        $today = $timedate->nowDb();
-        $nextday = $timedate->asDbDate($timedate->getNow()->modify("+1 day"));
-        $mergeTime = $call_fields['DATE_START']; //$timedate->merge_date_time($call_fields['DATE_START'], $call_fields['TIME_START']);
-        $date_db = $timedate->to_db($mergeTime);
-        if ($date_db < $today) {
-            $call_fields['DATE_START'] = "<font class='overdueTask'>" . $call_fields['DATE_START'] . "</font>";
-        } else if ($date_db < $nextday) {
-            $call_fields['DATE_START'] = "<font class='todaysTask'>" . $call_fields['DATE_START'] . "</font>";
-        } else {
-            $call_fields['DATE_START'] = "<font class='futureTask'>" . $call_fields['DATE_START'] . "</font>";
-        }
-        $this->fill_in_additional_detail_fields();
-
-        //make sure we grab the localized version of the contact name, if a contact is provided
-        if (!empty($this->contact_id)) {
-            // Bug# 46125 - make first name, last name, salutation and title of Contacts respect field level ACLs
-            $contact_temp = BeanFactory::getBean("Contacts", $this->contact_id);
-            if (!empty($contact_temp)) {
-                $contact_temp->_create_proper_name_field();
-                $this->contact_name = $contact_temp->full_name;
-            }
-        }
-
-        $call_fields['CONTACT_ID'] = $this->contact_id;
-        $call_fields['CONTACT_NAME'] = $this->contact_name;
-        $call_fields['PARENT_NAME'] = $this->parent_name;
-        $call_fields['REMINDER_CHECKED'] = $this->reminder_time == -1 ? false : true;
-        $call_fields['EMAIL_REMINDER_CHECKED'] = $this->email_reminder_time == -1 ? false : true;
-
-        return $call_fields;
+        // @deprecated
+        // if (isset ($_REQUEST['parent_type']) && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'SubpanelEdits')) {
+        // $this->parent_type = $_REQUEST['parent_type'];
+        // } elseif (is_null($this->parent_type)) {
+        // $this->parent_type = $app_list_strings['record_type_default_key'];
+        // }
     }
 
     function set_notification_body($xtpl, $call)
@@ -847,39 +568,6 @@ class Call extends SugarBean
         return false;
     }
 
-    function listviewACLHelper()
-    {
-        $array_assign = parent::listviewACLHelper();
-        $is_owner = false;
-        if (!empty($this->parent_name)) {
-
-            if (!empty($this->parent_name_owner)) {
-                global $current_user;
-                $is_owner = $current_user->id == $this->parent_name_owner;
-            }
-        }
-        if (!$GLOBALS['ACLController']->moduleSupportsACL($this->parent_type) || $GLOBALS['ACLController']->checkAccess($this->parent_type, 'view', $is_owner)) {
-            $array_assign['PARENT'] = 'a';
-        } else {
-            $array_assign['PARENT'] = 'span';
-        }
-        $is_owner = false;
-        if (!empty($this->contact_name)) {
-
-            if (!empty($this->contact_name_owner)) {
-                global $current_user;
-                $is_owner = $current_user->id == $this->contact_name_owner;
-            }
-        }
-        if ($GLOBALS['ACLController']->checkAccess('Contacts', 'view', $is_owner)) {
-            $array_assign['CONTACT'] = 'a';
-        } else {
-            $array_assign['CONTACT'] = 'span';
-        }
-
-        return $array_assign;
-    }
-
     function save_relationship_changes($is_update, $exclude = [])
     {
         if (empty($this->in_workflow)) {
@@ -894,7 +582,6 @@ class Call extends SugarBean
             } else {
                 $exclude = array('user_id');
             }
-
 
         }
         parent::save_relationship_changes($is_update, $exclude);
@@ -913,14 +600,6 @@ class Call extends SugarBean
             }
         }
         return '';
-    }
-
-    public function mark_deleted($id)
-    {
-        require_once(get_custom_file_if_exists("modules/Calendar/CalendarUtils.php"));
-        CalendarUtils::correctRecurrences($this, $id);
-
-        parent::mark_deleted($id);
     }
 
     public function removeGcalId() {

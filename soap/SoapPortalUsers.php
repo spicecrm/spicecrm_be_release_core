@@ -226,9 +226,11 @@ function portal_get_entry_list_filter($session, $module_name, $order_by, $select
     //build the where clause
 
     $sugar = null;
-    if($module_name == 'Cases'){
-        $sugar = new aCase();
-    }else if($module_name == 'Contacts'){
+// CR1000426 cleanup backend, module Cases removed
+//    if($module_name == 'Cases'){
+//        $sugar = new aCase();
+//    }else
+    if($module_name == 'Contacts'){
         $sugar = new Contact();
     }else if($module_name == 'Accounts'){
         $sugar = new Account();
@@ -787,4 +789,4 @@ function portal_set_newsletters($session, $subscribe_ids, $unsubscribe_ids){
     return $error->get_soap_array();
 }
 
-?>
+

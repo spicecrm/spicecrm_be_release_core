@@ -99,7 +99,7 @@ class EmailAddress extends SugarEmailAddress
                                 continue;
 
                             $emailAddresses[] = array(
-                                'module' => $hit['_type'],
+                                'module' => $hit['_source']['_module'] ?: $hit['_type'],
                                 'id' => $hit['_id'],
                                 'score' => $hit['_score'],
                                 'summary_text' => $hit['_source']['summary_text'],
@@ -117,7 +117,7 @@ class EmailAddress extends SugarEmailAddress
 
 
                         $emailAddresses[] = array(
-                            'module' => $hit['_type'],
+                            'module' => $hit['_source']['_module'] ?: $hit['_type'],
                             'id' => $hit['_id'],
                             'score' => $hit['_score'],
                             'summary_text' => $hit['_source']['summary_text'],

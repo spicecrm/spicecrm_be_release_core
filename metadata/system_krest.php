@@ -110,6 +110,10 @@ $dictionary['syskrestlog'] = array(
             'type' => 'varchar',
             'len' => 255
         ),
+        'headers' => array(
+            'name' => 'headers',
+            'type' => 'text'
+        ),
         'get_params' => array(
             'name' => 'get_params',
             'type' => 'text',

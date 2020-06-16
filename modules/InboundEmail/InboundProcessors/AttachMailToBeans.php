@@ -8,12 +8,12 @@ class AttachMailToBeans{
     function processMail(Email $mail){
         global $sugar_config;
         if (isset($sugar_config['developerMode']) && $sugar_config['developerMode']) {
-            $GLOBALS['log']->fatal("AttachMailToBeans mail: ".$mail->name);
+            $GLOBALS['log']->debug("AttachMailToBeans mail: ".$mail->name);
         }
         $this->email = $mail;
         $this->checkAuthFrom();
         if (isset($sugar_config['developerMode']) && $sugar_config['developerMode']) {
-            $GLOBALS['log']->fatal("AttachMailToBeans inbound_processing_allowed: " . !$this->skip);
+            $GLOBALS['log']->debug("AttachMailToBeans inbound_processing_allowed: " . !$this->skip);
         }
         if($this->skip) exit;
         $this->getAddresses();
@@ -47,7 +47,7 @@ class AttachMailToBeans{
         $this->getAddressesFromTxt($this->email->description_html);
         $this->addresses = array_unique($this->addresses);
         if(isset($sugar_config['developerMode']) && $sugar_config['developerMode']) {
-            $GLOBALS['log']->fatal("AttachMailToBeans getAddresses: " . implode(" , ",$this->addresses));
+            $GLOBALS['log']->debug("AttachMailToBeans getAddresses: " . implode(" , ",$this->addresses));
         }
     }
 
@@ -74,7 +74,7 @@ class AttachMailToBeans{
             if($this->beanCheck($row)) {
                 $this->beans[] = $row;
                 if(isset($sugar_config['developerMode']) && $sugar_config['developerMode']) {
-                    $GLOBALS['log']->fatal("AttachMailToBeans findBeans: " . $row['bean_module'] . "/" . $row['bean_id']);
+                    $GLOBALS['log']->debug("AttachMailToBeans findBeans: " . $row['bean_module'] . "/" . $row['bean_id']);
                 }
             }
         }
@@ -109,7 +109,7 @@ class AttachMailToBeans{
                 while($row = $db->fetchByAssoc($res)){
                     $this->beans[] = array('bean_module' => 'Opportunities', 'bean_id' => $row['id']);
                     if(isset($sugar_config['developerMode']) && $sugar_config['developerMode']) {
-                        $GLOBALS['log']->fatal("AttachMailToBeans findRelatedBeans: Opportunities/" . $row['id']);
+                        $GLOBALS['log']->debug("AttachMailToBeans findRelatedBeans: Opportunities/" . $row['id']);
                     }
                 }
             }
@@ -122,7 +122,7 @@ class AttachMailToBeans{
         foreach ($this->beans as $bean){
             $db->query("INSERT INTO emails_beans (id, email_id, bean_id, bean_module, date_modified) VALUES (UUID(), '{$this->email->id}', '{$bean['bean_id']}', '{$bean['bean_module']}', NOW());");
             if(isset($sugar_config['developerMode']) && $sugar_config['developerMode']) {
-                $GLOBALS['log']->fatal("AttachMailToBeans linkMailToBeans: " . $bean['bean_module'] . "/" . $bean['bean_id']);
+                $GLOBALS['log']->debug("AttachMailToBeans linkMailToBeans: " . $bean['bean_module'] . "/" . $bean['bean_id']);
             }
         }
     }

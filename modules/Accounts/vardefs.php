@@ -118,16 +118,17 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
                 'massupdate' => false,
                 'studio' => 'false',
             ),
-        'cases' =>
-            array(
-                'name' => 'cases',
-                'type' => 'link',
-                'relationship' => 'account_cases',
-                'module' => 'Cases',
-                'bean_name' => 'aCase',
-                'source' => 'non-db',
-                'vname' => 'LBL_CASES',
-            ),
+// CR1000426 cleanup backend, module Cases removed
+//        'cases' =>
+//            array(
+//                'name' => 'cases',
+//                'type' => 'link',
+//                'relationship' => 'account_cases',
+//                'module' => 'Cases',
+//                'bean_name' => 'aCase',
+//                'source' => 'non-db',
+//                'vname' => 'LBL_CASES',
+//            ),
         //bug 42902
         'email' => array(
             'name' => 'email',
@@ -203,15 +204,16 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
                 'source' => 'non-db',
                 'vname' => 'LBL_DOCUMENTS_SUBPANEL_TITLE',
             ),
-        'bugs' => array(
-            'name' => 'bugs',
-            'type' => 'link',
-            'relationship' => 'accounts_bugs',
-            'module' => 'Bugs',
-            'bean_name' => 'Bug',
-            'source' => 'non-db',
-            'vname' => 'LBL_BUGS',
-        ),
+// CR1000426 cleanup backend, module Bugs removed
+//        'bugs' => array(
+//            'name' => 'bugs',
+//            'type' => 'link',
+//            'relationship' => 'accounts_bugs',
+//            'module' => 'Bugs',
+//            'bean_name' => 'Bug',
+//            'source' => 'non-db',
+//            'vname' => 'LBL_BUGS',
+//        ),
         'contacts' => array(
             'name' => 'contacts',
             'type' => 'link',
@@ -506,10 +508,11 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'rhs_module' => 'Accounts', 'rhs_table' => 'accounts', 'rhs_key' => 'parent_id',
             'relationship_type' => 'one-to-many'
         ),
-        'account_cases' => array('lhs_module' => 'Accounts', 'lhs_table' => 'accounts', 'lhs_key' => 'id',
-            'rhs_module' => 'Cases', 'rhs_table' => 'cases', 'rhs_key' => 'account_id',
-            'relationship_type' => 'one-to-many'
-        ),
+// CR1000426 cleanup backend, module Cases removed
+//        'account_cases' => array('lhs_module' => 'Accounts', 'lhs_table' => 'accounts', 'lhs_key' => 'id',
+//            'rhs_module' => 'Cases', 'rhs_table' => 'cases', 'rhs_key' => 'account_id',
+//            'relationship_type' => 'one-to-many'
+//        ),
         'account_tasks' => array('lhs_module' => 'Accounts', 'lhs_table' => 'accounts', 'lhs_key' => 'id',
             'rhs_module' => 'Tasks', 'rhs_table' => 'tasks', 'rhs_key' => 'parent_id',
             'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
@@ -687,7 +690,7 @@ if (is_file("modules/ServiceLocations/ServiceLocation.php")) { // CR1000239
         'name' => 'servicelocations',
         'module' => 'ServiceLocations',
         'type' => 'link',
-        'relationship' => 'servicelocations_accounts',
+        'relationship' => 'servicelocation_accounts',
         'link_type' => 'one',
         'source' => 'non-db',
         'vname' => 'LBL_SERVICELOCATIONS',

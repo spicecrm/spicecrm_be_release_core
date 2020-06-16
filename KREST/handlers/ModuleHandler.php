@@ -781,66 +781,6 @@ class ModuleHandler
         return $aclArray;
     }
 
-    public function get_filtered($beanModule, $beanId, $params)
-    {
-        // acl check if user can get the detail
-        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
-
-        // get the bean
-        $thisBean = BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean)) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
-
-        if ($params['module']) {
-            $filterModule = $params['module'];
-        } else {
-            $GLOBALS['log']->fatal("No module for the list");
-        }
-
-        // apply module filter if one is set
-        if ($params['modulefilter']) {
-            $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
-            $addWhere = $sysModuleFilters->generareWhereClauseForFilterId($params['modulefilter'], '', $thisBean);
-            $sortBySequenceField = false;
-        }
-
-        // apply field filter ..
-        // ToDo: prevent SQL Injection
-        if ($params['fieldfilters']) {
-            $valuewhere = [];
-
-            // decode the array and go for it
-            $fieldFilters = json_decode($params['fieldfilters'], true);
-            if (count($fieldFilters) > 0 && $filterModule) {
-                $relSeed = \BeanFactory::getBean($filterModule);
-                foreach ($fieldFilters as $field => $value) {
-                    $valuewhere[] = "{$relSeed->table_name}.$field = '$value'";
-                }
-                $valuewhere = join(' AND ', $valuewhere);
-                if ($addWhere != '') {
-                    $addWhere = "($addWhere) AND ($valuewhere)";
-                } else {
-                    $addWhere = $valuewhere;
-                }
-            }
-        }
-
-        $sortingDefinition = json_decode($params['sort'], true) ?: array();
-        if ($sortingDefinition) $sortBySequenceField = false;
-
-        if (!$GLOBALS['ACLController']->checkAccess($filterModule, 'list', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to list in module ' . $filterModule . '.'))->setErrorCode('noModuleList');
-
-        $filterBeans = $this->get_bean_list($filterModule, $params, $addWhere);
-
-        //rename count
-        $filterBeans['count'] = $filterBeans['totalcount'];
-        unset($filterBeans['tatalcount']);
-
-
-        return $filterBeans;
-    }
-
     public function get_related($beanModule, $beanId, $linkName, $params)
     {
 
@@ -895,7 +835,7 @@ class ModuleHandler
 
         if ($sortBySequenceField) $sortingDefinition = ['sortfield' => $sequenceField, 'sortdirection' => 'ASC'];
 
-        if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
+        if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true) && !$GLOBALS['ACLController']->checkAccess($relModule, 'listrelated', true))
             throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         // get related beans and related module
@@ -1079,7 +1019,7 @@ class ModuleHandler
     {
         global $current_user, $timedate;
 
-        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true) || !$GLOBALS['ACLController']->checkAccess($beanModule, 'create', true))
+        if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true) && !$GLOBALS['ACLController']->checkAccess($beanModule, 'create', true))
             throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit or create in module $beanModule."))->setErrorCode('noModuleEdit');
 
         if ($post_params['deleted']) {

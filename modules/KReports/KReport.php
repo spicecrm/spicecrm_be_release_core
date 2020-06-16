@@ -2174,7 +2174,7 @@ class KReportRenderer
             return '';
         // 2014-02-25 .. set teh default system currency .. otherwise sugar might take the default users currency
         if (empty($record [$fieldid . '_curid']))
-            $record [$fieldid . '_curid'] = '99';
+            $record [$fieldid . '_curid'] = '-99';
         return currency_format_number($record[$fieldid], array('currency_id' => $record [$fieldid . '_curid'], 'currency_symbol' => true));
     }
 
@@ -2184,7 +2184,7 @@ class KReportRenderer
             return '';
         // 2014-02-25 .. set teh default system currency .. otherwise sugar might take the default users currency
         if (empty($record [$fieldid . '_curid']))
-            $record [$fieldid . '_curid'] = '99';
+            $record [$fieldid . '_curid'] = '-99';
         return currency_format_number($record[$fieldid], array('round' => 0, 'decimals'=> 0, 'currency_id' => $record [$fieldid . '_curid'], 'currency_symbol' => true));
     }
 

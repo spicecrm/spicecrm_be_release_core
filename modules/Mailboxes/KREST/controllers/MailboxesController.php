@@ -177,7 +177,7 @@ class MailboxesController
         $result = [];
         $params = $req->getParams();
 
-        $where = 'hidden=0';
+        $where = 'hidden=0 AND active=1';
         switch ($params['scope']) {
             case 'inbound':
                 $where .= ' AND inbound_comm=1';

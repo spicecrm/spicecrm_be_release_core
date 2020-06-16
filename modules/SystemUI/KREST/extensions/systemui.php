@@ -1,6 +1,9 @@
 <?php
+global $sugar_config;
 
 $uiRestHandler = new SpiceCRM\modules\SystemUI\SystemUIRESTHandler();
+
+$KRESTManager->registerExtension('spiceui', '2.0', $sugar_config['ui']);
 
 $app->group('/spiceui', function () use ($app, $uiRestHandler) {
     $app->group('/core', function () use ($app, $uiRestHandler) {

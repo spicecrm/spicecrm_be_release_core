@@ -93,9 +93,12 @@ class coreController{
             'extensions' => $KRESTManager->extensions,
             'languages' => $languages,
             'elastic' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::checkElastic(),
+            'socket_frontend' => $sugar_config['core']['socket_frontend'],
             'loginSidebarUrl' => isset ($sugar_config['uiLoginSidebarUrl']{0}) ? $sugar_config['uiLoginSidebarUrl'] : false,
             'ChangeRequestRequired' => isset($GLOBALS['sugar_config']['change_request_required']) ? (boolean)$GLOBALS['sugar_config']['change_request_required'] : false,
-            'sessionMaxLifetime' => (int)ini_get('session.gc_maxlifetime')
+            'sessionMaxLifetime' => (int)ini_get('session.gc_maxlifetime'),
+            'unique_key' => $sugar_config['unique_key'],
+            'name' => $sugar_config['system']['name']
         ));
     }
 

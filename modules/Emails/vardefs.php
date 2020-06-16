@@ -191,6 +191,13 @@ $dictionary['Email'] = [
             'len'     => 255,
             'comment' => 'ID of the email item obtained from the email transport system',
         ],
+        'thread_id' => [
+            'name'    => 'thread_id',
+            'vname'   => 'LBL_THREAD_ID',
+            'type'    => 'varchar',
+            'len'     => 255,
+            'comment' => 'ID of the email conversation obtained from the email transport system',
+        ],
         'name' => [
             'name'     => 'name',
             'vname'    => 'LBL_SUBJECT',
@@ -340,24 +347,34 @@ $dictionary['Email'] = [
             'bean_name'    => 'Account',
             'source'       => 'non-db',
         ],
-        'bugs' => [
-            'name'         => 'bugs',
-            'vname'        => 'LBL_EMAILS_BUGS_REL',
+        'consumers' => [
+            'name'         => 'consumers',
+            'vname'        => 'LBL_CONSUMERS',
             'type'         => 'link',
-            'relationship' => 'emails_bugs_rel',
-            'module'       => 'Bugs',
-            'bean_name'    => 'Bug',
+            'relationship' => 'emails_consumers_rel',
+            'module'       => 'Consumers',
             'source'       => 'non-db',
         ],
-        'cases' => [
-            'name'         => 'cases',
-            'vname'        => 'LBL_EMAILS_CASES_REL',
-            'type'         => 'link',
-            'relationship' => 'emails_cases_rel',
-            'module'       => 'Cases',
-            'bean_name'    => 'Case',
-            'source'       => 'non-db',
-        ],
+// CR1000426 cleanup backend, module Bugs removed
+//        'bugs' => [
+//            'name'         => 'bugs',
+//            'vname'        => 'LBL_EMAILS_BUGS_REL',
+//            'type'         => 'link',
+//            'relationship' => 'emails_bugs_rel',
+//            'module'       => 'Bugs',
+//            'bean_name'    => 'Bug',
+//            'source'       => 'non-db',
+//        ],
+// CR1000426 cleanup backend, module Cases removed
+//        'cases' => [
+//            'name'         => 'cases',
+//            'vname'        => 'LBL_EMAILS_CASES_REL',
+//            'type'         => 'link',
+//            'relationship' => 'emails_cases_rel',
+//            'module'       => 'Cases',
+//            'bean_name'    => 'Case',
+//            'source'       => 'non-db',
+//        ],
         'contacts' => [
             'name'         => 'contacts',
             'vname'        => 'LBL_EMAILS_CONTACTS_REL',
@@ -653,6 +670,11 @@ $dictionary['Email'] = [
             'type'   => 'index',
             'fields' => ['assigned_user_id', 'type', 'status'],
         ],
+        [
+            'name' => 'idx_email_external_id',
+            'type'   => 'index',
+            'fields' => ['external_id'],
+        ]
     ], // end indices
 ];
 //BEGIN PHP7.1 compatibility: avoid PHP Fatal error:  Uncaught Error: Cannot use string offset as an array

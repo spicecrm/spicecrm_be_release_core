@@ -36,17 +36,12 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 ********************************************************************************/
 
 /*
-include("metadata/accounts_bugsMetaData.php");
-include("metadata/accounts_casesMetaData.php");
 include("metadata/accounts_contactsMetaData.php");
 include("metadata/accounts_usersMetaData.php");
 include("metadata/accounts_opportunitiesMetaData.php");
 include("metadata/calls_contactsMetaData.php");
 include("metadata/calls_usersMetaData.php");
 include("metadata/calls_leadsMetaData.php");
-include("metadata/cases_bugsMetaData.php");
-include("metadata/contacts_bugsMetaData.php");
-include("metadata/contacts_casesMetaData.php");
 include("metadata/configMetaData.php");
 include("metadata/contacts_usersMetaData.php");
 include("metadata/custom_fieldsMetaData.php");
@@ -69,7 +64,6 @@ include("metadata/roles_usersMetaData.php");
 include("metadata/outboundEmailMetaData.php");
 include("metadata/addressBookMetaData.php");
 include("metadata/project_bugsMetaData.php");
-include("metadata/project_casesMetaData.php");
 if(file_exists('metadata/project_productsMetaData.php'))
     include("metadata/project_productsMetaData.php");
 include("metadata/projects_accountsMetaData.php");
@@ -111,8 +105,6 @@ include("metadata/documents_accountsMetaData.php");
 include("metadata/documents_contactsMetaData.php");
 include("metadata/documents_opportunitiesMetaData.php");
 include("metadata/documents_projectsMetaData.php");
-include("metadata/documents_casesMetaData.php");
-include("metadata/documents_bugsMetaData.php");
 include("metadata/documents_projectsMetaData.php");
 include("metadata/oauth_nonce.php");
 include("metadata/cron_remove_documentsMetaData.php");

@@ -34,10 +34,11 @@ class SpiceFTSBeanHandler
     /**
      * returns the aggregates defined for the bean
      */
-    function getAggregates(){
+    function getAggregates()
+    {
         $aggregates = [];
         foreach ($this->indexProperties as $indexProperty) {
-            if(isset($indexProperty['aggregate'])){
+            if (isset($indexProperty['aggregate'])) {
                 $aggregates[] = [
                     'fieldname' => $indexProperty['fieldname'],
                     'indexfieldname' => $indexProperty['indexfieldname'],
@@ -101,6 +102,11 @@ class SpiceFTSBeanHandler
                             break;
                     }
                 }
+
+                // handling for phon enumbers
+                if ($indexProperty['phonesearch']) {
+                    $indexArray['_phone'][] = \SpiceCRM\includes\SpicePhoneNumberParser\SpicePhoneNumberParser::convertToE164($indexValue['fieldvalue']);
+                }
             }
 
             if (isset($indexValue['fields'])) {
@@ -139,8 +145,8 @@ class SpiceFTSBeanHandler
         }
 
         // add the geo location if set
-        if($this->indexSettings['geosearch'] && $this->indexSettings['geolat'] && $this->indexSettings['geolng'] && !empty($this->seed->{$this->indexSettings['geolat']}) && !empty($this->seed->{$this->indexSettings['geolng']})){
-            $indexArray['_location'] = ['lat' => $this->seed->{$this->indexSettings['geolat']},'lon' => $this->seed->{$this->indexSettings['geolng']}];
+        if ($this->indexSettings['geosearch'] && $this->indexSettings['geolat'] && $this->indexSettings['geolng'] && !empty($this->seed->{$this->indexSettings['geolat']}) && !empty($this->seed->{$this->indexSettings['geolng']})) {
+            $indexArray['_location'] = ['lat' => $this->seed->{$this->indexSettings['geolat']}, 'lon' => $this->seed->{$this->indexSettings['geolng']}];
         }
 
         return $indexArray;
@@ -239,8 +245,6 @@ class SpiceFTSBeanHandler
         $fieldValue = '';
         foreach ($pathRecords as $pathRecord) {
 
-
-
             $pathRecordDetails = explode(':', $pathRecord);
             switch ($pathRecordDetails[0]) {
                 case 'root':
@@ -293,10 +297,9 @@ class SpiceFTSBeanHandler
                         $valArray = array();
                         foreach ($valueBean as $thisValueBean) {
                             // BEGIN CR1000343 handle function: enrich value for bean property before it is processed for indexing
-                            if(isset($indexproperty['function'])) {
+                            if (isset($indexproperty['function'])) {
                                 $valArray[] = $this->enrichDataByFunction($indexproperty);
-                            }
-                            // END
+                            } // END
                             else {
                                 $valArray[] = $this->mapDataType($thisValueBean->field_name_map[$pathRecordDetails[1]]['type'], $thisValueBean->{$pathRecordDetails[1]});
                             }
@@ -305,11 +308,10 @@ class SpiceFTSBeanHandler
 
                     } else {
                         // BEGIN CR1000343 handle function: enrich value for bean property before it is processed for indexing
-                        if(isset($indexproperty['function'])) {
+                        if (isset($indexproperty['function'])) {
                             $fieldValue = $this->enrichDataByFunction($indexproperty);
-                        }
-                        // END
-                        else{
+                        } // END
+                        else {
                             $fieldValue = $this->mapDataType($valueBean->field_name_map[$pathRecordDetails[1]]['type'], $valueBean->{$pathRecordDetails[1]});
                         }
                     }
@@ -317,14 +319,9 @@ class SpiceFTSBeanHandler
                     // see if we have a related id for the field
                     if (isset($this->seed->field_name_map[$pathRecordDetails[1]]['id_name']) && $this->seed->field_name_map[$pathRecordDetails[1]]['id_name'] != '')
                         $this->addRelated($this->seed->{$this->seed->field_name_map[$pathRecordDetails[1]]['id_name']});
-
                     break;
             }
         }
-
-
-
-
 
         return array(
             'fieldname' => $fieldName,
@@ -335,16 +332,17 @@ class SpiceFTSBeanHandler
     /**
      * CR1000343 handle function: enrich value for bean property before it is processed for indexing
      */
-    private function enrichDataByFunction($indexproperty){
+    private function enrichDataByFunction($indexproperty)
+    {
         // extract class name
         $functionData = explode("->", $indexproperty['function']);
-        if(count($functionData) != 2){
+        if (count($functionData) != 2) {
             $functionData = explode("::", $indexproperty['function']);
         }
         // call
-        if(class_exists($functionData[0])){
+        if (class_exists($functionData[0])) {
             $functionObj = new $functionData[0]();
-            if(method_exists($functionObj, $functionData[1])){
+            if (method_exists($functionObj, $functionData[1])) {
                 // overwrite value
                 return $functionObj->{$functionData[1]}($this->seed);
             }
@@ -404,6 +402,14 @@ class SpiceFTSBeanHandler
                 'index' => false
             ]
         );
+
+        // if we have a phone searc enabled add a _phone field
+        if ($this->indexSettings['phonesearch']) {
+            $properties['_phone'] = [
+                'type' => 'keyword',
+                'index' => true
+            ];
+        }
 
         foreach (SpiceFTSUtils::$standardFields as $standardField => $standardFieldData) {
             $properties[$standardField] = array(
@@ -482,7 +488,7 @@ class SpiceFTSBeanHandler
                     // separate handling for the aggregates
                     if (!empty($addField['aggregate'])) {
                         $properties[$addFieldName]['fields']['agg'] = array(
-                            'type' => $addField['type'] && $addField['type'] != 'text'  ? $addField['type'] : 'keyword',
+                            'type' => $addField['type'] && $addField['type'] != 'text' ? $addField['type'] : 'keyword',
                             'index' => true
                         );
 
@@ -500,7 +506,8 @@ class SpiceFTSBeanHandler
         return $properties;
     }
 
-    private function mapIndexProperty($indexProperty, &$properties){
+    private function mapIndexProperty($indexProperty, &$properties)
+    {
         $fieldParams = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getFieldIndexParams(\BeanFactory::getBean($this->seedModule), $indexProperty['path']);
 
         $indexFieldName = $indexProperty['indexfieldname'];
@@ -541,7 +548,7 @@ class SpiceFTSBeanHandler
         // separate handling for the aggregates
         if (!empty($indexProperty['aggregate'])) {
             $properties[$indexFieldName]['fields']['agg'] = array(
-                'type' =>  $indexProperty['indextype'] && $indexProperty['indextype'] != 'text' ? $indexProperty['indextype'] : 'keyword',
+                'type' => $indexProperty['indextype'] && $indexProperty['indextype'] != 'text' ? $indexProperty['indextype'] : 'keyword',
                 'index' => true
             );
 

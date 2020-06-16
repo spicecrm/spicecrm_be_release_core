@@ -46,7 +46,8 @@ require_once(get_custom_file_if_exists('modules/Contacts/Contact.php'));
 require_once(get_custom_file_if_exists('modules/Accounts/Account.php'));
 require_once(get_custom_file_if_exists('modules/Opportunities/Opportunity.php'));
 require_once('service/core/SoapHelperWebService.php');
-require_once(get_custom_file_if_exists('modules/Cases/Case.php'));//ignore notices
+// CR1000426 cleanup backend, module Cases removed
+//require_once(get_custom_file_if_exists('modules/Cases/Case.php'));//ignore notices
 error_reporting(E_ALL ^ E_NOTICE);
 
 

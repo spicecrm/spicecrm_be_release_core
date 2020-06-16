@@ -2,8 +2,8 @@
 
     <div id="moduleList">
         <ul>
-            <li class="newsubmenuitem" id="Hometab" ><span class="notCurrentTab"><a id="moduleTab_Home" module="Home" href="index.php?module=Home&action=index"><img id="homeIcon" src={sugar_getimagepath file="Home_white.png"}></a></span></li>
-            <li>|</li>
+{*            <li class="newsubmenuitem" id="Hometab" ><span class="notCurrentTab"><a id="moduleTab_Home" module="Home" href="index.php?module=Home&action=index"><img id="homeIcon" src={sugar_getimagepath file="Home_white.png"}></a></span></li>*}
+{*            <li>|</li>*}
             {if $USE_GROUP_TABS}
             <li id="groupdropdowntab" onclick="spicetheme.toggleGroups();"><span id="currentGroup">{$currentGroupTab}</span><span class="moreModuleItemsArrow"></span>
                 <div id="tabGroupDropDown">
@@ -26,16 +26,16 @@
             <li class='newSubmenuloading'><img id='newSubmenuloading' src={sugar_getimagepath file="ajax.gif"}></li>
         </ul>
 
-        <div id="search">
-            <form name='UnifiedSearch' action='index.php' onsubmit='return SUGAR.unifiedSearchAdvanced.checkUsaAdvanced()'>
-                <input type="hidden" name="action" value="UnifiedSearch">
-                <input type="hidden" name="module" value="Home">
-                <input type="hidden" name="search_form" value="false">
-                <input type="hidden" name="advanced" value="false">
-                <input type="text" name="query_string" id="query_string" size="20" value="{$SEARCH}">&nbsp;
-                <input type="image" id="searchimage" src={sugar_getimagepath file="search_white.gif"} alt="">
-            </form><br />
-        </div>
+{* CR1000426       <div id="search">*}
+{*            <form name='UnifiedSearch' action='index.php' onsubmit='return SUGAR.unifiedSearchAdvanced.checkUsaAdvanced()'>*}
+{*                <input type="hidden" name="action" value="UnifiedSearch">*}
+{*                <input type="hidden" name="module" value="Home">*}
+{*                <input type="hidden" name="search_form" value="false">*}
+{*                <input type="hidden" name="advanced" value="false">*}
+{*                <input type="text" name="query_string" id="query_string" size="20" value="{$SEARCH}">&nbsp;*}
+{*                <input type="image" id="searchimage" src={sugar_getimagepath file="search_white.gif"} alt="">*}
+{*            </form><br />*}
+{*        </div>*}
 
     </div>
     <div id="footerline" onMouseEnter="spicetheme.toggleFooterline_mouseover('mousein');" onMouseLeave="spicetheme.toggleFooterline_mouseover('mouseout');">
@@ -83,111 +83,111 @@
 
 {if $AUTHENTICATED}
 
-    <div id="leftBar" onMouseEnter="spicetheme.triggerSideBar('mousein');" onMouseLeave="spicetheme.cancelSideBar('mouseout');" class="leftbar {if $sideBarClosed == 'true'}leftbarclosed{/if}" >
-        <div id="SideBarExpander" onClick="spicetheme.toggleSideBar(true);">
-            <span id="SideBarExpander_arrow" class="{if $sideBarClosed == 'true'}arrow_right{else}arrow_left{/if}"></span>
-        </div>
-        {if $ACTION == "DetailView"}
-        <div id="moduleTitleDummy"><h2>... Loading ...</h2></div>
-        <div id="itemactions" class="itemactions">
-            <div id="iafavorite" ng-click="favoritesWidget.toggleFavorite()" class="trtools" ng-controller="FavoritesCtrl">
-                <img id="iafavoriteinactive" ng-show="!favoritesService.isFavorite" src={sugar_getimagepath file="favorite.gif"}>
-                <img id="iafavoriteactive" ng-show="favoritesService.isFavorite" src={sugar_getimagepath file="favorite_active.gif"}>
-            </div>
-            <div class="trtools">
-                <img id= "iaremindernew" src={sugar_getimagepath file="jscalendar.gif"} {if empty($iareminder)} style="display: inline" {/if}>
-                <img id= "iareminderremove" src={sugar_getimagepath file="Trash_active.gif"}>
-                <span id ="iareminder" >{$iareminder}</span>
-            </div>
-            <div id ="iareminderpicker" ></div>
-            <div id ="ianotes" class="trtools" onclick="spicetheme.quickNotes.displayQuickNotes();" title="QuickNotes">
-                <script type="text/javascript">spicetheme.quickNotes.quickNotesCount={$iaquicknotescount};</script>
-                <img id="ianotesinactive" {if $iaquicknotescount > 0}style="display:none"{/if} src={sugar_getimagepath file="quicknotes.gif"}>
-                <img id="ianotesactive" {if $iaquicknotescount == 0}style="display:none"{/if} src={sugar_getimagepath file="quicknotes_active.gif"}>
-                {if $iaquicknotescount > 0} <div id="iaquicknotescount">{$iaquicknotescount}</div> {/if}
-            </div>
+{*    <div id="leftBar" onMouseEnter="spicetheme.triggerSideBar('mousein');" onMouseLeave="spicetheme.cancelSideBar('mouseout');" class="leftbar {if $sideBarClosed == 'true'}leftbarclosed{/if}" >*}
+{*        <div id="SideBarExpander" onClick="spicetheme.toggleSideBar(true);">*}
+{*            <span id="SideBarExpander_arrow" class="{if $sideBarClosed == 'true'}arrow_right{else}arrow_left{/if}"></span>*}
+{*        </div>*}
+{*        {if $ACTION == "DetailView"}*}
+{*        <div id="moduleTitleDummy"><h2>... Loading ...</h2></div>*}
+{*        <div id="itemactions" class="itemactions">*}
+{*            <div id="iafavorite" ng-click="favoritesWidget.toggleFavorite()" class="trtools" ng-controller="FavoritesCtrl">*}
+{*                <img id="iafavoriteinactive" ng-show="!favoritesService.isFavorite" src={sugar_getimagepath file="favorite.gif"}>*}
+{*                <img id="iafavoriteactive" ng-show="favoritesService.isFavorite" src={sugar_getimagepath file="favorite_active.gif"}>*}
+{*            </div>*}
+{*            <div class="trtools">*}
+{*                <img id= "iaremindernew" src={sugar_getimagepath file="jscalendar.gif"} {if empty($iareminder)} style="display: inline" {/if}>*}
+{*                <img id= "iareminderremove" src={sugar_getimagepath file="Trash_active.gif"}>*}
+{*                <span id ="iareminder" >{$iareminder}</span>*}
+{*            </div>*}
+{*            <div id ="iareminderpicker" ></div>*}
+{*            <div id ="ianotes" class="trtools" onclick="spicetheme.quickNotes.displayQuickNotes();" title="QuickNotes">*}
+{*                <script type="text/javascript">spicetheme.quickNotes.quickNotesCount={$iaquicknotescount};</script>*}
+{*                <img id="ianotesinactive" {if $iaquicknotescount > 0}style="display:none"{/if} src={sugar_getimagepath file="quicknotes.gif"}>*}
+{*                <img id="ianotesactive" {if $iaquicknotescount == 0}style="display:none"{/if} src={sugar_getimagepath file="quicknotes_active.gif"}>*}
+{*                {if $iaquicknotescount > 0} <div id="iaquicknotescount">{$iaquicknotescount}</div> {/if}*}
+{*            </div>*}
 
-            <div id ="iaattachments" class="trtools" onclick="spicetheme.attachments.displayAttachments();" title="Attachments">
-                <script type="text/javascript">spicetheme.attachments.attachmentsCount={$iaattachmentscount};</script>
-                <img id="iaattachmentsinactive" {if $iaattachmentscount > 0}style="display:none"{/if} src={sugar_getimagepath file="attachments.gif"}>
-                <img id="iaattachmentsactive" {if $iaattachmentscount == 0}style="display:none"{/if} src={sugar_getimagepath file="attachments_active.gif"}>
-                <div id="iaattachmentscount">{if $iaattachmentscount > 0} {$iaattachmentscount} {/if}</div>
-            </div>
-        </div>
-        <div id="ianotes_container" class="transparent">
-            <div id="ianotes_header">
-                <span id="ianotes_header_title"></span>
-                <img id="ianotes_close" src={sugar_getimagepath file="id-ff-clear.png"} alt="close" title="close" onclick="$('#ianotes_container').fadeOut();spicetheme.quickNotes.open = false;">
-                <img id="ianotes_filter" src={sugar_getimagepath file="Users.png"}  alt="filter MyNotes" title="filter MyNotes" onclick="spicetheme.quickNotes.filterQuickNotes();$(this).hide();$('#ianotes_filter_active').show();">
-                <img id="ianotes_filter_active" src={sugar_getimagepath file="Roles.png"}  alt="disable MyNotes filter" title="disable MyNotes filter" onclick="spicetheme.quickNotes.filterQuickNotes();$(this).hide();$('#ianotes_filter').show();">
-                <img id="ianotes_add" src={sugar_getimagepath file="id-ff-add.png"}  alt="add Note" title="add Note" onclick="$('#ianotes_new_container').slideDown();">
-            </div>
-            <ul>
-                <li id="ianotes_new_container">
-                    <form action="#" method="POST" name="ianotes_new" id="ianotes_new" class="action_buttons">
-                        <textarea cols="68" rows="4" name="text"></textarea><br>
-                        <label for="global" style="vertical-align: bottom;">global Note:</label>&nbsp;
-                        <input type="checkbox" name="global" value="1" id="global_note" onclick="$('#ianotes_new_container').toggleClass('ianotes_global')">&nbsp;
-                        <input type="reset" name="reset" value="cancel" class="button" onclick="spicetheme.quickNotes.formClose();">&nbsp;
-                        <input type="submit" name="submit" value="save" class="button" onclick="spicetheme.quickNotes.saveQuickNote();return false;">
-                    </form>
-                </li>
-            </ul>
-        </div>
+{*            <div id ="iaattachments" class="trtools" onclick="spicetheme.attachments.displayAttachments();" title="Attachments">*}
+{*                <script type="text/javascript">spicetheme.attachments.attachmentsCount={$iaattachmentscount};</script>*}
+{*                <img id="iaattachmentsinactive" {if $iaattachmentscount > 0}style="display:none"{/if} src={sugar_getimagepath file="attachments.gif"}>*}
+{*                <img id="iaattachmentsactive" {if $iaattachmentscount == 0}style="display:none"{/if} src={sugar_getimagepath file="attachments_active.gif"}>*}
+{*                <div id="iaattachmentscount">{if $iaattachmentscount > 0} {$iaattachmentscount} {/if}</div>*}
+{*            </div>*}
+{*        </div>*}
+{*        <div id="ianotes_container" class="transparent">*}
+{*            <div id="ianotes_header">*}
+{*                <span id="ianotes_header_title"></span>*}
+{*                <img id="ianotes_close" src={sugar_getimagepath file="id-ff-clear.png"} alt="close" title="close" onclick="$('#ianotes_container').fadeOut();spicetheme.quickNotes.open = false;">*}
+{*                <img id="ianotes_filter" src={sugar_getimagepath file="Users.png"}  alt="filter MyNotes" title="filter MyNotes" onclick="spicetheme.quickNotes.filterQuickNotes();$(this).hide();$('#ianotes_filter_active').show();">*}
+{*                <img id="ianotes_filter_active" src={sugar_getimagepath file="Roles.png"}  alt="disable MyNotes filter" title="disable MyNotes filter" onclick="spicetheme.quickNotes.filterQuickNotes();$(this).hide();$('#ianotes_filter').show();">*}
+{*                <img id="ianotes_add" src={sugar_getimagepath file="id-ff-add.png"}  alt="add Note" title="add Note" onclick="$('#ianotes_new_container').slideDown();">*}
+{*            </div>*}
+{*            <ul>*}
+{*                <li id="ianotes_new_container">*}
+{*                    <form action="#" method="POST" name="ianotes_new" id="ianotes_new" class="action_buttons">*}
+{*                        <textarea cols="68" rows="4" name="text"></textarea><br>*}
+{*                        <label for="global" style="vertical-align: bottom;">global Note:</label>&nbsp;*}
+{*                        <input type="checkbox" name="global" value="1" id="global_note" onclick="$('#ianotes_new_container').toggleClass('ianotes_global')">&nbsp;*}
+{*                        <input type="reset" name="reset" value="cancel" class="button" onclick="spicetheme.quickNotes.formClose();">&nbsp;*}
+{*                        <input type="submit" name="submit" value="save" class="button" onclick="spicetheme.quickNotes.saveQuickNote();return false;">*}
+{*                    </form>*}
+{*                </li>*}
+{*            </ul>*}
+{*        </div>*}
 
-        <div id="iaattachments_container" class="transparent">
-            <div id="iaattachments_header">
-                <span id="iaattachments_header_title"></span>
-                <img id="iaattachments_close" src={sugar_getimagepath file="id-ff-clear.png"} alt="close" title="close" onclick="$('#iaattachments_container').fadeOut();spicetheme.attachments.open = false;">
-                <img id="iaattachments_add" src={sugar_getimagepath file="id-ff-add.png"}  alt="add Note" title="add Note" onclick="$('#iaattachments_new_container').slideDown();">
-            </div>
-            <ul>
-                <li id="iaattachments_new_container">
-                    <form action="#" method="POST" name="iaattachments_new" id="iaattachments_new" class="action_buttons" enctype="multipart/form-data">
-                        <div id="iaattachments_new_status">Drag a file from a folder or click here.</div>
+{*        <div id="iaattachments_container" class="transparent">*}
+{*            <div id="iaattachments_header">*}
+{*                <span id="iaattachments_header_title"></span>*}
+{*                <img id="iaattachments_close" src={sugar_getimagepath file="id-ff-clear.png"} alt="close" title="close" onclick="$('#iaattachments_container').fadeOut();spicetheme.attachments.open = false;">*}
+{*                <img id="iaattachments_add" src={sugar_getimagepath file="id-ff-add.png"}  alt="add Note" title="add Note" onclick="$('#iaattachments_new_container').slideDown();">*}
+{*            </div>*}
+{*            <ul>*}
+{*                <li id="iaattachments_new_container">*}
+{*                    <form action="#" method="POST" name="iaattachments_new" id="iaattachments_new" class="action_buttons" enctype="multipart/form-data">*}
+{*                        <div id="iaattachments_new_status">Drag a file from a folder or click here.</div>*}
 
-                        <div id="iaattachments_new_drop">Drop file here.</div>
-                        <input type="file" id="iaattachments_new_file" name="file">
-                        <div id="iaattachments_new_list"></div>
-                        <textarea cols="68" rows="4" name="text" id="iaattachments_new_text"></textarea><br>
-                        <input type="reset" name="reset" value="cancel" class="button" onclick="spicetheme.attachments.formClose();">&nbsp;
-                        <input type="submit" name="submit" value="save" class="button" onclick="return spicetheme.attachments.saveAttachment();">
-                    </form>
-                </li>
-            </ul>
-        </div>
-        {/if}
-        <div id="actionmenu" class="shortcuts">
-            {if $MODULE_NAME == 'Home'}
-                <ul>
-                    {foreach from=$pagesArray item=pages name=pageName key=pageKey}
-                        <li id="pageItem{$pageKey}"  {if $pageActive == $pageKey} class='activePageItem'{/if}>
-                            <a id="pageItem{$pageKey}href" href="index.php?module=Home&action=index&activePage={$pageKey}">{$pages.title}</a>
-                            <div class="changeIcon" onclick="spicetheme.editPage({$pageKey})"><img src={sugar_getimagepath file="dashlet-header-edit.gif"}></div>
-                        </li>
-                    {/foreach}
-                </ul>
-                <div id="pageEdit">
-                    <div class="pageEditLabel">{sugar_translate label='LBL_NAME'}:</div>
-                    <input type="text" id="pageTitle">
-                    <div class="pageEditLabel">{sugar_translate label='LBL_DISPLAY_COLUMNS'}:</div>
-                    <select id="pageColumns" style="width:100%">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                    </select>
-                    <div class="pageEditButtons">
-                        <img onclick="spicetheme.commitPageEdit()" src="{sugar_getimagepath file="ok.png"}" title="{sugar_translate label='LBL_OK'}" alt="OK" width="16" height="16" style="cursor: pointer;"/>&nbsp;
-                        <img onclick="spicetheme.cancelPageEdit()" src="{sugar_getimagepath file="cancel.png"}" title="{sugar_translate label='LBL_CANCEL'}" alt="cancel" width="16" height="16" style="cursor: pointer;"/>&nbsp;
-                        <img onclick="spicetheme.deletePage()" src="{sugar_getimagepath file="Trash.png"}" title="{sugar_translate label='LBL_DELETE'}" alt="delete" id="pageEditDeleteButton" width="16" height="16" style="cursor: pointer;"/>
-                        {*<div class="pageEditButton button" onclick="spicetheme.commitPageEdit()">OK</div>*}
-                        {*<div class="pageEditButton button" onclick="spicetheme.cancelPageEdit()">Cancel</div>*}
-                        {*<div id="pageEditDeleteButton" class="pageEditButton button" onclick="spicetheme.deletePage()">Delete</div>*}
-                    </div>
-                </div>
-            {/if}
-        </div>
+{*                        <div id="iaattachments_new_drop">Drop file here.</div>*}
+{*                        <input type="file" id="iaattachments_new_file" name="file">*}
+{*                        <div id="iaattachments_new_list"></div>*}
+{*                        <textarea cols="68" rows="4" name="text" id="iaattachments_new_text"></textarea><br>*}
+{*                        <input type="reset" name="reset" value="cancel" class="button" onclick="spicetheme.attachments.formClose();">&nbsp;*}
+{*                        <input type="submit" name="submit" value="save" class="button" onclick="return spicetheme.attachments.saveAttachment();">*}
+{*                    </form>*}
+{*                </li>*}
+{*            </ul>*}
+{*        </div>*}
+{*        {/if}*}
+{*        <div id="actionmenu" class="shortcuts">*}
+{*            {if $MODULE_NAME == 'Home'}*}
+{*                <ul>*}
+{*                    {foreach from=$pagesArray item=pages name=pageName key=pageKey}*}
+{*                        <li id="pageItem{$pageKey}"  {if $pageActive == $pageKey} class='activePageItem'{/if}>*}
+{*                            <a id="pageItem{$pageKey}href" href="index.php?module=Home&action=index&activePage={$pageKey}">{$pages.title}</a>*}
+{*                            <div class="changeIcon" onclick="spicetheme.editPage({$pageKey})"><img src={sugar_getimagepath file="dashlet-header-edit.gif"}></div>*}
+{*                        </li>*}
+{*                    {/foreach}*}
+{*                </ul>*}
+{*                <div id="pageEdit">*}
+{*                    <div class="pageEditLabel">{sugar_translate label='LBL_NAME'}:</div>*}
+{*                    <input type="text" id="pageTitle">*}
+{*                    <div class="pageEditLabel">{sugar_translate label='LBL_DISPLAY_COLUMNS'}:</div>*}
+{*                    <select id="pageColumns" style="width:100%">*}
+{*                        <option value="1">1</option>*}
+{*                        <option value="2">2</option>*}
+{*                    </select>*}
+{*                    <div class="pageEditButtons">*}
+{*                        <img onclick="spicetheme.commitPageEdit()" src="{sugar_getimagepath file="ok.png"}" title="{sugar_translate label='LBL_OK'}" alt="OK" width="16" height="16" style="cursor: pointer;"/>&nbsp;*}
+{*                        <img onclick="spicetheme.cancelPageEdit()" src="{sugar_getimagepath file="cancel.png"}" title="{sugar_translate label='LBL_CANCEL'}" alt="cancel" width="16" height="16" style="cursor: pointer;"/>&nbsp;*}
+{*                        <img onclick="spicetheme.deletePage()" src="{sugar_getimagepath file="Trash.png"}" title="{sugar_translate label='LBL_DELETE'}" alt="delete" id="pageEditDeleteButton" width="16" height="16" style="cursor: pointer;"/>*}
+{*                        *}{*<div class="pageEditButton button" onclick="spicetheme.commitPageEdit()">OK</div>*}
+{*                        *}{*<div class="pageEditButton button" onclick="spicetheme.cancelPageEdit()">Cancel</div>*}
+{*                        *}{*<div id="pageEditDeleteButton" class="pageEditButton button" onclick="spicetheme.deletePage()">Delete</div>*}
+{*                    </div>*}
+{*                </div>*}
+{*            {/if}*}
+{*        </div>*}
 
-        {include file="themes/SpiceTheme/tpls/SpiceSideBar.tpl" theme_template=true}
+{*        {include file="themes/SpiceTheme/tpls/SpiceSideBar.tpl" theme_template=true}*}
 
-    </div>
+{*    </div>*}
 {/if}

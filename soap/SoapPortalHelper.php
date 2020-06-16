@@ -377,28 +377,29 @@ function portal_get_entry_list_limited($session, $module_name,$where, $order_by,
         $error->set_error('no_module');
         return array('result_count'=>-1, 'entry_list'=>array(), 'error'=>$error->get_soap_array());
     }
-    if($module_name == 'Cases'){
-
-        //if the related cases have not yet been loaded into the session object,
-        //then call the methods that will load the cases related to the contact/accounts for this user
-        if(!isset($_SESSION['viewable'][$module_name])){
-            //retrieve the contact/account id's for this user
-            $c =get_contacts_in();
-            $a = get_accounts_in();
-           if(!empty($c)) {get_cases_in_contacts($c);}
-           if(!empty($a)) { get_cases_in_accounts($a);}
-        }
-
-        $sugar = new aCase();
-
-        $list = array();
-        //if no Cases have been loaded into the session as viewable, then do not issue query, just return empty list
-        //issuing a query with no cases loaded in session will return ALL the Cases, which is not a good thing
-        if(!empty($_SESSION['viewable'][$module_name])){
-            $list =  get_related_list(get_module_in($module_name), new aCase(), $where,$order_by, $row_offset, $limit);
-        }
-
-    }else if($module_name == 'Contacts'){
+//    if($module_name == 'Cases'){
+//
+//        //if the related cases have not yet been loaded into the session object,
+//        //then call the methods that will load the cases related to the contact/accounts for this user
+//        if(!isset($_SESSION['viewable'][$module_name])){
+//            //retrieve the contact/account id's for this user
+//            $c =get_contacts_in();
+//            $a = get_accounts_in();
+//           if(!empty($c)) {get_cases_in_contacts($c);}
+//           if(!empty($a)) { get_cases_in_accounts($a);}
+//        }
+//
+//        $sugar = new aCase();
+//
+//        $list = array();
+//        //if no Cases have been loaded into the session as viewable, then do not issue query, just return empty list
+//        //issuing a query with no cases loaded in session will return ALL the Cases, which is not a good thing
+//        if(!empty($_SESSION['viewable'][$module_name])){
+//            $list =  get_related_list(get_module_in($module_name), new aCase(), $where,$order_by, $row_offset, $limit);
+//        }
+//
+//    }else
+    if($module_name == 'Contacts'){
             $sugar = new Contact();
             $list =  get_related_list(get_module_in($module_name), new Contact(), $where,$order_by);
     }else if($module_name == 'Accounts'){

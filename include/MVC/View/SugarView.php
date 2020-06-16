@@ -436,9 +436,9 @@ class SugarView
             }
         }
         $ss->assign("GCLS", $gcls);
-
-        $ss->assign("SEARCH", isset($_REQUEST['query_string']) ? $_REQUEST['query_string'] : '');
-
+// BEGIN CR1000426
+//        $ss->assign("SEARCH", isset($_REQUEST['query_string']) ? $_REQUEST['query_string'] : '');
+// END
         if ($this->action == "EditView" || $this->action == "Login")
             $ss->assign("ONLOAD", 'onload="set_focus()"');
 
@@ -638,6 +638,15 @@ class SugarView
                     );
                 }
             }
+            // BEGIN CR1000426
+            // overwrite groupTabs, leave administration only
+            $groupTabs = [];
+            if($current_user->is_admin){
+                $groupTabs['All']['modules'] = [
+                    'Administration' => 'Administration',
+                ];
+            }
+            // END
             $ss->assign("groupTabs", $groupTabs);
             $ss->assign("shortcutTopMenu", $shortcutTopMenu);
             $ss->assign('USE_GROUP_TABS', $usingGroupTabs);
@@ -682,37 +691,37 @@ class SugarView
             $ss->clear_compiled_tpl($headerTpl);
 
         // begin SpiceTheme
-        if ($theme == 'SpiceTheme') {
-            // process the pages
-            global $current_user;
-            if (!empty($current_user)) {
-                $pages = $current_user->getPreference('pages', 'Home');
-                // merge with published Pages
-                if (sugar_is_file('modules/SpiceThemePages/SpiceThemePage.php')) {
-                    require_once($beanFiles['SpiceThemePage']);
-                    SpiceThemePage::mergePages($pages);
-                }
-                $homeModString = return_module_language($GLOBALS['current_language'], 'Home');
-                // pass page title and reference along
-                $pageArray = array(); //PHP7 COMPAT
-                foreach ($pages as $thisPageIndex => $thisPage) {
-                    $pageArray[$thisPageIndex] = array(
-                        'title' => (empty($thisPage['pageTitle']) ? $homeModString[$thisPage['pageTitleLabel']] : $thisPage['pageTitle']),
-                        'isReference' => ((isset($thisPage['isReference']) && $thisPage['isReference']) == true ? true : false)
-                    );
-                }
-                $ss->assign('pagesArray', $pageArray);
-                if (isset($_REQUEST['activePage']))
-                    $ss->assign('pageActive', $_REQUEST['activePage']);
-                elseif (isset($_SESSION['activePage']))
-                    $ss->assign('pageActive', $_SESSION['activePage']);
-                else
-                    $ss->assign('pageActive', 0);
-            }else {
-                $ss->assign('pageActive', 0);
-                $ss->assign('pagesArray', array());
-            }
-        }
+//        if ($theme == 'SpiceTheme') {
+//            // process the pages
+//            global $current_user;
+//            if (!empty($current_user)) {
+//                $pages = $current_user->getPreference('pages', 'Home');
+//                // merge with published Pages
+//                if (sugar_is_file('modules/SpiceThemePages/SpiceThemePage.php')) {
+//                    require_once($beanFiles['SpiceThemePage']);
+//                    SpiceThemePage::mergePages($pages);
+//                }
+//                $homeModString = return_module_language($GLOBALS['current_language'], 'Home');
+//                // pass page title and reference along
+//                $pageArray = array(); //PHP7 COMPAT
+//                foreach ($pages as $thisPageIndex => $thisPage) {
+//                    $pageArray[$thisPageIndex] = array(
+//                        'title' => (empty($thisPage['pageTitle']) ? $homeModString[$thisPage['pageTitleLabel']] : $thisPage['pageTitle']),
+//                        'isReference' => ((isset($thisPage['isReference']) && $thisPage['isReference']) == true ? true : false)
+//                    );
+//                }
+//                $ss->assign('pagesArray', $pageArray);
+//                if (isset($_REQUEST['activePage']))
+//                    $ss->assign('pageActive', $_REQUEST['activePage']);
+//                elseif (isset($_SESSION['activePage']))
+//                    $ss->assign('pageActive', $_SESSION['activePage']);
+//                else
+//                    $ss->assign('pageActive', 0);
+//            }else {
+//                $ss->assign('pageActive', 0);
+//                $ss->assign('pagesArray', array());
+//            }
+//        }
         // end SpiceTheme
         if ($retModTabs) {
             return $ss->fetch($themeObject->getTemplate('_headerModuleList.tpl'));

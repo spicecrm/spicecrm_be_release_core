@@ -657,7 +657,7 @@ class DynamicField
     protected function writeVardefExtension($bean_name, $field, $def_override)
     {
         //Hack for the broken cases module
-        $vBean = $bean_name == "aCase" ? "Case" : $bean_name;
+        $vBean = $bean_name;
         $file_loc = "$this->base_path/sugarfield_{$field->name}.php";
 
         $out =  "<?php\n // created: " . date('Y-m-d H:i:s') . "\n";

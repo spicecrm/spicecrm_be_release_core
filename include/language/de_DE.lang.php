@@ -206,19 +206,25 @@ $app_list_strings = array(
         'se' => 'Betreuer Support',
         'es' => 'Executive Sponsor'
     ),
-    'events_account_roles_dom' =>        array(
+    'events_account_roles_dom' => array(
         '' => '',
         'organizer' => 'Veranstalter',
         'sponsor' => 'Sponsor',
         'caterer' => 'Caterer'
     ),
-    'events_contact_roles_dom' =>        array(
+    'events_contact_roles_dom' => array(
         '' => '',
         'organizer' => 'Veranstalter',
         'speaker' => 'Sprecher',
         'moderator' => 'Moderator',
     ),
-    'userabsences_status_dom' =>        array(
+    'events_consumer_roles_dom' => array(
+        '' => '',
+        'organizer' => 'Veranstalter',
+        'speaker' => 'Sprecher',
+        'moderator' => 'Moderator',
+    ),
+    'userabsences_status_dom' => array(
         '' => '',
         'created' => 'Angelegt',
         'submitted' => 'Gesendet',
@@ -227,7 +233,7 @@ $app_list_strings = array(
         'revoked' => 'Storniert',
         'cancel_requested' => 'Stornierung angefordert'
     ),
-    'userabsences_type_dom' =>        array(
+    'userabsences_type_dom' => array(
         '' => '',
         'Krankenstand' => 'Krankenstand',
         'Urlaub' => 'Urlaub',
@@ -496,6 +502,7 @@ $app_list_strings = array(
     'meeting_status_dom' => array(
         'Planned' => 'Geplant',
         'Held' => 'Durchgeführt',
+        'Cancelled' => 'Abgesagt',
         'Not Held' => 'Nicht durchgeführt',
     ),
     'extapi_meeting_password' => array(
@@ -509,6 +516,7 @@ $app_list_strings = array(
     'call_status_dom' => array(
         'Planned' => 'Geplant',
         'Held' => 'Durchgeführt',
+        'Cancelled' => 'Abgesagt',
         'Not Held' => 'Nicht durchgeführt',
     ),
     'call_direction_default' => 'Ausgehend',
@@ -525,12 +533,15 @@ $app_list_strings = array(
         'Recycled' => 'Wiederaufgenommen',
         'Dead' => 'Kalt',
     ),
-    'lead_classification_dom' =>
-        array(
-            'cold' => 'kalt',
-            'warm' => 'warm',
-            'hot' => 'heiß'
-        ),
+    'lead_classification_dom' => array(
+        'cold' => 'kalt',
+        'warm' => 'warm',
+        'hot' => 'heiß'
+    ),
+    'lead_type_dom' => array(
+        'b2b' => 'Geschäftskunde',
+        'b2c' => 'Endkunde'
+    ),
     'gender_list' => array(
         'male' => 'Männlich',
         'female' => 'Weiblich',
@@ -567,9 +578,9 @@ $app_list_strings = array(
         'Inactive' => 'Inaktiv',
     ),
     'knowledge_status_dom' => array(
-            'Draft' => 'Draft',
-            'Released' => 'Released',
-            'Retired' => 'Retired',
+        'Draft' => 'Draft',
+        'Released' => 'Released',
+        'Retired' => 'Retired',
     ),
     'employee_status_dom' => array(
         'Active' => 'Aktiv',
@@ -690,8 +701,18 @@ $app_list_strings = array(
 
     ),
 
+    'parent_type_display_serviceorder' => array(
+        'SalesDocs' => 'Vertriebsbelege',
+        'ServiceTickets' => 'Servicemeldung',
+    ),
+
+    'record_type_display_serviceorder' => array(
+        'SalesDocs' => 'Vertriebsbelege',
+        'ServiceTickets' => 'Servicemeldung'
+    ),
+
     'mailbox_message_types' => [
-        'sms'   => 'Text Messages',
+        'sms' => 'Text Messages',
         'email' => 'Emails',
     ],
 
@@ -1116,7 +1137,7 @@ $app_list_strings = array(
         '604800' => '1 Woche',
     ),
 
-    'emailschedule_status_dom'=> array(
+    'emailschedule_status_dom' => array(
         'queued' => 'in der Warteschlange',
         'sent' => 'gesendet'),
 
@@ -2123,7 +2144,7 @@ $app_strings = array(
     'LBL_LISTVIEW_MERGE_N_MAX' => "Max. %s Objekte können pro Verschmelzung herangezogen werden!",
 
 
-'LBL_LOCALE_NAME_EXAMPLE_FIRST' => 'Hans',
+    'LBL_LOCALE_NAME_EXAMPLE_FIRST' => 'Hans',
     'LBL_LOCALE_NAME_EXAMPLE_LAST' => 'Muster',
     'LBL_LOCALE_NAME_EXAMPLE_SALUTATION' => 'Hr.',
     'LBL_LOCALE_NAME_EXAMPLE_TITLE' => 'Vorstandsvorsitzender',
@@ -4172,6 +4193,26 @@ $app_list_strings['comparators_dom'] = array(
 
 $app_list_strings['moduleList']['AccountKPIs'] = 'Key Performance Indicators';
 
+
+if (file_exists('modules/ServiceEquipments/ServiceEquipment.php')) {
+    $app_list_strings['serviceequipment_status_dom'] = [
+        'new' => 'neu',
+        'offsite' => 'beim Kunden',
+        'onsite' => 'bei uns',
+        'inactive' => 'deaktiviert',
+    ];
+
+    $app_list_strings['maintenance_cycle_dom'] = array(
+        '12' => '1x im Jahr',
+        '6' => '2x im Jahr',
+        '3' => '3x im Jahr',
+        '24' => 'alle 2 Jahre',
+    );
+    $app_list_strings['counter_unit_dom'] = array( //uomunits value
+        'M' => 'Meter',
+        'STD' => 'Stunden',
+    );
+}
 if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
     $app_list_strings['serviceorder_status_dom'] = array(
         'new' => 'Neu',
@@ -4183,6 +4224,18 @@ if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
     $app_list_strings['parent_type_display']['ServiceOrders'] = 'Serviceaufträge';
     $app_list_strings['record_type_display']['ServiceOrders'] = 'Serviceaufträge';
     $app_list_strings['record_type_display_notes']['ServiceOrders'] = 'Serviceaufträge';
+
+    $app_list_strings['serviceorder_user_role_dom'] = [
+        'operator' => 'Ausführender',
+        'assistant' => 'Begleiter',
+    ];
+
+    $app_list_strings['serviceorderitem_parent_type_display'] = [
+        'Products' => 'Produkte',
+        'ProductVariants' => 'Produktvarianten',
+    ];
+
+
 }
 if (file_exists('modules/ServiceTickets/ServiceTicket.php')) {
     $app_list_strings['serviceticket_status_dom'] = array(
@@ -4236,10 +4289,10 @@ if (file_exists('modules/ServiceFeedbacks/ServiceFeedback.php')) {
 include('include/SpiceBeanGuides/SpiceBeanGuideLanguage.php');
 
 $app_list_strings['mailboxes_transport_dom'] = [
-    'imap'     => 'IMAP/SMTP',
-    'mailgun'  => 'Mailgun',
+    'imap' => 'IMAP/SMTP',
+    'mailgun' => 'Mailgun',
     'sendgrid' => 'Sendgrid',
-    'twillio'  => 'Twillio',
+    'twillio' => 'Twillio',
 ];
 
 $app_list_strings['mailboxes_log_levels'] = [
@@ -4249,21 +4302,21 @@ $app_list_strings['mailboxes_log_levels'] = [
 ];
 
 $app_list_strings['mailboxes_outbound_comm'] = [
-    'no'         => 'Nicht erlaubt',
-    'single'     => 'Nur individuelle Emails',
-    'mass'       => 'Individuelle und Massenmails',
+    'no' => 'Nicht erlaubt',
+    'single' => 'Nur individuelle Emails',
+    'mass' => 'Individuelle und Massenmails',
     'single_sms' => 'Nur individuelle SMS',
-    'mass_sms'   => 'Individuelle und Massen-SMS',
+    'mass_sms' => 'Individuelle und Massen-SMS',
 ];
 
 $app_list_strings['output_template_types'] = [
-    ''      => '',
+    '' => '',
     'email' => 'Email',
-    'pdf'   => 'PDF',
+    'pdf' => 'PDF',
 ];
 
 $app_list_strings['languages'] = [
-    ''   => '',
+    '' => '',
     'de' => 'Deutsch',
     'en' => 'Englisch',
 ];
@@ -4302,19 +4355,19 @@ $app_list_strings['crtype_dom'] = [
 
 // CR1000333
 $app_list_strings['deploymentrelease_status_dom'] = [
-    ''         => '',
-    'plan'  => 'planen', // value was planned before CR1000333
-    'develop'  => 'entwickeln',
-    'prepare'    => 'vorbereiten',
-    'test'  => 'testen',
+    '' => '',
+    'plan' => 'planen', // value was planned before CR1000333
+    'develop' => 'entwickeln',
+    'prepare' => 'vorbereiten',
+    'test' => 'testen',
     'release' => 'releasen',
     'closed completed' => 'abgeschlossen', // value was released before CR1000333
     'closed canceled' => 'gestrichen',
 ];
 
 $app_list_strings['product_status_dom'] = [
-    'draft'    => 'Entwurf',
-    'active'   => 'Aktiv',
+    'draft' => 'Entwurf',
+    'active' => 'Aktiv',
     'inactive' => 'Inaktiv',
 ];
 
@@ -4324,8 +4377,8 @@ $app_list_strings['textmessage_direction'] = [
 ];
 
 $app_list_strings['textmessage_delivery_status'] = [
-    'draft'  => 'Entwurf',
-    'sent'   => 'Gesendet',
+    'draft' => 'Entwurf',
+    'sent' => 'Gesendet',
     'failed' => 'Fehlgeschlagen',
 ];
 
@@ -4396,7 +4449,6 @@ $app_list_strings['costcenter_status_dom'] = array(
     'active' => 'Aktiv',
     'inactive' => 'Inaktiv'
 );
-
 
 
 /** KReporter **/

@@ -302,6 +302,7 @@ $dictionary['Note'] = array(
     'type' => 'id',
     'reportable'=>false,
 	'source'=>'non-db',
+      'comment' => 'spicecrm 2020.02.001: if related to former Cases module, now deprecated'
   ),
   'lead_id' =>
   array (
@@ -343,14 +344,15 @@ $dictionary['Note'] = array(
     'vname' => 'LBL_LIST_CONTACT_NAME',
     'source'=>'non-db',
   ),
-  'cases' =>
-  array (
-    'name' => 'cases',
-    'type' => 'link',
-    'relationship' => 'case_notes',
-    'vname' => 'LBL_CASES',
-    'source'=>'non-db',
-  ),
+// CR1000426 cleanup backend, module Cases removed
+//  'cases' =>
+//  array (
+//    'name' => 'cases',
+//    'type' => 'link',
+//    'relationship' => 'case_notes',
+//    'vname' => 'LBL_CASES',
+//    'source'=>'non-db',
+//  ),
   'accounts' =>
   array (
     'name' => 'accounts',
@@ -375,14 +377,14 @@ $dictionary['Note'] = array(
     'source'=>'non-db',
     'vname'=>'LBL_LEADS',
   ),
-  'bugs' =>
-  array (
-    'name' => 'bugs',
-    'type' => 'link',
-    'relationship' => 'bug_notes',
-    'source'=>'non-db',
-    'vname'=>'LBL_BUGS',
-  ),
+//  'bugs' =>
+//  array (
+//    'name' => 'bugs',
+//    'type' => 'link',
+//    'relationship' => 'bug_notes',
+//    'source'=>'non-db',
+//    'vname'=>'LBL_BUGS',
+//  ),
   'emails' =>
   array(
     'name'=> 'emails',

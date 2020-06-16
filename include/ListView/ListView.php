@@ -289,7 +289,8 @@ class ListView
             // TODO: expensive and needs to be removed and done better elsewhere
 
             if(!empty($fill_additional_fields[$aItem->object_name])
-            || ($aItem->object_name == 'Case' && !empty($fill_additional_fields['aCase']))
+// CR1000426 cleanup backend, module Cases removed
+//            || ($aItem->object_name == 'Case' && !empty($fill_additional_fields['aCase']))
             )
             {
                 $aItem->fill_in_additional_list_fields();
@@ -524,7 +525,8 @@ class ListView
 
 
             $aItem->setupCustomFields($aItem->module_dir);
-            $aItem->custom_fields->populateAllXTPL($this->xTemplate, 'detail', $html_varName, $fields);
+// CR1000426
+//            $aItem->custom_fields->populateAllXTPL($this->xTemplate, 'detail', $html_varName, $fields);
 
             $count++;
 
@@ -1651,7 +1653,8 @@ class ListView
 
                     $this->xTemplate->assign($html_varName, $fields);
                     $aItem->setupCustomFields($aItem->module_dir);
-                    $aItem->custom_fields->populateAllXTPL($this->xTemplate, 'detail', $html_varName, $fields);
+// CR1000426
+//                    $aItem->custom_fields->populateAllXTPL($this->xTemplate, 'detail', $html_varName, $fields);
                 }
                 if(!isset($this->data_array) && $aItem->ACLAccess('DetailView')) {
                     $count++;

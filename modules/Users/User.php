@@ -1972,13 +1972,6 @@ EOQ;
         return $syslogconfig;
     }
 
-    public function saveGcalSyncToken($token) {
-        $query = "UPDATE users SET gcal_sync_token = '" . $token . "' WHERE id = '" . $this->id . "'";
-        $result = $this->db->query($query);
-
-        return $result;
-    }
-
     /**
      * Checks if another user with a specific/same user name already exists.
      * @username The user name to check for.

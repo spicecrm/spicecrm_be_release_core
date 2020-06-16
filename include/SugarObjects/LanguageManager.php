@@ -356,8 +356,9 @@ class LanguageManager
 		if(empty($createdModules[$module]) && isset($GLOBALS['beanList'][$module])){
 				$object = $GLOBALS['beanList'][$module];
 
-				if ($object == 'aCase')
-		            $object = 'Case';
+// CR1000426 cleanup backend, module Cases removed
+//				if ($object == 'aCase')
+//		            $object = 'Case';
 
 		        if(!empty($GLOBALS["dictionary"]["$object"]["templates"])){
 		        	$templates = $GLOBALS["dictionary"]["$object"]["templates"];

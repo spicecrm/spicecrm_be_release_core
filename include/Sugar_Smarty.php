@@ -40,6 +40,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 //ORIGINAL:require_once('include/Smarty/Smarty.class.php');
 require_once('include/Smarty/SmartyBC.class.php');
 //END
+require_once 'include/dir_inc.php';
 
 if(!defined('SUGAR_SMARTY_DIR'))
 {

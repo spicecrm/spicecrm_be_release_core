@@ -37,8 +37,6 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_search' => true, 'full_text_search' => true, 'unified_search_default_enabled' => true, 'duplicate_merge' => true,
     'comment' => 'Leads are persons of interest early in a sales cycle', 'fields' => array(
-
-
         'converted' =>
             array(
                 'name' => 'converted',
@@ -84,6 +82,18 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
                 'options' => 'lead_classification_dom',
                 'audited' => true,
                 'comment' => 'Classification of the lead',
+                'merge_filter' => 'enabled',
+            ),
+        'lead_type' =>
+            array(
+                'name' => 'lead_type',
+                'vname' => 'LBL_TYPE',
+                'type' => 'enum',
+                'len' => '3',
+                'options' => 'lead_type_dom',
+                'audited' => true,
+                'default' => 'b2b',
+                'comment' => 'type of the lead .. B2B or B2C',
                 'merge_filter' => 'enabled',
             ),
         'status' =>
@@ -246,6 +256,36 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
             'vname' => 'LBL_CONTACT',
             'reportable' => false,
         ),
+        'consumer_linked_name' =>  array(
+                'name' => 'consumer_linked_name',
+                'rname' => 'name',
+                'id_name' => 'consumer_id',
+                'vname' => 'LBL_CONSUMER',
+                'type' => 'relate',
+                'link' => 'consumer',
+                'table' => 'consumers',
+                'isnull' => 'true',
+                'module' => 'Consumers',
+                'source' => 'non-db',
+                'additionalFields' => array('id' => 'consumer_id')
+            ),
+        'consumer_id' =>       array(
+                'name' => 'consumer_id',
+                'type' => 'id',
+                'reportable' => false,
+                'vname' => 'LBL_CONSUMER_ID',
+                'comment' => 'If converted, Consumer ID resulting from the conversion'
+            ),
+        'consumer' => array(
+            'name' => 'consumer',
+            'type' => 'link',
+            'link_type' => 'one',
+            'relationship' => 'consumer_leads',
+            'source' => 'non-db',
+            'vname' => 'LBL_CONSUMER',
+            'module' => 'Consumers',
+            'reportable' => false,
+        ),
         'account_linked_name' =>
             array(
                 'name' => 'account_linked_name',
@@ -287,9 +327,14 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
         'opportunity_name' =>
             array(
                 'name' => 'opportunity_name',
+                'rname' => 'name',
                 'vname' => 'LBL_OPPORTUNITY',
-                'type' => 'varchar',
-                'len' => '255',
+                'id_name' => 'opportunity_id',
+                'type' => 'relate',
+                'link' => 'opportunity',
+                'table' => 'opportunities',
+                'module' => 'Opportunities',
+                'source' => 'non-db',
                 'comment' => 'Opportunity name associated with lead'
             ),
         'opportunity_amount' =>

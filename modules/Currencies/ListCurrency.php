@@ -188,6 +188,7 @@ EOQ;
 	return $options;
 	}
 	function getTable(){
+	    global $sugar_config;
 		$this->lookupCurrencies();
 		$usdollar = translate('LBL_US_DOLLAR');
 		$currency = translate('LBL_CURRENCY');
