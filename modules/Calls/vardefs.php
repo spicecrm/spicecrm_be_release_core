@@ -341,14 +341,6 @@ $dictionary['Call'] = [
             'source'       => 'non-db',
             'vname'        => 'LBL_PROJECTS',
         ],
-        'case' => [
-            'name'         => 'case',
-            'type'         => 'link',
-            'relationship' => 'case_calls',
-            'source'       => 'non-db',
-            'link_type'    => 'one',
-            'vname'        => 'LBL_CASE',
-        ],
         'accounts' => [
             'name'         => 'accounts',
             'type'         => 'link',

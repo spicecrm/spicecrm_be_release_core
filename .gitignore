@@ -1,0 +1,157 @@
+# SugarCRM #
+###################
+# Ignore custom .htaccess stuff.
+/.htaccess
+/.htpasswd
+
+# Ignore large parts of the annoying cache directory without breaking things.
+# This will break the current behaviour. Which was often leading to
+# the misuse of the repository as backup replacement.
+# For development the cache directory can be safely ignored and
+# therefore it is ignored.
+/cache
+/cache/csv/*
+/cache/dashlets/*
+/cache/diagnostic/*
+/cache/dynamic_fields/*
+/cache/Expressions/*
+/cache/feeds/*
+/cache/fts/*
+/cache/images/*
+/cache/import/*
+/cache/include/*
+/cache/jsLanguage/*
+/cache/modules/*
+/cache/htmlclean/*
+/cache/htmlclean/HTML/*
+/cache/htmlclean/URI/*
+/cache/pdf/*
+/cache/Relationships/*
+/cache/smarty/cache/*
+/cache/smarty/templates_c/*
+/cache/Sugarpdf/*
+/cache/themes/*
+/cache/xml/*
+/cache/upload/*
+
+/modules/SecurityGroups/*
+/custom/Extension/application/Ext/Language/*SecurityGroups*.php
+/custom/Extension/application/Ext/TableDictionary/securitygroups*.php
+/custom/Extension/application/Ext/Include/SecurityGroups.php
+/modules/SpiceUIGenerator/csv/*
+
+# Ignore some files and directories from the custom directory.
+/custom/history
+/custom/history/*
+/custom/modulebuilder
+/custom/modulebuilder/*
+/custom/working
+/custom/working/*
+/custom/modules/*/Ext
+/custom/modules/*/Ext/*
+/custom/application
+/custom/application/*
+/custom/blowfish/*
+/custom/modules/*/Ext/*
+
+# no media files
+/media
+
+# Custom configuration should also be ignored.
+/config.php
+/config_override.php
+
+# The silent upgrade scripts aren't needed.
+/silentUpgrade*.php
+
+# Ignore the new upload directories.
+/upload/*
+/upload_backup
+/upload_backup/*
+
+# packaging #
+###################
+/packaging
+/packaging/*
+
+# eclipse #
+###################
+.project
+.settings
+.buildpath
+
+# netbeans #
+###################
+/nbproject
+/nbproject/*
+project.xml
+
+# node #
+###################
+/node_modules
+/node_modules/*
+
+# nphpstorm #
+###################
+.idea
+
+# sass #
+###################
+.sass-cache
+.sass-cache/*
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+!packaging/*.zip
+
+# Logs and databases #
+######################
+# if you need dumps and configuration scripts, just tag the wanted engine type and file
+*.log
+*.sqlite
+*.sql
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+.~*
+.*~
+custom/blowfish/rapelcg_svryq.php
+composer.lock
+xmlfiles
+
+# dompdf
+/vendor/dompdf/dompdf/lib/fonts/dompdf_font_family_cache.php
+/custom/Extension/application/Ext/Language/en_us.serviceorders.ext.php
+/custom/modules/Cases/logic_hooks.php
+/custom/modules/Connectors/metadata/display_config.php
+/custom/modules/Contacts/logic_hooks.php
+/custom/modules/Leads/logic_hooks.php
+/custom/modules/Opportunities/logic_hooks.php
+/custom/modules/Users/logic_hooks.php

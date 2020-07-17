@@ -888,17 +888,18 @@ if (is_file("modules/ServiceFeedbacks/ServiceFeedback.php")) {
     );
 
 }
-if (is_file("modules/ServiceEquipments/ServiceEquipment.php")) {
-    $dictionary['Contact']['fields']['serviceequipments'] = array(
-        'name' => 'serviceequipments',
-        'type' => 'link',
-        'relationship' => 'serviceequipments_contacts',
-        'source' => 'non-db',
-        'vname' => 'LBL_SERVICEEQUIPMENTS',
-        'module' => 'ServiceEquipments',
-        'default' => false
-    );
-}
+// Not sure we need this at all.... commented for now
+//if (is_file("modules/ServiceEquipments/ServiceEquipment.php")) {
+//    $dictionary['Contact']['fields']['serviceequipments'] = array(
+//        'name' => 'serviceequipments',
+//        'type' => 'link',
+//        'relationship' => 'serviceequipments_contacts',
+//        'source' => 'non-db',
+//        'vname' => 'LBL_SERVICEEQUIPMENTS',
+//        'module' => 'ServiceEquipments',
+//        'default' => false
+//    );
+//}
 
 if (is_file('modules/SalesVouchers/SalesVoucher.php')){
     $dictionary['Contact']['fields']['salesvouchers'] = [

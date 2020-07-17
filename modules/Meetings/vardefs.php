@@ -450,13 +450,6 @@ $dictionary['Meeting'] = [
             'source'       => 'non-db',
             'vname'        => 'LBL_OPPORTUNITY',
         ],
-        'case' => [
-            'name'         => 'case',
-            'type'         => 'link',
-            'relationship' => 'case_meetings',
-            'source'       => 'non-db',
-            'vname'        => 'LBL_CASE',
-        ],
         'notes' => [
             'name'         => 'notes',
             'type'         => 'link',

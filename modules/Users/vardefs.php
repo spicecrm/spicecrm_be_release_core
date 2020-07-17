@@ -1003,17 +1003,17 @@ if (file_exists('modules/SystemDeploymentCRs/SystemDeploymentCR.php')) {
     ];
 
 }
-
-if (is_file("modules/ServiceEquipments/ServiceEquipment.php")) {
-    $dictionary['User']['fields']['serviceequipments'] = array(
-        'name' => 'serviceequipments',
-        'type' => 'link',
-        'relationship' => 'serviceequipments_users',
-        'source' => 'non-db',
-        'vname' => 'LBL_SERVICEEQUIPMENTS',
-        'module' => 'ServiceEquipments',
-        'default' => false
-    );
-}
+// Not sure we need this at all.... commented for now
+//if (is_file("modules/ServiceEquipments/ServiceEquipment.php")) {
+//    $dictionary['User']['fields']['serviceequipments'] = array(
+//        'name' => 'serviceequipments',
+//        'type' => 'link',
+//        'relationship' => 'serviceequipments_users',
+//        'source' => 'non-db',
+//        'vname' => 'LBL_SERVICEEQUIPMENTS',
+//        'module' => 'ServiceEquipments',
+//        'default' => false
+//    );
+//}
 
 

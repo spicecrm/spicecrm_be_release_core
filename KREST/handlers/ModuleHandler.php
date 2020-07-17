@@ -147,7 +147,7 @@ class ModuleHandler
             $result = $ftsHandler->getModuleSearchResults($beanModule, $searchParams['searchterm'], json_decode($searchParams['searchtags']), $searchParams, json_decode(html_entity_decode($searchParams['aggregates']), true), json_decode($searchParams['sortfields'], true) ?: []);
             $totalcount = $result['total'];
             foreach ($result['hits'] as $hit) {
-                $thisBean = \BeanFactory::getBean($beanModule, $hit['_id']);
+                $thisBean = \BeanFactory::getBean($beanModule, $hit['_id'], ['encode' => false]);
                 if(!$thisBean) continue;
                 $beanData[] = $this->mapBeanToArray($beanModule, $thisBean, []);
             }

@@ -44,7 +44,7 @@ if($current_user->is_admin){
 }
 // END
 
-require_once('include/MySugar/MySugar.php');
+// require_once('include/MySugar/MySugar.php');
 
 // build dashlet cache file if not found
 if(!is_file($cachefile = sugar_cached('dashlets/dashlets.php'))) {
@@ -339,15 +339,15 @@ $mySugarResources = $sugarChart->getMySugarChartResources();
 $sugar_smarty->assign('chartResources', $resources);
 $sugar_smarty->assign('mySugarChartResources', $mySugarResources);
 //SpiceTheme modification
-if($theme == 'SpiceTheme'){
-    echo $sugar_smarty->fetch('themes/SpiceTheme/tpls/MySugar.tpl');
-}else{
-    if (file_exists("custom/include/MySugar/tpls/MySugar.tpl")) {
-        echo $sugar_smarty->fetch('custom/include/MySugar/tpls/MySugar.tpl');
-    } else {
-        echo $sugar_smarty->fetch('include/MySugar/tpls/MySugar.tpl');
-    }
-}
+//if($theme == 'SpiceTheme'){
+//    echo $sugar_smarty->fetch('themes/SpiceTheme/tpls/MySugar.tpl');
+//}else{
+//    if (file_exists("custom/include/MySugar/tpls/MySugar.tpl")) {
+//        echo $sugar_smarty->fetch('custom/include/MySugar/tpls/MySugar.tpl');
+//    } else {
+//        echo $sugar_smarty->fetch('include/MySugar/tpls/MySugar.tpl');
+//    }
+//}
 //SpiceTheme end
 //init the quickEdit listeners after the dashlets have loaded on home page the first time
 echo"<script>if(typeof(qe_init) != 'undefined'){qe_init();}</script>";
