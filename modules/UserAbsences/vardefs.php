@@ -70,6 +70,31 @@ $dictionary['UserAbsence'] = array(
             'relationship' => 'users_userabsences',
             'source' => 'non-db',
             'module' => 'Users'
+        ),
+        'representative_id' => array(
+            'name' => 'representative_id',
+            'vname' => 'LBL_USER_ID',
+            'type' => 'id',
+        ),
+        'representative_name' => array(
+            'name' => 'representative_name',
+            'rname' => 'name',
+            'id_name' => 'representative_id',
+            'vname' => 'LBL_REPRESENTATIVE',
+            'type' => 'relate',
+            'table' => 'users',
+            'module' => 'Users',
+            'dbType' => 'varchar',
+            'link' => 'representative_link',
+            'len' => 255,
+            'source' => 'non-db'
+        ),
+        'representative_link' => array(
+            'name' => 'representative_link',
+            'type' => 'link',
+            'relationship' => 'representatives_userabsences',
+            'source' => 'non-db',
+            'module' => 'Users'
         )
     ),
     'indices' => array(

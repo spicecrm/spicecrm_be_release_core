@@ -202,7 +202,7 @@ $dictionary['Consumer'] = array(
             'vname' => 'LBL_PROSPECT_LIST',
             'rel_fields' => [
                 'quantity' => [
-                    'map' => 'prospectlists_consumers_quantity'
+                    'map' => 'prospectlists_consumer_quantity'
                 ]
             ]
         ),
@@ -239,8 +239,8 @@ $dictionary['Consumer'] = array(
                 ]
             ]
         ),
-        'prospectlists_consumers_quantity' => array(
-            'name' => 'prospectlists_consumers_quantity',
+        'prospectlists_consumer_quantity' => array(
+            'name' => 'prospectlists_consumer_quantity',
             'vname' => 'LBL_QUANTITY',
             'type' => 'varchar',
             'source' => 'non-db'

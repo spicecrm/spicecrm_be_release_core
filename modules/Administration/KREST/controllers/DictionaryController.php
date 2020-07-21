@@ -93,7 +93,7 @@ class DictionaryController
             $nodeModule = \BeanFactory::getBean($module);
 
             foreach ($nodeModule->field_name_map as $field_name => $field_defs) {
-                if ($field_defs['type'] != 'link' && $field_defs['type'] != 'relate') {
+                if ($field_defs['type'] != 'link') {
                     $returnArray[] = array(
                         'id' => 'field:' . $field_defs['name'],
                         'name' => $field_defs['name'],

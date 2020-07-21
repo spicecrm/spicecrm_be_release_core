@@ -154,7 +154,7 @@ class adminController
 
     }
 
-    private function buildSQLforRepair()
+    public function buildSQLforRepair()
     {
         global $db, $beanFiles;
         $execute = false;
@@ -199,7 +199,7 @@ class adminController
             $sql .= $db->repairTableParams($tablename, $fielddefs, $indices, $execute, $engine);
             $repairedTables[$tablename] = true;
         }
-        return $sql;
+        return json_encode(array('sql' => $sql));
     }
 
     /**
@@ -211,7 +211,8 @@ class adminController
         global $current_user, $db;
         $errors = [];
         if (is_admin($current_user)) {
-            $sql = $this->buildSQLforRepair();
+            $sqlDecoded = json_decode($this->buildSQLforRepair());
+            $sql = $sqlDecoded->sql;
             if (!empty($sql)) {
                 $synced = false;
                 foreach (explode("\n", $sql) as $line) {

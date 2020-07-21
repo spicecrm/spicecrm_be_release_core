@@ -29,7 +29,7 @@ require_once('include/Sugar_Smarty.php');
 require_once('include/clean.php');
 require_once('modules/Users/User.php');
 require_once('modules/Trackers/TrackerManager.php');
-//require_once('include/SugarTheme/SugarTheme.php');
+require_once('include/SugarTheme/SugarTheme.php');
 require_once('include/Localization/Localization.php');
 require_once('modules/Administration/Administration.php');
 
@@ -578,8 +578,11 @@ class SpiceInstaller
 
         $lang = $postData['language']['language'];
         $languageLoader = new SpiceLanguageLoader();
-        $languageLoader->loadLanguage($lang);
         $sugar_config['syslanguages']['spiceuisource'] = 'db';
+        $languageLoader->loadLanguage($lang);
+        if($lang != 'en_us') {
+            $languageLoader->loadLanguage('en_us');
+        }
         $db->query("UPDATE syslangs SET is_default = 1 WHERE language_code = '$lang'");
     }
 

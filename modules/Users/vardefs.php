@@ -848,7 +848,14 @@ $dictionary['User'] = array(
             'source' => 'non-db',
             'module' => 'UserAbsences'
         ),
-
+        'repabscences' => array(
+            'name' => 'repabscences',
+            'rel_fields' => array('user_id' => array('type' => 'id')),
+            'type' => 'link',
+            'relationship' => 'representatives_userabsences',
+            'source' => 'non-db',
+            'module' => 'UserAbsences'
+        ),
         // service orders many to many
         'serviceorders' => array(
             'name' => 'serviceorders',
@@ -932,6 +939,15 @@ $dictionary['User'] = array(
             'rhs_module' => 'UserAbsences',
             'rhs_table' => 'userabsences',
             'rhs_key' => 'user_id',
+            'relationship_type' => 'one-to-many'
+        ),
+        'representatives_userabsences' => array(
+            'lhs_module' => 'Users',
+            'lhs_table' => 'users',
+            'lhs_key' => 'id',
+            'rhs_module' => 'UserAbsences',
+            'rhs_table' => 'userabsences',
+            'rhs_key' => 'representative_id',
             'relationship_type' => 'one-to-many'
         ),
         'companycode_users' => [
