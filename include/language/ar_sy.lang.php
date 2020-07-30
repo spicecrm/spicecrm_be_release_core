@@ -284,6 +284,7 @@ $app_list_strings = array(
         'weight' => 'وزن',
         'volume' => 'كمية',
         'area' => 'منطقة',
+        'time' => 'Time',
     ),
     'contacts_title_dom' => array(
         '' => '',

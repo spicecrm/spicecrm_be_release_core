@@ -2035,6 +2035,7 @@ $app_list_strings = array (
         'weight' => 'Poids',
         'volume' => 'Volume',
         'area' => 'Surface',
+        'time' => 'Temps',
     ),
     'personalinterests_dom' => array(
         'sports' => 'Sport',

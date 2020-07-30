@@ -418,6 +418,7 @@ $app_list_strings = array(
         'weight' => 'Gewicht',
         'volume' => 'Volume',
         'area' => 'Gebiet',
+        'time' => 'Zeit',
     ),
     'personalinterests_dom' => array(
         'sports' => 'Sport',

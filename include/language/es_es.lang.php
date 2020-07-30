@@ -312,6 +312,17 @@ $app_list_strings = array (
         // 'Dr.'                                              => 'Dr.',
         // 'Prof.'                                            => 'Prof.',
     ),
+    'uom_unit_dimensions_dom' => array(
+        '' => '',
+        'none' => 'ningún',
+        'weight' => 'peso',
+        'volume' => 'volumen',
+        'area' => 'área',
+        'time' => 'tiempo',
+    ),
+
+
+
     'reminder_max_time'                                => '3600',
 
 

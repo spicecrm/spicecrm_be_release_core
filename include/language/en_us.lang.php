@@ -472,6 +472,7 @@ $app_list_strings = array(
         'weight' => 'Weight',
         'volume' => 'Volume',
         'area' => 'Area',
+        'time' => 'Time',
     ),
     'contacts_title_dom' => array(
         '' => '',
