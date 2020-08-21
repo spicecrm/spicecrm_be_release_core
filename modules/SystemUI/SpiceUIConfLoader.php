@@ -233,7 +233,9 @@ class SpiceUIConfLoader
                     }
             }
 
-            $truncates[] = $delQ;
+            if($delQ){
+                $truncates[] = $delQ;
+            }
             $tbColCheck = false;
 
             foreach ($content as $id => $encoded) {
