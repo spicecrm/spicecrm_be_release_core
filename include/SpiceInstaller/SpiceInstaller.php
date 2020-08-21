@@ -375,7 +375,9 @@ class SpiceInstaller
                 array(
                     'error_reporting' => '22517',
                     'display_errors' => '1',
-                ),];
+                ),
+            'syslanguages' => ['spiceuisource' => 'db']
+        ];
 
         if (!empty($sugar_config)) {
             file_put_contents('config.php', '<?php' . PHP_EOL . ' // created: ' . date("Y-m-d h:i:s") . PHP_EOL . '$sugar_config=');
