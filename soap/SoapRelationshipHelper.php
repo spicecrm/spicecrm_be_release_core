@@ -280,8 +280,8 @@ function retrieve_modified_relationships($module_name, $related_module, $relatio
 function server_save_relationships($list, $from_date, $to_date){
 	require_once('include/utils/db_utils.php');
 	global  $beanList, $beanFiles;
-	$from_date = db_convert("'".$GLOBALS['db']->quote($from_date)."'", 'datetime');
-	$to_date = db_convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime');
+	$from_date = $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($from_date)."'", 'datetime');
+	$to_date = $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime');
 	global $sugar_config;
 	$db = DBManagerFactory::getInstance();
 
@@ -309,7 +309,7 @@ function server_save_relationships($list, $from_date, $to_date){
 			if($name == 'date_modified'){
                 $value = $to_date;
 			}else{
-                $value = db_convert("'".$GLOBALS['db']->quote($name_value['value'])."'", 'varchar');
+                $value = $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($name_value['value'])."'", 'varchar');
 			}
 			if($name != 'resolve'){
 			if(empty($insert)){

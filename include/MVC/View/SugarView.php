@@ -125,18 +125,10 @@ class SugarView
         //trackView has to be here in order to track for breadcrumbs
         $this->_trackView();
 
-        //For the ajaxUI, we need to use output buffering to return the page in an ajax friendly format
-        if ($this->_getOption('json_output')) {
-            ob_start();
-            if (!empty($_REQUEST['ajax_load']) && !empty($_REQUEST['loadLanguageJS'])) {
-                echo $this->_getModLanguageJS();
-            }
-        }
 
         if ($this->_getOption('show_header')) {
             $this->displayHeader();
         } else {
-            $this->renderJavascript();
         }
 
         $this->_buildModuleList();
@@ -149,16 +141,7 @@ class SugarView
             $GLOBALS['logic_hook']->call_custom_logic('', 'after_ui_frame');
         }
 
-        // We have to update jsAlerts as soon as possible
-        if (
-                !isset($_SESSION['isMobile']) &&
-                (
-                $this instanceof ViewList || $this instanceof ViewDetail || $this instanceof ViewEdit
-                )
-        ) {
-            $jsAlerts = new jsAlerts();
-            echo $jsAlerts->getScript();
-        }
+
 
         if ($this->_getOption('show_subpanels') && !empty($_REQUEST['record']))
             $this->_displaySubPanels();
@@ -192,8 +175,7 @@ class SugarView
             if (empty($this->responseTime))
                 $this->_calculateFooterMetrics();
             $ajax_ret['responseTime'] = $this->responseTime;
-            $json = getJSONobj();
-            echo $json->encode($ajax_ret);
+            echo json_encode($ajax_ret);
             $GLOBALS['app']->headerDisplayed = false;
             ob_flush();
         }
@@ -319,7 +301,6 @@ class SugarView
 
         // get javascript
         ob_start();
-        $this->renderJavascript();
 
         $ss->assign("SUGAR_JS", ob_get_contents() . $themeObject->getJS());
         ob_end_clean();
@@ -394,7 +375,6 @@ class SugarView
                     )
             );
         }
-        $ss->assign("COMPANY_LOGO_URL", getJSPath($companyLogoURL) . "&logo_md5=" . $ss->get_template_vars("COMPANY_LOGO_MD5"));
 
         // get the global links
         $gcls = array();
@@ -509,15 +489,9 @@ class SugarView
             }
 
 
-            if (!should_hide_iframes()) {
-                $iFrame = new iFrame();
-                $frames = $iFrame->lookup_frames('tab');
-                foreach ($frames as $key => $values) {
-                    $fullModuleList[$key] = $values;
-                }
-            } elseif (isset($fullModuleList['iFrames'])) {
-                unset($fullModuleList['iFrames']);
-            }
+
+            unset($fullModuleList['iFrames']);
+
 
             if ($user_navigation_paradigm == 'gm' && isset($themeObject->group_tabs) && $themeObject->group_tabs) {
                 // We are using grouped tabs
@@ -537,10 +511,9 @@ class SugarView
                 }
 
                 $subMoreModules = false;
-                $groupTabs = $groupedTabsClass->get_tab_structure(get_val_array($modules));
+                $groupTabs = $groupedTabsClass->get_tab_structure([]);
                 // We need to put this here, so the "All" group is valid for the user's preference.
                 $groupTabs[$app_strings['LBL_TABGROUP_ALL']]['modules'] = $fullModuleList;
-
 
                 // Setup the default group tab.
                 $allGroup = $app_strings['LBL_TABGROUP_ALL'];
@@ -737,7 +710,7 @@ class SugarView
                     $ss->assign('iareminder', \SpiceCRM\includes\SpiceReminders\SpiceReminders::getReminder($this->bean->id));
                     // handle the Quicknotes
                     require_once('include/SpiceNotes/SpiceNotes.php');
-                    $ss->assign('iaquicknotescount', SpiceNotes::getQuickNotesCount($this->bean->module_dir, $this->bean->id));
+                    $ss->assign('iaquicknotescount', \SpiceCRM\includes\SpiceNotes\SpiceNotes::getQuickNotesCount($this->bean->module_dir, $this->bean->id));
                     // handle the Attachments
                     $ss->assign('iaattachmentscount', \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsCount($this->bean->name, $this->bean->id));
                 }
@@ -794,35 +767,6 @@ class SugarView
         require_once ($file);
     }
 
-    protected function _displayLoginJS() {
-        global $sugar_config, $timedate;
-
-        if (isset($this->bean->module_dir)) {
-            echo "<script>var module_sugar_grp1 = '{$this->bean->module_dir}';</script>";
-        }
-        if (isset($_REQUEST['action'])) {
-            echo "<script>var action_sugar_grp1 = '{$_REQUEST['action']}';</script>";
-        }
-        echo '<script>jscal_today = 1000*' . $timedate->asUserTs($timedate->getNow()) . '; if(typeof app_strings == "undefined") app_strings = new Array();</script>';
-        if (!is_file(sugar_cached("include/javascript/sugar_grp1.js"))) {
-            $_REQUEST['root_directory'] = ".";
-            require_once("jssource/minify_utils.php");
-            ConcatenateFiles(".");
-        }
-        echo getVersionedScript('cache/include/javascript/sugar_grp1_jquery.js');
-        echo getVersionedScript('cache/include/javascript/sugar_grp1_yui.js');
-        echo getVersionedScript('cache/include/javascript/sugar_grp1.js');
-        echo getVersionedScript('include/javascript/calendar.js');
-        echo <<<EOQ
-        <script>
-            if ( typeof(SUGAR) == 'undefined' ) {SUGAR = {}};
-            if ( typeof(SUGAR.themes) == 'undefined' ) SUGAR.themes = {};
-        </script>
-EOQ;
-        if (isset($sugar_config['disc_client']) && $sugar_config['disc_client'])
-            echo getVersionedScript('modules/Sync/headersync.js');
-    }
-
     /**
      * Get JS validation code for views
      */
@@ -858,87 +802,7 @@ EOQ;
         return $the_script;
     }
 
-    /**
-     * Called from process(). This method will display the correct javascript.
-     */
-    protected function _displayJavascript() {
-        global $locale, $sugar_config, $timedate;
 
-
-        if ($this->_getOption('show_javascript')) {
-            if (!$this->_getOption('show_header')) {
-                $langHeader = get_language_header();
-
-                echo <<<EOHTML
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html {$langHeader}>
-<head>
-EOHTML;
-            }
-
-            $js_vars = array(
-                "sugar_cache_dir" => "cache/",
-            );
-
-            if (isset($this->bean->module_dir)) {
-                $js_vars['module_sugar_grp1'] = $this->bean->module_dir;
-            }
-            if (isset($_REQUEST['action'])) {
-                $js_vars['action_sugar_grp1'] = $_REQUEST['action'];
-            }
-            echo '<script>jscal_today = 1000*' . $timedate->asUserTs($timedate->getNow()) . '; if(typeof app_strings == "undefined") app_strings = new Array();</script>';
-            if (!is_file(sugar_cached("include/javascript/sugar_grp1.js")) || !is_file(sugar_cached("include/javascript/sugar_grp1_yui.js")) || !is_file(sugar_cached("include/javascript/sugar_grp1_jquery.js"))) {
-                $_REQUEST['root_directory'] = ".";
-                require_once("jssource/minify_utils.php");
-                ConcatenateFiles(".");
-            }
-            echo getVersionedScript('cache/include/javascript/sugar_grp1_jquery.js');
-            echo getVersionedScript('cache/include/javascript/sugar_grp1_yui.js');
-            echo getVersionedScript('cache/include/javascript/sugar_grp1.js');
-            echo getVersionedScript('include/javascript/calendar.js');
-
-            // output necessary config js in the top of the page
-            $config_js = $this->getSugarConfigJS();
-            if (!empty($config_js)) {
-                echo "<script>\n" . implode("\n", $config_js) . "</script>\n";
-            }
-
-            if (isset($sugar_config['email_sugarclient_listviewmaxselect'])) {
-                echo "<script>SUGAR.config.email_sugarclient_listviewmaxselect = {$GLOBALS['sugar_config']['email_sugarclient_listviewmaxselect']};</script>";
-            }
-
-            $image_server = (defined('TEMPLATE_URL')) ? TEMPLATE_URL . '/' : '';
-            echo '<script type="text/javascript">SUGAR.themes.image_server="' . $image_server . '";</script>'; // cn: bug 12274 - create session-stored key to defend against CSRF
-            echo '<script type="text/javascript">var name_format = "' . $locale->getLocaleFormatMacro() . '";</script>';
-            echo self::getJavascriptValidation();
-            if (!is_file(sugar_cached('jsLanguage/') . $GLOBALS['current_language'] . '.js')) {
-                require_once ('include/language/jsLanguage.php');
-                jsLanguage::createAppStringsCache($GLOBALS['current_language']);
-            }
-            echo getVersionedScript('cache/jsLanguage/' . $GLOBALS['current_language'] . '.js', $GLOBALS['sugar_config']['js_lang_version']);
-
-            echo $this->_getModLanguageJS();
-
-            if (isset($sugar_config['disc_client']) && $sugar_config['disc_client'])
-                echo getVersionedScript('modules/Sync/headersync.js');
-
-
-            //echo out the $js_vars variables as javascript variables
-            echo "<script type='text/javascript'>\n";
-            foreach ($js_vars as $var => $value) {
-                echo "var {$var} = '{$value}';\n";
-            }
-            echo "</script>\n";
-        }
-    }
-
-    protected function _getModLanguageJS() {
-        if (!is_file(sugar_cached('jsLanguage/') . $this->module . '/' . $GLOBALS['current_language'] . '.js')) {
-            require_once ('include/language/jsLanguage.php');
-            jsLanguage::createModuleStringsCache($this->module, $GLOBALS['current_language']);
-        }
-        return getVersionedScript("cache/jsLanguage/{$this->module}/" . $GLOBALS['current_language'] . '.js', $GLOBALS['sugar_config']['js_lang_version']);
-    }
 
     /**
      * Called from process(). This method will display the footer on the page.
@@ -985,7 +849,7 @@ EOHTML;
             }
         }
         $ss->assign("BOTTOMLINKS", $bottomLinksStr);
-        if (SugarConfig::getInstance()->get('calculate_response_time', false))
+        if (SpiceConfig::getInstance()->get('calculate_response_time', false))
             $ss->assign('STATISTICS', $this->_getStatistics());
 
         // Under the License referenced above, you are required to leave in all copyright statements in both
@@ -1053,7 +917,6 @@ EOHTML;
                     )
             );
         }
-        $ss->assign("COMPANY_LOGO_URL", getJSPath($companyLogoURL) . "&logo_md5=" . $ss->get_template_vars("COMPANY_LOGO_MD5"));
 
         // Bug 38594 - Add in Trademark wording
         $copyright .= 'SugarCRM is a trademark of SugarCRM, Inc. All other company and product names may be trademarks of the respective companies with which they are associated.<br />';
@@ -1146,12 +1009,7 @@ EOHTML;
         }
     }
 
-    public function renderJavascript() {
-        if ($this->action !== 'Login')
-            $this->_displayJavascript();
-        else
-            $this->_displayLoginJS();
-    }
+
 
     private function _calculateFooterMetrics() {
         $endTime = microtime(true);
@@ -1312,8 +1170,8 @@ EOHTML;
         elseif (isset($moduleTabMap[$this->module]))
             return $moduleTabMap[$this->module];
         // Special cases
-        elseif ($this->module == 'MergeRecords')
-            return !empty($_REQUEST['merge_module']) ? $_REQUEST['merge_module'] : $_REQUEST['return_module'];
+//        elseif ($this->module == 'MergeRecords')
+//            return !empty($_REQUEST['merge_module']) ? $_REQUEST['merge_module'] : $_REQUEST['return_module'];
         elseif ($this->module == 'Users' && $this->action == 'SetTimezone')
             return $defaultTab;
         // Default anonymous pages to be under Home
@@ -1334,7 +1192,7 @@ EOHTML;
     public function getModuleTitle(
     $show_help = true
     ) {
-        global $sugar_version, $sugar_flavor, $server_unique_key, $current_language, $action;
+        global $sugar_version, $server_unique_key, $current_language, $action;
 
         $theTitle = "<div class='moduleTitle'>\n";
 
@@ -1646,7 +1504,7 @@ EOHTML;
         }
 
         return array(
-            'url' => getJSPath($favicon),
+            'url' => '',
             'type' => $type,
         );
     }
@@ -1683,11 +1541,7 @@ EOHTML;
      * @return array augmented history with image link and shortened name
      */
     protected function processRecentRecords($history) {
-        foreach ($history as $key => $row) {
-            $history[$key]['item_summary_short'] = to_html(getTrackerSubstring($row['item_summary'])); //bug 56373 - need to re-HTML-encode
-            $history[$key]['image'] = SugarThemeRegistry::current()
-                    ->getImage($row['module_name'], 'border="0" align="absmiddle"', null, null, '.gif', $row['item_summary']);
-        }
+
         return $history;
     }
 

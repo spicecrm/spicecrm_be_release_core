@@ -1,8 +1,8 @@
 <?php
 namespace SpiceCRM\KREST\controllers;
 
-use SpiceCRM\KREST\BadRequestException;
-use SpiceCRM\KREST\Exception;
+use SpiceCRM\includes\ErrorHandlers\BadRequestException;
+use SpiceCRM\includes\ErrorHandlers\Exception;
 
 class gdprController{
 

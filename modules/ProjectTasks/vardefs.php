@@ -240,7 +240,7 @@ $dictionary['ProjectTask'] = array(
             'table' => 'projects',
             'isnull' => 'true',
             'module' => 'Projects',
-            'link' => 'project_name_link',
+            'link' => 'projects',
             'massupdate' => false,
             'source' => 'non-db'
         ),

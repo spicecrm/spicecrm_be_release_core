@@ -2,6 +2,8 @@
 
 namespace SpiceCRM\modules\Calls\KREST\controllers;
 
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+
 class CallsKRESTController
 {
 
@@ -11,7 +13,7 @@ class CallsKRESTController
 
         // acl check if user can edit - must be adming or current user
         if (!$current_user->is_admin && $current_user->id != $args['userid'])
-            throw (new \SpiceCRM\KREST\ForbiddenException("only allowed for admins or assigned user"));
+            throw (new ForbiddenException("only allowed for admins or assigned user"));
 
         // update directly on the db
         $db->query("UPDATE calls_users SET accept_status='{$args['status']}', date_modified='{$timedate->nowDb()}' WHERE deleted = 0 AND call_id='{$args['id']}' AND user_id='{$args['userid']}'");

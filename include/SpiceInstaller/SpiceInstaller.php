@@ -2,20 +2,21 @@
 
 namespace SpiceCRM\includes\SpiceInstaller;
 
-use LoggerManager;
+use SpiceCRM\includes\Logger\LoggerManager;
 use Relationship;
+use SpiceCRM\modules\SystemDeploymentPackages\SystemDeploymentPackageSource;
 use SpiceCRM\modules\Administration\KREST\controllers\adminController;
 use SpiceCRM\modules\Administration\KREST\controllers\PackageController;
 use SpiceCRM\modules\SystemLanguages\SpiceLanguageLoader;
 use SpiceCRM\modules\SystemUI\SpiceUIConfLoader;
 use SugarBean;
 
-require_once('include/SugarObjects/SugarConfig.php');
+require_once('include/SugarObjects/SpiceConfig.php');
 require_once('include/TimeDate.php');
 require_once('include/utils/db_utils.php');
 require_once('include/utils/file_utils.php');
 require_once('include/utils.php');
-require_once('include/SugarLogger/LoggerManager.php');
+require_once('include/Logger/LoggerManager.php');
 require_once('include/database/DBManagerFactory.php');
 require_once('include/SugarCache/SugarCache.php');
 require_once('include/SugarObjects/VardefManager.php');
@@ -25,11 +26,9 @@ require_once('data/SugarBean.php');
 require_once('include/SugarEmailAddress/SugarEmailAddress.php');
 require_once('modules/TableDictionary.php');
 require_once('modules/Relationships/Relationship.php');
-require_once('include/Sugar_Smarty.php');
 require_once('include/clean.php');
 require_once('modules/Users/User.php');
 require_once('modules/Trackers/TrackerManager.php');
-require_once('include/SugarTheme/SugarTheme.php');
 require_once('include/Localization/Localization.php');
 require_once('modules/Administration/Administration.php');
 
@@ -73,8 +72,11 @@ class SpiceInstaller
 
     public function __construct()
     {
+        // init curl object
         $this->curl = curl_init();
+        // init database object
         $this->dbManagerFactory = new \DBManagerFactory();
+        // init log object
         $GLOBALS['log'] = LoggerManager::getLogger('SpiceCRM');
         // set installing global to avoid crashing sugarbean hook logic on install, see include/utils/LogicHook.php
         $GLOBALS['installing'] = true;
@@ -202,7 +204,7 @@ class SpiceInstaller
         }
 
         return array(
-            'success'=>$outcome,
+            'success' => $outcome,
             "requirements" => $requirements);
     }
 
@@ -231,6 +233,11 @@ class SpiceInstaller
             $errors[] = 'invalid database name';
         }
 
+        if ($dbconfig['db_type'] == 'oci8') {
+            $dbconfig['db_schema'] = $postData['db_schema'];
+            $dbconfig['db_name'] = $postData['db_name'];
+        }
+
         if (!$db->connect($dbconfig, false)) {
             $errors[] = $db->lastDbError();
         } else {
@@ -254,6 +261,9 @@ class SpiceInstaller
                 case 'pgsql':
                     $dbquery = "SELECT * FROM " . $dbname . ".information_schema.tables WHERE table_schema = 'public'";
                     break;
+                case 'oci8':
+                    $dbquery = 'SELECT Count(*) FROM DBA_TABLES';
+                    break;
                 default:
                     $dbquery = "SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = '$dbname'";
             }
@@ -264,7 +274,7 @@ class SpiceInstaller
                     $errors[] = "database is not empty";
                 } else {
                     $db->dropDatabase($dbconfig['db_name']);
-            }
+                }
 
             }
         }
@@ -322,7 +332,7 @@ class SpiceInstaller
     public function checkReference()
     {
         $errors = [];
-        $url = 'https://reference.spicecrm.io/config';
+        $url = SystemDeploymentPackageSource::getPublicSource().'config';
 
         $response = $this->curlCall($this->curl, $url);
 
@@ -343,7 +353,7 @@ class SpiceInstaller
      */
     public function getLanguages()
     {
-        $url = "https://packages.spicecrm.io/config";
+        $url = SystemDeploymentPackageSource::getPublicSource().'config';
         $response = $this->curlCall($this->curl, $url);
         return $response;
     }
@@ -360,15 +370,17 @@ class SpiceInstaller
             'dbconfigoption' => $postData['dboptions'],
             'fts' => $postData['fts'],
             'site_url' => $postData['backendconfig']['backendUrl'],
-            'developermode' => $postData['backendconfig']['developerMode'],
+            'developerMode' => $postData['backendconfig']['developerMode'],
             'cache_dir' => 'cache/',
             'log_dir' => '.',
-            'log_file' => 'sugarcrm.log',
+            'log_file' => 'spicecrm.log',
             'session_dir' => '',
             'sugar_version' => '2020.01.00',
-            'default_language'=> $postData['language']['language'],
+            'default_language' => $postData['language']['language_code'],
             'tmp_dir' => 'cache/xml/',
             'upload_dir' => 'upload/',
+            'upload_maxsize' => 30000000,
+            'import_max_records_per_file' => 500,
             'unique_key' => md5(create_guid()),
             'verify_client_ip' => false,
             'krest' =>
@@ -376,14 +388,32 @@ class SpiceInstaller
                     'error_reporting' => '22517',
                     'display_errors' => '1',
                 ),
-            'syslanguages' => ['spiceuisource' => 'db']
+            'languages' => [
+                $postData['language']['language_code'] => $postData['language']['language_name']
+            ],
+            'logger' => [
+//                'default' => 'SpiceLogger',
+                'level' => 'error',
+//                'file' => [
+//                    'ext' => '.log',
+//                    'name' => 'sugarcrm',
+//                    'dateFormat' => '%c',
+//                    'maxSize' => '10MB',
+//                    'maxLogs' => 10,
+//                    'suffix' => '',
+//                ],
+//                'db' => [
+//                    'clean_interval' => '7 DAY',
+//                ],
+            ],
         ];
 
         if (!empty($sugar_config)) {
             file_put_contents('config.php', '<?php' . PHP_EOL . ' // created: ' . date("Y-m-d h:i:s") . PHP_EOL . '$sugar_config=');
             write_array_to_file("sugar_config", $sugar_config, 'config.php');
-            if(!file_exists('config_override.php')) {
-                file_put_contents('config_override.php', '<?php' . PHP_EOL .'/***CONFIGURATOR***/');
+            if (!file_exists('config_override.php')) {
+                $overrides = '$sugar_config' . "['acl']['controller']='modules/ACL/ACLController.php';" . PHP_EOL . '$sugar_config' . "['syslanguages']['spiceuisource']='db';";
+                file_put_contents('config_override.php', '<?php' . PHP_EOL . '/***CONFIGURATOR***/' . PHP_EOL . $overrides . PHP_EOL . '/***CONFIGURATOR***/');
             }
         }
 
@@ -397,26 +427,29 @@ class SpiceInstaller
      */
     private function createDatabase($postData)
     {
-        global $sugar_config;
         $dbconfig = ['db_host_name' => $postData['database']['db_host_name'],
             'db_host_instance' => $postData['database']['db_host_instance'],
             'db_port' => $postData['database']['db_port'],
             'db_user_name' => $postData['database']['db_user_name'],
             'db_password' => $postData['database']['db_password'],
             'db_manager' => $postData['database']['db_manager'],
-            'db_type' => $postData['database']['db_type'], ];
+            'db_type' => $postData['database']['db_type'],];
 
         $db = $this->dbManagerFactory->getTypeInstance($postData['database']['db_type'], ['db_manager' => $postData['database']['db_manager']]);
         $db->setOptions($postData['dboptions']);
+        if ($dbconfig['db_type'] == 'oci8') {
+            $dbconfig['db_schema'] = $postData['database']['db_schema'];
+            $dbconfig['db_name'] = $postData['database']['db_name'];
+        }
         $db->connect($dbconfig, true);
 
 
         $dbconfig['db_name'] = $postData['database']['db_name'];
 
         if (!$db->dbExists($dbconfig['db_name'])) {
-            if($postData['dboptions']['collation'] == 'utf8mb4_general_ci') {
-                $db->query("CREATE DATABASE ".$dbconfig['db_name']." CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci", true);
-            }else{
+            if ($postData['dboptions']['collation'] == 'utf8mb4_general_ci') {
+                $db->query("CREATE DATABASE " . $dbconfig['db_name'] . " CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci", true);
+            } else {
                 $db->createDatabase($dbconfig['db_name']);
             }
 
@@ -424,7 +457,7 @@ class SpiceInstaller
 
         $db = $this->dbManagerFactory->getInstance();
 
-        if (!empty($db) && isset($postData['databaseuser']) && property_exists($postData['databaseuser'], 'db_user_name') ) {
+        if (!empty($db) && isset($postData['databaseuser']) && property_exists($postData['databaseuser'], 'db_user_name')) {
             $db->createDBuser($dbconfig['db_name'], $dbconfig['db_host_name'], $postData['databaseuser']['db_user_name'], $postData['databaseuser']['db_password']);
         }
         return $db;
@@ -438,22 +471,63 @@ class SpiceInstaller
     {
         global $dictionary, $beanList;
         $GLOBALS['db'] = $db;
-
+        $beanList = [];
         $rel_dictionary = $dictionary;
         $vardef = new \VardefManager();
         $vardef->clearVardef();
 
-        include('include/modules.php');
+        $sysModules = $this->retrieveSysModules();
+
+        if (!empty($sysModules)) {
+
+            foreach ($sysModules['sysmodules'] as $sysModuleId => $moduleConf) {
+                $base64conf = base64_decode($moduleConf);
+                if ($decodedConf = json_decode($base64conf, true)) {
+                    if (!empty($decodedConf['bean'])) {
+                        $beanList[$decodedConf['module']] = $decodedConf['bean'];
+                    }
+                }
+            }
+        }
+
+
+        // TODO: replace hardcoded beanList entries for currencies, userpreferences and trackers
+        /*
+                $beanList['Relationships'] = 'Relationship';
+                $beanList['Currencies'] = 'Currency';
+                $beanList['UserPreferences'] = 'UserPreference';
+                $beanList['Trackers'] = 'Tracker';
+                $beanList['UserAccessLogs'] = 'UserAccessLog';
+        */
+        // relationship workaround: relationship has to be the first table to be  created
+        require_once('modules/Relationships/vardefs.php');
+        $table = $dictionary['Relationship']['table'];
+        $fields = $dictionary['Relationship']['fields'];
+        $indices = $dictionary['Relationship']['indices'];
+
+        if (!empty($table)) {
+            if (!$db->tableExists($table)) {
+                $query = $db->createTableSQLParams($table, $fields, $indices);
+                $db->query($query);
+            }
+        }
+        // dashboardcomponents table structure doesnt match with reference
+        $beanList['DashboardComponents'] = 'DashboardComponent';
+        ksort($beanList);
 
         foreach ($beanList as $dir => $bean) {
             if ($bean == 'WorkflowCondition') {
                 require_once('modules/WorkflowDefinitions/vardefs.php');
-            } elseif ($bean == 'ImportMap') {
-                require_once('modules/Import/vardefs.php');
-            } elseif ($bean == 'UsersLastImport') {
-                require_once('modules/Import/vardefs.php');
+            }  elseif ($bean == 'Administration') { // for core edition
+                require_once('metadata/system_config.php');
             } else {
-                require_once('modules/' . $dir . '/vardefs.php');
+                // in core edition some modules might be missing
+                // ignore them when it encountered
+                if(file_exists('modules/' . $dir . '/vardefs.php')){
+                    require_once('modules/' . $dir . '/vardefs.php');
+                } else{
+                    continue;
+                }
             }
 
             if ($dictionary[$bean]['table'] == 'does_not_exist') {
@@ -514,11 +588,11 @@ class SpiceInstaller
      * inserts defaults into the config table
      * @param $db
      */
-    private function insertDefaults($db) {
+    private function insertDefaults($db)
+    {
         global $sugar_version;
-        $date = date("Y-m-d h:i:s");
         $db->query("INSERT INTO config (category, name, value) VALUES ('notify', 'fromaddress', 'do_not_reply@example.com')");
-        $db->query("INSERT INTO config (category, name, value) VALUES ('notify', 'fromname', 'SugarCRM')");
+        $db->query("INSERT INTO config (category, name, value) VALUES ('notify', 'fromname', 'SpiceCRM')");
         $db->query("INSERT INTO config (category, name, value) VALUES ('notify', 'send_by_default', '1')");
         $db->query("INSERT INTO config (category, name, value) VALUES ('notify', 'send_from_assigning_user', '0')");
         $db->query("INSERT INTO config (category, name, value) VALUES ('info', 'sugar_version', '" . $sugar_version . "')");
@@ -539,6 +613,7 @@ class SpiceInstaller
         $db->query("INSERT INTO config (category, name, value) VALUES ( 'currencies', 'default_currency_significant_digits', 2)");
         $db->query("INSERT INTO config (category, name, value) VALUES ( 'currencies', 'default_currency_symbol', '€')");
     }
+
     /**
      * creates the current user and assigns the admin role
      * @param $db
@@ -556,7 +631,7 @@ class SpiceInstaller
         $user = "INSERT INTO users (id, user_name, user_hash, last_name, is_admin, date_entered, date_modified, modified_user_id, created_by, title, status, deleted) ";
         $user .= "VALUES ('1', '$username', '$user_instance->user_hash', '$surname', 1, '$date','$date', '1', '1', 'Administrator', 'Active', 0)";
 
-        $userrole = "INSERT INTO sysuiuserroles (id, user_id, sysuirole_id, defaultrole) VALUES (uuid(), '1', '3687463f-8ed3-49df-af07-1fa2638505db', 1)";
+        $userrole = "INSERT INTO sysuiuserroles (id, user_id, sysuirole_id, defaultrole) VALUES (" . $db->getGuidSQL() . ", '1', '3687463f-8ed3-49df-af07-1fa2638505db', 1)";
         if (!$db->query($user)) {
             $errors[] = $db->lastDbError();
         }
@@ -573,19 +648,24 @@ class SpiceInstaller
      * @param $postData
      */
 
-    private function retrieveCoreAndLanguages($db, $postData) {
-        global $sugar_config;
+    private function retrieveCoreAndLanguages($db, $postData)
+    {
         $confLoader = new SpiceUIConfLoader();
         $confLoader->loadPackage('core');
 
-        $lang = $postData['language']['language'];
+        $lang = $postData['language']['language_code'];
         $languageLoader = new SpiceLanguageLoader();
-        $sugar_config['syslanguages']['spiceuisource'] = 'db';
         $languageLoader->loadLanguage($lang);
-        if($lang != 'en_us') {
+        if ($lang != 'en_us') {
             $languageLoader->loadLanguage('en_us');
         }
         $db->query("UPDATE syslangs SET is_default = 1 WHERE language_code = '$lang'");
+    }
+
+    private function retrieveSysModules()
+    {
+        $confLoader = new SpiceUIConfLoader();
+        return $confLoader->loadPackageForInstall('core');
     }
 
     /**
@@ -595,6 +675,7 @@ class SpiceInstaller
      */
     public function install($body)
     {
+        set_time_limit(30000);
         $GLOBALS['timedate'] = new \TimeDate();
 
         $errors = [];
@@ -611,8 +692,8 @@ class SpiceInstaller
             $this->createTables($db);
             $this->insertDefaults($db);
             $this->createCurrentUser($db, $postData);
-            $this->retrieveCoreAndLanguages($db, $postData);
-            $repair->repairAndRebuild();
+            $this->retrieveCoreandLanguages($db, $postData);
+            $repair->repairAndRebuild(null, null, null);
         } else {
             $errors[] = "empty database instance";
         }

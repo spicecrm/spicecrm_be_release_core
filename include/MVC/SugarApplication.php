@@ -40,8 +40,8 @@
  * To change the template for this generated file go to
  * Window - Preferences - PHPeclipse - PHP - Code Templates
  */
-require_once('include/MVC/Controller/ControllerFactory.php');
-require_once('include/MVC/View/ViewFactory.php');
+//require_once('include/MVC/Controller/ControllerFactory.php');
+//require_once('include/MVC/View/ViewFactory.php');
 
 /**
  * SugarCRM application
@@ -51,7 +51,7 @@ class SugarApplication
 {
     var $controller = null;
     var $headerDisplayed = false;
-    var $default_module = 'Home';
+    var $default_module = 'Administration';
     var $default_action = 'index';
 
     /**
@@ -59,17 +59,19 @@ class SugarApplication
      */
     function execute(){
         global $sugar_config;
-        if(!empty($sugar_config['default_module']))
-            $this->default_module = $sugar_config['default_module'];
+// only Administration
+//        if(!empty($sugar_config['default_module']))
+//            $this->default_module = $sugar_config['default_module'];
         $module = $this->default_module;
         if(!empty($_REQUEST['module']))$module = $_REQUEST['module'];
-        insert_charset_header();
+        header('Content-Type: text/html; charset=UTF-8');
         $this->setupPrint();
         $this->controller = ControllerFactory::getController($module);
         // If the entry point is defined to not need auth, then don't authenticate.
         if( empty($_REQUEST['entryPoint'])
             || $this->controller->checkEntryPointRequiresAuth($_REQUEST['entryPoint']) ){
             $this->loadUser();
+
             $this->ACLFilter();
             $this->preProcess();
             $this->controller->preProcess();
@@ -84,7 +86,7 @@ class SugarApplication
         $this->loadDisplaySettings();
         $this->loadLicense();
         $this->loadGlobals();
-        $this->setupResourceManagement($module);
+//        $this->setupResourceManagement($module);
         $this->controller->execute();
         sugar_cleanup();
     }
@@ -94,7 +96,7 @@ class SugarApplication
      */
     static function loadConfig(){
         global $db, $sugar_config;
-        $configEntries = $db->query("SELECT * FROm config");
+        $configEntries = $db->query("SELECT * FROM config");
         while($configEntry = $db->fetchByAssoc($configEntries)){
             $sugar_config[$configEntry['category']][$configEntry['name']] = $configEntry['value'];
         }
@@ -193,11 +195,11 @@ class SugarApplication
      * on the ResourceManager instance.
      *
      */
-    function setupResourceManagement($module) {
-        require_once('include/resource/ResourceManager.php');
-        $resourceManager = ResourceManager::getInstance();
-        $resourceManager->setup($module);
-    }
+//    function setupResourceManagement($module) {
+//        require_once('include/resource/ResourceManager.php');
+//        $resourceManager = ResourceManager::getInstance();
+//        $resourceManager->setup($module);
+//    }
 
     function setupPrint() {
         $GLOBALS['request_string'] = '';
@@ -367,44 +369,6 @@ class SugarApplication
         $GLOBALS['app_list_strings'] = return_app_list_strings_language($GLOBALS['current_language']);
         $GLOBALS['mod_strings'] = return_module_language($GLOBALS['current_language'], $this->controller->module);
     }
-    /**
-     * @deprecated in SpiceCRM
-     * checkDatabaseVersion
-     * Check the db version sugar_version.php and compare to what the version is stored in the config table.
-     * Ensure that both are the same.
-     */
-    function checkDatabaseVersion($dieOnFailure = true)
-    {
-        $row_count = sugar_cache_retrieve('checkDatabaseVersion_row_count');
-        if ( empty($row_count) )
-        {
-            $version_query = "SELECT count(*) as the_count FROM config WHERE category='info' AND name='sugar_version' AND ".
-                $GLOBALS['db']->convert('value', 'text2char')." = ".$GLOBALS['db']->quoted($GLOBALS['sugar_db_version']);
-
-            $result = $GLOBALS['db']->query($version_query);
-            $row = $GLOBALS['db']->fetchByAssoc($result);
-            $row_count = $row['the_count'];
-            sugar_cache_put('checkDatabaseVersion_row_count', $row_count);
-        }
-
-        if ($row_count == 0 && empty($GLOBALS['sugar_config']['disc_client']))
-        {
-            if ( $dieOnFailure )
-            {
-                $replacementStrings = array(
-                    0 => $GLOBALS['sugar_version'],
-                    1 => $GLOBALS['sugar_db_version'],
-                );
-                sugar_die(string_format($GLOBALS['app_strings']['ERR_DB_VERSION'], $replacementStrings));
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     /**
      * Load the themes/images.
@@ -432,7 +396,7 @@ class SugarApplication
 
         if(!is_null($theme) && !headers_sent())
         {
-            setcookie('sugar_user_theme', $theme, time() + 31536000); // expires in a year
+            // setcookie('sugar_user_theme', $theme, time() + 31536000); // expires in a year
         }
 
         SugarThemeRegistry::set($theme);
@@ -608,11 +572,8 @@ class SugarApplication
             }
         }
 
-        // SpiceCRM Deployment Maintenance Windows Check
-        KDeploymentMW::checkMW();
-
         //set the default module to either Home or specified default
-        $default_module = !empty($GLOBALS['sugar_config']['default_module'])?  $GLOBALS['sugar_config']['default_module'] : 'Home';
+        $default_module = !empty($GLOBALS['sugar_config']['default_module'])?  $GLOBALS['sugar_config']['default_module'] : 'Administration';
 
         //set session expired message if login module and action are set to a non login default
         //AND session id in cookie is set but super global session array is empty
@@ -657,8 +618,7 @@ class SugarApplication
                     'label' => translate($_REQUEST['module']),
                 ),
             );
-            $json = getJSONobj();
-            echo $json->encode($ajax_ret);
+            echo json_encode($ajax_ret);
         } else {
             if (headers_sent()) {
                 echo "<script>SUGAR.ajaxUI.loadContent('$url');</script>\n";
@@ -717,10 +677,6 @@ class SugarApplication
             else
                 $domain = 'localhost';
 
-        if (!headers_sent())
-            setcookie($name,$value,$expire,$path,$domain,$secure,$httponly);
-
-        $_COOKIE[$name] = $value;
     }
 
     protected $redirectVars = array('module', 'action', 'record', 'token', 'oauth_token', 'mobile');
@@ -786,7 +742,7 @@ class SugarApplication
             $vars['mobile'] = $_REQUEST['mobile'];
         }
         if(empty($vars)) {
-            return "index.php?module=Home&action=index";
+            return "index.php?module=Administration&action=index";
         } else {
             return "index.php?".http_build_query($vars);
         }

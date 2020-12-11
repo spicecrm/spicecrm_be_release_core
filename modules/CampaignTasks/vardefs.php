@@ -173,6 +173,19 @@ $dictionary['CampaignTask'] = array(
             'stylesheet_id_field' => 'email_stylesheet_id',
             'comment' => 'the body when an email is composed right in the campaigntask'
         ],
+        'email_spb' => array(
+            'name' => 'email_spb',
+            'vname' => 'LBL_EMAIL_SPB',
+            'type' => 'json',
+            'dbType' => 'text',
+            'comment' => 'save the json structure of the page builder'
+        ),
+        'via_spb' => array(
+            'name' => 'via_spb',
+            'vname' => 'LBL_VIA_SPICE_PAGE_BUILDER',
+            'type' => 'bool',
+            'comment' => 'True when the body is designed via the spice page builder'
+        ),
         'email_stylesheet_id' => [
             'name' => 'email_stylesheet_id',
             'vname' => 'LBL_STYLESHEET',

@@ -1,11 +1,16 @@
 <?php
-$app->group('/configurator', function () use ($app) {
-    $app->group('/editor', function () use ($app) {
-        $app->get('/{category}', function ($req, $res, $args) use ($app) {
+use SpiceCRM\modules\SystemUI\SpiceUIConfLoader;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->group('/configurator', function () {
+    $this->group('/editor', function () {
+        $this->get('/{category}', function ($req, $res, $args) {
             global $current_user, $db, $sugar_config;
 
             # header("Access-Control-Allow-Origin: *");
-            if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            if (!$current_user->is_admin) throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
             $retArray = $sugar_config[$args['category']] ?: new stdClass();
 
@@ -18,11 +23,11 @@ $app->group('/configurator', function () use ($app) {
 
             echo json_encode($retArray);
         });
-        $app->post('/{category}', function ($req, $res, $args) use ($app) {
+        $this->post('/{category}', function ($req, $res, $args) {
             global $current_user, $db, $sugar_config;
 
             # header("Access-Control-Allow-Origin: *");
-            if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            if (!$current_user->is_admin) throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
             $postBody = $req->getParsedBody();
 
@@ -42,11 +47,11 @@ $app->group('/configurator', function () use ($app) {
             echo json_encode($postBody);
         });
     });
-    $app->get('/entries/{table}', function ($req, $res, $args) use ($app) {
+    $this->get('/entries/{table}', function ($req, $res, $args) {
         global $current_user, $db;
 
         # header("Access-Control-Allow-Origin: *");
-        if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        if (!$current_user->is_admin) throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
         $retArray = [];
 
@@ -62,11 +67,11 @@ $app->group('/configurator', function () use ($app) {
 
         echo json_encode($retArray);
     });
-    $app->delete('/{table}/{id}', function ($req, $res, $args) use ($app) {
+    $this->delete('/{table}/{id}', function ($req, $res, $args) {
         global $current_user, $db;
 
         # header("Access-Control-Allow-Origin: *");
-        if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        if (!$current_user->is_admin) throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
         include('modules/TableDictionary.php');
         foreach ($dictionary as $meta) {
@@ -96,10 +101,10 @@ $app->group('/configurator', function () use ($app) {
 
         echo json_encode(['status' => 'success']);
     });
-    $app->post('/{table}/{id}', function ($req, $res, $args) use ($app) {
+    $this->post('/{table}/{id}', function ($req, $res, $args) {
         global $current_user, $db;
 
-        if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        if (!$current_user->is_admin) throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
         # header("Access-Control-Allow-Origin: *");
 
         $postBody = $req->getParsedBody();
@@ -147,7 +152,7 @@ $app->group('/configurator', function () use ($app) {
 
         echo json_encode(['status' => 'success']);
     });
-    $app->post('/update', function ($req, $res, $args) use ($app) {
+    $this->post('/update', function ($req, $res, $args) {
         $postBody = $body = $req->getParsedBody();
         $postParams = $_GET;
         $data = array_merge($postBody, $postParams);
@@ -155,13 +160,12 @@ $app->group('/configurator', function () use ($app) {
     });
 
 
-    $app->get('/load', function($req, $res, $args) use($app){
+    $this->get('/load', function($req, $res, $args) {
         global $current_user;
-        if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+        if (!$current_user->is_admin) throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
         $params = $_GET;
-        if(!class_exists('SpiceUIConfLoader', false))
-            require_once 'modules/SystemUI/SpiceUIConfLoader.php';
+
         $loader = new SpiceUIConfLoader();
         $route = $loader->routebase;
         $packages = explode(",", $params['packages']);
@@ -172,12 +176,12 @@ $app->group('/configurator', function () use ($app) {
         echo json_encode($results);
     });
 
-    $app->get('/objectrepository', function($req, $res, $args) use($app){
+    $this->get('/objectrepository', function($req, $res, $args) {
         global $db;
 
         $db->query('SET SESSION group_concat_max_len = 1000000;');
         $sql = 'SELECT CONCAT("\'", group_concat(item ORDER BY item SEPARATOR "\',\'"), "\'") FROM (SELECT component item FROM sysuiobjectrepository UNION SELECT component item FROM sysuicustomobjectrepository UNION SELECT module item FROM sysuimodulerepository UNION SELECT module item FROM sysuicustommodulerepository) x;';
-        
+
         $dbResult = $db->query( $sql );
         $row = $db->fetchByAssoc( $dbResult );
 

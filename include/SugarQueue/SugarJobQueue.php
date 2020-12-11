@@ -163,7 +163,7 @@ class SugarJobQueue
         // fail jobs that are too old
         $ret = true;
         // bsitnikovski@sugarcrm.com bugfix #56144: Scheduler Bug
-        $date = $this->db->convert($this->db->quoted($GLOBALS['timedate']->getNow()->modify("-{$this->timeout} seconds")->asDb()), 'datetime');
+        $date = $this->db->convert($this->db->quoted($GLOBALS['timedate']->getNow()->modify("-{$this->timeout} seconds")->format(TimeDate::DB_DATETIME_FORMAT)), 'datetime');
         $res = $this->db->query("SELECT id FROM {$this->job_queue_table} WHERE status='".SchedulersJob::JOB_STATUS_RUNNING."' AND date_modified <= $date");
         while($row = $this->db->fetchByAssoc($res)) {
             $this->resolveJob($row["id"], SchedulersJob::JOB_FAILURE, translate('ERR_TIMEOUT', 'SchedulersJobs'));
@@ -226,7 +226,7 @@ class SugarJobQueue
      */
     public function runSchedulers()
     {
-        $sched = new Scheduler();
+        $sched = BeanFactory::getBean('Schedulers');
         $sched->checkPendingJobs($this);
     }
 }

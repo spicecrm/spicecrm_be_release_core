@@ -1,464 +1,363 @@
 <?php
 
-$dictionary['systextids_modules'] = array(
+$dictionary['systextids_modules'] = [
     'table' => 'systextids_modules',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'text_id' => array(
+        ],
+        'text_id' => [
             'name' => 'text_id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 255
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'idx_systextids_modules',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_systextids_modules_text_id',
             'type' => 'index',
-            'fields' => array('text_id'))
-    )
-);
+            'fields' => ['text_id']]
+    ]
+];
 
-$dictionary['syscustomtextids_modules'] = array(
+$dictionary['syscustomtextids_modules'] = [
     'table' => 'syscustomtextids_modules',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'text_id' => array(
-            'name' => 'text_id',
-            'type' => 'id'
-        ),
-        'module' => array(
-            'name' => 'module',
-            'type' => 'varchar',
-            'len' => 255
-        ),
-    ),
-    'indices' => array(
-        array(
-            'name' => 'idx_systextids_modules',
+    'fields' => $dictionary['systextids_modules']['fields'],
+    'indices' => [
+        [
+            'name' => 'idx_syscustomtextids_modules',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
-            'name' => 'idx_systextids_modules_text_id',
+            'fields' => ['id']
+        ],
+        [
+            'name' => 'idx_syscustomtextids_modules_text_id',
             'type' => 'index',
-            'fields' => array('text_id'))
-    )
-);
-$dictionary['systextids'] = array(
+            'fields' => ['text_id']
+        ]
+    ]
+];
+$dictionary['systextids'] = [
     'table' => 'systextids',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'text_id' => array(
+        ],
+        'text_id' => [
             'name' => 'text_id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'label' => array(
+        ],
+        'label' => [
             'name' => 'label',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'text_type' => array(
+        ],
+        'text_type' => [
             'name' => 'text_type',
             'type' => 'varchar',
             'len' => '255'
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'idx_systextids',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_systextids_text_id',
             'type' => 'index',
-            'fields' => array('text_id'))
-    )
-);
-$dictionary['syscustomtextids'] = array(
+            'fields' => ['text_id']
+        ]
+    ]
+];
+$dictionary['syscustomtextids'] = [
     'table' => 'syscustomtextids',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'text_id' => array(
-            'name' => 'text_id',
-            'type' => 'id'
-        ),
-        'name' => array(
-            'name' => 'name',
-            'type' => 'varchar',
-            'len' => 255
-        ),
-        'label' => array(
-            'name' => 'label',
-            'type' => 'varchar',
-            'len' => 255
-        ),
-        'text_type' => array(
-            'name' => 'text_type',
-            'type' => 'varchar',
-            'len' => '255'
-        ),
-    ),
-    'indices' => array(
-        array(
-            'name' => 'idx_systextids',
+    'fields' => $dictionary['systextids']['fields'],
+    'indices' => [
+        [
+            'name' => 'idx_syscustomtextids',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
-            'name' => 'idx_systextids_text_id',
+            'fields' => ['id']
+        ],
+        [
+            'name' => 'idx_syscustomtextids_text_id',
             'type' => 'index',
-            'fields' => array('text_id'))
-    )
-);
+            'fields' => ['text_id']
+        ]
+    ]
+];
 
-$dictionary['sysuipackagerepositories'] = array(
+$dictionary['sysuipackagerepositories'] = [
     'table' => 'sysuipackagerepositories',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'url' => array(
+        ],
+        'url' => [
             'name' => 'url',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuipackagerepositories',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
 
-$dictionary['sysuiloadtasks'] = array(
+$dictionary['sysuiloadtasks'] = [
     'table' => 'sysuiloadtasks',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'display' => array(
+        ],
+        'display' => [
             'name' => 'display',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'phase' => array(
+        ],
+        'phase' => [
             'name' => 'phase',
             'type' => 'varchar',
             'len' => 10
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'varchar',
             'len' => 10
-        ),
-        'route' => array(
+        ],
+        'route' => [
             'name' => 'route',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiloadtasks',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuiloadtaskitems'] = array(
+$dictionary['sysuiloadtaskitems'] = [
     'table' => 'sysuiloadtaskitems',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'sysuiloadtasks_id' => array(
+        ],
+        'sysuiloadtasks_id' => [
             'name' => 'sysuiloadtasks_id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'method' => array(
+        ],
+        'method' => [
             'name' => 'method',
             'type' => 'varchar',
             'len' => 150
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiloadtaskitems',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
 
-$dictionary['sysuicustomloadtasks'] = array(
+$dictionary['sysuicustomloadtasks'] = [
     'table' => 'sysuicustomloadtasks',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'name' => array(
-            'name' => 'name',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'display' => array(
-            'name' => 'display',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'phase' => array(
-            'name' => 'phase',
-            'type' => 'varchar',
-            'len' => 10
-        ),
-        'sequence' => array(
-            'name' => 'sequence',
-            'type' => 'varchar',
-            'len' => 10
-        ),
-        'route' => array(
-            'name' => 'route',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
-            'name' => 'idx_sysuiloadtasks',
+    'fields' => $dictionary['sysuiloadtasks']['fields'],
+    'indices' => [
+        [
+            'name' => 'idx_sysuicustomloadtasks',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
 
-$dictionary['sysuicustomloadtaskitems'] = array(
+$dictionary['sysuicustomloadtaskitems'] = [
     'table' => 'sysuicustomloadtaskitems',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'sysuiloadtasks_id' => array(
-            'name' => 'sysuiloadtasks_id',
-            'type' => 'id'
-        ),
-        'name' => array(
-            'name' => 'name',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'method' => array(
-            'name' => 'method',
-            'type' => 'varchar',
-            'len' => 150
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuiloadtaskitems']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomloadtaskitems',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuicalendarcolorconditions'] = array(
+$dictionary['sysuicalendarcolorconditions'] = [
     'table' => 'sysuicalendarcolorconditions',
     'audited' => true,
     'fields' =>
-        array(
-            'id' => array(
+        [
+            'id' => [
                 'name' => 'id',
                 'type' => 'id'
-            ),
-            'module' => array(
+            ],
+            'module' => [
                 'name' => 'module',
                 'type' => 'varchar',
                 'len' => 100
-            ),
-            'priority' => array(
+            ],
+            'priority' => [
                 'name' => 'priority',
                 'type' => 'int',
                 'default' => 0,
-            ),
-            'module_filter' => array(
+            ],
+            'module_filter' => [
                 'name' => 'module_filter',
                 'type' => 'varchar',
                 'len' => 50
-            ),
-            'color_hex_code' => array(
+            ],
+            'color_hex_code' => [
                 'name' => 'color_hex_code',
                 'type' => 'varchar',
                 'len' => 7
-            ),
-            'category' => array(
+            ],
+            'category' => [
                 'name' => 'category',
                 'type' => 'varchar',
                 'len' => 55
-            ),
-        ),
-    'indices' => array(
-        array(
+            ],
+        ],
+    'indices' => [
+        [
             'name' => 'sysuicalendarcolorconditionspk',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuicalendars'] = array(
+$dictionary['sysuicalendars'] = [
     'table' => 'sysuicalendars',
     'audited' => true,
     'fields' =>
-        array(
-            'id' => array(
+        [
+            'id' => [
                 'name' => 'id',
                 'type' => 'id'
-            ),
-            'name' => array(
+            ],
+            'name' => [
                 'name' => 'name',
                 'type' => 'varchar',
                 'len' => 100
-            ),
-            'icon' => array(
+            ],
+            'icon' => [
                 'name' => 'icon',
                 'type' => 'varchar',
                 'len' => 50
-            ),
-            'is_default' => array(
+            ],
+            'is_default' => [
                 'name' => 'is_default',
                 'type' => 'int',
                 'len' => 1
-            ),
-        ),
-    'indices' => array(
-        array(
+            ],
+        ],
+    'indices' => [
+        [
             'name' => 'sysuicalendarspk',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuicalendaritems'] = array(
+$dictionary['sysuicalendaritems'] = [
     'table' => 'sysuicalendaritems',
     'fields' =>
-        array(
-            'id' => array(
+        [
+            'id' => [
                 'name' => 'id',
                 'type' => 'id'
-            ),
-            'name' => array(
+            ],
+            'name' => [
                 'name' => 'name',
                 'type' => 'varchar',
                 'len' => 100
-            ),
-            'module' => array(
+            ],
+            'module' => [
                 'name' => 'module',
                 'type' => 'varchar',
                 'len' => 50
-            ),
-            'type' => array(
+            ],
+            'type' => [
                 'name' => 'type',
                 'vname' => 'LBL_TYPE',
                 'type' => 'enum',
@@ -466,2925 +365,2494 @@ $dictionary['sysuicalendaritems'] = array(
                 'options' => 'calendar_type_dom',
                 'importable' => 'required',
                 'required' => true,
-            ),
-            'field_date_start' => array(
+            ],
+            'field_date_start' => [
                 'name' => 'field_date_start',
                 'type' => 'varchar',
-            ),
-            'field_date_end' => array(
+            ],
+            'field_date_end' => [
                 'name' => 'field_date_end',
                 'type' => 'varchar',
-            ),
-            'field_event' => array(
+            ],
+            'field_event' => [
                 'name' => 'field_event',
                 'type' => 'varchar',
                 'len' => 50
-            ),
-            'module_filter' => array(
+            ],
+            'module_filter' => [
                 'name' => 'module_filter',
                 'type' => 'id'
-            ),
-            'calendar_id' => array(
+            ],
+            'calendar_id' => [
                 'name' => 'calendar_id',
                 'type' => 'id'
-            ),
-            'owner' => array(
+            ],
+            'owner' => [
                 'name' => 'owner',
                 'type' => 'id'
-            ),
-        ),
-    'indices' => array(
-        array(
+            ],
+        ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicalendaritems',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_sysuicalendaritems_owner',
             'type' => 'index',
-            'fields' => array('owner'))
-    )
-);
-$dictionary['sysuicustomcalendaritems'] = array(
+            'fields' => ['owner']]
+    ]
+];
+$dictionary['sysuicustomcalendaritems'] = [
     'table' => 'sysuicustomcalendaritems',
-    'fields' =>
-        array(
-            'id' => array(
-                'name' => 'id',
-                'type' => 'id'
-            ),
-            'name' => array(
-                'name' => 'name',
-                'type' => 'varchar',
-                'len' => 100
-            ),
-            'module' => array(
-                'name' => 'module',
-                'type' => 'varchar',
-                'len' => 50
-            ),
-            'type' => array(
-                'name' => 'type',
-                'vname' => 'LBL_TYPE',
-                'type' => 'enum',
-                'len' => 100,
-                'options' => 'calendar_type_dom',
-                'importable' => 'required',
-                'required' => true,
-            ),
-            'field_date_start' => array(
-                'name' => 'field_date_start',
-                'type' => 'varchar',
-            ),
-            'field_date_end' => array(
-                'name' => 'field_date_end',
-                'type' => 'varchar',
-            ),
-            'field_event' => array(
-                'name' => 'field_event',
-                'type' => 'varchar',
-                'len' => 50
-            ),
-            'module_filter' => array(
-                'name' => 'module_filter',
-                'type' => 'id'
-            ),
-            'calendar_id' => array(
-                'name' => 'calendar_id',
-                'type' => 'id'
-            ),
-            'owner' => array(
-                'name' => 'owner',
-                'type' => 'id'
-            ),
-        ),
-    'indices' => array(
-        array(
-            'name' => 'idx_sysuicalendaritems',
+    'fields' => $dictionary['sysuicalendaritems']['fields'],
+    'indices' => [
+        [
+            'name' => 'idx_sysuicustomcalendaritems',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
-            'name' => 'idx_sysuicalendaritems_owner',
+            'fields' => ['id']],
+        [
+            'name' => 'idx_sysuicustomcalendaritems_owner',
             'type' => 'index',
-            'fields' => array('owner'))
-    )
-);
+            'fields' => ['owner']]
+    ]
+];
 
-$dictionary['sysuimodulerepository'] = array(
+$dictionary['sysuimodulerepository'] = [
     'table' => 'sysuimodulerepository',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'module'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'path' => array(
+        ],
+        'path' => [
             'name' => 'path',
             'type' => 'varchar',
             'len' => 500
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuimodulerepository',
             'type' => 'primary',
-            'fields' => array('id')),
-    )
-);
+            'fields' => ['id']],
+    ]
+];
 
-$dictionary['sysuicustommodulerepository'] = array(
+$dictionary['sysuicustommodulerepository'] = [
     'table' => 'sysuicustommodulerepository',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'module' => array(
-            'name' => 'module',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'path' => array(
-            'name' => 'path',
-            'type' => 'varchar',
-            'len' => 500
-        ),
-        'description' => array(
-            'name' => 'description',
-            'type' => 'text'
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 5
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuimodulerepository']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustommodulerepository',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuiobjectrepository'] = array(
+$dictionary['sysuiobjectrepository'] = [
     'table' => 'sysuiobjectrepository',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'object'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'object' => array(
+        ],
+        'object' => [
             'name' => 'object',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'path' => array(
+        ],
+        'path' => [
             'name' => 'path',
             'type' => 'varchar',
             'len' => 500
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'deprecated' => array(
+        ],
+        'deprecated' => [
             'name' => 'deprecated',
             'type' => 'bool',
             'default' => 0
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiobjectrepository',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicustomobjectrepository'] = array(
+$dictionary['sysuicustomobjectrepository'] = [
     'table' => 'sysuicustomobjectrepository',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'object' => array(
-            'name' => 'object',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'module' => array(
-            'name' => 'module',
-            'type' => 'varchar',
-            'len' => 36
-        ),
-        'path' => array(
-            'name' => 'path',
-            'type' => 'varchar',
-            'len' => 500
-        ),
-        'component' => array(
-            'name' => 'component',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'description' => array(
-            'name' => 'description',
-            'type' => 'text'
-        ),
-        'componentconfig' => array(
-            'name' => 'componentconfig',
-            'type' => 'text'
-        ),
-        'deprecated' => array(
-            'name' => 'deprecated',
-            'type' => 'bool',
-            'default' => 0
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuiobjectrepository']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomobjectrepository',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicomponentsets'] = array(
+$dictionary['sysuicomponentsets'] = [
     'table' => 'sysuicomponentsets',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'name'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicomponentsets',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicustomcomponentsets'] = array(
+$dictionary['sysuicustomcomponentsets'] = [
     'table' => 'sysuicustomcomponentsets',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'name' => array(
-            'name' => 'name',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'module' => array(
-            'name' => 'module',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuicomponentsets']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomcomponentsets',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicomponentsetscomponents'] = array(
+$dictionary['sysuicomponentsetscomponents'] = [
     'table' => 'sysuicomponentsetscomponents',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'component'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'componentset_id' => array(
+        ],
+        'componentset_id' => [
             'name' => 'componentset_id',
             'type' => 'id'
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicomponentsetscomponents',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_sysuicomponentsetscomponents_setid',
             'type' => 'index',
-            'fields' => array('componentset_id'))
-    )
-);
+            'fields' => ['componentset_id']]
+    ]
+];
 
-$dictionary['sysuicustomcomponentsetscomponents'] = array(
+$dictionary['sysuicustomcomponentsetscomponents'] = [
     'table' => 'sysuicustomcomponentsetscomponents',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'componentset_id' => array(
-            'name' => 'componentset_id',
-            'type' => 'id'
-        ),
-        'sequence' => array(
-            'name' => 'sequence',
-            'type' => 'int'
-        ),
-        'component' => array(
-            'name' => 'component',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'componentconfig' => array(
-            'name' => 'componentconfig',
-            'type' => 'text'
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuicomponentsetscomponents']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomcomponentsetscomponents',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_sysuicustomcomponentsetscomponents_setid',
             'type' => 'index',
-            'fields' => array('componentset_id'))
-    )
-);
+            'fields' => ['componentset_id']]
+    ]
+];
 
-$dictionary['sysuifieldsets'] = array(
+$dictionary['sysuifieldsets'] = [
     'table' => 'sysuifieldsets',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'module'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuifieldsets',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicustomfieldsets'] = array(
+$dictionary['sysuicustomfieldsets'] = [
     'table' => 'sysuicustomfieldsets',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'module' => array(
-            'name' => 'module',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'name' => array(
-            'name' => 'name',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuifieldsets']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomfieldsets',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuifieldsetsitems'] = array(
+$dictionary['sysuifieldsetsitems'] = [
     'table' => 'sysuifieldsetsitems',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'field'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'fieldset_id' => array(
+        ],
+        'fieldset_id' => [
             'name' => 'fieldset_id',
             'type' => 'id'
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'field' => array(
+        ],
+        'field' => [
             'name' => 'field',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'fieldset' => array(
+        ],
+        'fieldset' => [
             'name' => 'fieldset',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'fieldconfig' => array(
+        ],
+        'fieldconfig' => [
             'name' => 'fieldconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuifieldsetsitems',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_sysuifieldsetsitems_setid',
             'type' => 'index',
-            'fields' => array('fieldset_id'))
-    )
-);
+            'fields' => ['fieldset_id']]
+    ]
+];
 
-$dictionary['sysuicustomfieldsetsitems'] = array(
+$dictionary['sysuicustomfieldsetsitems'] = [
     'table' => 'sysuicustomfieldsetsitems',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'fieldset_id' => array(
-            'name' => 'fieldset_id',
-            'type' => 'id'
-        ),
-        'sequence' => array(
-            'name' => 'sequence',
-            'type' => 'int'
-        ),
-        'field' => array(
-            'name' => 'field',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'fieldset' => array(
-            'name' => 'fieldset',
-            'type' => 'varchar',
-            'len' => 36
-        ),
-        'fieldconfig' => array(
-            'name' => 'fieldconfig',
-            'type' => 'text'
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuifieldsetsitems']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomfieldsetsitems',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_sysuicustomfieldsetsitems_setid',
             'type' => 'index',
-            'fields' => array('fieldset_id'))
-    )
-);
+            'fields' => ['fieldset_id']]
+    ]
+];
 
-$dictionary['sysuiactionsets'] = array(
+$dictionary['sysuiactionsets'] = [
     'table' => 'sysuiactionsets',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'name'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiactionsets',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuicustomactionsets'] = array(
+$dictionary['sysuicustomactionsets'] = [
     'table' => 'sysuicustomactionsets',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'module' => array(
-            'name' => 'module',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'name' => array(
-            'name' => 'name',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuiactionsets']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomactionsets',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuiactionsetitems'] = array(
+$dictionary['sysuiactionsetitems'] = [
     'table' => 'sysuiactionsetitems',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'action'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'actionset_id' => array(
+        ],
+        'actionset_id' => [
             'name' => 'actionset_id',
             'type' => 'id'
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'action' => array(
+        ],
+        'action' => [
             'name' => 'action',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'actionconfig' => array(
+        ],
+        'actionconfig' => [
             'name' => 'actionconfig',
             'type' => 'text'
-        ),
-        'singlebutton' => array(
+        ],
+        'singlebutton' => [
             'name' => 'singlebutton',
             'type' => 'bool',
             'default' => 0
-        ),
-        'requiredmodelstate' => array(
+        ],
+        'requiredmodelstate' => [
             'name' => 'requiredmodelstate',
             'type' => 'varchar',
             'len' => 30
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiactionsetitems',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuicustomactionsetitems'] = array(
+$dictionary['sysuicustomactionsetitems'] = [
     'table' => 'sysuicustomactionsetitems',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'actionset_id' => array(
-            'name' => 'actionset_id',
-            'type' => 'id'
-        ),
-        'sequence' => array(
-            'name' => 'sequence',
-            'type' => 'int'
-        ),
-        'action' => array(
-            'name' => 'action',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'component' => array(
-            'name' => 'component',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'actionconfig' => array(
-            'name' => 'actionconfig',
-            'type' => 'text'
-        ),
-        'singlebutton' => array(
-            'name' => 'singlebutton',
-            'type' => 'bool',
-            'default' => 0
-        ),
-        'requiredmodelstate' => array(
-            'name' => 'requiredmodelstate',
-            'type' => 'varchar',
-            'len' => 30
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuiactionsetitems']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomactionsetitems',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuiroutes'] = array(
+$dictionary['sysuiroutes'] = [
     'table' => 'sysuiroutes',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'path'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'path' => array(
+        ],
+        'path' => [
             'name' => 'path',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'redirectto' => array(
+        ],
+        'redirectto' => [
             'name' => 'redirectto',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'pathmatch' => array(
+        ],
+        'pathmatch' => [
             'name' => 'pathmatch',
             'type' => 'varchar',
             'len' => 4
-        ),
-        'loginrequired' => array(
+        ],
+        'loginrequired' => [
             'name' => 'loginrequired',
             'type' => 'int',
             'len' => 1
-        ),
-        'target' => array(
+        ],
+        'target' => [
             'name' => 'target',
             'type' => 'varchar',
             'len' => 1,
             'comment' => 'the target for the tab in tabbed browsing, an be M for main, N for New or C for current'
-        ),
-        'subtabs' => array(
+        ],
+        'subtabs' => [
             'name' => 'subtabs',
             'type' => 'bool',
             'default' => 0,
             'comment' => 'set to true to allow subtabs on this route'
-        ),
-        'referencepath' => array(
+        ],
+        'referencepath' => [
             'name' => 'referencepath',
             'type' => 'varchar',
             'len' => 255,
             'comment' => 'a path that is then treated as one and the view is rendered in that window if one exists'
-        ),
-        'aclaction' => array(
+        ],
+        'aclaction' => [
             'name' => 'aclaction',
             'type' => 'varchar',
             'len' => 100,
             'comment' => 'the acl action to be checked when navigating to the route'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiroutes',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
-$dictionary['sysuicustomroutes'] = array(
+            'fields' => ['id']]
+    ]
+];
+
+$dictionary['sysuicustomroutes'] = [
     'table' => 'sysuicustomroutes',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'path' => array(
-            'name' => 'path',
-            'type' => 'varchar',
-            'len' => 255
-        ),
-        'component' => array(
-            'name' => 'component',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'redirectto' => array(
-            'name' => 'redirectto',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'pathmatch' => array(
-            'name' => 'pathmatch',
-            'type' => 'varchar',
-            'len' => 4
-        ),
-        'loginrequired' => array(
-            'name' => 'loginrequired',
-            'type' => 'int',
-            'len' => 1
-        ),
-        'target' => array(
-            'name' => 'target',
-            'type' => 'varchar',
-            'len' => 1,
-            'comment' => 'the target for the tab in tabbed browsing, an be M for main, N for New or C for current'
-        ),
-        'subtabs' => array(
-            'name' => 'subtabs',
-            'type' => 'bool',
-            'default' => 0,
-            'comment' => 'set to true to allow subtabs on this route'
-        ),
-        'referencepath' => array(
-            'name' => 'referencepath',
-            'type' => 'varchar',
-            'len' => 255,
-            'comment' => 'a path that is then treated as one and the view is rendered in that window if one exists'
-        ),
-        'aclaction' => array(
-            'name' => 'aclaction',
-            'type' => 'varchar',
-            'len' => 100,
-            'comment' => 'the acl action to be checked when navigating to the route'
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysuiroutes']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomroutes',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
 
-$dictionary['sysmodules'] = array(
+$dictionary['sysmodules'] = [
     'table' => 'sysmodules',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'module'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'module_label' => array(
+        ],
+        'module_label' => [
             'name' => 'module_label',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'singular' => array(
+        ],
+        'singular' => [
             'name' => 'singular',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'singular_label' => array(
+        ],
+        'singular_label' => [
             'name' => 'singular_label',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'icon' => array(
+        ],
+        'icon' => [
             'name' => 'icon',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'track' => array(
+        ],
+        'track' => [
             'name' => 'track',
             'type' => 'int',
             'len' => 1
-        ),
-        'favorites' => array(
+        ],
+        'favorites' => [
             'name' => 'favorites',
             'type' => 'int',
             'len' => 1
-        ),
-        'duplicatecheck' => array(
+        ],
+        'duplicatecheck' => [
             'name' => 'duplicatecheck',
             'type' => 'int',
             'len' => 1
-        ),
-        'actionset' => array(
+        ],
+        'actionset' => [
             'name' => 'actionset',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'bean' => array(
+        ],
+        'bean' => [
             'name' => 'bean',
             'type' => 'varchar',
-        ),
-        'beanfile' => array(
+        ],
+        'beanfile' => [
             'name' => 'beanfile',
             'type' => 'varchar',
-        ),
-        'beantable' => array(
+        ],
+        'beantable' => [
             'name' => 'beantable',
             'type' => 'varchar',
-        ),
-        'visible' => array(
+            'comment' => 'deprecated. See sysdictionarydefinition_id'
+        ],
+        'sysdictionarydefinition_id' => [
+            'name' => 'sysdictionarydefinition_id',
+            'type' => 'id',
+        ],
+        'visible' => [
             'name' => 'visible',
             'type' => 'bool',
-        ),
-        'visibleaclaction' => array(
+        ],
+        'visibleaclaction' => [
             'name' => 'visibleaclaction',
             'type' => 'varchar',
             'len' => 30
-        ),
-        'tagging' => array(
+        ],
+        'tagging' => [
             'name' => 'tagging',
             'type' => 'bool',
             'default' => 0
-        ),
-        'acl' => array(
+        ],
+        'acl' => [
             'name' => 'acl',
             'type' => 'bool',
             'default' => 1
-        ),
-        'acl_multipleusers' => array(
+        ],
+        'acl_multipleusers' => [
             'name' => 'acl_multipleusers',
             'type' => 'bool',
             'default' => 0
-        ),
-        'workflow' => array(
+        ],
+        'workflow' => [
             'name' => 'workflow',
             'type' => 'bool',
             'default' => 0
-        ),
-        'version' => array(
+        ],
+        'reassignable' => [
+            'name' => 'reassignable',
+            'type' => 'bool',
+            'default' => 0
+        ],
+        'reassign_modulefilter_id' => [
+            'name' => 'reassign_modulefilter_id',
+            'type' => 'id',
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'sysmodulespk',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_sysmodules',
             'type' => 'index',
-            'fields' => array('module'))
-    )
-);
+            'fields' => ['module']],
+        [
+            'name' => 'idx_sysmodules_reassign',
+            'type' => 'index',
+            'fields' => ['reassignable']]
+    ]
+];
 
-$dictionary['syscustommodules'] = array(
+$dictionary['syscustommodules'] = [
     'table' => 'syscustommodules',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'module' => array(
-            'name' => 'module',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'module_label' => array(
-            'name' => 'module_label',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'singular' => array(
-            'name' => 'singular',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'singular_label' => array(
-            'name' => 'singular_label',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'icon' => array(
-            'name' => 'icon',
-            'type' => 'varchar',
-            'len' => 100
-        ),
-        'track' => array(
-            'name' => 'track',
-            'type' => 'int',
-            'len' => 1
-        ),
-        'favorites' => array(
-            'name' => 'favorites',
-            'type' => 'int',
-            'len' => 1
-        ),
-        'duplicatecheck' => array(
-            'name' => 'duplicatecheck',
-            'type' => 'int',
-            'len' => 1
-        ),
-        'actionset' => array(
-            'name' => 'actionset',
-            'type' => 'varchar',
-            'len' => 36
-        ),
-        'bean' => array(
-            'name' => 'bean',
-            'type' => 'varchar',
-        ),
-        'beanfile' => array(
-            'name' => 'beanfile',
-            'type' => 'varchar',
-        ),
-        'beantable' => array(
-            'name' => 'beantable',
-            'type' => 'varchar',
-        ),
-        'visible' => array(
-            'name' => 'visible',
-            'type' => 'bool',
-        ),
-        'visibleaclaction' => array(
-            'name' => 'visibleaclaction',
-            'type' => 'varchar',
-            'len' => 30
-        ),
-        'tagging' => array(
-            'name' => 'tagging',
-            'type' => 'bool',
-            'default' => 0
-        ),
-        'acl' => array(
-            'name' => 'acl',
-            'type' => 'bool',
-            'default' => 1
-        ),
-        'acl_multipleusers' => array(
-            'name' => 'acl_multipleusers',
-            'type' => 'bool',
-            'default' => 0
-        ),
-        'workflow' => array(
-            'name' => 'workflow',
-            'type' => 'bool',
-            'default' => 0
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+    'fields' => $dictionary['sysmodules']['fields'],
+    'indices' => [
+        [
             'name' => 'idx_syscustommodules',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']],
+        [
+            'name' => 'idx_syscustommodules_reassign',
+            'type' => 'index',
+            'fields' => ['reassignable']]
+    ]
+];
 
-$dictionary['sysmodulemenus'] = array(
+$dictionary['sysmodulemenus'] = [
     'table' => 'sysmodulemenus',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'menuitem' => array(
+        ],
+        'menuitem' => [
             'name' => 'menuitem',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'action' => array(
+        ],
+        'action' => [
             'name' => 'action',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'route' => array(
+        ],
+        'route' => [
             'name' => 'route',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysmodulemenus',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_sysmodule_module',
             'type' => 'index',
-            'fields' => array('module')
-        )
-    )
-);
+            'fields' => ['module']
+        ]
+    ]
+];
 
-$dictionary['sysuicomponentdefaultconf'] = array(
+$dictionary['sysuicomponentdefaultconf'] = [
     'table' => 'sysuicomponentdefaultconf',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'component'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'role_id' => array(
+        ],
+        'role_id' => [
             'name' => 'role_id',
             'type' => 'id'
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicomponentdefaultconf',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicustomcomponentdefaultconf'] = array(
+$dictionary['sysuicustomcomponentdefaultconf'] = [
     'table' => 'sysuicustomcomponentdefaultconf',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'role_id' => array(
+        ],
+        'role_id' => [
             'name' => 'role_id',
             'type' => 'id'
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomcomponentdefaultconf',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicomponentmoduleconf'] = array(
+$dictionary['sysuicomponentmoduleconf'] = [
     'table' => 'sysuicomponentmoduleconf',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
-        'name' => array('module', 'component')
-    ),
-    'fields' => array(
-        'id' => array(
+        'name' => ['module', 'component']
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'role_id' => array(
+        ],
+        'role_id' => [
             'name' => 'role_id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicomponentmoduleconf',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_sysuicomponentmoduleconf_module',
             'type' => 'index',
-            'fields' => array('module'))
-    )
-);
+            'fields' => ['module']]
+    ]
+];
 
-$dictionary['sysuicustomcomponentmoduleconf'] = array(
+$dictionary['sysuicustomcomponentmoduleconf'] = [
     'table' => 'sysuicustomcomponentmoduleconf',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'role_id' => array(
+        ],
+        'role_id' => [
             'name' => 'role_id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomcomponentmoduleconf',
             'type' => 'primary',
-            'fields' => array('id')),
-        array(
+            'fields' => ['id']],
+        [
             'name' => 'idx_sysuicustomcomponentmoduleconf_module',
             'type' => 'index',
-            'fields' => array('module'))
-    )
-);
+            'fields' => ['module']]
+    ]
+];
 
-$dictionary['sysmodulelists'] = array(
+$dictionary['sysmodulelists'] = [
     'table' => 'sysmodulelists',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'created_by_id' => array(
+        ],
+        'created_by_id' => [
             'name' => 'created_by_id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'listcomponent' => array(
+        ],
+        'listcomponent' => [
             'name' => 'listcomponent',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'global' => array(
+        ],
+        'global' => [
             'name' => 'global',
             'type' => 'int',
             'len' => 1
-        ),
-        'basefilter' => array(
+        ],
+        'basefilter' => [
             'name' => 'basefilter',
             'type' => 'varchar',
             'len' => 3,
             'default' => 'all'
-        ),
-        'fielddefs' => array(
+        ],
+        'fielddefs' => [
             'name' => 'fielddefs',
             'type' => 'text'
-        ),
-        'filterdefs' => array(
+        ],
+        'filterdefs' => [
             'name' => 'filterdefs',
             'type' => 'text'
-        ),
-        'aggregates' => array(
+        ],
+        'aggregates' => [
             'name' => 'aggregates',
             'type' => 'text'
-        ),
-        'sortfields' => array(
+        ],
+        'sortfields' => [
             'name' => 'sortfields',
             'type' => 'text'
-        ),
-        'date_last_used' => array(
+        ],
+        'date_last_used' => [
             'name' => 'date_last_used',
             'type' => 'datetime'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysmodulelists',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
 
-$dictionary['sysuidashboarddashlets'] = array(
+$dictionary['sysuidashboarddashlets'] = [
     'table' => 'sysuidashboarddashlets',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'name'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'label' => array(
+        ],
+        'label' => [
             'name' => 'label',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'icon' => array(
+        ],
+        'icon' => [
             'name' => 'icon',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'acl_action' => array(
+        ],
+        'acl_action' => [
             'name' => 'acl_action',
             'type' => 'varchar',
             'len' => 30
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuidashboarddashlets',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicustomdashboarddashlets'] = array(
+$dictionary['sysuicustomdashboarddashlets'] = [
     'table' => 'sysuicustomdashboarddashlets',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'label' => array(
+        ],
+        'label' => [
             'name' => 'label',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'icon' => array(
+        ],
+        'icon' => [
             'name' => 'icon',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'acl_action' => array(
+        ],
+        'acl_action' => [
             'name' => 'acl_action',
             'type' => 'varchar',
             'len' => 30
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomdashboarddashlets',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuiroles'] = array(
+$dictionary['sysuiroles'] = [
     'table' => 'sysuiroles',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'name'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'identifier' => array(
+        ],
+        'identifier' => [
             'name' => 'identifier',
             'type' => 'varchar',
             'len' => '3'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => '100'
-        ),
-        'label' => array(
+        ],
+        'label' => [
             'name' => 'label',
             'type' => 'varchar',
             'len' => '100'
-        ),
-        'icon' => array(
+        ],
+        'icon' => [
             'name' => 'icon',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        'systemdefault' => array(
+        ],
+        'systemdefault' => [
             'name' => 'systemdefault',
             'type' => 'bool'
-        ),
-        'portaldefault' => array(
+        ],
+        'portaldefault' => [
             'name' => 'portaldefault',
             'type' => 'bool'
-        ),
-        'showsearch' => array(
+        ],
+        'showsearch' => [
             'name' => 'showsearch',
             'type' => 'bool',
             'default' => 1
-        ),
-        'showfavorites' => array(
+        ],
+        'showfavorites' => [
             'name' => 'showfavorites',
             'type' => 'bool',
             'default' => 1
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-        'default_dashboard' => array(
+        ],
+        'default_dashboard' => [
             'name' => 'default_dashboard',
             'type' => 'id'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
+        ]
 
-    ),
-    'indices' => array(
-        array(
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiroles',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuicustomroles'] = array(
+$dictionary['sysuicustomroles'] = [
     'table' => 'sysuicustomroles',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'identifier' => array(
+        ],
+        'identifier' => [
             'name' => 'identifier',
             'type' => 'varchar',
             'len' => '3'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => '100'
-        ),
-        'label' => array(
+        ],
+        'label' => [
             'name' => 'label',
             'type' => 'varchar',
             'len' => '100'
-        ),
-        'icon' => array(
+        ],
+        'icon' => [
             'name' => 'icon',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        'systemdefault' => array(
+        ],
+        'systemdefault' => [
             'name' => 'systemdefault',
             'type' => 'bool'
-        ),
-        'portaldefault' => array(
+        ],
+        'portaldefault' => [
             'name' => 'portaldefault',
             'type' => 'bool'
-        ),
-        'showsearch' => array(
+        ],
+        'showsearch' => [
             'name' => 'showsearch',
             'type' => 'bool',
             'default' => 1
-        ),
-        'showfavorites' => array(
+        ],
+        'showfavorites' => [
             'name' => 'showfavorites',
             'type' => 'bool',
             'default' => 1
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-        'default_dashboard' => array(
+        ],
+        'default_dashboard' => [
             'name' => 'default_dashboard',
             'type' => 'id'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomroles',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysuiuserroles'] = array(
+$dictionary['sysuiuserroles'] = [
     'table' => 'sysuiuserroles',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'type' => 'id'
-        ),
-        'sysuirole_id' => array(
+        ],
+        'sysuirole_id' => [
             'name' => 'sysuirole_id',
             'type' => 'id'
-        ),
-        'defaultrole' => array(
+        ],
+        'defaultrole' => [
             'name' => 'defaultrole',
             'type' => 'int',
             'len' => 1,
             'default' => 0
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiuserroles',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_sysuiuserroles_userid',
             'type' => 'index',
-            'fields' => array('user_id')
-        )
-    )
-);
+            'fields' => ['user_id']
+        ]
+    ]
+];
 
-$dictionary['sysuirolemodules'] = array(
+$dictionary['sysuirolemodules'] = [
     'table' => 'sysuirolemodules',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
-        'name' => array('sysuirole_id', 'module')
-    ),
-    'fields' => array(
-        'id' => array(
+        'name' => ['sysuirole_id', 'module']
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'sysuirole_id' => array(
+        ],
+        'sysuirole_id' => [
             'name' => 'sysuirole_id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuirolemodules',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_sysuirolemodules_roleid',
             'type' => 'index',
-            'fields' => array('sysuirole_id')
-        )
-    )
-);
+            'fields' => ['sysuirole_id']
+        ]
+    ]
+];
 
-$dictionary['sysuicustomrolemodules'] = array(
+$dictionary['sysuicustomrolemodules'] = [
     'table' => 'sysuicustomrolemodules',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'sysuirole_id' => array(
+        ],
+        'sysuirole_id' => [
             'name' => 'sysuirole_id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomrolemodules',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_sysuicustomrolemodules_roleid',
             'type' => 'index',
-            'fields' => array('sysuirole_id')
-        )
-    )
-);
+            'fields' => ['sysuirole_id']
+        ]
+    ]
+];
 
-$dictionary['sysuiadmingroups'] = array(
+$dictionary['sysuiadmingroups'] = [
     'table' => 'sysuiadmingroups',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'label' => array(
+        ],
+        'label' => [
             'name' => 'label',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiadmingroups',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuicustomadmingroups'] = array(
+$dictionary['sysuicustomadmingroups'] = [
     'table' => 'sysuicustomadmingroups',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'label' => array(
+        ],
+        'label' => [
             'name' => 'label',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomadmingroups',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuiadmincomponents'] = array(
+$dictionary['sysuiadmincomponents'] = [
     'table' => 'sysuiadmincomponents',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
-        'name' => array('admingroup', 'adminaction')
-    ),
-    'fields' => array(
-        'id' => array(
+        'name' => ['admingroup', 'adminaction']
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'admingroup' => array(
+        ],
+        'admingroup' => [
             'name' => 'admingroup',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'adminaction' => array(
+        ],
+        'adminaction' => [
             'name' => 'adminaction',
             'type' => 'varchar',
             'len' => 100
-        ),
+        ],
         // darf nicht nur label heißen...
-        'admin_label' => array(
+        'admin_label' => [
             'name' => 'admin_label',
             'type' => 'varchar',
             'len' => 40
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'icon' => array(
+        ],
+        'icon' => [
             'name' => 'icon',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiadmincomponents',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuicustomadmincomponents'] = array(
+$dictionary['sysuicustomadmincomponents'] = [
     'table' => 'sysuicustomadmincomponents',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
-        'name' => array('admingroup', 'adminaction')
-    ),
-    'fields' => array(
-        'id' => array(
+        'name' => ['admingroup', 'adminaction']
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'admingroup' => array(
+        ],
+        'admingroup' => [
             'name' => 'admingroup',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'adminaction' => array(
+        ],
+        'adminaction' => [
             'name' => 'adminaction',
             'type' => 'varchar',
             'len' => 100
-        ),
+        ],
         // darf nicht nur label heißen...
-        'admin_label' => array(
+        'admin_label' => [
             'name' => 'admin_label',
             'type' => 'varchar',
             'len' => 40
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'componentconfig' => array(
+        ],
+        'componentconfig' => [
             'name' => 'componentconfig',
             'type' => 'text'
-        ),
-        'sequence' => array(
+        ],
+        'sequence' => [
             'name' => 'sequence',
             'type' => 'int'
-        ),
-        'icon' => array(
+        ],
+        'icon' => [
             'name' => 'icon',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomadmincomponents',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
 
-$dictionary['sysuifieldtypemapping'] = array(
+$dictionary['sysuifieldtypemapping'] = [
     'table' => 'sysuifieldtypemapping',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'fieldtype'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'fieldtype' => array(
+        ],
+        'fieldtype' => [
             'name' => 'fieldtype',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuifieldtypemapping',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
 
-$dictionary['sysuicustomfieldtypemapping'] = array(
+$dictionary['sysuicustomfieldtypemapping'] = [
     'table' => 'sysuicustomfieldtypemapping',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'fieldtype' => array(
+        ],
+        'fieldtype' => [
             'name' => 'fieldtype',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomfieldtypemapping',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
 
-$dictionary['sysuicopyrules'] = array(
+$dictionary['sysuicopyrules'] = [
     'table' => 'sysuicopyrules',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
-        'name' => array('frommodule', 'tomodule', 'tofield')
-    ),
-    'fields' => array(
-        'id' => array(
+        'name' => ['frommodule', 'tomodule', 'tofield']
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'frommodule' => array(
+        ],
+        'frommodule' => [
             'name' => 'frommodule',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'fromfield' => array(
+        ],
+        'fromfield' => [
             'name' => 'fromfield',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'tomodule' => array(
+        ],
+        'tomodule' => [
             'name' => 'tomodule',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'tofield' => array(
+        ],
+        'tofield' => [
             'name' => 'tofield',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'fixedvalue' => array(
+        ],
+        'fixedvalue' => [
             'name' => 'fixedvalue',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'calculatedvalue' => array(
+        ],
+        'calculatedvalue' => [
             'name' => 'calculatedvalue',
             'type' => 'varchar',
             'len' => 100
+        ],
+        'params' => [
+            'name' => 'params',
+            'type' => 'json',
+            'dbtype' => 'text'
+        ],
+        'params' => array(
+            'name' => 'params',
+            'type' => 'varchar',
+            'len' => 100
         ),
-        'version' => array(
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicopyrules',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysuicustomcopyrules'] = array(
+$dictionary['sysuicustomcopyrules'] = [
     'table' => 'sysuicustomcopyrules',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'frommodule' => array(
+        ],
+        'frommodule' => [
             'name' => 'frommodule',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'fromfield' => array(
+        ],
+        'fromfield' => [
             'name' => 'fromfield',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'tomodule' => array(
+        ],
+        'tomodule' => [
             'name' => 'tomodule',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'tofield' => array(
+        ],
+        'tofield' => [
             'name' => 'tofield',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'fixedvalue' => array(
+        ],
+        'fixedvalue' => [
             'name' => 'fixedvalue',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'calculatedvalue' => array(
+        ],
+        'calculatedvalue' => [
             'name' => 'calculatedvalue',
             'type' => 'varchar',
             'len' => 100
+        ],
+        'params' => [
+            'name' => 'params',
+            'type' => 'json',
+            'dbtype' => 'text'
+        ],
+        'params' => array(
+            'name' => 'params',
+            'type' => 'varchar',
+            'len' => 100
         ),
-        'version' => array(
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuicustomcopyrules',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['spiceimportlogs'] = array(
+$dictionary['spiceimportlogs'] = [
     'table' => 'spiceimportlogs',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'import_id' => array(
+        ],
+        'import_id' => [
             'name' => 'import_id',
             'type' => 'id'
-        ),
-        'msg' => array(
+        ],
+        'msg' => [
             'name' => 'msg',
             'type' => 'varchar'
-        ),
-        'data' => array(
+        ],
+        'data' => [
             'name' => 'data',
             'type' => 'text'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_spiceimportlogs',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
 /**
  * VALIDATIONs
  */
 
 
-$dictionary['sysuimodelvalidations'] = array(
+$dictionary['sysuimodelvalidations'] = [
     'table' => 'sysuimodelvalidations',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 50,
             'required' => true,
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100,
             'required' => true,
-        ),
-        'onevents' => array(
+        ],
+        'onevents' => [
             'name' => 'onevents',
             'type' => 'varchar',
             'len' => 100,
-        ),
-        'active' => array(
+        ],
+        'active' => [
             'name' => 'active',
             'type' => 'bool',
             'default' => 1,
-        ),
-        'logicoperator' => array(
+        ],
+        'logicoperator' => [
             'name' => 'logicoperator',
             'type' => 'enum',
             'options' => 'logicoperators_dom',
             'len' => 3,
-        ),
-        'priority' => array(
+        ],
+        'priority' => [
             'name' => 'priority',
             'type' => 'int',
             'default' => 0,
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'default' => 0,
             'isnull' => false,
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'prm_sysuimodelvalidations',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    ),
-);
+            'fields' => ['id']
+        ]
+    ],
+];
 
-$dictionary['sysuimodelvalidationconditions'] = array(
+$dictionary['sysuimodelvalidationconditions'] = [
     'table' => 'sysuimodelvalidationconditions',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'sysuimodelvalidation_id' => array(
+        ],
+        'sysuimodelvalidation_id' => [
             'name' => 'sysuimodelvalidation_id',
             'type' => 'id',
             'required' => true,
-        ),
-        'fieldname' => array(
+        ],
+        'fieldname' => [
             'name' => 'fieldname',
             'type' => 'varchar',
             'required' => true,
             'len' => 255,
-        ),
-        'comparator' => array(
+        ],
+        'comparator' => [
             'name' => 'comparator',
             'type' => 'enum',
             'options' => 'comparators_dom',
             'default' => 'equal',
             'len' => 20,
-        ),
-        'valuations' => array(
+        ],
+        'valuations' => [
             'name' => 'valuations',
             'type' => 'varchar',
             'required' => true,
-        ),
-        'onchange' => array(
+        ],
+        'onchange' => [
             'name' => 'onchange',
             'type' => 'bool'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'default' => 0,
             'isnull' => false,
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'prm_sysuimodvalcon',
             'type' => 'primary',
-            'fields' => array('id'),
-        ),
-    ),
-);
+            'fields' => ['id'],
+        ],
+    ],
+];
 
-$dictionary['sysuimodelvalidationactions'] = array(
+$dictionary['sysuimodelvalidationactions'] = [
     'table' => 'sysuimodelvalidationactions',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'sysuimodelvalidation_id' => array(
+        ],
+        'sysuimodelvalidation_id' => [
             'name' => 'sysuimodelvalidation_id',
             'type' => 'id'
-        ),
-        'fieldname' => array(
+        ],
+        'fieldname' => [
             'name' => 'fieldname',
             'type' => 'varchar',
             'len' => 255,
             'required' => true,
-        ),
-        'action' => array(
+        ],
+        'action' => [
             'name' => 'action',
             'type' => 'varchar',
             'len' => 20,
             'required' => true,
-        ),
-        'params' => array(
+        ],
+        'params' => [
             'name' => 'params',
             'type' => 'varchar'
-        ),
-        'priority' => array(
+        ],
+        'priority' => [
             'name' => 'priority',
             'type' => 'int',
             'default' => 0,
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'default' => 0,
             'isnull' => false,
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'prm_sysuimodvalact',
             'type' => 'primary',
-            'fields' => array('id'),
-        ),
-    ),
-);
+            'fields' => ['id'],
+        ],
+    ],
+];
 
-$dictionary['sysmailrelais'] = array(
+$dictionary['sysmailrelais'] = [
     'table' => 'sysmailrelais',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 50,
             'required' => true,
-        ),
-        'service' => array(
+        ],
+        'service' => [
             'name' => 'service',
             'type' => 'varchar',
             'len' => 50,
             'required' => true,
-        ),
-        'api_key' => array(
+        ],
+        'api_key' => [
             'name' => 'api_key',
             'type' => 'varchar'
-        ),
-        'username' => array(
+        ],
+        'username' => [
             'name' => 'username',
             'type' => 'varchar'
-        ),
-        'password' => array(
+        ],
+        'password' => [
             'name' => 'password',
             'type' => 'varchar'
-        ),
-        'from_email' => array(
+        ],
+        'from_email' => [
             'name' => 'from_email',
             'type' => 'varchar'
-        ),
-        'from_name' => array(
+        ],
+        'from_name' => [
             'name' => 'from_name',
             'type' => 'varchar'
-        ),
+        ],
 
-    ),
-    'indices' => array(
-        array(
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysmailrelais',
             'type' => 'primary',
-            'fields' => array('id'),
-        )
-    ),
-);
+            'fields' => ['id'],
+        ]
+    ],
+];
 
-
-$dictionary['sysuicustomlibs'] = array(
-    'table' => 'sysuicustomlibs',
-    'fields' => array(
-        'id' => array(
-            'name' => 'id',
-            'type' => 'id'
-        ),
-        'name' => array(
-            'name' => 'name',
-            'type' => 'varchar',
-            'len' => 50,
-        ),
-        'src' => array(
-            'name' => 'src',
-            'type' => 'varchar',
-        ),
-        'rank' => array(
-            'name' => 'rank',
-            'type' => 'int',
-        ),
-        'version' => array(
-            'name' => 'version',
-            'type' => 'varchar',
-            'len' => 16
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
-            'name' => 'idx_sysuicustomlibs',
-            'type' => 'primary',
-            'fields' => array('id'),
-        )
-    ),
-);
-$dictionary['sysuilibs'] = array(
+$dictionary['sysuilibs'] = [
     'table' => 'sysuilibs',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'name'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 50,
-        ),
-        'src' => array(
+        ],
+        'src' => [
             'name' => 'src',
             'type' => 'varchar',
-        ),
-        'rank' => array(
+        ],
+        'rank' => [
             'name' => 'rank',
             'type' => 'int',
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuiapis',
             'type' => 'primary',
-            'fields' => array('id'),
-        )
-    ),
-);
+            'fields' => ['id'],
+        ]
+    ],
+];
 
+$dictionary['sysuicustomlibs'] = [
+    'table' => 'sysuicustomlibs',
+    'fields' => $dictionary['sysuilibs']['fields'],
+    'indices' => [
+        [
+            'name' => 'idx_sysuicustomlibs',
+            'type' => 'primary',
+            'fields' => ['id'],
+        ]
+    ],
+];
 
-$dictionary['sysuihtmlstylesheets'] = array(
+$dictionary['sysuihtmlstylesheets'] = [
     'table' => 'sysuihtmlstylesheets',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'name'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'csscode' => array(
+        ],
+        'csscode' => [
             'name' => 'csscode',
             'type' => 'text'
-        ),
-        'inactive' => array(
+        ],
+        'inactive' => [
             'name' => 'inactive',
             'type' => 'bool',
             'default' => false
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuihtmlstylesheets_prim',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_sysuihtmlstylesheets_2',
             'type' => 'index',
-            'fields' => array('id', 'inactive')
-        ),
-    )
-);
+            'fields' => ['id', 'inactive']
+        ],
+    ]
+];
 
-$dictionary['sysuihtmlformats'] = array(
+$dictionary['sysuihtmlformats'] = [
     'table' => 'sysuihtmlformats',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'name'
-    ),
-    'fields' => array(
-        'id' => array(
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'inline' => array(
+        ],
+        'inline' => [
             'name' => 'inline',
             'type' => 'varchar',
             'len' => 30
-        ),
-        'block' => array(
+        ],
+        'block' => [
             'name' => 'block',
             'type' => 'varchar',
             'len' => 30
-        ),
-        'classes' => array(
+        ],
+        'classes' => [
             'name' => 'classes',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'styles' => array(
+        ],
+        'styles' => [
             'name' => 'styles',
             'type' => 'text'
-        ),
-        'wrapper' => array(
+        ],
+        'wrapper' => [
             'name' => 'wrapper',
             'type' => 'bool',
             'default' => false
-        ),
-        'stylesheet_id' => array(
+        ],
+        'stylesheet_id' => [
             'name' => 'stylesheet_id',
             'type' => 'id'
-        ),
-        'inactive' => array(
+        ],
+        'inactive' => [
             'name' => 'inactive',
             'type' => 'bool',
             'default' => false
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysuihtmlformats',
             'type' => 'primary',
-            'fields' => array('id')),
-    )
-);
-$dictionary['sysdialogmail_fieldmapping'] = array(
+            'fields' => ['id']
+        ],
+    ]
+];
+$dictionary['sysdialogmail_fieldmapping'] = [
     'table' => 'sysdialogmail_fieldmapping',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'spice' => array(
+        ],
+        'spice' => [
             'name' => 'spice',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'dialogmail' => array(
+        ],
+        'dialogmail' => [
             'name' => 'dialogmail',
             'type' => 'varchar',
             'len' => 255
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysdialogmail_fieldmapping',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['syscleverreach_fieldmapping'] = array(
+$dictionary['syscleverreach_fieldmapping'] = [
     'table' => 'syscleverreach_fieldmapping',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'spice' => array(
+        ],
+        'spice' => [
             'name' => 'spice',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'cleverreach' => array(
+        ],
+        'cleverreach' => [
             'name' => 'cleverreach',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'crtype' => array(
+        ],
+        'crtype' => [
             'name' => 'crtype',
             'type' => 'varchar',
             'len' => 255
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_syscleverreach_fieldmapping',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['sysmailchimp_fieldmapping'] = array(
+$dictionary['sysmailchimp_fieldmapping'] = [
     'table' => 'sysmailchimp_fieldmapping',
     'audited' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'spice' => array(
+        ],
+        'spice' => [
             'name' => 'spice',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'mailchimp' => array(
+        ],
+        'mailchimp' => [
             'name' => 'mailchimp',
             'type' => 'varchar',
             'len' => 255
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysmailchimp_fieldmapping',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
+$dictionary['sysevalanche_fieldmapping'] = [
+    'table' => 'sysevalanche_fieldmapping',
+    'audited' => true,
+    'fields' => [
+        'id' => [
+            'name' => 'id',
+            'type' => 'id'
+        ],
+        'module' => [
+            'name' => 'module',
+            'type' => 'varchar',
+            'len' => 255
+        ],
+        'spice' => [
+            'name' => 'spice',
+            'type' => 'varchar',
+            'len' => 255
+        ],
+        'evalanche' => [
+            'name' => 'evalanche',
+            'type' => 'varchar',
+            'len' => 255
+        ]
+    ],
+    'indices' => [
+        [
+            'name' => 'idx_sysevalanche_fieldmapping',
+            'type' => 'primary',
+            'fields' => ['id']
+        ]
+    ]
+];

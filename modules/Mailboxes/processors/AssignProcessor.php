@@ -11,7 +11,8 @@ class AssignProcessor extends Processor
         foreach ($this->email->recipient_addresses as $address) {
             global $db;
 
-            $query = "SELECT * FROM email_addresses WHERE email_address='" . $address['email_address'] . "' AND deleted = 0";
+            $capAddress = strtoupper($address->email_address);
+            $query = "SELECT * FROM email_addresses WHERE email_address_caps='{$capAddress}' AND deleted = 0";
             $q = $db->query($query);
 
             while ($email_address = $db->fetchByAssoc($q)) {
@@ -29,6 +30,8 @@ class AssignProcessor extends Processor
 
     public function assignAllAddressesToBeans()
     {
+        global $db;
+
         $this->email->addressesToArray();
 
         $found_addresses = [];
@@ -38,24 +41,21 @@ class AssignProcessor extends Processor
         }
 
         foreach ($this->email->recipient_addresses as $address) {
-            $found_addresses[] = $address['email_address'];
+            $found_addresses[] = strtoupper($address['email_address']);
         }
         $found_addresses = array_unique($found_addresses);
 
-        foreach ($found_addresses as $address) {
-            global $db;
+        $addressIn = "'" . implode("','", $found_addresses) . "'";
+        $query = "SELECT * FROM email_addresses WHERE email_address_caps in ($addressIn) AND deleted = 0";
+        $q = $db->query($query);
 
-            $query = "SELECT * FROM email_addresses WHERE email_address='$address' AND deleted = 0";
-            $q = $db->query($query);
-
-            while ($email_address = $db->fetchByAssoc($q)) {
-                $query2 = "SELECT * FROM email_addr_bean_rel WHERE email_address_id='" . $email_address['id'] . "' AND deleted = 0";
-                $q2 = $db->query($query2);
-                while ($bean = $db->fetchByAssoc($q2)) {
-                    $seed = \BeanFactory::getBean($bean['bean_module'], $bean['bean_id']);
-                    if($seed) {
-                        $this->email->assignBeanToEmail($seed, $bean["bean_module"]);
-                    }
+        while ($email_address = $db->fetchByAssoc($q)) {
+            $query2 = "SELECT * FROM email_addr_bean_rel WHERE email_address_id='" . $email_address['id'] . "' AND deleted = 0";
+            $q2 = $db->query($query2);
+            while ($bean = $db->fetchByAssoc($q2)) {
+                $seed = \BeanFactory::getBean($bean['bean_module'], $bean['bean_id']);
+                if($seed) {
+                    $this->email->assignBeanToEmail($seed, $bean["bean_module"]);
                 }
             }
         }

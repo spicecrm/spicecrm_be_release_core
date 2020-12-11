@@ -9,7 +9,7 @@ function frontend_image()
         $frontend_url = substr($frontend_url, 0, (strlen($frontend_url) -1));
 
 
-    return "<img src=\"$frontend_url/config/loginimage\">";
+    return "<img class=\"frontend_image\" src=\"$frontend_url/config/loginimage\">";
 
     return $frontend_url;
 }

@@ -37,35 +37,11 @@
 
 
 
-/**
- * @deprecated use DBManager::convert() instead.
- */
-function db_convert($string, $type, $additional_parameters=array(),$additional_parameters_oracle_only=array())
-	{
-    return $GLOBALS['db']->convert($string, $type, $additional_parameters, $additional_parameters_oracle_only);
-            }
-
-/**
- * @deprecated use DBManager::concat() instead.
- */
-function db_concat($table, $fields)
-	{
-    return $GLOBALS['db']->concat($table, $fields);
-}
-
-/**
- * @deprecated use DBManager::fromConvert() instead.
- */
-function from_db_convert($string, $type)
-	{
-    return $GLOBALS['db']->fromConvert($string, $type);
-	}
-
 $toHTML = array(
-	'"' => '&quot;',
-	'<' => '&lt;',
-	'>' => '&gt;',
-	"'" => '&#039;',
+    '"' => '&quot;',
+    '<' => '&lt;',
+    '>' => '&gt;',
+    "'" => '&#039;',
 );
 $GLOBALS['toHTML_keys'] = array_keys($toHTML);
 $GLOBALS['toHTML_values'] = array_values($toHTML);
@@ -82,25 +58,25 @@ $GLOBALS['toHTML_keys_set'] = implode("", $GLOBALS['toHTML_keys']);
  * Bug 49489 - removed caching of to_html strings as it was consuming memory and
  * never releasing it
  */
-function to_html($string, $encode=true){
-	if (empty($string)) {
-		return $string;
-	}
+function to_html($string, $encode = true)
+{
+    if (empty($string)) {
+        return $string;
+    }
 
-	global $toHTML;
+    global $toHTML;
 
-	if($encode && is_string($string)){
-		/*
-		 * cn: bug 13376 - handle ampersands separately
-		 * credit: ashimamura via bug portal
-		 */
-		//$string = str_replace("&", "&amp;", $string);
+    if ($encode && is_string($string)) {
+        /*
+         * cn: bug 13376 - handle ampersands separately
+         * credit: ashimamura via bug portal
+         */
+        //$string = str_replace("&", "&amp;", $string);
 
-        if(is_array($toHTML))
-        { // cn: causing errors in i18n test suite ($toHTML is non-array)
-            $string = str_ireplace($GLOBALS['toHTML_keys'],$GLOBALS['toHTML_values'],$string);
-		}
-	}
+        if (is_array($toHTML)) { // cn: causing errors in i18n test suite ($toHTML is non-array)
+            $string = str_ireplace($GLOBALS['toHTML_keys'], $GLOBALS['toHTML_values'], $string);
+        }
+    }
 
     return $string;
 }
@@ -112,12 +88,13 @@ function to_html($string, $encode=true){
  * @param bool $encode Default true
  * @return string
  */
-function from_html($string, $encode=true) {
+function from_html($string, $encode = true)
+{
     if (!is_string($string) || !$encode) {
         return $string;
     }
 
-	global $toHTML;
+    global $toHTML;
     static $toHTML_values = null;
     static $toHTML_keys = null;
     static $cache = array();
@@ -127,7 +104,7 @@ function from_html($string, $encode=true) {
     }
 
     // Bug 36261 - Decode &amp; so we can handle double encoded entities
-	$string = str_ireplace("&amp;", "&", $string);
+    $string = str_ireplace("&amp;", "&", $string);
 
     if (!isset($cache[$string])) {
         $cache[$string] = str_ireplace($toHTML_values, $toHTML_keys, $string);
@@ -143,42 +120,8 @@ function from_html($string, $encode=true) {
  * @param int $maxlen Deprecated and ignored
  * @return string Valid column name trimmed to right length and with invalid characters removed
  */
-function getValidDBName ($name, $ensureUnique = false, $maxLen = 30)
+function getValidDBName($name, $ensureUnique = false, $maxLen = 30)
 {
     return DBManagerFactory::getInstance()->getValidDBName($name, $ensureUnique);
 }
 
-
-/**
- * isValidDBName
- *
- * Utility to perform the check during install to ensure a database name entered by the user
- * is valid based on the type of database server
- * @param string $name Proposed name for the DB
- * @param string $dbType Type of database server
- * @return bool true or false based on the validity of the DB name
- */
-function isValidDBName($name, $dbType)
-{
-    $db = DBManagerFactory::getTypeInstance($dbType);
-    return $db->isDatabaseNameValid($name);
-}
-
-/**
- * Creates a string containing a sorted list of all columns in the @tableName DB table, separated by a comma and a space (e.g. "field 1, field 2, field3").
- * Useful when unifying two tables in an SQL query with the same columns with possible different ordering of the columns.
- *
- * @param string $tableName DB table containing columns to be sorted
- * @return string
- */
-
-function getSortedColumnString($tableName) {
-    $db = DBManagerFactory::getInstance();
-    $columns = $db->get_columns($tableName);
-    foreach ($columns as $key => $_) {
-        $columns_names[] = $key;
-    }
-    sort($columns_names);
-    $columns_string = implode(", ", $columns_names);
-    return $columns_string;
-}

@@ -59,6 +59,7 @@ class SpiceFTSUtils
             'index' => true,
             'aggregate' => true,
             'suggest' => true,
+            'search'=> true,
             'analyzer' => 'spice_ngram'
         ),
         '_location' => array(
@@ -79,7 +80,7 @@ class SpiceFTSUtils
      * @param bool $overrideCache
      * @return array|bool|mixed
      */
-    static function getBeanIndexProperties($module, $overrideCache = true)
+    static function getBeanIndexProperties($module, $overrideCache = false)
     {
         global $db;
         //catch installation process and abort. table sysfts will not exist at the point during installation
@@ -193,8 +194,11 @@ class SpiceFTSUtils
                 case 'link':
                     $fieldName = !empty($fieldName) ? $fieldName . '->' . $pathRecordDetails[2] : $pathRecordDetails[2];
                     if ($valueBean) {
-                        $valueBean->load_relationship($pathRecordDetails[2]);
-                        $valueBean = \BeanFactory::getBean($valueBean->{$pathRecordDetails[2]}->getRelatedModuleName());
+                        if($valueBean->load_relationship($pathRecordDetails[2])){
+                            $valueBean = \BeanFactory::getBean($valueBean->{$pathRecordDetails[2]}->getRelatedModuleName());
+                        } else {
+                            $GLOBALS['log']->fatal(__CLASS__. '::'.__FUNCTION__.'() Could not load '.$pathRecordDetails[2]. ' for '.get_class($valueBean));
+                        }
                     }
                     break;
                 case 'field':
@@ -220,8 +224,12 @@ class SpiceFTSUtils
                         $valueBean = $bean;
                     break;
                 case 'link':
-                    $valueBean->load_relationship($pathRecordDetails[2]);
-                    $valueBean = \BeanFactory::getBean($valueBean->{$pathRecordDetails[2]}->getRelatedModuleName());
+                    if($valueBean->load_relationship($pathRecordDetails[2])){
+                        $valueBean = \BeanFactory::getBean($valueBean->{$pathRecordDetails[2]}->getRelatedModuleName());
+                    }
+                    else {
+                        $GLOBALS['log']->fatal(__CLASS__. '::'.__FUNCTION__.'() Could not load '.$pathRecordDetails[2]. ' for '.get_class($valueBean));
+                    }
                     break;
                 case 'field':
                     $fieldData = $valueBean->field_name_map[$pathRecordDetails[1]];
@@ -295,7 +303,6 @@ class SpiceFTSUtils
 
         $module = '';
         $field = '';
-
         foreach ($pathRecords as $pathRecord) {
             $pathRecordDetails = explode(':', $pathRecord);
             switch ($pathRecordDetails[0]) {
@@ -304,8 +311,9 @@ class SpiceFTSUtils
                     break;
                 case 'link':
                     $seed = \BeanFactory::getBean($pathRecordDetails[1]);
-                    $seed->load_relationship($pathRecordDetails[2]);
-                    $module = $seed->{$pathRecordDetails[2]}->getRelatedModuleName();
+                    if($seed->load_relationship($pathRecordDetails[2])){
+                        $module = $seed->{$pathRecordDetails[2]}->getRelatedModuleName();
+                    }
                     break;
                 case 'field':
                     $field = $pathRecordDetails[1];

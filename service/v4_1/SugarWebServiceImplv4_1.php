@@ -211,9 +211,9 @@ class SugarWebServiceImplv4_1 extends SugarWebServiceImplv4
 
         // Cast to integer
         $deleted = (int)$deleted;
-        $query = "(m1.date_modified > " . db_convert("'".$GLOBALS['db']->quote($from_date)."'", 'datetime'). " AND m1.date_modified <= ". db_convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = $deleted)";
+        $query = "(m1.date_modified > " . $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($from_date)."'", 'datetime'). " AND m1.date_modified <= ". $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = $deleted)";
         if(isset($deletion_date) && !empty($deletion_date)){
-            $query .= " OR ({0}.date_modified > " . db_convert("'".$GLOBALS['db']->quote($deletion_date)."'", 'datetime'). " AND {0}.date_modified <= ". db_convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = 1)";
+            $query .= " OR ({0}.date_modified > " . $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($deletion_date)."'", 'datetime'). " AND {0}.date_modified <= ". $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = 1)";
         }
 
         if(!empty($current_user->id))

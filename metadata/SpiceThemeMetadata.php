@@ -187,6 +187,10 @@ $dictionary['spiceattachments'] = [
 			'len'  => 150,
 		],
 		[
+			'name' => 'display_name',
+			'type' => 'varchar'
+		],
+		[
 			'name' => 'filesize',
 			'type' => 'ulong',
 		],
@@ -203,6 +207,10 @@ $dictionary['spiceattachments'] = [
 		[
 			'name' => 'text',
 			'type' => 'text',
+		],
+		[
+			'name' => 'category_ids',
+			'type' => 'varchar',
 		],
 		[
 			'name' => 'thumbnail',
@@ -237,12 +245,42 @@ $dictionary['spiceattachments'] = [
 		[
 		    'name'	 => 'tatselection_idx',
 			'type'	 => 'index',
-			'fields' => ['bean_type', 'bean_id', 'user_id', 'deleted'],
+			'fields' => ['bean_type', 'bean_id', 'deleted'],
 		],
 		[
 		    'name'	 => 'tatmd5_idx',
 			'type'	 => 'index',
 			'fields' => ['filemd5', 'deleted'],
 		],
+	],
+];
+
+$dictionary['spiceattachments_categories'] = [
+	'table'  => 'spiceattachments_categories',
+	'fields' => [
+		[
+			'name' => 'id',
+			'type' => 'id'
+		],
+        [
+            'name' => 'name',
+            'type' => 'varchar',
+        ],
+		[
+			'name' => 'label',
+			'type' => 'varchar'
+		],
+        [
+            'name' => 'module',
+            'type' => 'varchar',
+            'len'  => 100,
+        ],
+	],
+	'indices' => [
+		[
+		    'name'	 => 'spiceattchments_categories_idx',
+			'type'	 => 'unique',
+			'fields' => ['id'],
+		]
 	],
 ];

@@ -26,14 +26,16 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\SysModuleFilters\KREST\controllers\SysModuleFiltersController;
 
+$RESTManager = RESTManager::getInstance();
 
-$app->group('/sysmodulefilters/{module}', function () {
-    $this->get('', [new \SpiceCRM\includes\SysModuleFilters\KREST\controllers\SysModuleFiltersController(), 'getFilters']);
+$RESTManager->app->group('/sysmodulefilters/{module}', function () {
+    $this->get('', [new SysModuleFiltersController(), 'getFilters']);
     $this->group('/{filter}', function () {
-        $this->get('', [new \SpiceCRM\includes\SysModuleFilters\KREST\controllers\SysModuleFiltersController(), 'getFilter']);
-        $this->post('', [new \SpiceCRM\includes\SysModuleFilters\KREST\controllers\SysModuleFiltersController(), 'saveFilter']);
-        $this->delete('', [new \SpiceCRM\includes\SysModuleFilters\KREST\controllers\SysModuleFiltersController(), 'deleteFilter']);
+        $this->get('', [new SysModuleFiltersController(), 'getFilter']);
+        $this->post('', [new SysModuleFiltersController(), 'saveFilter']);
+        $this->delete('', [new SysModuleFiltersController(), 'deleteFilter']);
     });
-
 });

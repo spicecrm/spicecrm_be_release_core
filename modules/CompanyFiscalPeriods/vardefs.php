@@ -119,7 +119,5 @@ $dictionary['CompanyFiscalPeriod'] = array(
 	    array('name' => 'cfpid', 'type' => 'index', 'fields' => array('companycode_id', 'deleted'))
 	)
 );
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('CompanyFiscalPeriods', 'CompanyFiscalPeriod', array('default', 'assignable', 'team_security'));
-else
-    VardefManager::createVardef('CompanyFiscalPeriods', 'CompanyFiscalPeriod', array('default', 'assignable'));
+
+VardefManager::createVardef('CompanyFiscalPeriods', 'CompanyFiscalPeriod', array('default', 'assignable'));

@@ -62,6 +62,7 @@ $dictionary['Call'] = [
             'comment'  => 'Call duration, hours portion',
             'required' => false,
             'default'  => 0,
+            'source' => 'non-db' // CR1000436
         ],
         'duration_minutes' => [
             'name'       => 'duration_minutes',
@@ -69,6 +70,7 @@ $dictionary['Call'] = [
             'type'       => 'int',
             'len'        => '2',
             'comment'    => 'Call duration, minutes portion',
+            'source' => 'non-db' // CR1000436
         ],
         'date_start' => [
             'name'                => 'date_start',
@@ -371,6 +373,10 @@ $dictionary['Call'] = [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
+                ),
+                'date_modified' => array(
+                    'type' => 'datetime',
+                    'map' => 'activity_status_date_modified'
                 )
             )
         ],
@@ -387,6 +393,14 @@ $dictionary['Call'] = [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
+                ),
+                'date_modified' => array(
+                    'type' => 'datetime',
+                    'map' => 'activity_status_date_modified'
+                ),
+                'required' => array(
+                    'type' => 'bool',
+                    'map' => 'activity_required'
                 )
             )
         ],
@@ -515,8 +529,8 @@ $dictionary['Call'] = [
         'campaigntask_id' => [
             'name'  => 'campaigntask_id',
             'vname' => 'LBL_CAMPAIGNTASK_ID',
-            'type'  => 'varchar',
-            'len'   => 36,
+            'type'  => 'char',
+            'len'   => 36
         ],
         'campaigntask_name' => [
             'name'    => 'campaigntask_name',

@@ -13,42 +13,34 @@
  *
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$RESTManager->registerExtension('module', '2.0');
+
+$restapp = $RESTManager->app;
+
+$ModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($restapp);
 
 
-$ModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($app);
+$restapp->group('/module', function () use ($restapp, $RESTManager, $ModuleHandler) {
 
-$KRESTManager->registerExtension('module', '2.0');
-
-$app->group('/module', function () use ($app, $KRESTManager, $ModuleHandler) {
-
-    $app->get('/language', function ($req, $res, $args) use ($app, $ModuleHandler) {
-        return $res->withJson($ModuleHandler->getLanguage(json_decode($req->getQueryParam('modules')), $req->getQueryParam('lang')));
-    });
-
-    $app->post('/language', function ($req, $res, $args) use ($app, $ModuleHandler) {
-        $KRESTUserHandler = new \SpiceCRM\KREST\handlers\UserHandler();
-        $KRESTUserHandler->set_user_preferences('global', ['language' => $req->getQueryParam('lang')]);
-        return $res->withJson($ModuleHandler->getLanguage(json_decode($req->getQueryParam('modules')), $req->getQueryParam('lang')));
-    });
-
-    $app->group('/{beanName}', function () use ($app, $ModuleHandler) {
-        $app->get('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+    $restapp->group('/{beanName}', function () use ($restapp, $ModuleHandler) {
+        $restapp->get('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
             $searchParams = $_GET;
             echo json_encode($ModuleHandler->get_bean_list($args['beanName'], $searchParams));
         });
 
-        $app->post('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+        $restapp->post('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
             $requestParams = $_GET;
             $retArray = array();
 
             if (!$GLOBALS['ACLController']->checkAccess($args['beanName'], 'edit', true) && !$GLOBALS['ACLController']->checkAccess($args['beanName'], 'create', true)){
-                throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to edit in module ' . $args['beanName'] . '.'))->setErrorCode('noModuleEdit');
+                throw (new \SpiceCRM\includes\ErrorHandlers\ForbiddenException('Forbidden to edit in module ' . $args['beanName'] . '.'))->setErrorCode('noModuleEdit');
             }
 
             $items = $req->getParsedBody();
 
             if (!is_array($items) || !is_array($items[0]))
-                throw new \SpiceCRM\KREST\BadRequestException('Reading Body failed. An Array with at least one Object is expected: [{object1},{object2},...]');
+                throw new \SpiceCRM\includes\ErrorHandlers\BadRequestException('Reading Body failed. An Array with at least one Object is expected: [{object1},{object2},...]');
 
             foreach ($items as $item) {
                 if (!is_array($item))
@@ -62,61 +54,61 @@ $app->group('/module', function () use ($app, $KRESTManager, $ModuleHandler) {
             //echo json_encode($retArray);
             return $res->withJson($retArray);
         });
-        $app->post('/export', function ($req, $res, $args) use ($app, $ModuleHandler) {
+        $restapp->post('/export', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
             $searchParams = $req->getParsedBody();
             $charset = $ModuleHandler->export_bean_list($args['beanName'], $searchParams);
             return $res->withHeader('Content-Type', 'text/csv; charset=' . $charset);
         });
-        $app->post('/duplicates', function ($req, $res, $args) use ($app, $ModuleHandler) {
+        $restapp->post('/duplicates', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
             $postBody = $req->getParsedBody();
             echo json_encode($ModuleHandler->check_bean_duplicates($args['beanName'], $postBody));
         });
-        $app->delete('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+        $restapp->delete('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
             foreach ($req->getParsedBodyParam('ids') as $id) {
                 $response[$id] = $ModuleHandler->delete_bean($args['beanName'], $id);
             }
             return $res->withJson($response);
         });
-        $app->group('/{beanId}', function () use ($app, $ModuleHandler) {
-            $app->get('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+        $restapp->group('/{beanId}', function () use ($restapp, $ModuleHandler) {
+            $restapp->get('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                 $requestParams = $_GET;
                 echo json_encode($ModuleHandler->get_bean_detail($args['beanName'], $args['beanId'], $requestParams));
             });
-            $app->post('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->post('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                 $params = $req->getParsedBody();
 
                 $req->getBody()->rewind();
                 if ($req->getBody()->getContents() === '') { # and $req->getContentType() === 'application/json'
-                    throw (new \SpiceCRM\KREST\BadRequestException('Request has empty content. Retry?! Or contact the administrator!'))->setFatal(true);
+                    throw (new \SpiceCRM\includes\ErrorHandlers\BadRequestException('Request has empty content. Retry?! Or contact the administrator!'))->setFatal(true);
                 }
 
                 $bean = $ModuleHandler->add_bean($args['beanName'], $args['beanId'], $params, $req->getQueryParams());
                 echo json_encode($bean);
             });
-            $app->delete('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->delete('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                 return $ModuleHandler->delete_bean($args['beanName'], $args['beanId']);
             });
-            $app->get('/duplicates', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->get('/duplicates', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                 echo json_encode($ModuleHandler->get_bean_duplicates($args['beanName'], $args['beanId']));
             });
-            $app->get('/auditlog', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->get('/auditlog', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                 $params = $req->getParams();
                 echo json_encode($ModuleHandler->get_bean_auditlog($args['beanName'], $args['beanId'], $params));
             });
-            $app->group('/noteattachment', function () use ($app, $ModuleHandler) {
-                $app->get('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->group('/noteattachment', function () use ($restapp, $ModuleHandler) {
+                $restapp->get('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     echo json_encode($ModuleHandler->get_bean_attachment($args['beanName'], $args['beanId']));
                 });
-                $app->get('/download', function ($req, $res, $args) use ($app, $ModuleHandler) {
+                $restapp->get('/download', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     echo json_encode($ModuleHandler->download_bean_attachment($args['beanName'], $args['beanId']));
                 });
-                $app->post('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+                $restapp->post('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     $postBody = $req->getParsedBody();
                     echo json_encode($ModuleHandler->set_bean_attachment($args['beanName'], $args['beanId'], $postBody));
                 });
             });
-            $app->group('/checklist', function () use ($app, $ModuleHandler) {
-                $app->post('/{fieldname}/{item}', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->group('/checklist', function () use ($restapp, $ModuleHandler) {
+                $restapp->post('/{fieldname}/{item}', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     $fieldname = $args['fieldname'];
                     $item = $args['item'];
                     $bean = BeanFactory::getBean($args['beanName'], $args['beanId'], ['encode' => false]);
@@ -133,7 +125,7 @@ $app->group('/module', function () use ($app, $KRESTManager, $ModuleHandler) {
                     }
                     echo json_encode(array('status' => 'error'));
                 });
-                $app->delete('/{fieldname}/{item}', function ($req, $res, $args) use ($app, $ModuleHandler) {
+                $restapp->delete('/{fieldname}/{item}', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     $fieldname = $args['fieldname'];
                     $item = $args['item'];
                     $bean = BeanFactory::getBean($args['beanName'], $args['beanId'], ['encode' => false]);
@@ -151,40 +143,40 @@ $app->group('/module', function () use ($app, $KRESTManager, $ModuleHandler) {
                     echo json_encode(array('status' => 'error'));
                 });
             });
-            $app->group('/related/{linkname}', function () use ($app, $ModuleHandler) {
-                $app->get('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->group('/related/{linkname}', function () use ($restapp, $ModuleHandler) {
+                $restapp->get('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     $getParams = $_GET;
                     echo json_encode($ModuleHandler->get_related($args['beanName'], $args['beanId'], $args['linkname'], $getParams));
                 });
-                $app->post('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+                $restapp->post('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     $postBody = $req->getParsedBody();
                     echo json_encode($ModuleHandler->add_related($args['beanName'], $args['beanId'], $args['linkname'], $postBody));
                 });
-                $app->put('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+                $restapp->put('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     $postBody = $req->getParsedBody();
                     echo json_encode($ModuleHandler->set_related($args['beanName'], $args['beanId'], $args['linkname'], $postBody));
                 });
-                $app->delete('', function ($req, $res, $args) use ($app, $ModuleHandler) {
+                $restapp->delete('', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                     $params = $req->getParams();
                     echo json_encode($ModuleHandler->delete_related($args['beanName'], $args['beanId'], $args['linkname'], $params));
                 });
             });
-            $app->post('/merge_bean', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->post('/merge_bean', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                 $postBody = $body = $req->getParsedBody();
                 $postParams = $_GET;
                 $actionData = $ModuleHandler->merge_bean($args['beanName'], $args['beanId'], array_merge($postBody, $postParams));
                 if ($actionData === false)
-                    $app->response()->status(501);
+                    $restapp->response()->status(501);
                 else {
                     echo json_encode($actionData);
                 }
             });
-            $app->post('/{beanAction}', function ($req, $res, $args) use ($app, $ModuleHandler) {
+            $restapp->post('/{beanAction}', function ($req, $res, $args) use ($restapp, $ModuleHandler) {
                 $postBody = $body = $req->getParsedBody();
                 $postParams = $_GET;
                 $actionData = $ModuleHandler->execute_bean_action($args['beanName'], $args['beanId'], $args['beanAction'], array_merge($postBody, $postParams));
                 if ($actionData === false)
-                    $app->response()->status(501);
+                    $restapp->response()->status(501);
                 else {
                     echo json_encode($actionData);
                 }
@@ -193,8 +185,10 @@ $app->group('/module', function () use ($app, $KRESTManager, $ModuleHandler) {
     })->add(function ($request, $response, $next) {
         $beanName = $request->getAttribute('route')->getArgument('beanName');
         if (method_exists('BeanFactory', 'moduleExists') && !BeanFactory::moduleExists($beanName)) {
-            throw (new \SpiceCRM\KREST\NotFoundException('Module not found.'))->setLookedFor(['module' => $beanName])->setErrorCode('noModule');
+            throw (new \SpiceCRM\includes\ErrorHandlers\NotFoundException('Module not found.'))->setLookedFor(['module' => $beanName])->setErrorCode('noModule');
         }
         return $next($request, $response);
     });
 });
+
+$restapp->post('/bean/file/upload', [new \SpiceCRM\KREST\handlers\ModuleHandler($restapp), 'uploadFile']);

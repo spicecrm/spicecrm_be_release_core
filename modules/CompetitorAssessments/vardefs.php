@@ -156,7 +156,4 @@ $dictionary['CompetitorAssessment'] = array(
     )
 );
 
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('CompetitorAssessments', 'CompetitorAssessment', array('default', 'assignable', 'team_security'));
-else
-    VardefManager::createVardef('CompetitorAssessments', 'CompetitorAssessment', array('default', 'assignable'));
+VardefManager::createVardef('CompetitorAssessments', 'CompetitorAssessment', array('default', 'assignable'));

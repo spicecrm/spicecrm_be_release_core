@@ -341,7 +341,7 @@ abstract class DBManager
 				if(isset($GLOBALS['app_strings']['ERR_DB_FAIL'])) {
 					sugar_die($GLOBALS['app_strings']['ERR_DB_FAIL']);
 				} else {
-					sugar_die("Database error. Please check sugarcrm.log for details.");
+					sugar_die("Database error. Please check spicecrm.log for details.");
 				}
 			} else {
 				$this->last_error = $message;
@@ -501,24 +501,19 @@ protected function checkQuery($sql, $object_name = false)
      * @param array $data key/value pairs
      * @return bool query result
      */
-	public function insertQuery($table, array $data)
+	public function insertQuery($table, array $data, $execute = true)
     {
-        $fields = [];
-        //todo: if exists in dictionary, use the vardefs
-        foreach($data as $key => $val)
-        {
-            $fields[$key] = [];
-        }
-        if( array_key_exists('id', $data) && !$data['id'] )
-        {
-            $data['id'] = create_guid();
+        global $dictionary;
+
+        // find the dictionary table
+        foreach($dictionary as $dictionaryName => $dictionaryDefs){
+            if($dictionaryDefs['table'] == $table){
+                return $this->insertParams($table, $dictionaryDefs['fields'], $data, null, $execute);
+                break;
+            }
         }
 
-        $result = $this->insertParams($table, $fields, $data);
-        if( $result )
-            return $data['id'];
-        else
-            return $result;
+        return $data['id'];
     }
 
     /**
@@ -529,7 +524,7 @@ protected function checkQuery($sql, $object_name = false)
      * @param array $data key/values of fields to update
      * @return bool query result
      */
-    public function updateQuery($table, array $pks, array $data)
+    public function updateQuery($table, array $pks, array $data, $execute = true)
     {
         foreach($data as $key => $val)
         {
@@ -540,9 +535,9 @@ protected function checkQuery($sql, $object_name = false)
         {
             $wheres[] = "`$key` = '{$this->quote($val)}'";
         }
-        $sql = "UPDATE $table SET ".implode(',', $sets)." WHERE ".implode(' AND ', $wheres);
-        //var_dump($sql);
-        return $this->query($sql);
+        $query = "UPDATE $table SET ".implode(',', $sets)." WHERE ".implode(' AND ', $wheres);
+
+        return $execute?$this->query($query):$query;
     }
 
     /**
@@ -556,24 +551,35 @@ protected function checkQuery($sql, $object_name = false)
      */
     public function upsertQuery($table, array $pks, array $data)
     {
-        $id = $this->insertQuery($table, $data);
-        if( $id )
-            return $id;
-
-        /*
-        // ignore duplicate key errors...
-        if( $this->last_error )
-            throw new Exception($this->last_error);
-        */
-        $result = $this->updateQuery($table, $pks, $data);
-        if( $result )
-            return $result;
-        else
-            throw new Exception($this->last_error);
-
+        try {
+            $id = $this->insertQuery($table, $data);
+            if ($id)
+                return $id;
+        } catch(Exception $e) {
+            $result = $this->updateQuery($table, $pks, $data);
+            if( $result )
+                return $result;
+            else
+                throw new Exception($this->last_error);
+        }
     }
 
-	/**
+    /**
+     * custom function, to generically hard delete records from db according to a where close
+     * @param string $table the table name
+     * @param array|string $data key/value pairs
+     * @param array $where key/value pairs for where clause
+     * @return mixed bool|string
+     */
+    public function deleteQuery($table, $where, $execute = true)
+    {
+        $result = $this->deleteParams($table, $where, $execute);
+        return $result;
+    }
+
+
+
+    /**
 	 * Insert data into table by parameter definition
 	 * @param string $table Table name
 	 * @param array $field_defs Definitions in vardef-like format
@@ -613,19 +619,43 @@ protected function checkQuery($sql, $object_name = false)
 			} else {
 				// need to do some thing about types of values
 				if(!is_null($val) || !empty($fieldDef['required'])) {
-					$values[$field] = $this->massageValue($val, $fieldDef);
-				}
-			}
-		}
+                    $values[$field] = $this->massageValue($val, $fieldDef);
+                }
+            }
+        }
 
-		if (empty($values))
-			return $execute?true:''; // no columns set
+        if (empty($values))
+            return $execute ? true : ''; // no columns set
 
-		// get the entire sql
-		$query = "INSERT INTO $table (".implode(",", array_keys($values)).")
-					VALUES (".implode(",", $values).")";
-		return $execute?$this->query($query):$query;
-	}
+        // get the entire sql
+        $query = "INSERT INTO $table (" . implode(",", array_keys($values)) . ") VALUES (" . implode(",", $values) . ")";
+        return $execute ? $this->query($query, true) : $query;
+    }
+
+    /**
+     * build delete query
+     * where clause is required
+     * @param string $table
+     * @param array|string $where
+     * @param bool $execute
+     * @return bool|resource|string
+     */
+    public function deleteParams($table, $where, $execute = true)
+    {
+        if(empty($where))
+            return false;
+
+        // get the entire sql
+        if(is_array($where)) {
+            foreach ($where as $key => $val) {
+                $pks[] = "$key = '{$this->quote($val)}'";
+            }
+            $where = implode(' AND ', $pks);
+        }
+        $query = "DELETE FROM $table WHERE ".$where;
+
+        return $execute?$this->query($query):$query;
+    }
 
     /**
      * Implements a generic update for any bean
@@ -862,21 +892,21 @@ protected function checkQuery($sql, $object_name = false)
      */
 	public function repairTableParams($tablename, $fielddefs,  $indices, $execute = true, $engine = null)
 	{
-		//jc: had a bug when running the repair if the tablename is blank the repair will
-		//fail when it tries to create a repair table
-		if ($tablename == '' || empty($fielddefs))
-			return '';
+        //jc: had a bug when running the repair if the tablename is blank the repair will
+        //fail when it tries to create a repair table
+        if ($tablename == '' || empty($fielddefs) || $tablename == 'audit')
+            return '';
 
-		//if the table does not exist create it and we are done
-		$sql = "/* Table : $tablename */\n";
-		if (!$this->tableExists($tablename)) {
-			$createtablesql = $this->createTableSQLParams($tablename,$fielddefs,$indices,$engine);
-			if($execute && $createtablesql){
-				$this->createTableParams($tablename,$fielddefs,$indices,$engine);
-			}
+        //if the table does not exist create it and we are done
+        $sql = "/* Table : $tablename */\n";
+        if (!$this->tableExists($tablename)) {
+            $createtablesql = $this->createTableSQLParams($tablename, $fielddefs, $indices, $engine);
+            if ($execute && $createtablesql) {
+                $this->createTableParams($tablename, $fielddefs, $indices, $engine);
+            }
 
 			$sql .= "/* MISSING TABLE: {$tablename} */\n";
-			$sql .= $createtablesql . "\n";
+			$sql .= $createtablesql . ";\n";
 			return $sql;
 		}
 
@@ -926,7 +956,7 @@ protected function checkQuery($sql, $object_name = false)
 			if ( !isset($compareFieldDefs[$name]) ) {
 				// ok we need this field lets create it
 				$sql .=	"/*MISSING IN DATABASE - $name -  ROW*/\n";
-				$sql .= $this->addColumnSQL($tablename, $value) .  "\n";
+				$sql .= $this->addColumnSQL($tablename, $value) .  ";\n";
 				if ($execute)
 					$this->addColumn($tablename, $value);
 				$take_action = true;
@@ -961,7 +991,7 @@ protected function checkQuery($sql, $object_name = false)
 				if(is_array($altersql)) {
 					$altersql = join("\n", $altersql);
 				}
-				$sql .= $altersql .  "\n";
+				$sql .= $altersql .  ";\n";
 				if($execute){
 					$this->alterColumn($tablename, $value, $ignorerequired);
 				}
@@ -984,21 +1014,21 @@ protected function checkQuery($sql, $object_name = false)
 		unset($compareIndices_case_insensitive);
 
 		foreach ($indices as $value) {
-			if (isset($value['source']) && $value['source'] != 'db')
-				continue;
+            if (isset($value['source']) && $value['source'] != 'db')
+                continue;
 
 
-			$validDBName = $this->getValidDBName($value['name'], true, 'index', true);
-			if (isset($compareIndices[$validDBName])) {
-				$value['name'] = $validDBName;
-			}
-		    $name = strtolower($value['name']);
+            $validDBName = $this->getValidDBName($value['name'], false, 'index', true);
+            if (isset($compareIndices[$validDBName])) {
+                $value['name'] = $validDBName;
+            }
+            $name = strtolower($value['name']);
 
-			//Don't attempt to fix the same index twice in one pass;
-			if (isset($correctedIndexs[$name]))
-				continue;
+            //Don't attempt to fix the same index twice in one pass;
+            if (isset($correctedIndexs[$name]))
+                continue;
 
-			//don't bother checking primary nothing we can do about them
+            //don't bother checking primary nothing we can do about them
 			if (isset($value['type']) && $value['type'] == 'primary')
 				continue;
 
@@ -1019,14 +1049,14 @@ protected function checkQuery($sql, $object_name = false)
 					}
 				}
 				if ($found) {
-					$sql .=	 "/*MISSNAMED INDEX IN DATABASE - $name - $ex_name */\n";
-					$rename = $this->renameIndexDefs($ex_value, $value, $tablename);
-					if($execute) {
-						$this->query($rename, true, "Cannot rename index");
-					}
-					$sql .= is_array($rename)?join("\n", $rename). "\n":$rename."\n";
+//					$sql .=	 "/*MISSNAMED INDEX IN DATABASE - $name - $ex_name */\n";
+//					$rename = $this->renameIndexDefs($ex_value, $value, $tablename);
+//					if($execute) {
+//						$this->query($rename, true, "Cannot rename index");
+//					}
+//					$sql .= is_array($rename)?join("\n", $rename). "\n":$rename."\n";
 
-				} else {
+                } else {
 					// ok we need this field lets create it
 					$sql .=	 "/*MISSING INDEX IN DATABASE - $name -{$value['type']}  ROW */\n";
 					$sql .= $this->addIndexes($tablename,array($value), $execute) .  "\n";
@@ -1055,7 +1085,7 @@ protected function checkQuery($sql, $object_name = false)
 						$sql .= " $t1 ";
 				}
 				$sql .=	"*/\n";
-				$sql .= $this->modifyIndexes($tablename,array($value), $execute) .  "\n";
+				$sql .= $this->modifyIndexes($tablename,array($value), $execute) .  ";\n";
 				$take_action = true;
 				$correctedIndexs[$name] = true;
 			}
@@ -1461,35 +1491,39 @@ protected function checkQuery($sql, $object_name = false)
 		$result = $this->limitQuery($select_query, $start, $count);
 		// get basic insert
 		$sql = "INSERT INTO ".$table;
-		$custom_sql = "INSERT INTO ".$table."_cstm";
+// CR1000452
+//		$custom_sql = "INSERT INTO ".$table."_cstm";
 
 		// get field definitions
 		$fields = $bean->getFieldDefinitions();
-		$custom_fields = array();
+// CR1000452
+//		$custom_fields = array();
 
-		if($bean->hasCustomFields()){
-			foreach ($fields as $fieldDef){
-				if($fieldDef['source'] == 'custom_fields'){
-					$custom_fields[$fieldDef['name']] = $fieldDef['name'];
-				}
-			}
-			if(!empty($custom_fields)){
-				$custom_fields['id_c'] = 'id_c';
-				$id_field = array('name' => 'id_c', 'custom_type' => 'id',);
-				$fields[] = $id_field;
-			}
-		}
+//		if($bean->hasCustomFields()){
+//			foreach ($fields as $fieldDef){
+//				if($fieldDef['source'] == 'custom_fields'){
+//					$custom_fields[$fieldDef['name']] = $fieldDef['name'];
+//				}
+//			}
+//			if(!empty($custom_fields)){
+//				$custom_fields['id_c'] = 'id_c';
+//				$id_field = array('name' => 'id_c', 'custom_type' => 'id',);
+//				$fields[] = $id_field;
+//			}
+//		}
 
 		// get column names and values
 		$row_array = array();
 		$columns = array();
-		$cstm_row_array = array();
-		$cstm_columns = array();
+// CR1000452
+//		$cstm_row_array = array();
+//		$cstm_columns = array();
 		$built_columns = false;
 		while(($row = $this->fetchByAssoc($result)) != null)
 		{
 			$values = array();
-			$cstm_values = array();
+// CR1000452
+//			$cstm_values = array();
 			if(!$is_related_query){
 				foreach ($fields as $fieldDef)
 				{
@@ -1511,27 +1545,31 @@ protected function checkQuery($sql, $object_name = false)
 						}
 						// need to do some thing about types of values
 						if($this->dbType == 'mysql' && $val == '' && ($type == 'datetime' ||  $type == 'date' || $type == 'int' || $type == 'currency' || $type == 'decimal')){
-							if(!empty($custom_fields[$fieldDef['name']]))
-								$cstm_values[$fieldDef['name']] = 'null';
-							else
+// CR1000452
+//							if(!empty($custom_fields[$fieldDef['name']]))
+//								$cstm_values[$fieldDef['name']] = 'null';
+//							else
 								$values[$fieldDef['name']] = 'null';
 						}else{
 							if(isset($type) && $type=='int') {
-								if(!empty($custom_fields[$fieldDef['name']]))
-									$cstm_values[$fieldDef['name']] = $GLOBALS['db']->quote(from_html($val));
-								else
+// CR1000452
+//								if(!empty($custom_fields[$fieldDef['name']]))
+//									$cstm_values[$fieldDef['name']] = $GLOBALS['db']->quote(from_html($val));
+//								else
 									$values[$fieldDef['name']] = $GLOBALS['db']->quote(from_html($val));
 							} else {
-								if(!empty($custom_fields[$fieldDef['name']]))
-									$cstm_values[$fieldDef['name']] = "'".$GLOBALS['db']->quote(from_html($val))."'";
-								else
+// CR1000452
+//								if(!empty($custom_fields[$fieldDef['name']]))
+//									$cstm_values[$fieldDef['name']] = "'".$GLOBALS['db']->quote(from_html($val))."'";
+//								else
 									$values[$fieldDef['name']] = "'".$GLOBALS['db']->quote(from_html($val))."'";
 							}
 						}
 						if(!$built_columns){
-							if(!empty($custom_fields[$fieldDef['name']]))
-								$cstm_columns[] = $fieldDef['name'];
-							else
+// CR1000452
+//							if(!empty($custom_fields[$fieldDef['name']]))
+//								$cstm_columns[] = $fieldDef['name'];
+//							else
 								$columns[] = $fieldDef['name'];
 						}
 					}
@@ -1552,9 +1590,10 @@ protected function checkQuery($sql, $object_name = false)
 			if(!empty($values)){
 				$row_array[] = $values;
 			}
-			if(!empty($cstm_values) && !empty($cstm_values['id_c']) && (strlen($cstm_values['id_c']) > 7)){
-				$cstm_row_array[] = $cstm_values;
-			}
+// CR1000452
+//			if(!empty($cstm_values) && !empty($cstm_values['id_c']) && (strlen($cstm_values['id_c']) > 7)){
+//				$cstm_row_array[] = $cstm_values;
+//			}
 		}
 
 		//if (sizeof ($values) == 0) return ""; // no columns set
@@ -1570,16 +1609,17 @@ protected function checkQuery($sql, $object_name = false)
 		}
 		//custom
 		// get the entire sql
-		$custom_sql .= "(".implode(",", $cstm_columns).") ";
-		$custom_sql .= "VALUES";
-
-		for($i = 0; $i < count($cstm_row_array); $i++){
-			$custom_sql .= " (".implode(",", $cstm_row_array[$i]).")";
-			if($i < (count($cstm_row_array) - 1)){
-				$custom_sql .= ", ";
-			}
-		}
-		return array('data' => $sql, 'cstm_sql' => $custom_sql, /*'result_count' => $row_count, */ 'total_count' => $rows_found, 'next_offset' => $next_offset);
+// CR1000452
+//		$custom_sql .= "(".implode(",", $cstm_columns).") ";
+//		$custom_sql .= "VALUES";
+//
+//		for($i = 0; $i < count($cstm_row_array); $i++){
+//			$custom_sql .= " (".implode(",", $cstm_row_array[$i]).")";
+//			if($i < (count($cstm_row_array) - 1)){
+//				$custom_sql .= ", ";
+//			}
+//		}
+		return array('data' => $sql, /* CR1000452 'cstm_sql' => $custom_sql,*/ /*'result_count' => $row_count, */ 'total_count' => $rows_found, 'next_offset' => $next_offset);
 	}
 
 	/**
@@ -2613,8 +2653,9 @@ protected function checkQuery($sql, $object_name = false)
 
 		$required = 'NULL';  // MySQL defaults to NULL, SQL Server defaults to NOT NULL -- must specify
 		//Starting in 6.0, only ID and auto_increment fields will be NOT NULL in the DB.
-		if ((empty($fieldDef['isnull']) || strtolower($fieldDef['isnull']) == 'false') &&
-			(!empty($auto_increment) || $name == 'id' || ($fieldDef['type'] == 'id' && !empty($fieldDef['required'])))) {
+
+        if ((empty($fieldDef['isnull']) || strtolower($fieldDef['isnull']) == 'false') &&
+			(!empty($auto_increment) || ($fieldDef['type'] == 'id' && !empty($fieldDef['required'])))) {
 			$required =  "NOT NULL";
 		}
 		// If the field is marked both required & isnull=>false - alwqys make it not null
@@ -2832,33 +2873,33 @@ protected function checkQuery($sql, $object_name = false)
 			return $result;
 		} else {
 		    if(strchr($name, ".")) {
-		        // this is a compound name with dots, handle separately
-		        $parts = explode(".", $name);
-		        if(count($parts) > 2) {
-		            // some weird name, cut to table.name
-		            array_splice($parts, 0, count($parts)-2);
-		        }
-		        $parts = $this->getValidDBName($parts, $ensureUnique, $type, $force);
+                // this is a compound name with dots, handle separately
+                $parts = explode(".", $name);
+                if (count($parts) > 2) {
+                    // some weird name, cut to table.name
+                    array_splice($parts, 0, count($parts) - 2);
+                }
+                $parts = $this->getValidDBName($parts, $ensureUnique, $type, $force);
                 return join(".", $parts);
-		    }
-			// first strip any invalid characters - all but word chars (which is alphanumeric and _)
-			$name = preg_replace( '/[^\w]+/i', '', $name ) ;
-			$len = strlen( $name ) ;
-			$maxLen = empty($this->maxNameLengths[$type]) ? $this->maxNameLengths[$type]['column'] : $this->maxNameLengths[$type];
-			if ($len <= $maxLen && !$force) {
-				return strtolower($name);
-			}
-			if ($ensureUnique) {
-				$md5str = md5($name);
-				$tail = substr ( $name, -11) ;
-				$temp = substr($md5str , strlen($md5str)-4 );
-				$result = substr( $name, 0, 10) . $temp . $tail ;
-			} else {
-				$result = substr( $name, 0, 11) . substr( $name, 11 - $maxLen);
-			}
+            }
+            // first strip any invalid characters - all but word chars (which is alphanumeric and _)
+            $result = preg_replace('/[^\w]+/i', '', $name);
+//			$len = strlen( $name ) ;
+//			$maxLen = empty($this->maxNameLengths[$type]) ? $this->maxNameLengths[$type]['column'] : $this->maxNameLengths[$type];
+//			if ($len <= $maxLen && !$force) {
+//				return strtolower($name);
+//			}
+//			if ($ensureUnique) {
+//				$md5str = md5($name);
+//				$tail = substr ( $name, -11) ;
+//				$temp = substr($md5str , strlen($md5str)-4 );
+//				$result = substr( $name, 0, 10) . $temp . $tail ;
+//			} else {
+//				$result = substr( $name, 0, 11) . substr( $name, 11 - $maxLen);
+//			}
 
-			return strtolower( $result ) ;
-		}
+            return strtolower($result);
+        }
 	}
 
 	/**
@@ -2915,17 +2956,17 @@ protected function checkQuery($sql, $object_name = false)
      */
 	protected function auditSQL(SugarBean $bean, $changes)
 	{
-		global $current_user;
-		$sql = "INSERT INTO ".$bean->get_audit_table_name();
-		//get field defs for the audit table.
-		require('metadata/audit_templateMetaData.php');
-		$fieldDefs = $dictionary['audit']['fields'];
+        global $current_user, $dictionary;
+        $sql = "INSERT INTO " . $bean->get_audit_table_name();
+        //get field defs for the audit table.
+        require('metadata/audit_templateMetaData.php');
+        $fieldDefs = $dictionary['audit']['fields'];
 
-		$values=array();
-		$values['id'] = $this->massageValue(create_guid(), $fieldDefs['id']);
-		// $values['transactionid']= $GLOBALS['transactionID'];
-		$values['parent_id']= $this->massageValue($bean->id, $fieldDefs['parent_id']);
-		$values['transaction_id']= $this->massageValue($GLOBALS['transactionID'], $fieldDefs['transaction_id']);
+        $values = array();
+        $values['id'] = $this->massageValue(create_guid(), $fieldDefs['id']);
+        // $values['transactionid']= $GLOBALS['transactionID'];
+        $values['parent_id'] = $this->massageValue($bean->id, $fieldDefs['parent_id']);
+        $values['transaction_id'] = $this->massageValue($GLOBALS['transactionID'], $fieldDefs['transaction_id']);
 		$values['field_name']= $this->massageValue($changes['field_name'], $fieldDefs['field_name']);
 		$values['data_type'] = $this->massageValue($changes['data_type'], $fieldDefs['data_type']);
 		if ($changes['data_type']=='text') {

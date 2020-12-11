@@ -35,15 +35,10 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-
-
-
 global $current_user,$beanList, $beanFiles, $mod_strings;
 
 $installed_classes = array();
 $ACLbeanList=$beanList;
-
-
 
 if(is_admin($current_user)){
     foreach($ACLbeanList as $module=>$class){
@@ -51,8 +46,7 @@ if(is_admin($current_user)){
         if(empty($installed_classes[$class]) && isset($beanFiles[$class]) && file_exists($beanFiles[$class])){
             if($class == 'Tracker'){
             } else {
-                require_once($beanFiles[$class]);
-                $mod = new $class();
+                $mod = \BeanFactory::getBean($module);
                 $GLOBALS['log']->debug("DOING: $class");
                 if($mod->bean_implements('ACL') && empty($mod->acl_display_only)){
                     // BUG 10339: do not display messages for upgrade wizard
@@ -73,4 +67,3 @@ if(is_admin($current_user)){
 
 
 }
-?>

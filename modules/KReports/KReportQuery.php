@@ -165,14 +165,19 @@ class KReportQueryArray
             // do time handling treating passed in values as User Timezone converting to UTS
             if($whereArrayEntry['type'] == 'datetime'){
                 $userTimezZone = $GLOBALS['current_user']->getPreference('timezone');
+                // check on format
                 if($whereArrayEntry['valuekey'] != ''){
-                    $valuefromdate = SugarDateTime::createFromFormat('Y-m-d H:i:s', $whereArrayEntry['valuekey'], new DateTimeZone($userTimezZone));
+                    $fromFormat = 'Y-m-d H:i:s';
+                    if(strlen($whereArrayEntry['valuekey']) <= 10){
+                        $fromFormat = 'Y-m-d';
+                    }
+                    $valuefromdate = DateTime::createFromFormat($fromFormat, $whereArrayEntry['valuekey'], new DateTimeZone($userTimezZone));
                     $valuefromdate->setTimezone(new DateTimeZone('UTC'));
                     $this->whereArray[$whereId]['valuekey'] = $valuefromdate->format('Y-m-d H:i:s');
                     $this->whereArray[$whereId]['value'] = $valuefromdate->format('Y-m-d H:i:s');
                 }
                 if($whereArrayEntry['valuetokey'] != ''){
-                    $valuetodate = SugarDateTime::createFromFormat('Y-m-d H:i:s', $whereArrayEntry['valuetokey'],  new DateTimeZone($userTimezZone));
+                    $valuetodate = DateTime::createFromFormat($fromFormat, $whereArrayEntry['valuetokey'],  new DateTimeZone($userTimezZone));
                     $valuetodate->setTimezone(new DateTimeZone('UTC'));
                     $this->whereArray[$whereId]['valuetokey'] = $valuetodate->format('Y-m-d H:i:s');
                     $this->whereArray[$whereId]['valueto'] = $valuetodate->format('Y-m-d H:i:s');
@@ -204,26 +209,30 @@ class KReportQueryArray
 
             // 2011-03-25 added function to be evaluated
             if ($whereArrayEntry['operator'] == 'function') {
+                global $customFunctionInclude;
                 include('modules/KReports/kreportsConfig.php');
+                include($customFunctionInclude);
+
                 $customFunctionInclude = 'custom/modules/KReports/KReportCustomFunctions.php';
                 if (file_exists($customFunctionInclude)) {
                     include($customFunctionInclude);
-                    if (function_exists($whereArrayEntry['valuekey'])) {
-                        $this->whereArray[$whereId]['operator'] = '';
-                        $this->whereArray[$whereId]['value'] = '';
-                        $this->whereArray[$whereId]['valuekey'] = '';
-                        global $opReturn;
-                        eval("\$opReturn=" . $whereArrayEntry['valuekey'] . "(\$whereArrayEntry);");
-                        if (is_array($opReturn) && count($opReturn) > 0) {
-                            foreach ($opReturn as $thisOpField => $thisOpValue)
-                                $this->whereArray[$whereId][$thisOpField] = $thisOpValue;
-                        } else
-                            unset($this->whereArray[$whereId]);
-                    } else {
-                        // delete the condition if we do not find the function
-                        unset($this->whereArray[$whereId]);
-                    }
                 }
+                if (function_exists($whereArrayEntry['valuekey'])) {
+                    $this->whereArray[$whereId]['operator'] = '';
+                    $this->whereArray[$whereId]['value'] = '';
+                    $this->whereArray[$whereId]['valuekey'] = '';
+                    global $opReturn;
+                    eval("\$opReturn=" . $whereArrayEntry['valuekey'] . "(\$whereArrayEntry);");
+                    if (is_array($opReturn) && count($opReturn) > 0) {
+                        foreach ($opReturn as $thisOpField => $thisOpValue)
+                            $this->whereArray[$whereId][$thisOpField] = $thisOpValue;
+                    } else
+                        unset($this->whereArray[$whereId]);
+                } else {
+                    // delete the condition if we do not find the function
+                    unset($this->whereArray[$whereId]);
+                }
+
             }
         }
 
@@ -300,7 +309,14 @@ class KReportQueryArray
         // manage special handling of where conditions
         $this->handle_where_conditions();
 
-        if ($this->union_modules != '') {
+        // CR1000456 check union_modules content
+        //  if ($this->union_modules != '') {
+        $buildUnion = false;
+        $unionArrayNew = json_decode(html_entity_decode($this->union_modules, ENT_QUOTES, 'UTF-8'), true);
+        if(is_array($unionArrayNew) && !empty($unionArrayNew[0])){
+            $buildUnion = true;
+        }
+        if ($buildUnion) {
             // handle root module
             // filter the array to only have root
             $i = 0;
@@ -331,7 +347,8 @@ class KReportQueryArray
             $this->fieldNameMap = $this->queryArray['root']['kQuery']->fieldNameMap;
 
             //hanlde union
-            $unionArrayNew = json_decode(html_entity_decode($this->union_modules, ENT_QUOTES, 'UTF-8'), true);
+            //CR1000456 $unionArrayNew already created in condition above
+            //$unionArrayNew = json_decode(html_entity_decode($this->union_modules, ENT_QUOTES, 'UTF-8'), true);
             // $unionArray = preg_split('/;/', $this->union_modules);
             foreach ($unionArrayNew as $thisUnionArrayEntry) {
 
@@ -713,14 +730,6 @@ class KReportQuery
         if (isset($addParams['exclusiveGrouping']))
             $this->exclusiveGroupinbgByAddParams = $addParams['exclusiveGrouping'];
 
-        // handle Where Override
-        // need to think about moving this
-        /*
-          if(isset($_REQUEST['whereConditions']))
-          {
-          $this->whereOverrideArray = json_decode_kinamu( html_entity_decode_utf8($_REQUEST['whereConditions']));
-          }
-         */
     }
 
     function build_query_strings()
@@ -895,81 +904,21 @@ class KReportQuery
         //$this->joinSegments['root:' . $this->root_module]['object'] = new $beanList[$this->root_module]();
         $this->joinSegments['root:' . $this->root_module]['object'] = BeanFactory::getBean($this->root_module);
 
-        // check for Custom Fields
-        if ($this->joinSegments['root:' . $this->root_module]['object']->hasCustomFields()) {
-            $this->joinSegments['root:' . $this->root_module]['customjoin'] = randomstring();
-            $this->fromString .= ' LEFT JOIN ' . $this->get_table_for_module($this->root_module) . '_cstm as ' . $this->joinSegments['root:' . $this->root_module]['customjoin'] . '  ON ' . $this->rootGuid . '.id = ' . $this->joinSegments['root:' . $this->root_module]['customjoin'] . '.id_c';
-        }
-
 
         // changed so we spport teams in Pro
         if ($this->authChecklevel != 'none') {
-            switch ($GLOBALS['sugar_config']['KReports']['authCheck']) {
-                case 'KOrgObjects':
-                    $this->fromString .= $thisKOrgObject->getOrgunitJoin($this->joinSegments['root:' . $this->root_module]['object']->table_name, $this->joinSegments['root:' . $this->root_module]['object']->object_name, $this->rootGuid, '1');
-                    break;
-                case 'KAuthObjects':
-                    $selectArray = array('where' => '', 'from' => '', 'select' => '');
-                    if($GLOBALS['KAuthAccessController'])
-                        $GLOBALS['KAuthAccessController']->addAuthAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], true);
-                    if (!empty($selectArray['where'])) {
-                        if (empty($this->whereString)) {
-                            $this->whereString = " " . $selectArray['where'] . " ";
-                        } else {
-                            $this->whereString .= " AND " . $selectArray['where'] . " ";
-                        }
-                    }
-                    if (!empty($selectArray['join'])) {
-                        $this->fromString .= ' ' . $selectArray['join'] . ' ';
-                    }
-                    break;
-                case 'SpiceACL':
-                    $selectArray = array('where' => '', 'from' => '', 'select' => '');
-                    if(method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray'))
-                        $GLOBALS['ACLController']->addACLAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], true);
-                    if (!empty($selectArray['where'])) {
-                        if (empty($this->whereString)) {
-                            $this->whereString = " " . $selectArray['where'] . " ";
-                        } else {
-                            $this->whereString .= " AND " . $selectArray['where'] . " ";
-                        }
-                    }
-                    if (!empty($selectArray['join'])) {
-                        $this->fromString .= ' ' . $selectArray['join'] . ' ';
-                    }
-                    break;
-                case 'PRO':
-                    $this->fromString .= ' ';
-                    $this->joinSegments['root:' . $this->root_module]['object']->add_team_security_where_clause($this->fromString, $this->rootGuid);
-                    break;
-                //2013-03-26 Bug#460 Typo changed
-                case 'SecurityGroups':
-                    if ($this->joinSegments['root:' . $this->root_module]['object']->bean_implements('ACL') && $GLOBALS['ACLController']->requireSecurityGroup($this->joinSegments['root:' . $this->root_module]['object']->module_dir, 'list')) {
-                        require_once('modules/SecurityGroups/SecurityGroup.php');
-                        $securitygroup = new SecurityGroup();
-                        global $current_user;
-                        $owner_where = str_replace($this->joinSegments['root:' . $this->root_module]['object']->table_name, $this->rootGuid, $this->joinSegments['root:' . $this->root_module]['object']->getOwnerWhere($current_user->id));
-                        $group_where = $securitygroup->getGroupWhere($this->rootGuid, $this->joinSegments['root:' . $this->root_module]['object']->module_dir, $current_user->id);
-                        if (!empty($owner_where)) {
-                            if (empty($this->whereString)) {
-                                $this->whereString = " (" . $owner_where . " or " . $group_where . ") ";
-                            } else {
-                                $this->whereString .= " AND (" . $owner_where . " or " . $group_where . ") ";
-                            }
-                        } else {
-                            $this->whereString .= ' AND ' . $group_where;
-                        }
-                    }
-                    break;
-                default:
-                    //by deault check ownwer clause
-                    if(!$current_user->is_admin && $this->joinSegments['root:' . $this->root_module]['object']->bean_implements('ACL')  && $GLOBALS['ACLController']->requireOwner($this->joinSegments['root:' . $this->root_module]['object']->module_dir, 'list')) {
-                        //2013-02-22 missing check if we have a wherestring at all
-                        if ($this->whereString != '')
-                            $this->whereString .= ' AND ';
-                        $this->whereString .= $this->rootGuid . '.assigned_user_id=\'' . $current_user->id . '\'';
-                    }
-                    break;
+            $selectArray = array('where' => '', 'from' => '', 'select' => '');
+            if(method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray'))
+                $GLOBALS['ACLController']->addACLAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], true);
+            if (!empty($selectArray['where'])) {
+                if (empty($this->whereString)) {
+                    $this->whereString = " " . $selectArray['where'] . " ";
+                } else {
+                    $this->whereString .= " AND " . $selectArray['where'] . " ";
+                }
+            }
+            if (!empty($selectArray['join'])) {
+                $this->fromString .= ' ' . $selectArray['join'] . ' ';
             }
         }
 
@@ -1009,17 +958,11 @@ class KReportQuery
                                 die('fatal Error in Join');
                             }
                             // load the module on the right hand side
-                            require_once($beanFiles[$beanList[$this->joinSegments[$leftPath]['object']->field_defs[$rightArray[2]]['module']]]);
-                            $this->joinSegments[$thisPath]['object'] = new $beanList[$this->joinSegments[$leftPath]['object']->field_defs[$rightArray[2]]['module']]();
+                            $this->joinSegments[$thisPath]['object'] = BeanFactory::getBean($this->joinSegments[$leftPath]['object']->field_defs[$rightArray[2]]['module']);
 
                             // join on the id = relate id .. on _cstm if custom field .. on main if regular
                             $this->fromString .= ' ' . $thisPathDetails['jointype'] . ' ' . $this->joinSegments[$thisPath]['object']->table_name . ' AS ' . $this->joinSegments[$thisPath]['alias'] . ' ON ' . $this->joinSegments[$thisPath]['alias'] . '.id=' . ($this->joinSegments[$leftPath]['object']->field_defs[$this->joinSegments[$leftPath]['object']->field_defs[$rightArray[2]]['id_name']]['source'] == 'custom_fields' ? $this->joinSegments[$leftPath]['customjoin'] : $this->joinSegments[$leftPath]['alias']) . '.' . $this->joinSegments[$leftPath]['object']->field_defs[$rightArray[2]]['id_name'] . ' ';
 
-                            // check for Custom Fields
-                            if ($this->joinSegments[$thisPath]['object']->hasCustomFields()) {
-                                $this->joinSegments[$thisPath]['customjoin'] = randomstring();
-                                $this->fromString .= ' LEFT JOIN ' . $this->joinSegments[$thisPath]['object']->table_name . '_cstm as ' . $this->joinSegments[$thisPath]['customjoin'] . ' ON ' . $this->joinSegments[$thisPath]['alias'] . '.id = ' . $this->joinSegments[$thisPath]['customjoin'] . '.id_c';
-                            }
                         } else {
                             if (!($this->joinSegments[$leftPath]['object'] instanceof $beanList[$rightArray[1]])) {
                                 die('fatal Error in Join ' . $thisPath);
@@ -1062,8 +1005,7 @@ class KReportQuery
                                 $this->fromString .= ' ' . $linkJoin;
                             }
                             // load the module on the right hand side
-                            require_once($beanFiles[$beanList[$this->joinSegments[$leftPath]['object']->$rightArrayEl->getRelatedModuleName()]]); //$rightArray[2]
-                            $this->joinSegments[$thisPath]['object'] = new $beanList[$this->joinSegments[$leftPath]['object']->$rightArrayEl->getRelatedModuleName()](); //$rightArray[2]
+                            $this->joinSegments[$thisPath]['object'] = BeanFactory::getBean($this->joinSegments[$leftPath]['object']->$rightArrayEl->getRelatedModuleName()); //$rightArray[2]
 
                             //bugfix 2010-08-19, respect ACL role access for owner reuqired in select
                             if ($this->joinSegments[$leftPath]['object']->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($this->joinSegments[$leftPath]['object']->module_dir, 'list')) {
@@ -1073,71 +1015,20 @@ class KReportQuery
                                 $this->whereString .= $this->joinSegments[$leftPath]['alias'] . '.assigned_user_id=\'' . $current_user->id . '\'';
                             }
 
-                            // check for Custom Fields
-                            if ($this->joinSegments[$thisPath]['object']->hasCustomFields()) {
-                                $this->joinSegments[$thisPath]['customjoin'] = randomstring();
-                                $this->fromString .= ' LEFT JOIN ' . $this->joinSegments[$thisPath]['object']->table_name . '_cstm as ' . $this->joinSegments[$thisPath]['customjoin'] . ' ON ' . $this->joinSegments[$thisPath]['alias'] . '.id = ' . $this->joinSegments[$thisPath]['customjoin'] . '.id_c';
-                            }
-
                             // append join for Orgobjects if Object is OrgManaged
                             if ($this->authChecklevel != 'none' && $this->authChecklevel != 'top') {
-                                switch ($GLOBALS['sugar_config']['KReports']['authCheck']) {
-                                    case 'KOrgObjects':
-                                        $this->fromString .= $thisKOrgObject->getOrgunitJoin($this->joinSegments[$thisPath]['object']->table_name, $this->joinSegments[$thisPath]['object']->object_name, $this->joinSegments[$thisPath]['alias'], '1');
-                                        break;
-                                    case 'KAuthObjects':
-                                        $selectArray = array('where' => '', 'from' => '', 'select' => '');
-                                        if($GLOBALS['KAuthAccessController'])
-                                            $GLOBALS['KAuthAccessController']->addAuthAccessToListArray($selectArray, $this->joinSegments[$thisPath]['object'], $this->joinSegments[$thisPath]['alias'], true);
-                                        if (!empty($selectArray['where'])) {
-                                            if (empty($this->whereString)) {
-                                                $this->whereString = " " . $selectArray['where'] . " ";
-                                            } else {
-                                                $this->whereString .= " AND " . $selectArray['where'] . " ";
-                                            }
-                                        }
-                                        if (!empty($selectArray['join'])) {
-                                            $this->fromString .= ' ' . $selectArray['join'] . ' ';
-                                        }
-                                        break;
-                                    case 'SpiceACL':
-                                        $selectArray = array('where' => '', 'from' => '', 'select' => '');
-                                        if(method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray'))
-                                            $GLOBALS['ACLController']->addACLAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], $true);
-                                        if (!empty($selectArray['where'])) {
-                                            if (empty($this->whereString)) {
-                                                $this->whereString = " " . $selectArray['where'] . " ";
-                                            } else {
-                                                $this->whereString .= " AND " . $selectArray['where'] . " ";
-                                            }
-                                        }
-                                        if (!empty($selectArray['join'])) {
-                                            $this->fromString .= ' ' . $selectArray['join'] . ' ';
-                                        }
-                                        break;
-                                    case 'PRO':
-                                        $this->fromString .= ' ';
-                                        $this->joinSegments[$thisPath]['object']->add_team_security_where_clause($this->fromString, $this->joinSegments[$thisPath]['alias']);
-                                        break;
-                                    //2013-03-26 Bug#460 Typo changed
-                                    case 'SecurityGroups':
-                                        if ($this->joinSegments[$thisPath]['object']->bean_implements('ACL') && $GLOBALS['ACLController']->requireSecurityGroup($this->joinSegments[$thisPath]['object']->module_dir, 'list')) {
-                                            require_once('modules/SecurityGroups/SecurityGroup.php');
-                                            $securitygroup = new SecurityGroup();
-                                            global $current_user;
-                                            $owner_where = str_replace($this->joinSegments[$thisPath]['object']->table_name, $this->joinSegments[$thisPath]['alias'], $this->joinSegments[$thisPath]['object']->getOwnerWhere($current_user->id));
-                                            $group_where = $securitygroup->getGroupWhere($this->joinSegments[$thisPath]['alias'], $this->joinSegments[$thisPath]['object']->module_dir, $current_user->id);
-                                            if (!empty($owner_where)) {
-                                                if (empty($this->whereString)) {
-                                                    $this->whereString = " (" . $owner_where . " or " . $group_where . ") ";
-                                                } else {
-                                                    $this->whereString .= " AND (" . $owner_where . " or " . $group_where . ") ";
-                                                }
-                                            } else {
-                                                $this->whereString .= ' AND ' . $group_where;
-                                            }
-                                        }
-                                        break;
+                                $selectArray = array('where' => '', 'from' => '', 'select' => '');
+                                if(method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray'))
+                                    $GLOBALS['ACLController']->addACLAccessToListArray($selectArray, $this->joinSegments['root:' . $this->root_module]['object'], $this->joinSegments['root:' . $this->root_module]['alias'], $true);
+                                if (!empty($selectArray['where'])) {
+                                    if (empty($this->whereString)) {
+                                        $this->whereString = " " . $selectArray['where'] . " ";
+                                    } else {
+                                        $this->whereString .= " AND " . $selectArray['where'] . " ";
+                                    }
+                                }
+                                if (!empty($selectArray['join'])) {
+                                    $this->fromString .= ' ' . $selectArray['join'] . ' ';
                                 }
                             }
                         }
@@ -2545,9 +2436,6 @@ class KReportQuery
 
     function get_table_for_module($module)
     {
-        global $beanList, $beanFiles;
-        // require_once($beanFiles[$beanList[$module]]);
-        // $thisModule = new $beanList[$module];
         $thisModule = BeanFactory::getBean($module);
         return $thisModule->table_name;
     }

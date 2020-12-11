@@ -96,11 +96,6 @@ class AuthenticationController
             $type = 'SugarAuthenticate';
         }
 
-        if (!empty($_REQUEST['no_saml'])
-            && (is_subclass_of($type, 'SAMLAuthenticate') || 'SAMLAuthenticate' == $type)) {
-            $type = 'SugarAuthenticate';
-        }
-
         return new $type();
     }
 
@@ -153,10 +148,7 @@ class AuthenticationController
                 $_SESSION['login_error'] = translate('ERR_ACCESS_ONLY_FOR_ADMINS');
             }
 
-            //Ensure the user is authorized
-            checkAuthUserStatus();
-
-            loginLicense();
+//            loginLicense();
             if (!empty($GLOBALS['login_error'])) {
                 unset($_SESSION['authenticated_user_id']);
                 $GLOBALS['log']->fatal('FAILED LOGIN: potential hack attempt:' . $GLOBALS['login_error']);

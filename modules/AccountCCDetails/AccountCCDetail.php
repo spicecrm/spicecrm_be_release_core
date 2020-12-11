@@ -28,12 +28,7 @@
 ********************************************************************************/
 
 if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-/**
- * twentyreasons AccountCCDetails
- * @author Sebastian Franz (twentyreasons)
- */
-require_once('include/SugarObjects/templates/basic/Basic.php');
-require_once('include/utils.php');
+
 
 class AccountCCDetail extends SugarBean
 {

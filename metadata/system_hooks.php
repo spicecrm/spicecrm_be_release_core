@@ -122,7 +122,7 @@ $dictionary['syscustomhooks'] = array(
             'fields' => array('id')
         ),
         array(
-            'name' => 'idx_syshooks_module',
+            'name' => 'idx_syscustomhooks_module',
             'type' => 'index',
             'fields' => array('module')
         )

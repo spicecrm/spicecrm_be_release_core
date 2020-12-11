@@ -27,7 +27,9 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 
-class SystemTrashCan
+namespace SpiceCRM\includes\SysTrashCan;
+
+class SysTrashCan
 {
     static function addRecord($recordtype, $recodmodule, $recordid, $recordname = '', $linkname = '', $linkmodule = '', $linkid = '', $recorddata = '')
     {
@@ -76,7 +78,7 @@ class SystemTrashCan
                 // set as recovered
                 $db->query("UPDATE systrashcan SET recovered = '1' WHERE id='$id'");
 
-                $relRecords = SystemTrashCan::getRelated($record['transactionid'], $focus->id);
+                $relRecords = \SpiceCRM\includes\SysTrashCan\SysTrashCan::getRelated($record['transactionid'], $focus->id);
                 foreach($relRecords as $relRecord){
                     if($focus->{$relRecord['linkname']}) {
                         $focus->{$relRecord['linkname']}->add($relRecord['linkid']);

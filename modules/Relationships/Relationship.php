@@ -222,7 +222,7 @@ class Relationship extends SugarBean {
         sugar_file_put_contents_atomic(Relationship::cache_file_dir() . '/' . Relationship::cache_file_name_only(), $out);
 		
         require_once("data/Relationships/RelationshipFactory.php");
-        SugarRelationshipFactory::deleteCache();
+        SugarRelationshipFactory::rebuildCache();
 	}
 
 
@@ -247,11 +247,11 @@ class Relationship extends SugarBean {
 		global $beanList;
 		global $dictionary;
 
-		$temp_module = get_module_info($base_module);
+		$temp_module = BeanFactory::getBean($base_module);
 
 		$rel_attribute1_name = $temp_module->field_defs[strtolower($rel_module1_name)]['relationship'];
 		$rel_module1 = $this->get_other_module($rel_attribute1_name, $base_module, $temp_module->db);
-		$rel_module1_bean = get_module_info($rel_module1);
+		$rel_module1_bean = BeanFactory::getBean($rel_module1);
 
 		if($rel_module2_name!=""){
 			if($rel_module2_name == 'ProjectTask'){
@@ -259,7 +259,7 @@ class Relationship extends SugarBean {
 			}
 			$rel_attribute2_name = $rel_module1_bean->field_defs[strtolower($rel_module2_name)]['relationship'];
 			$rel_module2 = $this->get_other_module($rel_attribute2_name, $rel_module1_bean->module_dir, $rel_module1_bean->db);
-			$rel_module2_bean = get_module_info($rel_module2);
+			$rel_module2_bean = BeanFactory::getBean($rel_module2);
 			return $rel_module2_bean;
 
 		} else {

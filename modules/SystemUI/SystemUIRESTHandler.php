@@ -2,6 +2,9 @@
 
 namespace SpiceCRM\modules\SystemUI;
 
+use SpiceCRM\includes\ErrorHandlers\Exception;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+
 class SystemUIRESTHandler
 {
     var $db;
@@ -17,7 +20,7 @@ class SystemUIRESTHandler
         if (!$GLOBALS['current_user']->is_admin)
             // set for cors
             // header("Access-Control-Allow-Origin: *");
-            throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
     }
 
     /**
@@ -26,7 +29,7 @@ class SystemUIRESTHandler
     function getModuleRepository()
     {
         $retArray = array();
-        $modules = $this->db->query("SELECT * FROM sysuimodulerepository UNION SELECT * FROM sysuicustommodulerepository");
+        $modules = $this->db->query("SELECT * FROM sysuimodulerepository UNION ALL SELECT * FROM sysuicustommodulerepository");
         while ($module = $this->db->fetchByAssoc($modules)) {
             $retArray[$module['id']] = array(
                 'id' => $module['id'],
@@ -46,13 +49,13 @@ class SystemUIRESTHandler
     function getComponents()
     {
         $retArray = array();
-        $components = $this->db->query("SELECT * FROM sysuiobjectrepository UNION SELECT * FROM sysuicustomobjectrepository");
+        $components = $this->db->query("SELECT * FROM sysuiobjectrepository UNION ALL SELECT * FROM sysuicustomobjectrepository");
         while ($component = $this->db->fetchByAssoc($components)) {
             $retArray[$component['object']] = array(
                 'path' => $component['path'],
                 'component' => $component['component'],
                 'module' => $component['module'],
-                'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($component['componentconfig'])), true) ?: array()
+                'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"', '"'), html_entity_decode($component['componentconfig'])), true) ?: array()
             );
         }
 
@@ -346,9 +349,9 @@ class SystemUIRESTHandler
         $roleids = [];
         $retArray = array();
         if ($current_user->portal_only)
-            $sysuiroles = $this->db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.portaldefault = 1) roles order by name");
+            $sysuiroles = $this->db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.portaldefault = 1) roles order by name");
         else
-            $sysuiroles = $this->db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.systemdefault = 1) roles order by name");
+            $sysuiroles = $this->db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.systemdefault = 1) roles order by name");
         while ($sysuirole = $this->db->fetchByAssoc($sysuiroles)) {
             if (array_search($sysuirole['id'], $roleids) === false) {
                 $retArray[] = $sysuirole;
@@ -358,9 +361,9 @@ class SystemUIRESTHandler
 
         // same for custom
         if ($current_user->portal_only)
-            $sysuiroles = $this->db->query("select * from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.portaldefault = 1) roles order by name");
+            $sysuiroles = $this->db->query("select * from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.portaldefault = 1) roles order by name");
         else
-            $sysuiroles = $this->db->query("select * from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.systemdefault = 1) roles order by name");
+            $sysuiroles = $this->db->query("select * from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.systemdefault = 1) roles order by name");
         while ($sysuirole = $this->db->fetchByAssoc($sysuiroles)) {
             if (array_search($sysuirole['id'], $roleids) === false) {
                 $retArray[] = $sysuirole;
@@ -422,15 +425,20 @@ class SystemUIRESTHandler
                 $guid = create_guid();
                 $entry = $this->db->fetchByAssoc($this->db->query("SELECT * FROM sysuiuserroles WHERE sysuirole_id = '$sysuirole_id' AND user_id = '$user_id'"));
                 if (!$entry) {
-                    $this->db->query("INSERT INTO sysuiuserroles (id, user_id, sysuirole_id, defaultrole) VALUES ('$guid','$user_id', '$sysuirole_id', 0)");
-
+                    $insertData = [
+                        'id' => $guid,
+                        'user_id' => $user_id,
+                        'sysuirole_id' => $sysuirole_id,
+                        'defaultrole' => 0
+                    ];
+                    $this->db->insertQuery('sysuiuserroles', $insertData);
                     $retArray = array('status' => 'success', 'roleId' => $sysuirole_id);
                 } else
                     $retArray = array('status' => 'error', 'message' => 'Role already assigned.');
                 break;
             case 'default':
-                $this->db->query("UPDATE sysuiuserroles  SET defaultrole = 0 WHERE user_id = '$user_id'");
-                $this->db->query("UPDATE sysuiuserroles SET defaultrole = 1 WHERE user_id = '$user_id' AND sysuirole_id = '$sysuirole_id'");
+                $this->db->updateQuery('sysuiuserroles', ['user_id' => $user_id], ['defaultrole' => 0]);
+                $this->db->updateQuery('sysuiuserroles', ['user_id' => $user_id, 'sysuirole_id' => $sysuirole_id], ['defaultrole' => 1]);
                 $retArray = array('status' => 'success');
                 break;
         }
@@ -445,8 +453,8 @@ class SystemUIRESTHandler
         $entry = $this->db->fetchByAssoc($this->db->query("SELECT * FROM sysuiuserroles WHERE sysuirole_id = '$sysuirole_id' AND user_id = '$user_id'"));
         if (!$entry)
             return array('status' => 'error', 'message' => 'Role not found');
-
-        $this->db->query("DELETE FROM sysuiuserroles WHERE user_id = '$user_id' AND sysuirole_id = '$sysuirole_id'");
+        $delPks = ['user_id' => $user_id, 'sysuirole_id' => $sysuirole_id];
+        $this->db->deleteQuery('sysuiuserroles',  $delPks);
         return array('status' => 'success');
 
     }
@@ -462,9 +470,9 @@ class SystemUIRESTHandler
         $retArray = array();
         $modules = array();
         if ($current_user->portal_only)
-            $sysuiroles = $this->db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.portaldefault = 1) roles order by name");
+            $sysuiroles = $this->db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.portaldefault = 1) roles order by name");
         else
-            $sysuiroles = $this->db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.systemdefault = 1) roles order by name");
+            $sysuiroles = $this->db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.systemdefault = 1) roles order by name");
         while ($sysuirole = $this->db->fetchByAssoc($sysuiroles)) {
             if (isset($retArray[$sysuirole['id']])) continue;
             $sysuirolemodules = $this->db->query("SELECT * FROM sysuirolemodules WHERE sysuirole_id in ('*', '" . $sysuirole['id'] . "') ORDER BY sequence");
@@ -510,7 +518,8 @@ class SystemUIRESTHandler
                 'fromfield' => $sysuirule['fromfield'],
                 'tofield' => $sysuirule['tofield'],
                 'fixedvalue' => $sysuirule['fixedvalue'],
-                'calculatedvalue' => $sysuirule['calculatedvalue']
+                'calculatedvalue' => $sysuirule['calculatedvalue'],
+                'params' => $sysuirule['params']
             );
         }
 
@@ -520,7 +529,8 @@ class SystemUIRESTHandler
                 'fromfield' => $sysuirule['fromfield'],
                 'tofield' => $sysuirule['tofield'],
                 'fixedvalue' => $sysuirule['fixedvalue'],
-                'calculatedvalue' => $sysuirule['calculatedvalue']
+                'calculatedvalue' => $sysuirule['calculatedvalue'],
+                'params' => $sysuirule['params']
             );
         }
 
@@ -727,7 +737,7 @@ class SystemUIRESTHandler
 
         if( $failed ) {
             var_dump($error);
-            throw ( new \SpiceCRM\KREST\Exception($error))->setFatal(true);
+            throw ( new Exception($error))->setFatal(true);
         }
 
         return true;
@@ -740,7 +750,7 @@ class SystemUIRESTHandler
      */
     public function getAllModelValidations()
     {
-        $sql = "SELECT id, `module` 
+        $sql = "SELECT id, module 
                 FROM sysuimodelvalidations 
                 WHERE deleted = 0 AND active = 1
                 ORDER BY priority ASC";
@@ -975,21 +985,23 @@ class SystemUIRESTHandler
     public function setSelectTree($selecttree)
     {
         $this->checkAdmin();
-        $sql = "DELETE FROM sysselecttree_fields WHERE tree = '" . $selecttree[0][tree] . "'";
+        $table = 'sysselecttree_fields';
+        $sql = "DELETE FROM {$table} WHERE tree = '" . $selecttree[0][tree] . "'";
         $this->db->query($sql);
         $categories = $this->flattenOutSelectTree($selecttree);
         //var_dump($tree, $categories);
         # start rewriting by looping through the tree...
         foreach ($categories as $cat) {
-            $sql = "INSERT INTO sysselecttree_fields SET 
-                      id = '" . $cat['id'] . "',
-                      name = '" . $cat['name'] . "',
-                      keyname = '" . $cat['keyname'] . "',
-                      selectable = '" . $cat['selectable'] . "',
-                      favorite = '" . $cat['favorite'] . "',
-                      parent_id = '" . $cat['parent_id'] . "',
-                      tree = '" . $cat['tree'] . "'";
-            $this->db->query($sql);
+            $insertData = [
+                'id' => $cat['id'],
+                'name' => $cat['name'],
+                'keyname' => $cat['keyname'],
+                'selectable' => $cat['selectable'],
+                'favorite' => $cat['favorite'],
+                'parent_id' => $cat['parent_id'],
+                'tree' => $cat['tree']
+            ];
+            $this->db->insertQuery($table, $insertData);
         }
         return true;
     }
@@ -1018,10 +1030,11 @@ class SystemUIRESTHandler
     public function setTree($tree)
     {
         $this->checkAdmin();
-        $sql = "INSERT INTO sysselecttree_tree SET 
-                  id = '" . $tree['id'] . "',
-                  name = '" . $tree['name'] . "'";
-        $this->db->query($sql);
+        $insertData = [
+            'id' => $tree['id'],
+            'name' => $tree['name'] ,
+        ];
+        $this->db->insertQuery('sysselecttree_tree', $insertData);
         return true;
     }
 
@@ -1085,7 +1098,15 @@ class SystemUIRESTHandler
     {
         global $current_user;
         $newGuid = create_guid();
-        $this->db->query("INSERT INTO sysmodulelists (id, created_by_id, module, name, global) values('$newGuid', '$current_user->id', '$module', '$list', " . ($global ? 1 : 0) . ")");
+        $insertData = [
+            'id' => $newGuid,
+            'created_by_id' => $current_user->id,
+            'module' => $module,
+            'name' => $list,
+            'global' => ($global ? 1 : 0)
+
+        ];
+        $this->db->insertQuery('sysmodulelists', $insertData);
         return array(
             'id' => $newGuid,
             'module' => $module,
@@ -1119,11 +1140,11 @@ class SystemUIRESTHandler
         // admin only
         if ($current_user->is_admin) {
             // load all groups sorted
-            $groups = $db->query("SELECT * FROM (SELECT id, name, label, sequence FROM sysuiadmingroups UNION SELECT id, name, label, sequence FROM sysuicustomadmingroups) us ORDER by sequence");
+            $groups = $db->query("SELECT * FROM (SELECT id, name, label, sequence FROM sysuiadmingroups UNION ALL SELECT id, name, label, sequence FROM sysuicustomadmingroups) us ORDER by sequence");
             while ($group = $db->fetchByAssoc($groups)) {
                 // get the components for the group
                 $groupComponents = [];
-                $groupComponentsObjects = $db->query("SELECT * FROM (SELECT id, adminaction, sequence, component, componentconfig, admin_label, icon FROM sysuiadmincomponents WHERE admingroup='{$group['name']}' UNION SELECT id, adminaction, sequence, component, componentconfig, admin_label, icon FROM sysuicustomadmincomponents  WHERE admingroup='{$group['name']}') gc ORDER BY sequence");
+                $groupComponentsObjects = $db->query("SELECT * FROM (SELECT id, adminaction, sequence, component, componentconfig, admin_label, icon FROM sysuiadmincomponents WHERE admingroup='{$group['name']}' UNION ALL SELECT id, adminaction, sequence, component, componentconfig, admin_label, icon FROM sysuicustomadmincomponents  WHERE admingroup='{$group['name']}') gc ORDER BY sequence");
                 while ($groupComponent = $db->fetchByAssoc($groupComponentsObjects)) {
                     // ugly but effective
                     // ToDo: find a nice way to handle that
@@ -1145,13 +1166,27 @@ class SystemUIRESTHandler
         global $current_user, $db;
 
         $modules = [];
+        $modulestmp = []; // CR1000442
 
         if ($current_user->is_admin) {
-            $sysmodules = $db->query("SELECT * FROM sysmodules  UNION SELECT * FROM syscustommodules");
+            $sysmodules = $db->query("SELECT * FROM sysmodules");
             while ($sysmodule = $db->fetchByAssoc($sysmodules)) {
-                $modules[] = $sysmodule;
+                // CR1000442 enable custom data to override a core module definition
+                // $modules[] = $sysmodule;
+                $modulestmp[$sysmodule['module']] = $sysmodule;
+            }
+            $sysmodules = $db->query("SELECT * FROM syscustommodules");
+            while ($sysmodule = $db->fetchByAssoc($sysmodules)) {
+                // CR1000442 enable custom data to override a core module definition
+                // $modules[] = $sysmodule;
+                $modulestmp[$sysmodule['module']] = $sysmodule;
             }
         };
+
+        // CR1000442 make $modulestmp to numeric array
+        foreach($modulestmp as $module => $moduledata){
+            $modules[] = $moduledata;
+        }
 
         usort($modules, function ($a, $b) {
             return strcasecmp($a['module'], $b['module']);
@@ -1160,13 +1195,13 @@ class SystemUIRESTHandler
         return $modules;
     }
 
-    public function createDefaultConf()
-    {
-        require_once 'modules/SystemUI/SpiceUILoader.php';
-        $spiceuiconf = new SpiceUILoader();
-        $spiceuiconf->loadDefaultConf();
-        return true;
-    }
+//    public function createDefaultConf()
+//    {
+//        require_once 'modules/SystemUI/SpiceUILoader.php';
+//        $spiceuiconf = new SpiceUILoader();
+//        $spiceuiconf->loadDefaultConf();
+//        return true;
+//    }
 
     public function getHtmlStyling()
     {

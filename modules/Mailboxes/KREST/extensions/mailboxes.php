@@ -1,8 +1,10 @@
 <?php
 use SpiceCRM\modules\Mailboxes\KREST\controllers\MailboxesController;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 $controller = new MailboxesController();
-$KRESTManager->registerExtension('mailboxes', '1.0');
+$RESTManager->registerExtension('mailboxes', '1.0');
 
-$app->get('/modules/Mailboxes/{id}/fetchemails', [new MailboxesController(), 'fetchEmails']);
-$app->get('/modules/Mailboxes/dashlet', [new MailboxesController(), 'getMailboxesForDashlet']);
-$app->get('/modules/Mailboxes/dashlet/{type}', [new MailboxesController(), 'getMailboxesForDashlet']);
+$RESTManager->app->get('/modules/Mailboxes/{id}/fetchemails', [new MailboxesController(), 'fetchEmails']);
+$RESTManager->app->get('/modules/Mailboxes/dashlet', [new MailboxesController(), 'getMailboxesForDashlet']);
+$RESTManager->app->get('/modules/Mailboxes/dashlet/{type}', [new MailboxesController(), 'getMailboxesForDashlet']);

@@ -1,9 +1,12 @@
 <?php
+use SpiceCRM\includes\ErrorHandlers\Exception;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$app->group('/dashboards', function () use ($app) {
+$RESTManager->app->group('/dashboards', function () {
 
-    $app->group('/dashlets', function () use ($app) {
-        $app->get('', function ($req, $res, $args) use ($app) {
+    $this->group('/dashlets', function () {
+        $this->get('', function ($req, $res, $args) {
             global $db;
             $dashBoardDashlets = array();
             $dashlets = "SELECT 'global' As `type`, dlts.* FROM sysuidashboarddashlets dlts UNION ";
@@ -13,7 +16,7 @@ $app->group('/dashboards', function () use ($app) {
                 $dashBoardDashlets[] = $dashBoardDashlet;
             return $res->withJson($dashBoardDashlets);
         });
-        $app->post('/{id}', function ($req, $res, $args) use ($app) {
+        $this->post('/{id}', function ($req, $res, $args) {
             global $db;
             $columns = [];
             $values = [];
@@ -31,7 +34,7 @@ $app->group('/dashboards', function () use ($app) {
             $isAdded = $db->query("REPLACE INTO $table ($columns) VALUES ($values)");
             return $res->withJson($isAdded);
         });
-        $app->delete('/{id}', function ($req, $res, $args) use ($app) {
+        $this->delete('/{id}', function ($req, $res, $args) {
             global $db;
             $id = $db->quote($args['id']);
             $isDeleted = $db->query("DELETE FROM sysuidashboarddashlets WHERE id = '$id'");
@@ -40,7 +43,7 @@ $app->group('/dashboards', function () use ($app) {
         });
     });
 
-    $app->get('', function ($req, $res, $args) use ($app) {
+    $this->get('', function ($req, $res, $args) {
         global $db;
         $dashBoards = array();
         $dashBoardsObj = $db->query("SELECT * FROM dashboards");
@@ -48,13 +51,13 @@ $app->group('/dashboards', function () use ($app) {
             $dashBoards[] = $dashBoard;
         return $res->withJson($dashBoards);
     });
-    $app->get('/{id}', function($req, $res, $args) use ($app) {
+    $this->get('/{id}', function($req, $res, $args) {
         global $db;
         $dashBoardBean = BeanFactory::getBean('Dashboards', $args['id']);
         $dashBoardBean = $dashBoardBean->retrieve($args['id']);
         return $res->withJson($dashBoardBean->components);
     });
-    $app->post('/{id}', function($req, $res, $args) use ($app) {
+    $this->post('/{id}', function($req, $res, $args) {
         global $db;
         $postbodyitems = $body = $req->getParsedBody();
         //$postParams = $_GET;
@@ -71,7 +74,7 @@ $app->group('/dashboards', function () use ($app) {
             $sql .= "', '" . $db->quote(json_encode($postbodyitem['componentconfig']));
             $sql .= "', '" . $db->quote(json_encode($postbodyitem['position']));
             $sql .= "', '" . $postbodyitem['dashlet_id'] . "')";
-            if( !$db->query($sql) ) throw ( new \SpiceCRM\KREST\Exception( $db->last_error ))->setFatal(true);
+            if( !$db->query($sql) ) throw ( new Exception( $db->last_error ))->setFatal(true);
         }
         return $res->withJson(array('status' => $status));
     });

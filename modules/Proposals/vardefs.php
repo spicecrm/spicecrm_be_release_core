@@ -30,11 +30,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 $dictionary['Proposal'] = array(
     'table' => 'proposals',
-    'comment' => 'Competitor Assessments Module',
-    'audited' =>  false,
-    'duplicate_merge' =>  false,
-    'unified_search' =>  false,
-
+    'comment' => 'Proposals Module',
     'fields' => array(
         'name' => array(
             'name' => 'name',
@@ -71,7 +67,6 @@ $dictionary['Proposal'] = array(
             'type' => 'id',
             'group' => 'currency_id',
             'vname' => 'LBL_CURRENCY',
-            'function' => array('name' => 'getCurrencyDropDown', 'returns' => 'html'),
             'reportable' => false,
             'comment' => 'Currency used for display purposes'
         ),
@@ -103,30 +98,30 @@ $dictionary['Proposal'] = array(
             'studio' => 'false',
             'duplicate_merge' => 'disabled',
         ),
-        'account_id' => array(
-            'name' => 'account_id',
-            'vname' => 'LBL_ACCOUNT_ID',
+        'parent_id' => array(
+            'name' => 'parent_id',
+            'vname' => 'LBL_PARENT_ID',
             'type' => 'id',
-            'reportable' => false,
-            'massupdate' => false,
-            'duplicate_merge' => 'disabled',
+            'group' => 'parent_fields'
         ),
-        'account_name' => array(
-            'name' => 'account_name',
-            'rname' => 'name',
-            'id_name' => 'account_id',
-            'vname' => 'LBL_ACCOUNT',
-            'join_name' => 'accounts',
-            'type' => 'relate',
-            'link' => 'accounts',
-            'table' => 'accounts',
-            'isnull' => 'true',
-            'module' => 'Accounts',
+        'parent_type' => array(
+            'name' => 'parent_type',
+            'vname' => 'LBL_PARENT_TYPE',
+            'type' => 'parent_type',
             'dbType' => 'varchar',
-            'len' => '255',
+            'group' => 'parent_fields',
+            'options' => 'parent_type_display',
+        ),
+        'parent_name' => array(
+            'name' => 'parent_name',
+            'vname' => 'LBL_RELATED_TO',
+            'parent_type' => 'record_type_display',
+            'type_name' => 'parent_type',
+            'id_name' => 'parent_id',
+            'type' => 'parent',
+            'group' => 'parent_fields',
             'source' => 'non-db',
-            'unified_search' => true,
-            'massupdate' => false,
+            'options' => 'parent_type_display',
         ),
         'accounts' => array(
             'name' => 'accounts',
@@ -332,9 +327,9 @@ $dictionary['Proposal'] = array(
     ),
     'indices' => array(
         array(
-            'name' => 'idx_acc',
+            'name' => 'idx_pac',
             'type' => 'index',
-            'fields' => array('account_id'),
+            'fields' => array('parent_id'),
         ),
         array(
             'name' => 'idx_opp',
@@ -342,9 +337,9 @@ $dictionary['Proposal'] = array(
             'fields' => array('opportunity_id'),
         ),
         array(
-            'name' => 'idx_accoppdel',
+            'name' => 'idx_paoppdel',
             'type' => 'index',
-            'fields' => array('account_id', 'opportunity_id', 'deleted'),
+            'fields' => array('parent_id', 'opportunity_id', 'deleted'),
         ),
         array(
             'name' => 'idx_stadel',
@@ -359,8 +354,10 @@ $dictionary['Proposal'] = array(
             'lhs_key' => 'id',
             'rhs_module' => 'Proposals',
             'rhs_table' => 'proposals',
-            'rhs_key' => 'account_id',
+            'rhs_key' => 'parent_id',
             'relationship_type' => 'one-to-many',
+            'relationship_role_column' => 'parent_type',
+            'relationship_role_column_value' => 'Accounts'
         ),
         'opportunities_proposals_rel' => array(
             'lhs_module' => 'Opportunities',
@@ -383,7 +380,4 @@ $dictionary['Proposal'] = array(
     )
 );
 
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('Proposals', 'Proposal', array('default', 'assignable', 'team_security'));
-else
-    VardefManager::createVardef('Proposals', 'Proposal', array('default', 'assignable'));
+VardefManager::createVardef('Proposals', 'Proposal', array('default', 'assignable'));

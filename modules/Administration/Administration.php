@@ -43,7 +43,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * Contributor(s): ______________________________________..
  ********************************************************************************/
 require_once('data/SugarBean.php');
-require_once('include/OutboundEmail/OutboundEmail.php');
+// require_once('include/OutboundEmail/OutboundEmail.php');
 
 class Administration extends SugarBean {
     var $settings;
@@ -64,13 +64,13 @@ class Administration extends SugarBean {
         'sugarpdf',
 
     );
-    var $disable_custom_fields = true;
     var $checkbox_fields = Array("notify_send_by_default", "mail_smtpauth_req", "notify_on", 'portal_on', 'skypeout_on', 'system_mailmerge_on', 'proxy_auth', 'proxy_on', 'system_ldap_enabled','captcha_on');
 
     function __construct() {
         parent::__construct();
 
-        $this->setupCustomFields('Administration');
+// CR1000452
+//        $this->setupCustomFields('Administration');
     }
 
     function retrieveSettings($category = FALSE, $clean=false) {
@@ -111,13 +111,13 @@ class Administration extends SugarBean {
         $this->settings[$category] = true;
 
         // outbound email settings
-        $oe = new OutboundEmail();
-        $oe->getSystemMailerSettings();
-
-        foreach($oe->field_defs as $def) {
-            if (strpos($def, "mail_") !== false)
-                $this->settings[$def] = $oe->$def;
-        }
+//        $oe = new OutboundEmail();
+//        $oe->getSystemMailerSettings();
+//
+//        foreach($oe->field_defs as $def) {
+//            if (strpos($def, "mail_") !== false)
+//                $this->settings[$def] = $oe->$def;
+//        }
 
         /*$outboundEmailSettings = \Mailbox::getSystemMailerSettings();
 
@@ -134,28 +134,28 @@ class Administration extends SugarBean {
 
 
         // outbound email settings
-        $oe = new OutboundEmail();
+//        $oe = new OutboundEmail();
 
-        foreach($_POST as $key => $val) {
-            $prefix = $this->get_config_prefix($key);
-            if(in_array($prefix[0], $this->config_categories)) {
-                if(is_array($val)){
-                    $val=implode(",",$val);
-                }
-                $this->saveSetting($prefix[0], $prefix[1], $val);
-            }
-            if(strpos($key, "mail_") !== false) {
-                if(in_array($key, $oe->field_defs)) {
-                    $oe->$key = $val;
-                }
-            }
-        }
+//        foreach($_POST as $key => $val) {
+//            $prefix = $this->get_config_prefix($key);
+//            if(in_array($prefix[0], $this->config_categories)) {
+//                if(is_array($val)){
+//                    $val=implode(",",$val);
+//                }
+//                $this->saveSetting($prefix[0], $prefix[1], $val);
+//            }
+//            if(strpos($key, "mail_") !== false) {
+//                if(in_array($key, $oe->field_defs)) {
+//                    $oe->$key = $val;
+//                }
+//            }
+//        }
 
         //saving outbound email from here is probably redundant, adding a check to make sure
         //smtpserver name is set.
-        if (!empty($oe->mail_smtpserver)) {
-            $oe->saveSystem();
-        }
+//        if (!empty($oe->mail_smtpserver)) {
+//            $oe->saveSystem();
+//        }
 
         $this->retrieveSettings(false, true);
     }

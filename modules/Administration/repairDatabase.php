@@ -37,7 +37,7 @@ if (!defined('sugarEntry') || !sugarEntry)
 ********************************************************************************/
 
 
-global $current_user, $beanFiles;
+global $current_user, $moduleList;
 set_time_limit(3600);
 
 
@@ -106,44 +106,42 @@ if (is_admin($current_user) || isset ($from_sync_client) || is_admin_for_any_mod
 		VardefManager::clearVardef();
 		$repairedTables = array();
 
-		foreach ($beanFiles as $bean => $file) {
-			if(file_exists($file)){
-				require_once ($file);
-				unset($GLOBALS['dictionary'][$bean]);
-				$focus = new $bean ();
-				if (($focus instanceOf SugarBean) && !isset($repairedTables[$focus->table_name])) {
-				    $sql .= $db->repairTable($focus, $execute);
-				    $repairedTables[$focus->table_name] = true;
-				}
-                // BEGIN CR1000085 Repair Audit Fields.Introduced in SpiceCRM 2018.11.001
-                if (($focus instanceOf SugarBean) && $db->tableExists($focus->get_audit_table_name()) && !isset($repairedTables[$focus->get_audit_table_name()])) {
+		foreach ($moduleList as $module) {
 
-                    $df = new DynamicField($focus->module_dir);
-                    //Need to check if the method exists as during upgrade an old version of Dynamic Fields may be loaded.
-                    if (method_exists($df, "repairAuditFields"))
-                    {
-                        $df->bean = $focus;
-                        $sql .= $df->repairAuditFields($execute);
-                        $repairedTables[$focus->get_audit_table_name()] = true;
-                    }
-                }
+            $focus = BeanFactory::getBean($module);
+            if (($focus instanceof SugarBean) && !isset($repairedTables[$focus->table_name])) {
+                $sql .= $db->repairTable($focus, $execute);
+                $repairedTables[$focus->table_name] = true;
+            }
+            // BEGIN CR1000085 Repair Audit Fields.Introduced in SpiceCRM 2018.11.001
+//                if (($focus instanceOf SugarBean) && $db->tableExists($focus->get_audit_table_name()) && !isset($repairedTables[$focus->get_audit_table_name()])) {
+//
+//                    $df = new DynamicField($focus->module_dir);
+//                    //Need to check if the method exists as during upgrade an old version of Dynamic Fields may be loaded.
+//                    if (method_exists($df, "repairAuditFields"))
+//                    {
+//                        $df->bean = $focus;
+//                        $sql .= $df->repairAuditFields($execute);
+//                        $repairedTables[$focus->get_audit_table_name()] = true;
+//                    }
+        }
                 // END
 
                 //Repair Custom Fields
-                if (($focus instanceOf SugarBean) && $focus->hasCustomFields() && !isset($repairedTables[$focus->table_name . '_cstm'])) {
-				    $df = new DynamicField($focus->module_dir);
-                    //Need to check if the method exists as during upgrade an old version of Dynamic Fields may be loaded.
-                    if (method_exists($df, "repairCustomFields"))
-                    {
-                        $df->bean = $focus;
-                        $sql .= $df->repairCustomFields($execute);
-                        $repairedTables[$focus->table_name . '_cstm'] = true;
-                    }
-				}
-			}
-		}
+// CR1000452
+//                if (($focus instanceOf SugarBean) && $focus->hasCustomFields() && !isset($repairedTables[$focus->table_name . '_cstm'])) {
+//				    $df = new DynamicField($focus->module_dir);
+//                    //Need to check if the method exists as during upgrade an old version of Dynamic Fields may be loaded.
+//                    if (method_exists($df, "repairCustomFields"))
+//                    {
+//                        $df->bean = $focus;
+//                        $sql .= $df->repairCustomFields($execute);
+//                        $repairedTables[$focus->table_name . '_cstm'] = true;
+//                    }
+//				}
 
-		$olddictionary = $dictionary;
+
+        $olddictionary = $dictionary;
 
 		unset ($dictionary);
 		include ('modules/TableDictionary.php');

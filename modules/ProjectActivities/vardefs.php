@@ -5,31 +5,17 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 $dictionary['ProjectActivity'] = array(
     'table' => 'projectactivities',
     'comment' => 'ProjectActivities Module',
-    'audited' => false,
-    'duplicate_merge' => false,
-    'unified_search' => false,
-
+    'audited' => true,
     'fields' => array(
         'date_start' => array(
             'name' => 'date_start',
             'vname' => 'LBL_DATE_START',
-            'type' => 'datetimecombo',
-            'dbType' => 'datetime',
-            'group' => 'date_start',
-            'validation' => array('type' => 'isbefore', 'compareto' => 'date_end', 'blank' => false),
-            'studio' => array('required' => true, 'no_duplicate' => true),
-            'enable_range_search' => true,
-            'options' => 'date_range_search_dom',
+            'type' => 'datetime'
         ),
         'date_end' => array(
             'name' => 'date_end',
             'vname' => 'LBL_DATE_END',
-            'type' => 'datetimecombo',
-            'dbType' => 'datetime',
-            'group' => 'date_end',
-            'studio' => array('required' => true, 'no_duplicate' => true),
-            'enable_range_search' => true,
-            'options' => 'date_range_search_dom',
+            'type' => 'datetime'
         ),
         'duration_hours' => array(
             'name' => 'duration_hours',
@@ -102,17 +88,24 @@ $dictionary['ProjectActivity'] = array(
             'options' => 'projects_activity_levels_dom',
             'len' => 32
         ),
+        'activity_status' => array(
+            'name' => 'activity_status',
+            'vname' => 'LBL_STATUS',
+            'type' => 'enum',
+            'required' => true,
+            'options' => 'projects_activity_status_dom',
+            'default' => 'created',
+            'len' => 10
+        ),
         'activity_start' => array(
             'name' => 'activity_start',
             'vname' => 'LBL_START',
             'type' => 'datetime',
-
         ),
         'activity_end' => array(
             'name' => 'activity_end',
             'vname' => 'LBL_END',
             'type' => 'datetime',
-
         )
     ),
     'relationships' => array(
@@ -129,10 +122,7 @@ $dictionary['ProjectActivity'] = array(
     'indices' => array(
         array('name' => 'idx_pwbsid', 'type' => 'index', 'fields' => array('projectwbs_id')),
         array('name' => 'idx_pwbsdel', 'type' => 'index', 'fields' => array('projectwbs_id', 'deleted'))
-
     )
 );
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('ProjectActivities', 'ProjectActivity', array('default', 'assignable', 'team_security'));
-else
-    VardefManager::createVardef('ProjectActivities', 'ProjectActivity', array('default', 'assignable'));
+
+VardefManager::createVardef('ProjectActivities', 'ProjectActivity', array('default', 'assignable'));

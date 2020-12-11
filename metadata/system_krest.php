@@ -75,7 +75,7 @@ $dictionary['syskrestlog'] = array(
         'url' => array(
             'name' => 'url',
             'type' => 'varchar',
-            'len' => 255,
+            'len' => 3072,
         ),
         'requested_at' => array(
             'name' => 'requested_at',

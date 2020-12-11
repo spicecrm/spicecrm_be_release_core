@@ -2,14 +2,14 @@
 
 namespace SpiceCRM\modules\SystemUI\KREST\controllers;
 
-use SpiceCRM\KREST\Exception;
+use SpiceCRM\includes\ErrorHandlers\Exception;
 
 class SystemUIModelValidationsController
 {
     static function getAllModelValidations()
     {
         global $db;
-        $sql = "SELECT id, `module` 
+        $sql = "SELECT id, module
                 FROM sysuimodelvalidations 
                 WHERE deleted = 0 AND active = 1
                 ORDER BY priority ASC";

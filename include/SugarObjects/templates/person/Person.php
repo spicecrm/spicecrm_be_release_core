@@ -188,8 +188,7 @@ class Person extends Basic
             parent::save($check_notify, $fts_index_bean);
             return $this->id;
         }
-        $this->add_address_streets('primary_address_street');
-        $this->add_address_streets('alt_address_street');
+
         $ori_in_workflow = empty($this->in_workflow) ? false : true;
         $this->emailAddress->handleLegacySave($this, $this->module_dir);
         // bug #39188 - store emails state before workflow make any changes
@@ -222,112 +221,6 @@ class Person extends Basic
         return $this->name;
     }
 
-    /**
-     * @see parent::get_list_view_data()
-     */
-    public function get_list_view_data()
-    {
-        global $system_config;
-        global $current_user;
-
-        $this->_create_proper_name_field();
-        $temp_array = $this->get_list_view_array();
-
-        $temp_array['NAME'] = $this->name;
-        $temp_array["ENCODED_NAME"] = $this->full_name;
-        $temp_array["FULL_NAME"] = $this->full_name;
-
-        $temp_array['EMAIL1'] = $this->emailAddress->getPrimaryAddress($this);
-
-        $this->email1 = $temp_array['EMAIL1'];
-        $temp_array['EMAIL1_LINK'] = $current_user->getEmailLink('email1', $this, '', '', 'ListView');
-
-        return $temp_array;
-    }
-
-    /**
-     * @see SugarBean::populateRelatedBean()
-     */
-    public function populateRelatedBean(
-        SugarBean $newbean
-    )
-    {
-        parent::populateRelatedBean($newbean);
-
-        if ($newbean instanceOf Company) {
-            $newbean->phone_fax = $this->phone_fax;
-            $newbean->phone_office = $this->phone_work;
-            $newbean->phone_alternate = $this->phone_other;
-            $newbean->email1 = $this->email1;
-            $this->add_address_streets('primary_address_street');
-            $newbean->billing_address_street = $this->primary_address_street;
-            $newbean->billing_address_city = $this->primary_address_city;
-            $newbean->billing_address_state = $this->primary_address_state;
-            $newbean->billing_address_postalcode = $this->primary_address_postalcode;
-            $newbean->billing_address_country = $this->primary_address_country;
-            $this->add_address_streets('alt_address_street');
-            $newbean->shipping_address_street = $this->alt_address_street;
-            $newbean->shipping_address_city = $this->alt_address_city;
-            $newbean->shipping_address_state = $this->alt_address_state;
-            $newbean->shipping_address_postalcode = $this->alt_address_postalcode;
-            $newbean->shipping_address_country = $this->alt_address_country;
-        }
-    }
-
-    /**
-     * Default export query for Person based modules
-     * used to pick all mails (primary and non-primary)
-     *
-     * @see SugarBean::create_export_query()
-     */
-    // function create_export_query(&$order_by, &$where, $relate_link_join = '')
-    function create_export_query($order_by, $where)
-    {
-        $custom_join = $this->custom_fields->getJOIN(true, true, $where);
-
-        // For easier code reading, reused plenty of time
-        $table = $this->table_name;
-
-
-        $query = "SELECT
-					$table.*,
-					email_addresses.email_address email_address,
-					'' email_addresses_non_primary, " . // email_addresses_non_primary needed for get_field_order_mapping()
-            "users.user_name as assigned_user_name ";
-        if ($custom_join) {
-            $query .= $custom_join['select'];
-        }
-
-        $query .= " FROM $table ";
-
-
-        $query .= "LEFT JOIN users
-					ON $table.assigned_user_id=users.id ";
-
-
-        //Join email address table too.
-        $query .= " LEFT JOIN email_addr_bean_rel on $table.id = email_addr_bean_rel.bean_id and email_addr_bean_rel.bean_module = '" . $this->module_dir . "' and email_addr_bean_rel.deleted = 0 and email_addr_bean_rel.primary_address = 1";
-        $query .= " LEFT JOIN email_addresses on email_addresses.id = email_addr_bean_rel.email_address_id ";
-
-        if ($custom_join) {
-            $query .= $custom_join['join'];
-        }
-
-        $where_auto = " $table.deleted=0 ";
-
-        if ($where != "") {
-            $query .= "WHERE ($where) AND " . $where_auto;
-        } else {
-            $query .= "WHERE " . $where_auto;
-        }
-
-        $order_by = $this->process_order_by($order_by);
-        if (!empty($order_by)) {
-            $query .= ' ORDER BY ' . $order_by;
-        }
-
-        return $query;
-    }
 
     /**
      * exports a structure for the GDPR Releases

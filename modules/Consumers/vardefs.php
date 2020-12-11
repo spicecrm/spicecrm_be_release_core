@@ -253,6 +253,20 @@ $dictionary['Consumer'] = array(
             'vname' => 'LBL_LEADS',
             'module' => 'Leads'
         ),
+        'catalogorders' => [
+            'name' => 'catalogorders',
+            'type' => 'link',
+            'module' => 'CatalogOrders',
+            'relationship' => 'consumers_catalogorders',
+            'source' => 'non-db'
+        ],
+        'inquiries' => [
+            'name' => 'inquiries',
+            'type' => 'link',
+            'module' => 'Inquiries',
+            'relationship' => 'consumer_inquiries',
+            'source' => 'non-db'
+        ]
     ),
     'relationships' => array(
         'consumers_email_addresses' => array(
@@ -320,5 +334,28 @@ $dictionary['Consumer'] = array(
         )
     )
 );
+//avoid PHP Fatal error:  Uncaught Error: Cannot use string offset as an array
+global $dictionary;
+if (is_file('modules/SalesVouchers/SalesVoucher.php')){
+    $dictionary['Consumer']['fields']['salesvouchers'] = [
+        'name'         => 'salesvouchers',
+        'type'         => 'link',
+        'relationship' => 'consumer_salesvouchers',
+        'module'       => 'SalesVouchers',
+        'source'       => 'non-db',
+        'vname'        => 'LBL_SALESVOUCHERS',
+    ];
+}
+if (is_file("modules/ServiceTickets/ServiceTicket.php")) {
+    $dictionary['Consumer']['fields']['servicetickets'] = [
+        'name' => 'servicetickets',
+        'type' => 'link',
+        'relationship' => 'servicetickets_consumers',
+        'source' => 'non-db',
+        'vname' => 'LBL_SERVICETICKETS',
+        'module' => 'ServiceTickets',
+        'default' => false
+    ];
+}
 
 VardefManager::createVardef('Consumers', 'Consumer', array('default', 'assignable', 'activities', 'person'));

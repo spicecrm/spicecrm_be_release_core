@@ -1,6 +1,7 @@
 <?php
 namespace SpiceCRM\KREST\controllers;
 
+use SpiceCRM\includes\RESTManager;
 use function Composer\Autoload\includeFile;
 
 class coreController{
@@ -49,11 +50,10 @@ class coreController{
      * @return mixed
      */
     function getExtensions($req, $res, $args){
-        require_once('KREST/KRESTManager.php');
-        $KRESTManager = new \KRESTManager();
+        $RESTManager = RESTManager::getInstance();
         return $res->withJson([
             'version' => '2.0',
-            'extensions' => $KRESTManager->extensions
+            'extensions' => $RESTManager->extensions
         ]);
     }
 
@@ -65,8 +65,8 @@ class coreController{
      * @param $args
      * @return mixed
      */
-    function getSysinfo($req, $res, $args){
-        global $sugar_config, $KRESTManager;
+    function getSysinfo($req, $res, $args) {
+        global $sugar_config;
 
         if (isset($GLOBALS['sugar_config']['syslanguages']['spiceuisource']) && $GLOBALS['sugar_config']['syslanguages']['spiceuisource'] == 'db') {
             if (!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
@@ -84,13 +84,20 @@ class coreController{
             $languages['default'] = $GLOBALS['sugar_config']['default_language'];
         }
 
+        // CR1000463 User Manager cleanup.. we need to know in frontend if spiceacl is running
+        $aclcontroller = 'spiceacl';
+        if($GLOBALS['sugar_config']['acl']['controller'] && !preg_match('/SpiceACL/', $GLOBALS['sugar_config']['acl']['controller'])){
+            $aclcontroller = 'bwcacl';
+        }
+
         return $res->withJson(array(
             'version' => '2.0',
             'systemsettings' => [
                 'upload_maxsize' => $sugar_config['upload_maxsize'],
-                'enableSettingUserPrefsByAdmin' => isset( $sugar_config['enableSettingUserPrefsByAdmin'] ) ? (boolean)@$sugar_config['enableSettingUserPrefsByAdmin'] : false
+                'enableSettingUserPrefsByAdmin' => isset( $sugar_config['enableSettingUserPrefsByAdmin'] ) ? (boolean)@$sugar_config['enableSettingUserPrefsByAdmin'] : false,
+                'aclcontroller' => $aclcontroller //CR1000463
             ],
-            'extensions' => $KRESTManager->extensions,
+            'extensions' => RESTManager::getInstance()->extensions,
             'languages' => $languages,
             'elastic' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::checkElastic(),
             'socket_frontend' => $sugar_config['core']['socket_frontend'],
@@ -152,9 +159,15 @@ class coreController{
 
 
     function getLanguage($req, $res, $args){
-
         // get the requested language
         $language = $args['language'];
+        $params = $req->getParams();
+
+        // set the selected language to the preferences
+        if (isset($params['setPreferences']) && $params['setPreferences'] == '1') {
+            global $current_user;
+            $current_user->setPreference('language', $language);
+        }
 
         // see if we have a language passed in .. if not use the default
         if (empty($language)) $language = $GLOBALS['sugar_config']['default_language'];
@@ -183,16 +196,19 @@ class coreController{
 
         $responseArray['md5'] = md5(json_encode($responseArray));
 
-        // if an md5 was sent in and matches the current one .. no change .. do not send the language to save bandwidth
-        if ($_REQUEST['md5'] === $responseArray['md5']) {
-            $responseArray = array('md5' => $_REQUEST['md5']);
-        }
-
         return $res->withJson($responseArray);
     }
 
     function getPortalGDPRagreementText() {
         1;
+    }
+
+    /**
+     * get redirection data for a short url
+     */
+    function getRedirection( $req, $res, $args ) {
+        $redirectTo = $GLOBALS['db']->getOne( sprintf('SELECT route FROM sysshorturls WHERE urlkey = "%s" AND active = 1 AND deleted = 0', $args['key'] ));
+        return $res->withJson([ 'redirection' => $redirectTo ]);
     }
 
 }

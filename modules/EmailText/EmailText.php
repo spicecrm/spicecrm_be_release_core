@@ -45,5 +45,4 @@ class EmailText extends SugarBean
     var $module_name = "EmailText";
     var $module_dir = 'EmailText';
     var $object_name = 'EmailText';
-    var $disable_custom_fields = true;
 }

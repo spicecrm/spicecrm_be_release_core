@@ -421,7 +421,7 @@ class SugarWebServiceImplv4 extends SugarWebServiceImplv3_1 {
             $sugar_config['list_max_entries_per_page'] = $max_results;
         }
 
-        require_once('modules/Home/UnifiedSearchAdvanced.php');
+        require_once('include/utils/UnifiedSearchAdvanced.php');
         require_once 'include/utils.php';
         $usa = new UnifiedSearchAdvanced();
         if(!file_exists($cachefile = sugar_cached('modules/unified_search_modules.php'))) {

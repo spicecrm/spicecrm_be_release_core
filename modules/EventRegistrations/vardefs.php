@@ -187,7 +187,5 @@ $dictionary['EventRegistration'] = array(
         array('name' => 'idx_regcampctid', 'type' => 'index', 'fields' => array('campaign_id', 'contact_id', 'deleted')),
     )
 );
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('EventRegistrations', 'EventRegistration', array('default', 'assignable', 'team_security'));
-else
-    VardefManager::createVardef('EventRegistrations', 'EventRegistration', array('default', 'assignable'));
+
+VardefManager::createVardef('EventRegistrations', 'EventRegistration', array('default', 'assignable'));

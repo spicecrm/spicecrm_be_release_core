@@ -137,7 +137,7 @@ class SchedulersJob extends Basic
         }
 
         // if $user_format is set to true then just return as th user's time format, otherwise, return as database format
-        return $user_format ? $dbTime : $timedate->fromUser($dbTime, $user)->asDb();
+        return $user_format ? $dbTime : $timedate->fromUser($dbTime, $user)->format(TimeDate::DB_DATETIME_FORMAT);
 	}
 
 
@@ -203,22 +203,6 @@ class SchedulersJob extends Basic
 	///////////////////////////////////////////////////////////////////////////
 
 
-	///////////////////////////////////////////////////////////////////////////
-	////	STANDARD SUGARBEAN OVERRIDES
-	/**
-	 * This function gets DB data and preps it for ListViews
-	 */
-	function get_list_view_data()
-	{
-		global $mod_strings;
-
-		$temp_array = $this->get_list_view_array();
-		$temp_array['JOB_NAME'] = $this->job_name;
-		$temp_array['JOB']		= $this->job;
-
-    	return $temp_array;
-	}
-
 	/** method stub for future customization
 	 *
 	 */
@@ -281,7 +265,7 @@ class SchedulersJob extends Basic
                 if($this->job_delay < $this->min_interval) {
                     $this->job_delay = $this->min_interval;
                 }
-                $this->execute_time = $GLOBALS['timedate']->getNow()->modify("+{$this->job_delay} seconds")->asDb();
+                $this->execute_time = $GLOBALS['timedate']->getNow()->modify("+{$this->job_delay} seconds")->format(TimeDate::DB_DATETIME_FORMAT);
                 $this->retry_count--;
                 $GLOBALS['log']->info("Will retry job {$this->id} at {$this->execute_time} ($this->retry_count)");
                 $this->onFailureRetry();
@@ -343,7 +327,7 @@ class SchedulersJob extends Basic
         if(empty($delay)) {
             $delay = intval($this->job_delay);
         }
-        $this->execute_time = $GLOBALS['timedate']->getNow()->modify("+$delay seconds")->asDb();
+        $this->execute_time = $GLOBALS['timedate']->getNow()->modify("+$delay seconds")->format(TimeDate::DB_DATETIME_FORMAT);
         $GLOBALS['log']->info("Postponing job {$this->id} to {$this->execute_time}: $message");
 
         $this->save();

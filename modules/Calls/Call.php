@@ -45,69 +45,14 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 // todo move functions from GoogleCalendarEventInterface
 class Call extends SugarBean
 {
-    var $field_name_map;
-    // Stored fields
-    var $id;
-    var $json_id;
-    var $date_entered;
-    var $date_modified;
-    var $assigned_user_id;
-    var $modified_user_id;
-    var $description;
-    var $name;
-    var $status;
-    var $date_start;
-    var $time_start;
-    var $duration_hours;
-    var $duration_minutes;
-    var $date_end;
-    var $parent_type;
-    var $parent_type_options;
-    var $parent_id;
-    var $contact_id;
-    var $user_id;
-    var $lead_id;
-    var $direction;
-    var $reminder_time;
-    var $reminder_time_options;
-    var $reminder_checked;
-    var $email_reminder_time;
-    var $email_reminder_checked;
-    var $email_reminder_sent;
-    var $required;
-    var $accept_status;
-    var $created_by;
-    var $created_by_name;
-    var $modified_by_name;
-    var $parent_name;
-    var $contact_name;
-    var $contact_phone;
-    var $contact_email;
-    var $account_id;
-    var $opportunity_id;
-    var $case_id;
-    var $assigned_user_name;
-    var $note_id;
-    var $outlook_id;
 
-
-    var $update_vcal = false;
-
-    var $contacts_arr;
-    var $users_arr;
-    var $leads_arr;
-    var $minutes_value_default = 15;
-    var $minutes_values = array('0' => '00', '15' => '15', '30' => '30', '45' => '45');
     var $table_name = "calls";
     var $rel_users_table = "calls_users";
     var $rel_contacts_table = "calls_contacts";
     var $rel_leads_table = "calls_leads";
     var $module_dir = 'Calls';
     var $object_name = "Call";
-    var $new_schema = true;
-    var $importable = true;
-    var $syncing = false;
-    var $recurring_source;
+
 
 
     function __construct()
@@ -149,7 +94,7 @@ class Call extends SugarBean
             if ($td) {
                 $this->duration_hours = (int) $this->duration_hours;
                 $this->duration_minutes = (int) $this->duration_minutes;
-                $this->date_end = $td->modify("+{$this->duration_hours} hours {$this->duration_minutes} mins")->asDb();
+                $this->date_end = $td->modify("+{$this->duration_hours} hours {$this->duration_minutes} mins")->format(TimeDate::DB_DATETIME_FORMAT);
             }
         }
 
@@ -236,6 +181,15 @@ class Call extends SugarBean
         if (is_null($this->duration_minutes))
             $this->duration_minutes = "1";
 
+        // CR1000436: set duration_hours and duration_minutes according to date_start/date_end
+        if(!is_null($this->date_start) && !is_null($this->date_end)){
+            $startDateObj = new DateTime($this->date_start);
+            $endDateObj = new DateTime($this->date_end);
+            $interval = $startDateObj->diff($endDateObj);
+            $this->duration_hours = $interval->format('%h');
+            $this->duration_minutes = $interval->format('%i');
+        }
+
         $this->fill_in_additional_parent_fields();
 
         global $app_list_strings;
@@ -246,8 +200,6 @@ class Call extends SugarBean
                 unset($parent_types[$disabled_parent_type]);
             }
         }
-
-        $this->parent_type_options = get_select_options_with_id($parent_types, $this->parent_type);
 
         if (empty($this->reminder_time)) {
             $this->reminder_time = -1;
@@ -491,9 +443,7 @@ class Call extends SugarBean
             $this->set_relationship($this->rel_users_table, $relate_values, true, true, $data_values);
             global $current_user;
 
-            if ($this->update_vcal) {
-                vCal::cache_sugar_vcal($user);
-            }
+
         } else if ($user->object_name == 'Contact') {
             $relate_values = array('contact_id' => $user->id, 'call_id' => $this->id);
             $data_values = array('accept_status' => $status);
@@ -508,9 +458,6 @@ class Call extends SugarBean
 
     function get_notification_recipients()
     {
-        if ($this->special_notification) {
-            return parent::get_notification_recipients();
-        }
 
 //		$GLOBALS['log']->debug('Call.php->get_notification_recipients():'.print_r($this,true));
         $list = array();

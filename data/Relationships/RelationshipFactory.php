@@ -163,8 +163,6 @@ class SugarRelationshipFactory {
         $buildingRelCache = true;
         include("modules/TableDictionary.php");
 
-        if (empty($beanList))
-            include("include/modules.php");
         //Reload ALL the module vardefs....
         foreach($beanList as $moduleName => $beanName)
         {
@@ -179,6 +177,13 @@ class SugarRelationshipFactory {
         //Grab all the relationships from the dictionary.
         foreach ($dictionary as $key => $def)
         {
+            // BEGIN CR1000108 vardefs to db. Try to grab directly from db
+//            if(isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) && $GLOBALS['sugar_config']['systemvardefs']['dictionary']) {
+//                $module = SpiceCRM\modules\SystemVardefs\SystemVardefs::getModuleByDictionaryName($key);
+//                SpiceCRM\modules\SystemVardefs\SystemVardefs::loadDictionaryRelationships($def, $module);
+//            }
+            // END CR1000108
+
             if (!empty($def['relationships']))
             {
                 foreach($def['relationships'] as $relKey => $relDef)

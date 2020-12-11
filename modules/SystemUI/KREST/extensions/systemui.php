@@ -1,16 +1,26 @@
 <?php
 global $sugar_config;
+use SpiceCRM\modules\SystemUI\SystemUIRESTHandler;
+use SpiceCRM\modules\SystemUI\KREST\controllers\SystemUILoadtasksController;
+use SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIRepositoryController;
+use SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIComponentsetsController;
+use SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIActionsetsController;
+use SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIRoutesController;
+use SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIFieldsetsController;
+use SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIModelValidationsController;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
+$uiRestHandler = new SystemUIRESTHandler();
 
-$uiRestHandler = new SpiceCRM\modules\SystemUI\SystemUIRESTHandler();
+$RESTManager->registerExtension('spiceui', '2.0', $sugar_config['ui']);
 
-$KRESTManager->registerExtension('spiceui', '2.0', $sugar_config['ui']);
-
-$app->group('/spiceui', function () use ($app, $uiRestHandler) {
-    $app->group('/core', function () use ($app, $uiRestHandler) {
+$RESTManager->app->group('/spiceui', function () use ($uiRestHandler) {
+    $this->group('/core', function () use ($uiRestHandler) {
         /**
          * handle the load tasks
          */
-        $this->group('/loadtasks', function () use ($app, $uiRestHandler) {
+        $this->group('/loadtasks', function () use ($uiRestHandler) {
             /**
              * get all laod tasks defined in the system
              */
@@ -24,151 +34,151 @@ $app->group('/spiceui', function () use ($app, $uiRestHandler) {
         /**
          * all module related calls
          */
-        $app->group('/modules/{module}/listtypes', function () use ($app, $uiRestHandler) {
-            $app->post('', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->group('/modules/{module}/listtypes', function () use ($uiRestHandler) {
+            $this->post('', function ($req, $res, $args) use ($uiRestHandler) {
                 $postbody = $req->getParsedBody();
                 echo json_encode($uiRestHandler->addListType($args['module'], $postbody['list'], $postbody['global']));
             });
-            $app->post('/{id}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->post('/{id}', function ($req, $res, $args) use ($uiRestHandler) {
                 $postbody = $req->getParsedBody();
                 echo $uiRestHandler->setListType($args['id'], $postbody);
             });
-            $app->delete('/{id}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->delete('/{id}', function ($req, $res, $args) use ($uiRestHandler) {
                 echo $uiRestHandler->deleteListType($args['id']);
             });
         });
 
-        $app->get('/components', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->get('/components', function ($req, $res, $args) use ($uiRestHandler) {
             echo json_encode(array(
-                'modules' => \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIRepositoryController::getModuleRepository(),
-                'components' => \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIRepositoryController::getComponents(),
-                'componentdefaultconfigs' => \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIRepositoryController::getComponentDefaultConfigs(),
-                'componentmoduleconfigs' => \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIRepositoryController::getComponentModuleConfigs(),
-                'componentsets' => \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIComponentsetsController::getComponentSets(),
-                'actionsets' => \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIActionsetsController::getActionSets(),
-                'routes' => \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIRoutesController::getRoutesDirect(),
-                'scripts' => \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIRepositoryController::getLibraries(),
+                'modules'                 => SystemUIRepositoryController::getModuleRepository(),
+                'components'              => SystemUIRepositoryController::getComponents(),
+                'componentdefaultconfigs' => SystemUIRepositoryController::getComponentDefaultConfigs(),
+                'componentmoduleconfigs'  => SystemUIRepositoryController::getComponentModuleConfigs(),
+                'componentsets'           => SystemUIComponentsetsController::getComponentSets(),
+                'actionsets'              => SystemUIActionsetsController::getActionSets(),
+                'routes'                  => SystemUIRoutesController::getRoutesDirect(),
+                'scripts'                 => SystemUIRepositoryController::getLibraries(),
             ));
         });
 
-        $app->group('/roles', function () use ($app, $uiRestHandler) {
+        $this->group('/roles', function () use ($uiRestHandler) {
 
-            $app->get('/{userid}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->get('/{userid}', function ($req, $res, $args) use ($uiRestHandler) {
                 echo json_encode($uiRestHandler->getAllRoles($args['userid']));
             });
-            $app->post('/{roleid}/{userid}/{default}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->post('/{roleid}/{userid}/{default}', function ($req, $res, $args) use ($uiRestHandler) {
                 global $current_user;
-                if (!$current_user->is_admin) throw (new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+                if (!$current_user->is_admin) throw (new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
                 echo json_encode($uiRestHandler->setUserRole($args));
             });
-            $app->delete('/{roleid}/{userid}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->delete('/{roleid}/{userid}', function ($req, $res, $args) use ($uiRestHandler) {
                 global $current_user;
-                if (!$current_user->is_admin) throw (new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+                if (!$current_user->is_admin) throw (new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
                 echo json_encode($uiRestHandler->deleteUserRole($args));
             });
 
         });
 
-        $app->get('/componentmodulealreadyexists', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->get('/componentmodulealreadyexists', function ($req, $res, $args) use ($uiRestHandler) {
             $getParams = $req->getParams();
             echo json_encode($uiRestHandler->checkComponentModuleAlreadyExists($getParams));
         });
-        $app->get('/componentdefaultalreadyexists', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->get('/componentdefaultalreadyexists', function ($req, $res, $args) use ($uiRestHandler) {
             $getParams = $req->getParams();
             echo json_encode($uiRestHandler->checkComponentDefaultAlreadyExists($getParams));
         });
 
-        $app->post('/componentsets', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->post('/componentsets', function ($req, $res, $args) use ($uiRestHandler) {
             $postbody = $req->getParsedBody();
             echo json_encode($uiRestHandler->setComponentSets($postbody));
         });
-        $app->group('/fieldsets', function () use ($app, $uiRestHandler) {
-            $app->get('', function ($req, $res, $args) {
-                $res->write(json_encode(['fieldsets' => SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIFieldsetsController::getFieldSets()]));
+        $this->group('/fieldsets', function () use ($uiRestHandler) {
+            $this->get('', function ($req, $res, $args) {
+                $res->write(json_encode(['fieldsets' => SystemUIFieldsetsController::getFieldSets()]));
             });
-            $app->post('', 'SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIFieldsetsController::setFieldSets');
+            $this->post('', 'SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIFieldsetsController::setFieldSets');
         });
-        $app->group('/actionsets', function () use ($app, $uiRestHandler) {
-            $app->post('', 'SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIActionsetsController::setActionSets');
+        $this->group('/actionsets', function () use ($uiRestHandler) {
+            $this->post('', 'SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIActionsetsController::setActionSets');
         });
-        $app->get('/fieldsetalreadyexists', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->get('/fieldsetalreadyexists', function ($req, $res, $args) use ($uiRestHandler) {
             $getParams = $req->getParams();
             echo json_encode($uiRestHandler->checkFieldSetAlreadyExists($getParams));
         });
-        $app->get('/fielddefs', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->get('/fielddefs', function ($req, $res, $args) use ($uiRestHandler) {
             $getParams = $req->getParams();
             echo json_encode($uiRestHandler->getFieldDefs(json_decode($getParams['modules'])));
         });
 
-        $app->group('/servicecategories', function () use ($app, $uiRestHandler) {
-            $app->get('', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->group('/servicecategories', function () use ($uiRestHandler) {
+            $this->get('', function ($req, $res, $args) use ($uiRestHandler) {
                 $result = $uiRestHandler->getServiceCategories();
                 //var_dump($result);
                 echo json_encode($result);
             });
-            $app->get('/tree', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->get('/tree', function ($req, $res, $args) use ($uiRestHandler) {
                 $result = $uiRestHandler->getServiceCategoryTree();
                 //var_dump($result);
                 echo json_encode($result);
             });
-            $app->post('/tree', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->post('/tree', function ($req, $res, $args) use ($uiRestHandler) {
                 $result = $uiRestHandler->setServiceCategoryTree($req->getParsedBody());
                 //var_dump($result);
                 echo json_encode($result);
             });
         });
-        $app->group('/selecttree', function () use ($app, $uiRestHandler) {
-            $app->get('/trees', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->group('/selecttree', function () use ($uiRestHandler) {
+            $this->get('/trees', function ($req, $res, $args) use ($uiRestHandler) {
                 $result = $uiRestHandler->getSelectTrees();
                 //var_dump($result);
                 echo json_encode($result);
             });
-            $app->get('/list/{id}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->get('/list/{id}', function ($req, $res, $args) use ($uiRestHandler) {
                 $result = $uiRestHandler->getSelectTreeList($args['id']);
                 //var_dump($result);
                 echo json_encode($result);
             });
-            $app->get('/tree/{id}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->get('/tree/{id}', function ($req, $res, $args) use ($uiRestHandler) {
                 $result = $uiRestHandler->getSelectTree($args['id']);
                 //var_dump($result);
                 echo json_encode($result);
             });
-            $app->post('/tree', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->post('/tree', function ($req, $res, $args) use ($uiRestHandler) {
                 $result = $uiRestHandler->setSelectTree($req->getParsedBody());
                 //var_dump($result);
                 echo json_encode($result);
             });
-            $app->post('/newtree', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->post('/newtree', function ($req, $res, $args) use ($uiRestHandler) {
                 $result = $uiRestHandler->setTree($req->getParsedBody());
                 //var_dump($result);
                 echo json_encode($result);
             });
         });
 
-        $app->group('/modelvalidations', function () use ($app, $uiRestHandler) {
+        $this->group('/modelvalidations', function () use ($uiRestHandler) {
             $this->get( '', 'modules/SystemUI/KREST/controllers/SystemUIModelValidationsController::getModelValidations' );
 
-            $app->get('/{module}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->get('/{module}', function ($req, $res, $args) use ($uiRestHandler) {
                 echo json_encode($uiRestHandler->getModuleModelValidations($args['module']), JSON_HEX_TAG);
             });
 
-            $app->post('', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->post('', function ($req, $res, $args) use ($uiRestHandler) {
                 //$postbody = json_decode($req->getParsedBody(), true);var_dump($req->getParsedBody(), $postbody, $req->getParams());
                 $postbody = $req->getParsedBody();
                 echo json_encode($uiRestHandler->setModelValidation($postbody));
             });
-            $app->delete('/{id}', function ($req, $res, $args) use ($app, $uiRestHandler) {
+            $this->delete('/{id}', function ($req, $res, $args) use ($uiRestHandler) {
                 echo json_encode($uiRestHandler->deleteModelValidation($args['id']));
             });
         });
     });
-    $app->group('/admin', function () use ($app, $uiRestHandler) {
-        $app->get('/navigation', function ($req, $res, $args) use ($app, $uiRestHandler) {
+    $this->group('/admin', function () use ($uiRestHandler) {
+        $this->get('/navigation', function ($req, $res, $args) use ($uiRestHandler) {
             $getParams = $req->getParams();
             echo json_encode($uiRestHandler->getAdminNavigation());
         });
-        $app->group('/modules', function () use ($app, $uiRestHandler) {
-            $app->get('', function ($req, $res, $args) use ($app, $uiRestHandler) {
+        $this->group('/modules', function () use ($uiRestHandler) {
+            $this->get('', function ($req, $res, $args) use ($uiRestHandler) {
                 echo json_encode($uiRestHandler->getAllModules());
             });
         });

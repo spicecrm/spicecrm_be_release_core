@@ -14,50 +14,42 @@ $dictionary['CompanyCode'] = array(
             'name' => 'vatid',
             'vname' => 'LBL_VATID',
             'type' => 'varchar',
-            'len' => 40,
-            'required' => false,
-            'reportable' => true,
-            'massupdate' => false,
+            'len' => 40
         ),
         'company_address_street' =>
         array(
             'name' => 'company_address_street',
             'vname' => 'LBL_COMPANY_ADDRESS_STREET',
             'type' => 'varchar',
-            'len' => '150',
-            'group' => 'company_address'
+            'len' => '150'
         ),
         'company_address_city' =>
         array(
             'name' => 'company_address_city',
             'vname' => 'LBL_COMPANY_ADDRESS_CITY',
             'type' => 'varchar',
-            'len' => '100',
-            'group' => 'company_address'
+            'len' => '100'
         ),
         'company_address_state' =>
         array(
             'name' => 'company_address_state',
             'vname' => 'LBL_COMPANY_ADDRESS_STATE',
             'type' => 'varchar',
-            'len' => '100',
-            'group' => 'company_address'
+            'len' => '100'
         ),
         'company_address_postalcode' =>
         array(
             'name' => 'company_address_postalcode',
             'vname' => 'LBL_COMPANY_ADDRESS_POSTALCODE',
             'type' => 'varchar',
-            'len' => '20',
-            'group' => 'company_address'
+            'len' => '20'
         ),
         'company_address_country' =>
         array(
             'name' => 'company_address_country',
             'vname' => 'LBL_COMPANY_ADDRESS_COUNTRY',
-            'type' => 'enum',
-            'options' => 'countries_dom',
-            'group' => 'company_address'
+            'type' => 'varchar',
+            'len' => 30
         ),
         'tel' => array(
             'name' => 'tel',
@@ -105,28 +97,19 @@ $dictionary['CompanyCode'] = array(
             'name' => 'footer_1',
             'vname' => 'LBL_FOOTER1',
             'type' => 'varchar',
-            'len' => 255,
-            'required' => false,
-            'reportable' => true,
-            'massupdate' => false,
+            'len' => 255
         ),
         'footer_2' => array(
             'name' => 'footer_2',
             'vname' => 'LBL_FOOTER2',
             'type' => 'varchar',
-            'len' => 255,
-            'required' => false,
-            'reportable' => true,
-            'massupdate' => false,
+            'len' => 255
         ),
         'footer_3' => array(
             'name' => 'footer_3',
             'vname' => 'LBL_FOOTER3',
             'type' => 'varchar',
-            'len' => 255,
-            'required' => false,
-            'reportable' => true,
-            'massupdate' => false,
+            'len' => 255
         ),
         'companyfiscalperiods' => array(
             'name' => 'companyfiscalperiods',

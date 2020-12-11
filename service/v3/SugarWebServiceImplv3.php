@@ -192,14 +192,14 @@ class SugarWebServiceImplv3 extends SugarWebServiceImpl {
      */
     function get_server_info(){
     	$GLOBALS['log']->info('Begin: SugarWebServiceImpl->get_server_info');
-        global $sugar_flavor, $sugar_version;
+        global  $sugar_version;
         if (empty($sugar_version))
         {
             require_once('sugar_version.php');
         }
     	$GLOBALS['log']->info('End: SugarWebServiceImpl->get_server_info');
 
-    	return array('flavor' => $sugar_flavor, 'version' => $sugar_version, 'gmt_time' => TimeDate::getInstance()->nowDb());
+    	return array('flavor' => 'Spice', 'version' => $sugar_version, 'gmt_time' => TimeDate::getInstance()->nowDb());
     } // fn
 
     /**
@@ -397,7 +397,7 @@ class SugarWebServiceImplv3 extends SugarWebServiceImpl {
     		$sugar_config['list_max_entries_per_page'] = $max_results;
     	}
 
-    	require_once('modules/Home/UnifiedSearchAdvanced.php');
+    	require_once('include/utils/UnifiedSearchAdvanced.php');
     	require_once 'include/utils.php';
     	$usa = new UnifiedSearchAdvanced();
         if(!file_exists($cachedfile = sugar_cached('modules/unified_search_modules.php'))) {

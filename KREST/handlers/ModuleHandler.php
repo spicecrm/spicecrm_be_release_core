@@ -16,6 +16,11 @@ namespace SpiceCRM\KREST\handlers;
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+use SpiceCRM\includes\ErrorHandlers\Exception;
+use SpiceCRM\includes\ErrorHandlers\NotFoundException;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\ErrorHandlers\ConflictException;
+
 class ModuleHandler
 {
 
@@ -30,9 +35,6 @@ class ModuleHandler
     {
         $this->app = $app;
 
-        // some general global settings
-        global $disable_date_format;
-        $disable_date_format = true;
     }
 
     protected function _trackAction($action, $module, $bean)
@@ -116,12 +118,12 @@ class ModuleHandler
 
         // acl check if user can list
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'list', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to list in module $beanModule."))->setErrorCode('noModuleList');
+            throw (new ForbiddenException("Forbidden to list in module $beanModule."))->setErrorCode('noModuleList');
 
         // check if the bean can be instantiated
         $thisBean = \BeanFactory::getBean($beanModule);
         if (!$thisBean)
-            throw new \SpiceCRM\KREST\NotFoundException("No Bean found for $beanModule!");
+            throw new NotFoundException("No Bean found for $beanModule!");
 
         // prepare the returning array for the beans
         $beanData = array();
@@ -183,6 +185,8 @@ class ModuleHandler
      */
     public function prepareBeanDBListQuery($beanModule, $thisBean, $listDef, $searchParams){
         global $dictionary;
+        // BWC: reduce number of fields and related tables to search on
+        $create_new_list_query_filter = [];
 
         // build the where clause if searchterm is specified
         if (!empty($searchParams['searchterm'])) {
@@ -206,9 +210,16 @@ class ModuleHandler
                             case 'relate':
                                 $searchTerms[] = ($thisBean->field_name_map[$fieldName]['join_name'] ?: $thisBean->field_name_map[$fieldName]['table']) . '.' . $thisBean->field_name_map[$fieldName]['rname'] . ' like \'%' . $thisSearchterm . '%\'';
                                 break;
+                            case 'link':
+                                break;
                             default:
                                 $searchTerms[] = $thisBean->table_name . '.' . $fieldName . ' like \'%' . $thisSearchterm . '%\'';
                                 break;
+                        }
+
+                        // BWC: reduce number of fields and related tables to search on: those meant for unified search will do.
+                        if ($thisBean->field_name_map[$fieldName]['unified_search']){
+                            $create_new_list_query_filter[$fieldName] = true;
                         }
                     }
                 } else {
@@ -331,14 +342,14 @@ class ModuleHandler
 
 
         // $beanList = $thisBean->get_list($searchParams['orderby'], $searchParams['whereclause'], $searchParams['offset'], $searchParams['limit']);
-        $queryArray = $thisBean->create_new_list_query($searchParams['orderby'], implode(' AND ', $whereClauses), array(), array(), false, '', true, $thisBean, true);
+        $queryArray = $thisBean->create_new_list_query($searchParams['orderby'], implode(' AND ', $whereClauses), $create_new_list_query_filter, array(), false, '', true, $thisBean, true);
 
         // any additional joins we might have gotten
         $queryArray['from'] .= ' ' . $addJoins;
         $queryArray['secondary_from'] .= ' ' . $addJoins;
 
         // build the query
-        return ['query' => $queryArray['select'] . $queryArray['from'] . $queryArray['where'] . $queryArray['order_by'], 'addjoins' => $addJoins];
+        return ['query' => $queryArray['select'] . $queryArray['from'] . $queryArray['where'] . $queryArray['order_by'], 'addjoins' => $addJoins, 'whereclauses' => $whereClauses];
     }
 
     /**
@@ -381,7 +392,7 @@ class ModuleHandler
                 $bucketWhere = ["{$thisBean->table_name}.{$searchParams['buckets']['bucketfield']} = '{$bucketitem['bucket']}'"];
 
                 // build a query for the bucket
-                $bQueryArray = $thisBean->create_new_list_query($searchParams['orderby'], implode(' AND ', array_merge($whereClauses, $bucketWhere)), array(), array(), false, '', true, $thisBean, true);
+                $bQueryArray = $thisBean->create_new_list_query($searchParams['orderby'], implode(' AND ', array_merge($queryResult['whereclauses'], $bucketWhere)), array(), array(), false, '', true, $thisBean, true);
                 // any additional joins we might have gotten
                 $bQueryArray['from'] .= ' ' . $addJoins;
                 $bQueryArray['secondary_from'] .= ' ' . $addJoins;
@@ -401,14 +412,15 @@ class ModuleHandler
                 if (!empty($count_query)) {
                     // add a sum query to the copunt query
                     if($searchParams['buckets']['buckettotal']) {
-                        $count_query = str_replace("count(*) c", "count(*) c, sum({$thisBean->table_name}.amount) total", $count_query);
+                        $count_query = str_replace("count(*) c", "count(*) c, sum({$thisBean->table_name}.{$searchParams['buckets']['buckettotal'][0]['name']}) total", $count_query);
                     }
                     // We have a count query.  Run it and get the results.
                     $result = $thisBean->db->query($count_query);
                     $assoc = $thisBean->db->fetchByAssoc($result);
-                    if (!empty($assoc['c'])) {
+                    if (isset($assoc['c'])) {
                         $bucketitem['total'] = (int) $assoc['c'];
                         $bucketitem['value'] = (double) $assoc['total'] ?: 0;
+                        $bucketitem['values']['_bucket_agg_'.$searchParams['buckets']['buckettotal'][0]['name']] = (double) $assoc['total'] ?: 0;
                         $totalcount += $assoc['c'];
                     }
                 }
@@ -471,7 +483,7 @@ class ModuleHandler
 
         // acl check if user can list
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'export', true) && !in_array($beanModule, $aclWhitelist))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to export module $beanModule."))->setErrorCode('noModuleList');
+            throw (new ForbiddenException("Forbidden to export module $beanModule."))->setErrorCode('noModuleList');
 
         $thisBean = \BeanFactory::getBean($beanModule);
 
@@ -583,7 +595,7 @@ class ModuleHandler
         global $current_language;
         // acl check if user can get the detail
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'delete', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
+            throw (new ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
         $thisBean = \BeanFactory::getBean($beanModule, $beanId);
         $thisBean->merge($requestParams);
@@ -596,13 +608,13 @@ class ModuleHandler
 
         // acl check if user can get the detail
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = \BeanFactory::getBean($beanModule, $beanId, array('encode' => false)); //set encode to false to avoid things like ' being translated to &#039;
-        if (!$thisBean) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!$thisBean) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         if (!$thisBean->ACLAccess('view')) {
-            throw (new \SpiceCRM\KREST\ForbiddenException("not allowed to view this record"))->setErrorCode('noModuleView');
+            throw (new ForbiddenException("not allowed to view this record"))->setErrorCode('noModuleView');
         }
 
         $app_list_strings = return_app_list_strings_language($current_language);
@@ -628,11 +640,11 @@ class ModuleHandler
 
         // acl check if user can get the detail
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = \BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
-        if (!$thisBean->is_AuditEnabled()) throw (new \SpiceCRM\KREST\NotFoundException('Record not audit enabled.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule])->setErrorCode('moduleNotAudited');
+        if (!isset($thisBean->id)) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!$thisBean->is_AuditEnabled()) throw (new NotFoundException('Record not audit enabled.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule])->setErrorCode('moduleNotAudited');
 
         $auditLog = Array();
 
@@ -662,7 +674,7 @@ class ModuleHandler
     {
         // acl check if user can get the detail
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         // load the bean and populate from row
         $seed = \BeanFactory::getBean($beanModule);
@@ -682,10 +694,10 @@ class ModuleHandler
 
         // acl check if user can get the detail
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = \BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!isset($thisBean->id)) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $duplicates = $thisBean->checkForDuplicates();
 
@@ -702,16 +714,16 @@ class ModuleHandler
     {
         // acl check if user can get the detail
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to view in for module $beanModule."))->setErrorCode('noModuleView');
+            throw (new ForbiddenException("Forbidden to view in for module $beanModule."))->setErrorCode('noModuleView');
 
         $thisBean = \BeanFactory::getBean($beanModule);
         $thisBean->retrieve($beanId);
-        if (!isset($thisBean->id)) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!isset($thisBean->id)) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
-        if ($thisBean->filename) {
+        if ($thisBean->file_name || $thisBean->filename) {
             require_once('modules/Notes/NoteSoap.php');
             $noteSoap = new \NoteSoap();
-            $fileData = $noteSoap->retrieveFile($thisBean->id, $thisBean->filename);
+            $fileData = $noteSoap->retrieveFile($thisBean->id, $thisBean->file_name ?: $thisBean->filename);
             // In case the file is a text file:
             // For a correct display of special characters in the browser, convert the file content to UTF8, if it not already UTF8 encoded.
             if ( $thisBean->file_mime_type === 'text/plain') {
@@ -721,14 +733,14 @@ class ModuleHandler
             }
             if ($fileData >= -1)
                 return array(
-                    'filename' => $thisBean->filename,
+                    'filename' => $thisBean->file_name ?: $thisBean->filename,
                     'file' => $fileData,
                     'filetype' => $thisBean->file_mime_type
                 );
         }
 
         // if we did not return before we did not find the file
-        throw (new \SpiceCRM\KREST\NotFoundException('Attachment/File not found.'));
+        throw (new NotFoundException('Attachment/File not found.'));
     }
 
     public function set_bean_attachment($beanModule, $beanId, $post = '')
@@ -740,12 +752,36 @@ class ModuleHandler
             $decodedFile = base64_decode($post['file']);
             $upload_file->set_for_soap($beanId, $decodedFile);
             $upload_file->final_move($beanId, true);
-        } else if (isset($_FILES['file']) && $upload_file->confirm_upload()) {
-            $upload_file->use_proxy = $_FILES['file']['proxy'] ? true : false;
-            $upload_file->final_move($beanId, true);
         }
 
-        return array('filename' => $post['filename'], 'filetype' => $post['filemimetype']);
+        return array('filename' => $post['filename'], 'filetype' => $post['filemimetype'], 'filemd5' => 'md5hash');
+    }
+
+    /**
+     * upload an attachment
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return array
+     */
+    public function uploadFile($req, $res, $args)
+    {
+        $params = $req->getParsedBody();
+
+
+        if (!$params['file']) {
+            throw new \SpiceCRM\KREST\BadRequestException('missing file data');
+        }
+
+        require_once('include/upload_file.php');
+
+        $upload_file = new \UploadFile('file');
+        $decodedFile = base64_decode($params['file']);
+        $file_md5 = md5($decodedFile);
+        $upload_file->set_for_soap($file_md5, $decodedFile);
+        $upload_file->final_move($file_md5, true);
+
+        return $res->withJson(['file_md5' => $file_md5]);
     }
 
     public function download_bean_attachment($beanModule, $beanId)
@@ -768,29 +804,17 @@ class ModuleHandler
         }
     }
 
-    public
-    function get_acl_actions($bean)
-    {
-        $aclArray = [];
-        $aclActions = ['list', 'detail', 'edit', 'delete', 'export', 'import'];
-        foreach ($aclActions as $aclAction) {
-            $aclArray[$aclAction] = false;
-            if ($bean)
-                $aclArray[$aclAction] = $bean->ACLAccess($aclAction);
-        }
-        return $aclArray;
-    }
 
     public function get_related($beanModule, $beanId, $linkName, $params)
     {
 
         // acl check if user can get the detail
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'view', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
+            throw (new ForbiddenException("Forbidden to view in module $beanModule."))->setErrorCode('noModuleView');
 
         // get the bean
         $thisBean = \BeanFactory::getBean($beanModule, $beanId);
-        if ($thisBean === false) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if ($thisBean === false) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         if ($thisBean->load_relationship($linkName)) {
             $relModule = $thisBean->{$linkName}->getRelatedModuleName();
@@ -836,7 +860,7 @@ class ModuleHandler
         if ($sortBySequenceField) $sortingDefinition = ['sortfield' => $sequenceField, 'sortdirection' => 'ASC'];
 
         if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true) && !$GLOBALS['ACLController']->checkAccess($relModule, 'listrelated', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
+            throw (new ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         // get related beans and related module
         // get_linked_beans($field_name, $bean_name, $sort_array = array(), $begin_index = 0, $end_index = -1, $deleted = 0, $optional_where = "")
@@ -861,9 +885,8 @@ class ModuleHandler
 
         // wtf? retrieve all the related data and at the end, ignore all this and count it new? (╯°□°)╯︵ ┻━┻
         if ($params['getcount']) {
-            $relCount = $thisBean->get_linked_beans_count($linkName, $GLOBALS['beanList'][$beanModule], 0, $addWhere);
             return array(
-                'count' => $relCount,
+                'count' => count($relBeans) > 0 ? $thisBean->get_linked_beans_count($linkName, $GLOBALS['beanList'][$beanModule], 0, $addWhere) : 0,
                 'list' => $retArray
             );
         } else
@@ -874,18 +897,18 @@ class ModuleHandler
     {
 
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
+            throw (new ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
 
         $thisBean = \BeanFactory::getBean($beanModule, $beanId);
-        if ($thisBean === false) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if ($thisBean === false) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
         if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
+            throw (new ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
 
         foreach ($relatedIds as $relatedId) {
@@ -906,26 +929,26 @@ class ModuleHandler
     {
 
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true) && !$GLOBALS['ACLController']->checkAccess($beanModule, 'editrelated', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
+            throw (new ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
 
         $thisBean = \BeanFactory::getBean($beanModule, $beanId);
-        if ($thisBean === false) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if ($thisBean === false) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
         if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
+            throw (new ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         // set the relate module
         $relBean = \BeanFactory::getBean($relModule, $postparams['id']);
-        if ($relBean === false) throw (new \SpiceCRM\KREST\NotFoundException('Related record not found.'))->setLookedFor(['id' => $postparams['id'], 'module' => $relModule]);
+        if ($relBean === false) throw (new NotFoundException('Related record not found.'))->setLookedFor(['id' => $postparams['id'], 'module' => $relModule]);
 
         if (!$GLOBALS['ACLController']->checkAccess($relModule, 'edit', true) &&
             !$GLOBALS['ACLController']->checkAccess($relModule, 'editrelated', true)) {
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit in module $relModule."))->setErrorCode('noModuleEdit');
+            throw (new ForbiddenException("Forbidden to edit in module $relModule."))->setErrorCode('noModuleEdit');
         }
 
         if($GLOBALS['ACLController']->checkAccess($relModule, 'edit', true)){
@@ -968,18 +991,18 @@ class ModuleHandler
     {
 
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
+            throw (new ForbiddenException("Forbidden to edit in module $beanModule."))->setErrorCode('noModuleEdit');
 
         $retArray = array();
 
         $thisBean = \BeanFactory::getBean($beanModule, $beanId);
-        if (!isset($thisBean->id)) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!isset($thisBean->id)) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         $thisBean->load_relationship($linkName);
         $relModule = $thisBean->{$linkName}->getRelatedModuleName();
 
         if (!$GLOBALS['ACLController']->checkAccess($relModule, 'list', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
+            throw (new ForbiddenException('Forbidden to list in module ' . $relModule . '.'))->setErrorCode('noModuleList');
 
         $thisBean->load_relationship($linkName);
 
@@ -1011,21 +1034,21 @@ class ModuleHandler
      * @param $beanId
      * @param $post_params
      * @return array
-     * @throws \SpiceCRM\KREST\ConflictException
-     * @throws \SpiceCRM\KREST\Exception
-     * @throws \SpiceCRM\KREST\NotFoundException
+     * @throws ConflictException
+     * @throws Exception
+     * @throws NotFoundException
      */
     public function add_bean($beanModule, $beanId, $post_params, $query_params = [] )
     {
         global $current_user, $timedate;
 
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'edit', true) && !$GLOBALS['ACLController']->checkAccess($beanModule, 'create', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit or create in module $beanModule."))->setErrorCode('noModuleEdit');
+            throw (new ForbiddenException("Forbidden to edit or create in module $beanModule."))->setErrorCode('noModuleEdit');
 
         if ($post_params['deleted']) {
 
             if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'delete', true))
-                throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
+                throw (new ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
             $this->delete_bean($beanModule, $beanId);
             return $beanId;
@@ -1034,10 +1057,10 @@ class ModuleHandler
         $thisBean = \BeanFactory::getBean($beanModule);
         if ($thisBean->retrieve($beanId)) {
             if (!$thisBean->ACLAccess('edit'))
-                throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
+                throw (new ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
         } else {
             if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'create', true))
-                throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
+                throw (new ForbiddenException('Forbidden to edit record.'))->setErrorCode('noRecordEdit');
         }
 
         if ( isset( $query_params['templateId']{0} )) $thisBean->newFromTemplate = $query_params['templateId'];
@@ -1058,7 +1081,7 @@ class ModuleHandler
                 }
                 $changedFields = $thisBean->getAuditChangesAfterDate($post_params['date_modified'], $fields);
                 if (count($changedFields) > 0) {
-                    throw (new \SpiceCRM\KREST\ConflictException('Optimistic locking conflicts detected'))->setConflicts($changedFields);
+                    throw (new ConflictException('Optimistic locking conflicts detected'))->setConflicts($changedFields);
                 }
             }
         }
@@ -1114,7 +1137,6 @@ class ModuleHandler
                         // CR1000357 get additional_rel_fields
                         $additional_rel_fields = [];
                         $additional_rel_fields_mapped = [];
-                        $additional_values = [];
                         if(isset($fieldData['rel_fields'])){
                             foreach($fieldData['rel_fields'] as $join_table_field => $joinDetails){
                                 $additional_rel_fields_mapped[] = $joinDetails['map'];
@@ -1145,6 +1167,7 @@ class ModuleHandler
 
                                 // populate and save and add
                                 $changed = false;
+                                $additional_values = [];
                                 foreach ($seed->field_defs as $field => $field_value) {
                                     if (isset($beanData[$field]) && $beanData[$field] !== $seed->$field) {
                                         $seed->$field = $beanData[$field];
@@ -1222,20 +1245,20 @@ class ModuleHandler
      * @param $beanModule
      * @param $beanId
      * @return bool
-     * @throws \SpiceCRM\KREST\Exception
-     * @throws \SpiceCRM\KREST\NotFoundException
+     * @throws Exception
+     * @throws NotFoundException
      */
     public function delete_bean($beanModule, $beanId)
     {
         if (!$GLOBALS['ACLController']->checkAccess($beanModule, 'delete', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
+            throw (new ForbiddenException("Forbidden to delete in module $beanModule."))->setErrorCode('noModuleDelete');
 
         $thisBean = \BeanFactory::getBean($beanModule);
         $thisBean->retrieve($beanId);
-        if (!isset($thisBean->id)) throw (new \SpiceCRM\KREST\NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
+        if (!isset($thisBean->id)) throw (new NotFoundException('Record not found.'))->setLookedFor(['id' => $beanId, 'module' => $beanModule]);
 
         if (!$thisBean->ACLAccess('delete'))
-            throw (new \SpiceCRM\KREST\ForbiddenException('Forbidden to delete record.'))->setErrorCode('noRecordDelete');
+            throw (new ForbiddenException('Forbidden to delete record.'))->setErrorCode('noRecordDelete');
 
         $thisBean->mark_deleted($beanId);
         return true;
@@ -1248,17 +1271,12 @@ class ModuleHandler
      */
     private function getSpiceFavoritesClass()
     {
-        global $sugar_flavor, $dictionary;
+        global $dictionary;
 
         if ($this->spiceFavoritesClass === null) {
-            if ($sugar_flavor === 'PRO' && file_exists('include/SpiceFavorites/SpiceFavoritesSugarFavoritesWrapper.php')) {
-                require_once 'include/SpiceFavorites/SpiceFavoritesSugarFavoritesWrapper.php';
-                $this->spiceFavoritesClass = '\SpiceCRM\includes\SpiceFavorites\SpiceFavoritesSugarFavoritesWrapper';
-            } else {
-                if ($dictionary['spicefavorites'] && file_exists('include/SpiceFavorites/SpiceFavorites.php')) {
-                    // require_once 'include/SpiceFavorites/SpiceFavorites.php';
-                    $this->spiceFavoritesClass = '\SpiceCRM\includes\SpiceFavorites\SpiceFavorites';
-                }
+            if ($dictionary['spicefavorites'] && file_exists('include/SpiceFavorites/SpiceFavorites.php')) {
+                // require_once 'include/SpiceFavorites/SpiceFavorites.php';
+                $this->spiceFavoritesClass = '\SpiceCRM\includes\SpiceFavorites\SpiceFavorites';
             }
         }
         return $this->spiceFavoritesClass;
@@ -1382,7 +1400,7 @@ class ModuleHandler
 
         // must be exlivitly enabled in sugarconfig
         if($sugar_config['KREST']['allowcontrolleraction'] !== true){
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edcute controller action"));
+            throw (new ForbiddenException("Forbidden to execute controller action"));
         }
 
         $GLOBALS['KREST']['beanID'] = $beanId;
@@ -1550,7 +1568,7 @@ class ModuleHandler
         $beanDataArray['emailaddresses'] = $this->getEmailAddresses($beanModule, $thisBean->id);
 
         // get the ACL Array
-        $beanDataArray['acl'] = $this->get_acl_actions($thisBean);
+        $beanDataArray['acl'] = $thisBean->getACLActions();
 
         if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFieldAccess')) {
             $beanDataArray['acl_fieldcontrol']['edit'] = $GLOBALS['ACLController']->getFieldAccess($thisBean, 'edit', false);
@@ -1613,6 +1631,14 @@ class ModuleHandler
         $emailAddresses->save($beanId, $beanModule);
     }
 
+    /**
+     * @deprecated
+     * can only server backward compatibility in a SugarCRM
+     * @param $beanModule
+     * @param null $thisBean
+     * @param false $mobile
+     * @return array
+     */
     private  function getModuleListdefs($beanModule, $thisBean = null, $mobile = false)
     {
 
@@ -1620,17 +1646,18 @@ class ModuleHandler
             $thisBean = \BeanFactory::getBean($beanModule);
 
         // get the metadata
-        require_once 'modules/' . $thisBean->module_dir . '/metadata/listviewdefs.php';
-        $moduleLanguage = $this->get_bean_language($beanModule);
         $retListViewDefs = array();
-        foreach ($listViewDefs[$beanModule] as $fieldname => $fielddata) {
-            if (($mobile && $fielddata['mobile'] == true) || !$mobile) {
-                $retListViewDefs[] = array(
-                    'name' => strtolower($fieldname),
-                    'label' => !empty($moduleLanguage[$fielddata['label']]) ? $moduleLanguage[$fielddata['label']] : $fieldname,
-                    'width' => strpos('%', $fielddata['width']) === false ? $fielddata['width'] . '%' : $fielddata['width'],
-                    'default' => $fielddata['default']
-                );
+        if(@require_once 'modules/' . $thisBean->module_dir . '/metadata/listviewdefs.php'){
+            $moduleLanguage = $this->get_bean_language($beanModule);
+            foreach ($listViewDefs[$beanModule] as $fieldname => $fielddata) {
+                if (($mobile && $fielddata['mobile'] == true) || !$mobile) {
+                    $retListViewDefs[] = array(
+                        'name' => strtolower($fieldname),
+                        'label' => !empty($moduleLanguage[$fielddata['label']]) ? $moduleLanguage[$fielddata['label']] : $fieldname,
+                        'width' => strpos('%', $fielddata['width']) === false ? $fielddata['width'] . '%' : $fielddata['width'],
+                        'default' => $fielddata['default']
+                    );
+                }
             }
         }
 
@@ -1819,69 +1846,40 @@ class ModuleHandler
         $appListStrings = return_app_list_strings_language($language);
         $appStrings = array_merge($appListStrings, $dynamicDomains);
 
-        // BEGIN syslanguages  => check language source
-        if (isset($GLOBALS['sugar_config']['syslanguages']['spiceuisource']) and $GLOBALS['sugar_config']['syslanguages']['spiceuisource'] === 'db') {
-            // grab labels from syslanguagetranslations
-            // $syslanguages = $this->get_languages(strtolower($language));
-            if (!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
+        // grab labels from syslanguagetranslations
+        // $syslanguages = $this->get_languages(strtolower($language));
+        if (!class_exists('LanguageManager')) require_once 'include/SugarObjects/LanguageManager.php';
 
-            $syslanguagelabels = \LanguageManager::loadDatabaseLanguage($language);
-            // file_put_contents("sugarcrm.log", print_r($syslanguagelabels, true), FILE_APPEND);
-            $syslanguages = array();
-            // var_dump($syslanguagelabels);
-            // explode labels default|short|long
-            if (is_array($syslanguagelabels)) {
-                foreach ($syslanguagelabels as $syslanguagelbl => $syslanguagelblcfg) {
-                    $syslanguages[$syslanguagelbl] = array(
-                        'default' => $syslanguagelblcfg['default'],
-                        'short' => $syslanguagelblcfg['short'],
-                        'long' => $syslanguagelblcfg['long'],
-                    );
-                    /*
-                    $syslanguages[$syslanguagelbl] = $syslanguagelblcfg['default'];
-                    if(!empty($syslanguagelblcfg['short']))
-                        $syslanguages[$syslanguagelbl.'_SHORT'] = $syslanguagelblcfg['short'];
-                    if(!empty($syslanguagelblcfg['long']))
-                        $syslanguages[$syslanguagelbl.'_LONG'] = $syslanguagelblcfg['long'];
-                    */
-                }
-            }
-
-            $responseArray = array(
-                'languages' => \LanguageManager::getLanguages(),
-                'applang' => $syslanguages,
-                'applist' => $appStrings
-            );
-
-        } else { //END
-
-            //ORIGINAL
-            $responseArray = array(
-                'languages' => array(
-                    'available' => [],
-                    'default' => $GLOBALS['sugar_config']['default_language']
-                ),
-                'mod' => $this->get_mod_language($modules, $language),
-                'applang' => return_application_language($language),
-                'applist' => $appStrings
-            );
-
-            foreach ($GLOBALS['sugar_config']['languages'] as $language_code => $language_name) {
-                $responseArray['languages']['available'][] = [
-                    'language_code' => $language_code,
-                    'language_name' => $language_name,
-                    'system_language' => true,
-                    'communication_language' => true
-                ];
+        $syslanguagelabels = \LanguageManager::loadDatabaseLanguage($language);
+        // file_put_contents("sugarcrm.log", print_r($syslanguagelabels, true), FILE_APPEND);
+        $syslanguages = array();
+        // var_dump($syslanguagelabels);
+        // explode labels default|short|long
+        if (is_array($syslanguagelabels)) {
+            foreach ($syslanguagelabels as $syslanguagelbl => $syslanguagelblcfg) {
+                $syslanguages[$syslanguagelbl] = array(
+                    'default' => $syslanguagelblcfg['default'],
+                    'short' => $syslanguagelblcfg['short'],
+                    'long' => $syslanguagelblcfg['long'],
+                );
+                /*
+                $syslanguages[$syslanguagelbl] = $syslanguagelblcfg['default'];
+                if(!empty($syslanguagelblcfg['short']))
+                    $syslanguages[$syslanguagelbl.'_SHORT'] = $syslanguagelblcfg['short'];
+                if(!empty($syslanguagelblcfg['long']))
+                    $syslanguages[$syslanguagelbl.'_LONG'] = $syslanguagelblcfg['long'];
+                */
             }
         }
+
+        $responseArray = array(
+            'languages' => \LanguageManager::getLanguages(),
+            'applang' => $syslanguages,
+            'applist' => $appStrings
+        );
+
 
         $responseArray['md5'] = md5(json_encode($responseArray));
-
-        // if an md5 was sent in and matches the current one .. no change .. do not send the language to save bandwidth
-        if ($_REQUEST['md5'] === $responseArray['md5']) {
-            $responseArray = array('md5' => $_REQUEST['md5']);
-        }
 
         return $responseArray;
 

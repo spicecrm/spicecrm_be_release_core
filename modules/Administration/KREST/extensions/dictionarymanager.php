@@ -1,6 +1,11 @@
 <?php
-$app->group('/dictionary', function () use ($app) {
-    $app->get('/list/{table}', function($req, $res, $args) use ($app) {
+use SpiceCRM\modules\Administration\KREST\controllers\DictionaryController;
+use SpiceCRM\modules\Administration\KREST\controllers\adminController;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->group('/dictionary', function () {
+    $this->get('/list/{table}', function($req, $res, $args) {
         global $db;
 
         $dictionary = array();
@@ -33,10 +38,17 @@ $app->group('/dictionary', function () use ($app) {
         echo json_encode();
     });
     */
-    $app->post('/repair', [new \SpiceCRM\modules\Administration\KREST\controllers\adminController(), 'repairAndRebuild']);
-    $app->get('/sql', [new \SpiceCRM\modules\Administration\KREST\controllers\adminController(), 'buildSQLforRepair']);
-    $app->group('/browser/{module}', function () use ($app) {
-        $app->get('/nodes', [new \SpiceCRM\modules\Administration\KREST\controllers\DictionaryController(), 'getNodes']);
-        $app->get('/fields', [new \SpiceCRM\modules\Administration\KREST\controllers\DictionaryController(), 'getFields']);
+
+
+    $this->group('/browser/{module}', function () {
+        $this->get('/nodes', [new DictionaryController(), 'getNodes']);
+        $this->get('/fields', [new DictionaryController(), 'getFields']);
     });
+});
+$RESTManager->app->group('/repair', function () {
+    $this->get('/sql', [new adminController(), 'buildSQLforRepair']);
+    $this->post('/database', [new adminController(), 'repairAndRebuild']);
+    $this->get('/language', [new adminController(), 'repairLanguage']);
+    $this->get('/aclroles', [new adminController(), 'repairACLRoles']);
+    $this->get('/cache', [new adminController(), 'repairCache']);
 });

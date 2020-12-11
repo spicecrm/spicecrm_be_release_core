@@ -1,29 +1,13 @@
 <?php
 if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-/**
- * twentyreasons ProjectWBS
- * @author Stefan Wölflinger (twentyreasons)
- */
-require_once('include/SugarObjects/templates/basic/Basic.php');
-require_once('include/utils.php');
+
 
 class ProjectWBS extends SugarBean
 {
     //Sugar vars
     public $table_name = "projectwbss";
     public $object_name = "ProjectWBS";
-    public $new_schema = true;
     public $module_dir = "ProjectWBSs";
-    public $id;
-    public $date_entered;
-    public $date_modified;
-    public $assigned_user_id;
-    public $modified_user_id;
-    public $created_by;
-    public $created_by_name;
-    public $modified_by_name;
-    public $description;
-    public $name;
 
     public $project_name;
 
@@ -37,15 +21,6 @@ class ProjectWBS extends SugarBean
     public $relationship_fields = Array(
         'project_id' => 'projects'
     );
-
-    public function bean_implements($interface)
-    {
-        switch ($interface) {
-            case 'ACL':
-                return true;
-        }
-        return false;
-    }
 
     public function get_summary_text()
     {
@@ -146,11 +121,6 @@ class ProjectWBS extends SugarBean
         $sql = "SELECT id FROM projectwbss WHERE parent_id = '$id' AND deleted = 0";
         $res = $db->query($sql);
         while($row = $db->fetchByAssoc($res)) $this->delete_recursive($row['id']);
-    }
-
-    function fill_in_additional_list_fields()
-    {
-        return parent::fill_in_additional_list_fields();
     }
 
     function fill_in_additional_detail_fields(){

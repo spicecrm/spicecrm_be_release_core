@@ -29,8 +29,8 @@ $dictionary['syslogs'] = array(
             'name' => 'pid',
             'type' => 'int'
         ),
-        'level' => array(
-            'name' => 'level',
+        'log_level' => array(
+            'name' => 'log_level',
             'type' => 'varchar',
         ),
         'level_value' => array(
@@ -56,7 +56,7 @@ $dictionary['syslogs'] = array(
         array(
             'name' => 'idx_syslogslevel',
             'type' => 'index',
-            'fields' => array('level')
+            'fields' => array('log_level')
         ),
         array(
             'name' => 'idx_syslogscreatedby',
@@ -66,7 +66,7 @@ $dictionary['syslogs'] = array(
         array(
             'name' => 'idx_syslogslogcreatedbylevel',
             'type' => 'index',
-            'fields' => array('created_by', 'level')
+            'fields' => array('created_by', 'log_level')
         ),
         array(
             'name' => 'idx_syslogs_microtime',
@@ -103,8 +103,8 @@ $dictionary['syslogusers'] = array(
             'name' => 'user_id',
             'type' => 'id',
         ),
-        'level' => array(
-            'name' => 'level',
+        'log_level' => array(
+            'name' => 'log_level',
             'type' => 'varchar',
         ),
         'logstatus' => array(
@@ -122,7 +122,7 @@ $dictionary['syslogusers'] = array(
         array(
             'name' => 'idx_sysloguserslevel',
             'type' => 'index',
-            'fields' => array('level')
+            'fields' => array('log_level')
         ),
         array(
             'name' => 'idx_syslogsuseridstatus',
@@ -132,7 +132,7 @@ $dictionary['syslogusers'] = array(
         array(
             'name' => 'idx_syslogsuseridlevelstatus',
             'type' => 'index',
-            'fields' => array('user_id', 'level', 'logstatus')
+            'fields' => array('user_id', 'log_level', 'logstatus')
         )
     )
 );

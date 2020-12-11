@@ -4,7 +4,6 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 require_once('data/SugarBean.php');
 
-
 class EmailSchedule extends SugarBean
 {
     public $module_dir = 'EmailSchedules';
@@ -34,36 +33,46 @@ class EmailSchedule extends SugarBean
      */
     public function sendEmail($seed, $id, $saveEmail = false)
     {
-        $res = $this->db->query("SELECT * from emailschedules WHERE id = '$id' AND deleted = 0");
-        $emailSchedule = $this->db->fetchByAssoc($res);
 
+        $emailSchedule = BeanFactory::getBean('EmailSchedules', $id);
+
+        // create a seed template, fill with the values from the schedule and parse it
         $template = BeanFactory::getBean('EmailTemplates');
-        $template->subject = $emailSchedule['email_subject'];
-        $template->body_html = $emailSchedule['email_body'];
-        $template->style = $emailSchedule['email_stylesheet_id'];
+        $template->subject = $emailSchedule->email_subject;
+        $template->body_html = $emailSchedule->email_body;
+        $template->style = $emailSchedule->email_stylesheet_id;
 
+        // parse the template
         $parsedTemplate = $template->parse($seed);
-        $email = BeanFactory::getBean('Emails');
 
-        $email->mailbox_id = $emailSchedule['mailbox_id'];
+        // create a new seed email bean
+        $email = BeanFactory::getBean('Emails');
+        $email->mailbox_id = $emailSchedule->mailbox_id;
         $email->name = $parsedTemplate['subject'];
         $email->body = $parsedTemplate['body_html'];
-
         $primaryAddress = $seed->emailAddress->getPrimaryAddress($seed);
 
         if(empty($primaryAddress)) {
             return false;
         }
+
         $email->addEmailAddress('to', $seed->emailAddress->getPrimaryAddress($seed));
-        $mailbox = BeanFactory::getBean('Mailboxes', $emailSchedule['mailbox_id']);
+        $mailbox = BeanFactory::getBean('Mailboxes', $emailSchedule->mailbox_id);
         $email->addEmailAddress('from', $mailbox->imap_pop3_username);
 
-        $email->sendEmail();
+        // clone the attachments
+        $email->id = create_guid();
+        $email->new_with_id = true;
+        \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::cloneAtatchmentsForBean('Emails', $email->id, 'EmailSchedules', $id);
 
+        // save or only send the email
         if($saveEmail){
             $email->parent_type = $seed->module_dir;
             $email->parent_id = $seed->id;
+            $email->to_be_sent = true;
             $email->save();
+        } else {
+            $email->sendEmail();
         }
 
         return $email;

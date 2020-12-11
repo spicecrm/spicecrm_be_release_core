@@ -91,9 +91,9 @@ function sync_get_modified_relationships($session, $module_name, $related_module
 		$sugar_config['list_max_entries_per_page'] = $max_results;	
 	}
 
-	$date_query = "(m1.date_modified > " . db_convert("'".$GLOBALS['db']->quote($from_date)."'", 'datetime'). " AND m1.date_modified <= ". db_convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = $deleted)";
+	$date_query = "(m1.date_modified > " . $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($from_date)."'", 'datetime'). " AND m1.date_modified <= ". $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = $deleted)";
 	if(isset($deletion_date) && !empty($deletion_date)){
-		$date_query .= " OR ({0}.date_modified > " . db_convert("'".$GLOBALS['db']->quote($deletion_date)."'", 'datetime'). " AND {0}.date_modified <= ". db_convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = 1)";
+		$date_query .= " OR ({0}.date_modified > " . $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($deletion_date)."'", 'datetime'). " AND {0}.date_modified <= ". $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = 1)";
 	}
 
 	$in = '';
@@ -236,7 +236,8 @@ function get_modified_entries($session, $module_name, $ids, $select_fields ){
         } else {
         	$temp = @clone($seed);
         }
-        $temp->setupCustomFields($temp->module_dir);
+// CR1000452
+//        $temp->setupCustomFields($temp->module_dir);
 		$temp->loadFromRow($row);
 		$temp->fill_in_additional_detail_fields();
 		if(isset($temp->emailAddress)){

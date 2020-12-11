@@ -1,4 +1,9 @@
 <?php
-$app->post('/search', [new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler(), 'search']);
-$app->post('/search/phonenumber', [new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler(), 'searchPhone']);
-$app->post('/search/export', [new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler(), 'export']);
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
+
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->post('/search', [new SpiceFTSHandler(), 'search']);
+$RESTManager->app->post('/search/phonenumber', [new SpiceFTSHandler(), 'searchPhone']);
+$RESTManager->app->post('/search/export', [new SpiceFTSHandler(), 'export']);

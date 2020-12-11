@@ -1,8 +1,11 @@
 <?php
+use BeanFactory;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$KRESTManager->registerExtension('telecockpit', '1.0');
+$RESTManager->registerExtension('telecockpit', '1.0');
 
-$app->post('/module/CampaignLog/{campaignlogid}/{status}', function ($req, $res, $args) use ($app) {
+$RESTManager->app->post('/module/CampaignLog/{campaignlogid}/{status}', function ($req, $res, $args) {
     global $timedate;
     // ACL Check
     /* todo: check what ACL we need to check

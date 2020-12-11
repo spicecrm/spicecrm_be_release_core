@@ -30,6 +30,11 @@ $elasticAnalyzers = array(
         "tokenizer" => "spice_ngram_all",
         "filter" => array_merge(["lowercase"],$languagefilter)
     ),
+    "spice_ngram_all_search" => array(
+        "type" => "custom",
+        "tokenizer" => "spice_ngram_all_search",
+        "filter" => array_merge(["lowercase"],$languagefilter)
+    ),
     "spice_html" => array(
         "type" => "custom",
         "tokenizer" => "spice_ngram",

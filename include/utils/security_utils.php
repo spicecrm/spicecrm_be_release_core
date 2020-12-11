@@ -55,11 +55,11 @@ $modules_exempt_from_availability_check['CampaignLog']='CampaignLog';
 $modules_exempt_from_availability_check['CampaignTrackers']='CampaignTrackers';
 $modules_exempt_from_availability_check['Prospects']='Prospects';
 $modules_exempt_from_availability_check['ProspectLists']='ProspectLists';
-$modules_exempt_from_availability_check['EmailMarketing']='EmailMarketing';
-$modules_exempt_from_availability_check['EmailMan']='EmailMan';
+// CR1000465 cleanup Email
+// $modules_exempt_from_availability_check['EmailMarketing']='EmailMarketing';
+// $modules_exempt_from_availability_check['EmailMan']='EmailMan';
 $modules_exempt_from_availability_check['ProjectTask']='ProjectTask';
 $modules_exempt_from_availability_check['Users']='Users';
-$modules_exempt_from_availability_check['Teams']='Teams';
 $modules_exempt_from_availability_check['SchedulersJobs']='SchedulersJobs';
 $modules_exempt_from_availability_check['DocumentRevisions']='DocumentRevisions';
 function query_module_access_list(&$user)
@@ -133,15 +133,3 @@ function query_client_ip()
 	}
 	return $clientIP;
 }
-
-// sets value to key value
-function get_val_array($arr){
-	$new = array();
-	if(!empty($arr)){
-	foreach($arr as $key=>$val){
-		$new[$key] = $key;
-	}
-	}
-	return $new;
-}
-

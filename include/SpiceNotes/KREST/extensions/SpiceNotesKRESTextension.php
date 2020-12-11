@@ -1,29 +1,27 @@
 <?php
-$app->group('/module/{beanName}/{beanId}/note', function () use ($app) {
-        $app->get('', function ($req, $res, $args) use ($app) {
-            require_once('modules/SpiceThemeController/SpiceThemeController.php');
-            $SpiceThemeController = new SpiceThemeController();
-            echo $SpiceThemeController->getQuickNotes($args['beanName'], $args['beanId']);
-        });
-        $app->post('', function ($req, $res, $args) use ($app) {
-            require_once('modules/SpiceThemeController/SpiceThemeController.php');
-            $postBody = $body = $req->getParsedBody();
-            $postParams = $_GET;
-            $data = array_merge($postBody, $postParams);
-            $SpiceThemeController = new SpiceThemeController();
-            echo $SpiceThemeController->saveQuickNote($args['beanName'], $args['beanId'], $data);
-        });
-        $app->post('/{noteId}', function ($req, $res, $args) use ($app) {
-            require_once('modules/SpiceThemeController/SpiceThemeController.php');
-            $postBody = $body = $req->getParsedBody();
-            $postParams = $_GET;
-            $data = array_merge($postBody, $postParams);
-            $SpiceThemeController = new SpiceThemeController();
-            echo $SpiceThemeController->editQuickNote($args['beanName'], $args['beanId'], $args['noteId'], $data);
-        });
-        $app->delete('/{noteId}', function ($req, $res, $args) use ($app) {
-            require_once('modules/SpiceThemeController/SpiceThemeController.php');
-            $SpiceThemeController = new SpiceThemeController();
-            echo $SpiceThemeController->deleteQuickNote($args['noteId']);
-        });
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\SpiceNotes\SpiceNotes;
+
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->group('/module/{beanName}/{beanId}/note', function () {
+    $this->get('', function ($req, $res, $args) {
+        echo SpiceNotes::getQuickNotesForBean($args['beanName'], $args['beanId']);
+    });
+    $this->post('', function ($req, $res, $args) {
+        $postBody = $body = $req->getParsedBody();
+        $postParams = $_GET;
+        $data = array_merge($postBody, $postParams);
+        echo SpiceNotes::saveQuickNote($args['beanName'], $args['beanId'], $data);
+
+    });
+    $this->post('/{noteId}', function ($req, $res, $args) {
+        $postBody = $body = $req->getParsedBody();
+        $postParams = $_GET;
+        $data = array_merge($postBody, $postParams);
+        echo SpiceNotes::editQuickNote($args['beanName'], $args['beanId'], $data);
+    });
+    $this->delete('/{noteId}', function ($req, $res, $args) {
+        echo SpiceNotes::deleteQuickNote($args['noteId']);
+    });
 });

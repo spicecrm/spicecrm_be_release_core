@@ -45,27 +45,12 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 class UserPreference extends SugarBean
 {
-    public $db;
-    public $field_name_map;
 
-    // Stored fields
-    public $id;
-    public $date_entered;
-    public $date_modified;
-    public $assigned_user_id;
-    public $assigned_user_name;
-    public $name;
-    public $category;
-    public $contents;
-    public $deleted;
 
     public $object_name = 'UserPreference';
     public $table_name = 'user_preferences';
-
     public $disable_row_level_security = true;
     public $module_dir = 'UserPreferences';
-    public $field_defs = array();
-    public $field_defs_map = array();
     public $new_schema = true;
 
     protected $_userFocus;
@@ -300,6 +285,12 @@ class UserPreference extends SugarBean
             // cn: moving this to only log when valid - throwing errors on install
             return $this->reloadPreferences($category);
         }
+
+        //CR1000454 return the data stored in session if tehre is any
+        if(!empty($user->id) && (isset($_SESSION[$user->user_name . '_PREFERENCES'][$category]))) {
+            return $_SESSION[$user->user_name . '_PREFERENCES'][$category];
+        }
+
         return false;
     }
 
@@ -491,9 +482,6 @@ class UserPreference extends SugarBean
             unset($_SESSION[$user->user_name."_PREFERENCES"][$category]);
         }
         else {
-        	if(!empty($_COOKIE['sugar_user_theme']) && !headers_sent()){
-                setcookie('sugar_user_theme', '', time() - 3600); // expire the sugar_user_theme cookie
-            }
             unset($_SESSION[$user->user_name."_PREFERENCES"]);
             if($user->id == $GLOBALS['current_user']->id) {
                 session_destroy();

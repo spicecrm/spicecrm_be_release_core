@@ -196,6 +196,28 @@ class ACLController {
         return ACLAction::userHasAccess($current_user->id, $category, $action, $type, $is_owner);
     }
 
+    /**
+     * returns all ACL Actions the user is allowed to do on the bean
+     *
+     * returns an array with the actionname and true or false
+     *
+     * @param $bean
+     * @return array
+     */
+    public function getBeanActions($bean)
+    {
+        global $current_user;
+
+        $aclArray = [];
+        $aclActions = ['list', 'detail', 'edit', 'delete', 'export', 'import'];
+        foreach ($aclActions as $aclAction) {
+            $aclArray[$aclAction] = false;
+            if ($bean)
+                $aclArray[$aclAction] = $this->checkAccess($aclAction, $bean, $bean->assigned_user_id == $current_user->id);
+        }
+        return $aclArray;
+    }
+
     /*
      * function to get the field control .. not implemented for standard ACL Controller
      */
@@ -232,9 +254,7 @@ class ACLController {
 			$checkModules[$module] = false;
 
 		}else{
-			$class = $beanList[$module];
-			require_once($beanFiles[$class]);
-			$mod = new $class();
+            $mod = \BeanFactory::getBean($module);
 			if(!is_subclass_of($mod, 'SugarBean')){
 				$checkModules[$module] = false;
 			}else{

@@ -5,8 +5,8 @@ namespace SpiceCRM\modules\Emails\KREST\controllers;
 use BeanFactory;
 use Exception;
 use Email;
-use KREST\ForbiddenException;
-use SpiceCRM\KREST\NotFoundException;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\ErrorHandlers\NotFoundException;
 use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
 use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachmentHandler;
@@ -72,7 +72,7 @@ class EmailsKRESTController
      * @param $res
      * @param $args
      * @throws NotFoundException
-     * @throws \KREST\Exception
+     * @throws \SpiceCRM\includes\ErrorHandlers\Exception
      */
     public function process($req, $res, $args) {
         $email = self::getEmailBean($args['id']);
@@ -96,7 +96,7 @@ class EmailsKRESTController
         $emailId = filter_var($postBody['email_id'], FILTER_SANITIZE_STRING);
         $email = \BeanFactory::getBean('Emails', $emailId);
 
-        if (isset($postBody['attachments'])) {
+        if (isset($postBody['outlookAttachments'])) {
             return $res->write(json_encode($this->handleOutlookAttachments($email, $postBody)));
         } else {
             // todo correct http status
@@ -176,7 +176,7 @@ class EmailsKRESTController
             throw new \Exception('Beans missing');
         }
 
-        $email = $this->externalDataToEmail($postBody['email'], $postBody['beans'], $source);
+        $email = $this->externalDataToEmail($postBody['email'], $postBody['bean'], $postBody['beans'], $source);
 
         $result  = [];
         $isFirst = true;
@@ -256,7 +256,7 @@ class EmailsKRESTController
      * @param $args
      * @return mixed
      * @throws NotFoundException
-     * @throws \KREST\Exception
+     * @throws \SpiceCRM\includes\ErrorHandlers\Exception
      */
     public function setOpenness($req, $res, $args) {
         $email = self::getEmailBean($args['id']);
@@ -277,7 +277,7 @@ class EmailsKRESTController
      * @param $args
      * @return mixed
      * @throws NotFoundException
-     * @throws \KREST\Exception
+     * @throws \SpiceCRM\includes\ErrorHandlers\Exception
      */
     public function setStatus($req, $res, $args) {
         // todo: check auf erlaubte stati
@@ -357,18 +357,21 @@ class EmailsKRESTController
         $email = \BeanFactory::getBean('Emails');
         $email->id = create_guid();
         $email->new_with_id = true;
-        $email->filename = $postBody['filename'];
+        $email->file_name = $postBody['filename'];
         $email->file_mime_type = $postBody['filemimetype'];
 
         // create a guid for the email and save the message as file with the bean id
         $emailId = create_guid();
         $upload_file = new UploadFile('file');
         $decodedFile = base64_decode($postBody['file']);
+
+        $email->file_md5 = md5($decodedFile);
+
         $upload_file->set_for_soap($email->id, $decodedFile);
-        $upload_file->final_move($email->id, true);
+        $upload_file->final_move($email->file_md5, true);
 
         // convert the message
-        $email->convertMsgToEmail($email->id, $postBody['beanModule'], $postBody['beanId']);
+        $email->convertMsgToEmail($email->file_md5, $postBody['beanModule'], $postBody['beanId']);
         $email->save();
 
         $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
@@ -387,7 +390,7 @@ class EmailsKRESTController
      * @return Email
      * @throws Exception
      */
-    private function externalDataToEmail($data, $beans, $source) {
+    private function externalDataToEmail($data, $emailbean, $beans, $source) {
         global $current_user;
         try {
             $email = Email::findByMessageId($data['message_id']);
@@ -426,18 +429,27 @@ class EmailsKRESTController
             $email->set_created_by = true;
             $email->modified_user_id = $current_user->id;
 
+            // process any field if a bean is sent in as well
+            if($emailbean) {
+                foreach ($email->field_name_map as $fieldName => $fieldData) {
+                    if (isset($emailbean[$fieldName])) {
+                        $email->{$fieldName} = $emailbean[$fieldName];
+                    }
+                }
+            }
+
             $email->save();
         }
 
-        switch ($source) {
-            case 'outlook':
-                $this->handleOutlookAttachments($email, $data);
-                break;
-            case 'gsuite':
-                $this->handleGSuiteAttachments($email, $data);
-                break;
-
-        }
+//        switch ($source) {
+//            case 'outlook':
+//                $this->handleOutlookAttachments($email, $data);
+//                break;
+//            case 'gsuite':
+//                $this->handleGSuiteAttachments($email, $data);
+//                break;
+//
+//        }
 
         return $email;
     }
@@ -474,7 +486,7 @@ class EmailsKRESTController
      * @param $emailId
      * @return Email
      * @throws NotFoundException
-     * @throws \KREST\Exception
+     * @throws \SpiceCRM\includes\ErrorHandlers\Exception
      */
     private static function getEmailBean($emailId) {
         $email = BeanFactory::getBean('Emails', $emailId);
@@ -519,16 +531,4 @@ class EmailsKRESTController
         return $attachmentHandler->saveAttachments();
     }
 
-    private function setEmailAttachment($beanId, $post = [])
-    {
-        $upload_file = new UploadFile('file');
-        if ($post['file']) {
-            $decodedFile = base64_decode($post['file']);
-            $upload_file->set_for_soap($beanId, $decodedFile);
-            $upload_file->final_move($beanId, true);
-        } else if (isset($_FILES['file']) && $upload_file->confirm_upload()) {
-            $upload_file->use_proxy = $_FILES['file']['proxy'] ? true : false;
-            $upload_file->final_move($beanId, true);
-        }
-    }
 }

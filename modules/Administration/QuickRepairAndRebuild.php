@@ -69,44 +69,22 @@ class RepairAndClear
             case 'rebuildExtensions':
                 $this->rebuildExtensions();
                 break;
-            case 'clearTpls':
-                $this->clearTpls();
-                break;
-            case 'clearJsFiles':
-                $this->clearJsFiles();
-                break;
-            case 'clearDashlets':
-                $this->clearDashlets();
-                break;
-            case 'clearThemeCache':
-                $this->clearThemeCache();
-                break;
             case 'clearVardefs':
                 $this->clearVardefs();
-                break;
-            case 'clearJsLangFiles':
-                $this->clearJsLangFiles();
                 break;
             case 'rebuildAuditTables':
                 $this->rebuildAuditTables();
                 break;
             case 'clearSearchCache':
-                $this->clearSearchCache();
+                $this->clearUniSearchCache();
                 break;
             case 'clearAll':
-                $this->clearTpls();
-                $this->clearJsFiles();
                 $this->clearVardefs();
-                $this->clearJsLangFiles();
                 $this->clearLanguageCache();
-                $this->clearDashlets();
-                $this->clearSmarty();
-                $this->clearThemeCache();
-                $this->clearXMLfiles();
-                $this->clearSearchCache();
-                $this->clearExternalAPICache();
+                $this->clearUniSearchCache();
                 $this->rebuildExtensions();
                 $this->rebuildAuditTables();
+                $this->rebuildUniSearch(); // CR1000458
                 $this->repairDatabase();
                 break;
         }
@@ -131,7 +109,6 @@ class RepairAndClear
 		global $current_user, $mod_strings, $dictionary;
 		set_time_limit(3600);
 
-		include('include/modules.php'); //bug 15661
 		$db = DBManagerFactory::getInstance();
 
 		if (is_admin($current_user) || is_admin_for_any_module($current_user))
@@ -214,19 +191,20 @@ class RepairAndClear
 
         if($this->show_output) echo $mod_strings['LBL_REBUILD_REL_UPD_WARNING'];
 
-        // clear the database row if it exists (just to be sure)
-        $query = "DELETE FROM versions WHERE name='Rebuild Extensions'";
-        $GLOBALS['log']->info($query);
-        $GLOBALS['db']->query($query);
-
-        // insert a new database row to show the rebuild extensions is done
-        $id = create_guid();
-        $gmdate = gmdate('Y-m-d H:i:s');
-        $date_entered = db_convert("'$gmdate'", 'datetime');
-        $query = 'INSERT INTO versions (id, deleted, date_entered, date_modified, modified_user_id, created_by, name, file_version, db_version) '
-            . "VALUES ('$id', '0', $date_entered, $date_entered, '1', '1', 'Rebuild Extensions', '4.0.0', '4.0.0')";
-        $GLOBALS['log']->info($query);
-        $GLOBALS['db']->query($query);
+// cleanup. Tbale versions no longer exists (since spicecrm 2020.03.001)
+//        // clear the database row if it exists (just to be sure)
+//        $query = "DELETE FROM versions WHERE name='Rebuild Extensions'";
+//        $GLOBALS['log']->info($query);
+//        $GLOBALS['db']->query($query);
+//
+//        // insert a new database row to show the rebuild extensions is done
+//        $id = create_guid();
+//        $gmdate = gmdate('Y-m-d H:i:s');
+//        $date_entered = db_convert("'$gmdate'", 'datetime');
+//        $query = 'INSERT INTO versions (id, deleted, date_entered, date_modified, modified_user_id, created_by, name, file_version, db_version) '
+//            . "VALUES ('$id', '0', $date_entered, $date_entered, '1', '1', 'Rebuild Extensions', '4.0.0', '4.0.0')";
+//        $GLOBALS['log']->info($query);
+//        $GLOBALS['db']->query($query);
 
         // unset the session variable so it is not picked up in DisplayWarnings.php
         if(isset($_SESSION['rebuild_extensions'])) {
@@ -235,38 +213,53 @@ class RepairAndClear
 	}
 
 	//Cache Clear Methods
+
+    /**
+     * @deprecated
+     */
 	public function clearSmarty()
 	{
 		global $mod_strings;
 		if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_CLEARSMARTY']}</h3>";
 		$this->_clearCache(sugar_cached('smarty/templates_c'), '.tpl.php');
 	}
-	public function clearXMLfiles()
-	{
-		global $mod_strings;
-		if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_XMLFILES']}</h3>";
-		$this->_clearCache(sugar_cached("xml"), '.xml');
 
-		include('modules/Versions/ExpectedVersions.php');
-
-        global $expect_versions;
-
-        if (isset($expect_versions['Chart Data Cache'])) {
-            $version = new Version();
-            $version->retrieve_by_string_fields(array('name'=>'Chart Data Cache'));
-
-            $version->name = $expect_versions['Chart Data Cache']['name'];
-            $version->file_version = $expect_versions['Chart Data Cache']['file_version'];
-            $version->db_version = $expect_versions['Chart Data Cache']['db_version'];
-            $version->save();
-        }
-	}
+    /**
+     * @deprecated
+     * module Versions no longer exists as for spicecrm 2020.03.001
+     */
+//	public function clearXMLfiles()
+//	{
+//		global $mod_strings;
+//		if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_XMLFILES']}</h3>";
+//		$this->_clearCache(sugar_cached("xml"), '.xml');
+//
+//		include('modules/Versions/ExpectedVersions.php');
+//
+//        global $expect_versions;
+//
+//        if (isset($expect_versions['Chart Data Cache'])) {
+//            $version = new Version();
+//            $version->retrieve_by_string_fields(array('name'=>'Chart Data Cache'));
+//
+//            $version->name = $expect_versions['Chart Data Cache']['name'];
+//            $version->file_version = $expect_versions['Chart Data Cache']['file_version'];
+//            $version->db_version = $expect_versions['Chart Data Cache']['db_version'];
+//            $version->save();
+//        }
+//	}
+    /**
+     * @deprecated
+     */
 	public function clearDashlets()
 	{
 		global $mod_strings;
 		if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_CLEARDASHLET']}</h3>";
 		$this->_clearCache(sugar_cached('dashlets'), '.php');
 	}
+    /**
+     * @deprecated
+     */
     public function clearThemeCache()
     {
 		global $mod_strings;
@@ -274,6 +267,9 @@ class RepairAndClear
 		SugarThemeRegistry::clearAllCaches();
 	}
 
+    /**
+     * @deprecated
+     */
 	public function clearTpls()
 	{
 		global $mod_strings;
@@ -298,6 +294,10 @@ class RepairAndClear
 		else
 			$this->_clearCache(sugar_cached('modules/'), 'vardefs.php');
 	}
+
+    /**
+     * @deprecated
+     */
 	public function clearJsFiles()
 	{
 		global $mod_strings;
@@ -313,6 +313,10 @@ class RepairAndClear
 			$this->_clearCache(sugar_cached('modules/'), '.js');
 
 	}
+
+    /**
+     * @deprecated
+     */
 	public function clearJsLangFiles()
 	{
 		global $mod_strings;
@@ -360,7 +364,7 @@ class RepairAndClear
 	/**
 	 * Remove the cached unified_search_modules.php file
 	 */
-    public function clearSearchCache() {
+    public function clearUniSearchCache() {
         global $mod_strings, $sugar_config;
         if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_CLEARSEARCH']}</h3>";
         $search_dir=sugar_cached('');
@@ -369,6 +373,9 @@ class RepairAndClear
             unlink( "$src_file" );
         }
     }
+    /**
+     * @deprecated
+     */
     public function clearExternalAPICache()
 	{
         global $mod_strings, $sugar_config;
@@ -382,7 +389,6 @@ class RepairAndClear
 	public function rebuildAuditTables()
 	{
 		global $mod_strings;
-		include('include/modules.php');	//bug 15661
 		if($this->show_output) echo "<h3> {$mod_strings['LBL_QR_REBUILDAUDIT']}</h3>";
 
 		if(!in_array( translate('LBL_ALL_MODULES'), $this->module_list) && !empty($this->module_list))
@@ -460,4 +466,21 @@ class RepairAndClear
 			next($beanList);
 		}
 	}
+
+
+    /**
+     * CR1000458
+     * rebuild unified_search_modules.php for cache
+     */
+    public function rebuildUniSearch(){
+        global $mod_strings;
+        //clear the unified_search_module.php file
+        require_once('include/utils/UnifiedSearchAdvanced.php');
+        UnifiedSearchAdvanced::unlinkUnifiedSearchModulesFile();
+        $uni = new \UnifiedSearchAdvanced();
+        $uni->buildCache();
+        if($this->show_output) {
+            echo "<br>{$mod_strings['LBL_REBUILD_UNISEARCH']}";
+        }
+    }
 }

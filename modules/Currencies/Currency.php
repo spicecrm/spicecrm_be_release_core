@@ -50,27 +50,11 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  */
 class Currency extends SugarBean
 {
-	// Stored fields
-	var $id;
-	var $iso4217;
-	var $name;
-	var $status;
-	var $conversion_rate;
-	var $deleted;
-	var $date_entered;
-	var $date_modified;
-	var $symbol;
-	var $hide = '';
-	var $unhide = '';
-	var $field_name_map;
 
 	var $table_name = "currencies";
 	var $object_name = "Currency";
 	var $module_dir = "Currencies";
-	var $new_schema = true;
-
 	var $disable_num_format = true;
-
 
     public function __construct()
 	{
@@ -139,23 +123,6 @@ class Currency extends SugarBean
 		return $sugar_config['currencies']['default_currency_iso4217'] ?: $sugar_config['default_currency_iso4217'];
 	}
 
-    function getISO4217ById($currencyID){
-        if($currencyID == "-99")
-        {
-
-            return $this->getDefaultISO4217();
-        }
-        else
-        {
-            $c = $this->retrieve($currencyID);
-            if($c->id)
-                return  $c->iso4217;
-            else
-                return $this->getDefaultISO4217();
-        }
-    }
-
-
     function retrieveIDByIso($isoCode){
         global $db;
         if($this->getDefaultISO4217() == $isoCode)
@@ -172,49 +139,6 @@ class Currency extends SugarBean
         }
     }
 
-    /**
-     * retrieveIDBySmbol
-     *
-     * Returns the id value for given currency symbol in Currencies table
-     * and currency entry for symbol is not set to deleted.
-     *
-     * @param $symbol Symbol value
-     * @return String id value for symbol defined in Currencies table, blank String value
-     *         if none found
-     */
-	function retrieveIDBySymbol($symbol) {
-	 	$query = "SELECT id FROM currencies WHERE symbol='$symbol' AND deleted=0;";
-	 	$result = $this->db->query($query);
-	 	if($result){
-	 	  $row = $this->db->fetchByAssoc($result);
-	 	  if($row){
-	 	     return $row['id'];
-	 	  }
-	 	}
-
-	 	return '';
-	 }
-
-	 function list_view_parse_additional_sections(&$list_form) {
-		global $isMerge;
-
-		if(isset($isMerge) && $isMerge && $this->id != '-99'){
-		$list_form->assign('PREROW', '<input name="mergecur[]" type="checkbox" value="'.$this->id.'">');
-		}
-		return $list_form;
-	}
-
-	function retrieve_id_by_name($name) {
-	 	$query = "select id from currencies where name='$name' and deleted=0;";
-	 	$result = $this->db->query($query);
-	 	if($result){
-	 	$row = $this->db->fetchByAssoc($result);
-	 	if($row){
-	 		return $row['id'];
-	 	}
-	 	}
-	 	return '';
-	}
 	
     function retrieve($id = -1, $encode=true, $deleted=true, $relationships = true) {
      	if($id == '-99'){
@@ -257,11 +181,7 @@ class Currency extends SugarBean
      		return chr(2);
      	return $this->symbol;
      }
-	function get_list_view_data() {
-		$this->conversion_rate = format_number($this->conversion_rate, 10, 10);
-		$data = parent::get_list_view_data();
-		return $data;
-	}
+
     function save($check_notify = FALSE, $fts_index_bean = TRUE) {
         sugar_cache_clear('currency_list');
         return parent::save($check_notify, $fts_index_bean);
@@ -450,14 +370,14 @@ function format_place_symbol($amount, $symbol, $symbol_space, $symbol_position =
         switch ($symbol_position) {
             case 'right':
                 if ($symbol_space == true) {
-                    $amount = $amount . '&nbsp;' . $symbol;
+                    $amount = $amount . ( function_exists('mb_chr') ? mb_chr(160):' ' ) . $symbol; # mb_chr() exists from PHP 7.2, 160 ... No-Break Space (nbsp)
                 } else {
                     $amount = $amount . $symbol;
                 }
                 break;
             default:
                 if ($symbol_space == true) {
-                    $amount = $symbol . '&nbsp;' . $amount;
+                    $amount = $symbol . ( function_exists('mb_chr') ? mb_chr(160):' ' ) . $amount; # mb_chr() exists from PHP 7.2, 160 ... No-Break Space (nbsp)
                 } else {
                     $amount = $symbol . $amount;
                 }
@@ -466,59 +386,6 @@ function format_place_symbol($amount, $symbol, $symbol_space, $symbol_position =
 	return $amount;
 }
 
-function unformat_number($string) {
-    // Just in case someone passes an already unformatted number through.
-    if ( !is_string($string) ) {
-        return $string;
-    }
-
-	static $currency = null;
-	if(!isset($currency)) {
-		global $current_user;
-		$currency = new Currency();
-		if(!empty($current_user->id)){
-			if($current_user->getPreference('currency')){
-				$currency->retrieve($current_user->getPreference('currency'));
-			}
-			else{
-				$currency->retrieve('-99'); // use default if none set
-	}
-		}else{
-			$currency->retrieve('-99'); // use default if none set
-		}
-	}
-
-	$seps = get_number_seperators();
-	// remove num_grp_sep and replace decimal separator with decimal
-	$string = trim(str_replace(array($seps[0], $seps[1], $currency->symbol), array('', '.', ''), $string));
-    if(preg_match('/^[+-]?\d(\.\d+)?[Ee]([+-]?\d+)?$/', $string)) $string = sprintf("%.0f", $string);//for scientific number format. After round(), we may get this number type.
-    preg_match('/[\-\+]?[0-9\.]*/', $string, $string);
-
-    $out_number = trim($string[0]);
-    if ( $out_number == '' ) {
-        return '';
-    } else {
-        return (float)$out_number;
-    }
-}
-
-// deprecated use format_number() above
-function format_money($amount, $for_display = TRUE) {
-	// This function formats an amount for display.
-	// Later on, this should be converted to use proper thousand and decimal seperators
-	// Currently, it stays closer to the existing format, and just rounds to two decimal points
-	if(isset($amount)) {
-		if($for_display) {
-			return sprintf("%0.02f",$amount);
-		} else {
-			// If it's an editable field, don't use a thousand seperator.
-			// Or perhaps we will want to, but it doesn't matter right now.
-			return sprintf("%0.02f",$amount);
-		}
-	} else {
-		return;
-	}
-}
 
 /**
  * Returns user/system preference for number grouping separator character(default ",") and the decimal separator
@@ -561,137 +428,3 @@ function get_number_seperators($reset_sep = false)
 
 	return array($num_grp_sep, $dec_sep);
 }
-
-/**
- * toString
- *
- * Utility function to print out some information about Currency instance.
- */
-function toString($echo = true) {
-	$s = "\$m_currency_round=$m_currency_round \n" .
-         "\$m_currency_decimal=$m_currency_decimal \n" .
-         "\$m_currency_symbol=$m_currency_symbol \n" .
-         "\$m_currency_iso=$m_currency_iso \n" .
-         "\$m_currency_name=$m_currency_name \n";
-
-    if($echo) {
-       echo $s;
-    }
-
-    return $s;
-}
-
-function getCurrencyDropDown($focus, $field='currency_id', $value='', $view='DetailView'){
-    $view = ucfirst($view);
-	if($view == 'EditView' || $view == 'MassUpdate' || $view == 'QuickCreate' || $view == 'ConvertLead'){
-        if ( isset($_REQUEST[$field]) && !empty($_REQUEST[$field]) ) {
-            $value = $_REQUEST[$field];
-	    } elseif ( empty($focus->id) ) {
-            $value = $GLOBALS['current_user']->getPreference('currency');
-            if ( empty($value) ) {
-                // -99 is the system default currency
-                $value = -99;
-            }
-        }
-		require_once('modules/Currencies/ListCurrency.php');
-		$currency_fields = array();
-		//Bug 18276 - Fix for php 5.1.6
-		$defs=$focus->field_defs;
-		//
-		foreach($defs as $name=>$key){
-			if($key['type'] == 'currency'){
-				$currency_fields[]= $name;
-			}
-		}
-		$currency = new ListCurrency();
-        $selectCurrency = $currency->getSelectOptions($value);
-
-		$currency->setCurrencyFields($currency_fields);
-		$html = '<select name="';
-		// If it's a lead conversion (ConvertLead view), add the module_name before the $field
-		if ($view == "ConvertLead") {
-			$html .= $focus->module_name;
-		}
-		$html .= $field. '" id="' . $field  . '_select" ';
-		if($view != 'MassUpdate')
-			$html .= 'onchange="CurrencyConvertAll(this.form);"';
-		$html .= '>'. $selectCurrency . '</select>';
-		if($view != 'MassUpdate')
-			$html .= $currency->getJavascript();
-		return $html;
-	}else{
-
-		$currency = new Currency();
-		$currency->retrieve($value);
-		return $currency->name;
-	}
-
-}
-
-function getCurrencyNameDropDown($focus, $field='currency_name', $value='', $view='DetailView')
-{
-    if($view == 'EditView' || $view == 'MassUpdate' || $view == 'QuickCreate'){
-		require_once('modules/Currencies/ListCurrency.php');
-		$currency_fields = array();
-		//Bug 18276 - Fix for php 5.1.6
-		$defs=$focus->field_defs;
-		//
-		foreach($defs as $name=>$key){
-			if($key['type'] == 'currency'){
-				$currency_fields[]= $name;
-			}
-		}
-		$currency = new ListCurrency();
-        $currency->lookupCurrencies();
-        $listitems = array();
-        foreach ( $currency->list as $item )
-            $listitems[$item->name] = $item->name;
-        return '<select name="'.$field.'" id="'.$field.'" />'.
-            get_select_options_with_id($listitems,$value).'</select>';
-	}else{
-
-		$currency = new Currency();
-        if ( isset($focus->currency_id) ) {
-            $currency_id = $focus->currency_id;
-        } else {
-            $currency_id = -99;
-        }
-		$currency->retrieve($currency_id);
-		return $currency->name;
-	}
-}
-
-function getCurrencySymbolDropDown($focus, $field='currency_name', $value='', $view='DetailView')
-{
-    if($view == 'EditView' || $view == 'MassUpdate' || $view == 'QuickCreate'){
-		require_once('modules/Currencies/ListCurrency.php');
-		$currency_fields = array();
-		//Bug 18276 - Fix for php 5.1.6
-		$defs=$focus->field_defs;
-		//
-		foreach($defs as $name=>$key){
-			if($key['type'] == 'currency'){
-				$currency_fields[]= $name;
-			}
-		}
-		$currency = new ListCurrency();
-        $currency->lookupCurrencies();
-        $listitems = array();
-        foreach ( $currency->list as $item )
-            $listitems[$item->symbol] = $item->symbol;
-        return '<select name="'.$field.'" id="'.$field.'" />'.
-            get_select_options_with_id($listitems,$value).'</select>';
-	}else{
-
-		$currency = new Currency();
-        if ( isset($focus->currency_id) ) {
-            $currency_id = $focus->currency_id;
-        } else {
-            $currency_id = -99;
-        }
-		$currency->retrieve($currency_id);
-		return $currency->name;
-	}
-}
-
-?>

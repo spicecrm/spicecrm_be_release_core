@@ -1,65 +1,67 @@
 <?php
+use SpiceCRM\includes\SpiceFTSManager\SpiceFTSRESTManager;
+use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
+$spiceFTSManager = new SpiceFTSRESTManager();
 
-// require_once('include/SpiceFTSManager/SpiceFTSRESTManager.php');
-
-$spiceFTSManager = new SpiceCRM\includes\SpiceFTSManager\SpiceFTSRESTManager();
-
-$app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
-    $app->group('/core', function () use ($app, $spiceFTSManager) {
-        $app->get('/modules', function () use ($app, $spiceFTSManager) {
+$RESTManager->app->group('/ftsmanager', function () use ($spiceFTSManager) {
+    $this->group('/core', function () use ($spiceFTSManager) {
+        $this->get('/modules', function () use ($spiceFTSManager) {
             echo json_encode($spiceFTSManager->getModules());
         });
-        $app->get('/index', function () use ($app, $spiceFTSManager) {
+        $this->get('/index', function () use ($spiceFTSManager) {
             echo json_encode($spiceFTSManager->getIndex());
         });
-        $app->get('/nodes', function () use ($app, $spiceFTSManager) {
+        $this->get('/nodes', function () use ($spiceFTSManager) {
             $getParams = $_GET;
             echo json_encode($spiceFTSManager->getNodes($getParams['nodeid']));
         });
-        $app->get('/fields', function () use ($app, $spiceFTSManager) {
+        $this->get('/fields', function () use ($spiceFTSManager) {
             $getParams = $_GET;
             echo json_encode($spiceFTSManager->getFields($getParams['nodeid']));
         });
-        $app->get('/analyzers', function () use ($app, $spiceFTSManager) {
+        $this->get('/analyzers', function () use ($spiceFTSManager) {
             echo json_encode($spiceFTSManager->getAnalyzers());
         });
-        $app->post('/initialize', function () use ($app, $spiceFTSManager) {
+        $this->post('/initialize', function () use ($spiceFTSManager) {
             // admin check
             global $current_user;
             if(!$current_user->is_admin) {
-                throw new \SpiceCRM\KREST\ForbiddenException();
+                throw new ForbiddenException();
             }
 
             echo json_encode($spiceFTSManager->initialize());
         });
     });
-    $app->group('/{module}', function() use ($app, $spiceFTSManager) {
-        $app->get('/fields', function($req, $res, $args) use ($app, $spiceFTSManager) {
+    $this->group('/{module}', function() use ($spiceFTSManager) {
+        $this->get('/fields', function($req, $res, $args) use ($spiceFTSManager) {
             echo json_encode($spiceFTSManager->getFTSFields($args['module']));
         });
-        $app->get('/settings', function($req, $res, $args) use ($app, $spiceFTSManager) {
+        $this->get('/settings', function($req, $res, $args) use ($spiceFTSManager) {
             // admin check
             global $current_user;
             if(!$current_user->is_admin) {
-                throw new \SpiceCRM\KREST\ForbiddenException();
+                throw new ForbiddenException();
             }
 
             echo json_encode($spiceFTSManager->getFTSSettings($args['module']));
         });
-        $app->delete('', function($req, $res, $args) use ($app, $spiceFTSManager) {
+        $this->delete('', function($req, $res, $args) use ($spiceFTSManager) {
             // admin check
             global $current_user;
             if(!$current_user->is_admin) {
-                throw new \SpiceCRM\KREST\ForbiddenException();
+                throw new ForbiddenException();
             }
 
             echo json_encode($spiceFTSManager->deleteIndexSettings($args['module']));
         });
-        $app->post('', function($req, $res, $args) use ($app, $spiceFTSManager) {
+        $this->post('', function($req, $res, $args) use ($spiceFTSManager) {
             // admin check
             global $current_user;
             if(!$current_user->is_admin) {
-                throw new \SpiceCRM\KREST\ForbiddenException();
+                throw new ForbiddenException();
             }
             $items = $req->getParsedBody();
 
@@ -69,15 +71,18 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
             echo json_encode($spiceFTSManager->setFTSFields($args['module'], $items));
         });
 
-        $app->group('/index', function() use ($app, $spiceFTSManager) {
-            $app->post('', function ($req, $res, $args) use ($app, $spiceFTSManager) {
+        $this->group('/index', function() use ($spiceFTSManager) {
+            $this->post('', function ($req, $res, $args) use ($spiceFTSManager) {
                 // admin check
                 global $current_user;
+
+                set_time_limit(300);
+
                 if (!$current_user->is_admin) {
-                    throw new \SpiceCRM\KREST\ForbiddenException();
+                    throw new ForbiddenException();
                 }
 
-                $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
+                $ftsHandler = new SpiceFTSHandler();
 
                 $params = $_GET;
                 if ($params['resetIndexDates']) {
@@ -92,23 +97,23 @@ $app->group('/ftsmanager', function () use ($app, $spiceFTSManager) {
 
                 echo json_encode(array('status' => 'success', 'message' => $message));
             });
-            $app->delete('', function($req, $res, $args) use ($app, $spiceFTSManager) {
+            $this->delete('', function($req, $res, $args) use ($spiceFTSManager) {
                 // admin check
                 global $current_user;
                 if(!$current_user->is_admin) {
-                    throw new \SpiceCRM\KREST\ForbiddenException();
+                    throw new ForbiddenException();
                 }
 
                 echo json_encode($spiceFTSManager->deleteIndex($args['module']));
             });
-            $app->post('/reset', function($req, $res, $args) use ($app, $spiceFTSManager) {
+            $this->post('/reset', function($req, $res, $args) use ($spiceFTSManager) {
                 // admin check
                 global $current_user;
                 if(!$current_user->is_admin) {
-                    throw new \SpiceCRM\KREST\ForbiddenException();
+                    throw new ForbiddenException();
                 }
 
-                $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
+                $ftsHandler = new SpiceFTSHandler();
 
                 // delete and recreate the index
                 $spiceFTSManager->deleteIndex($args['module']);

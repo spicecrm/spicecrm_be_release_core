@@ -41,7 +41,7 @@ require_once('include/utils/file_utils.php');
 ob_start();
 
 require_once('soap/SoapError.php');
-require_once('include/nusoap/nusoap.php');
+require_once('vendor/nusoap/nusoap.php');
 require_once(get_custom_file_if_exists('modules/Contacts/Contact.php'));
 require_once(get_custom_file_if_exists('modules/Accounts/Account.php'));
 require_once(get_custom_file_if_exists('modules/Opportunities/Opportunity.php'));
@@ -98,4 +98,3 @@ ob_end_flush();
 flush();
 sugar_cleanup();
 exit();
-?>

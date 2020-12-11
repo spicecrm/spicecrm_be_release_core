@@ -10,7 +10,7 @@ $elasticTokenizers = array(
             "punctuation",
             "symbol",
             "whitespace"
-        ]
+        ],
     ),
     "spice_ngram" => array(
         "type" => "nGram",
@@ -30,8 +30,23 @@ $elasticTokenizers = array(
             "digit",
             "punctuation",
             "symbol",
-            "whitespace"
-        ]
+            "whitespace",
+            "custom"
+        ],
+        "custom_token_chars" => "+&"
+    ),
+    "spice_ngram_all_search" => array(
+        "type" => "nGram",
+        "min_gram" => "3",
+        "max_gram" => "20",
+        "token_chars"=> [
+            "letter",
+            "digit",
+            "punctuation",
+            "symbol",
+            "custom"
+        ],
+        "custom_token_chars" => "+&"
     ),
     "spice_edgengram" => array(
         "type" => "edge_ngram",

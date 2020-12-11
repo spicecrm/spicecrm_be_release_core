@@ -69,54 +69,6 @@ class Lead extends Person {
 		return false;
 	}
 
-
-	function listviewACLHelper(){
-		$array_assign = parent::listviewACLHelper();
-		$is_owner = false;
-		if(!empty($this->account_name)){
-
-			if(!empty($this->account_name_owner)){
-				global $current_user;
-				$is_owner = $current_user->id == $this->account_name_owner;
-			}
-		}
-			if( $GLOBALS['ACLController']->checkAccess('Accounts', 'view', $is_owner)){
-				$array_assign['ACCOUNT'] = 'a';
-			}else{
-				$array_assign['ACCOUNT'] = 'span';
-			}
-		$is_owner = false;
-		if(!empty($this->opportunity_name)){
-
-			if(!empty($this->opportunity_name_owner)){
-				global $current_user;
-				$is_owner = $current_user->id == $this->opportunity_name_owner;
-			}
-		}
-			if( $GLOBALS['ACLController']->checkAccess('Opportunities', 'view', $is_owner)){
-				$array_assign['OPPORTUNITY'] = 'a';
-			}else{
-				$array_assign['OPPORTUNITY'] = 'span';
-			}
-
-
-		$is_owner = false;
-		if(!empty($this->contact_name)){
-
-			if(!empty($this->contact_name_owner)){
-				global $current_user;
-				$is_owner = $current_user->id == $this->contact_name_owner;
-			}
-		}
-			if( $GLOBALS['ACLController']->checkAccess('Contacts', 'view', $is_owner)){
-				$array_assign['CONTACT'] = 'a';
-			}else{
-				$array_assign['CONTACT'] = 'span';
-			}
-
-		return $array_assign;
-	}
-
 	function save($check_notify = false, $fts_index_bean = true) {
 		if(empty($this->status))
 			$this->status = 'New';

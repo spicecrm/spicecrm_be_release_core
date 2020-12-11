@@ -35,9 +35,10 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
-
-    'unified_search' => true, 'full_text_search' => true, 'unified_search_default_enabled' => true, 'duplicate_merge' => true, 'fields' =>
+$dictionary['Contact'] = array(
+    'table' => 'contacts',
+    'audited' => true,
+    'fields' =>
         array(
             'email_and_name1' => array(
                 'name' => 'email_and_name1',
@@ -101,6 +102,7 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'id_name' => 'account_id',
                 'vname' => 'LBL_ACCOUNT_ID',
                 'type' => 'relate',
+                'link' => 'accounts',
                 'table' => 'accounts',
                 'isnull' => 'true',
                 'module' => 'Accounts',
@@ -131,6 +133,16 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'source' => 'non-db',
                 'vname' => 'LBL_OPPORTUNITY_ROLE_ID',
                 'studio' => array('listview' => false),
+            ),
+            // Opportunities link olus related non db bfelder
+            'opportunities' => array(
+                'name' => 'opportunities',
+                'type' => 'link',
+                'relationship' => 'opportunities_contacts',
+                'source' => 'non-db',
+                'module' => 'Opportunities',
+                'bean_name' => 'Opportunity',
+                'vname' => 'LBL_OPPORTUNITIES',
             ),
             'opportunity_role' => array(
                 'name' => 'opportunity_role',
@@ -166,7 +178,21 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'source' => 'non-db',
                 'vname' => 'LBL_ACTIVITY_ACCEPT_STATUS',
                 'options' => 'dom_meeting_accept_status',
-                'comment' => 'non db field retirved from the relationship to the meeting call etc'
+                'comment' => 'non db field retrieved from the relationship to the meeting call etc'
+            ),
+            'activity_status_date_modified' => array(
+                'name' => 'activity_status_date_modified',
+                'type' => 'datetime',
+                'source' => 'non-db',
+                'vname' => 'LBL_ACTIVITY_STATUS_DATE_MODFIFIED',
+                'comment' => 'non db field retrieved from the relationship to the meeting call etc'
+            ),
+            'activity_required' => array(
+                'name' => 'activity_required',
+                'type' => 'bool',
+                'source' => 'non-db',
+                'vname' => 'LBL_ACTIVITY_REQUIRED',
+                'comment' => 'non db field retrieved from the relationship to the meeting call etc'
             ),
             'reports_to_id' => array(
                 'name' => 'reports_to_id',
@@ -198,16 +224,16 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'type' => 'date',
                 'comment' => 'The birthdate of the contact'
             ),
-            'accounts' =>                array(
-                    'name' => 'accounts',
-                    'type' => 'link',
-                    'relationship' => 'accounts_contacts',
-                    'link_type' => 'one',
-                    'source' => 'non-db',
-                    'vname' => 'LBL_ACCOUNT',
-                    'duplicate_merge' => 'disabled',
-                    'module' => 'Accounts'
-                ),
+            'accounts' => array(
+                'name' => 'accounts',
+                'type' => 'link',
+                'relationship' => 'accounts_contacts',
+                'link_type' => 'one',
+                'source' => 'non-db',
+                'vname' => 'LBL_ACCOUNT',
+                'duplicate_merge' => 'disabled',
+                'module' => 'Accounts'
+            ),
             'reports_to_link' => array(
                 'name' => 'reports_to_link',
                 'type' => 'link',
@@ -216,15 +242,6 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'side' => 'right',
                 'source' => 'non-db',
                 'vname' => 'LBL_REPORTS_TO',
-            ),
-            'opportunities' => array(
-                'name' => 'opportunities',
-                'type' => 'link',
-                'relationship' => 'opportunities_contacts',
-                'source' => 'non-db',
-                'module' => 'Opportunities',
-                'bean_name' => 'Opportunity',
-                'vname' => 'LBL_OPPORTUNITIES',
             ),
             'email_addresses' => array(
                 'name' => 'email_addresses',
@@ -306,13 +323,13 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'vname' => 'LBL_LEADS',
                 'module' => 'Leads'
             ),
-            'meetings' =>                array(
-                    'name' => 'meetings',
-                    'type' => 'link',
-                    'relationship' => 'meetings_contacts',
-                    'source' => 'non-db',
-                    'vname' => 'LBL_MEETINGS',
-                ),
+            'meetings' => array(
+                'name' => 'meetings',
+                'type' => 'link',
+                'relationship' => 'meetings_contacts',
+                'source' => 'non-db',
+                'vname' => 'LBL_MEETINGS',
+            ),
             'meetings_parent' => array(
                 'name' => 'meetings_parent',
                 'type' => 'link',
@@ -443,13 +460,13 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'source' => 'non-db',
                 'vname' => 'LBL_CAMPAIGNLOG',
             ),
-            'campaign_contacts' =>                array(
-                    'name' => 'campaign_contacts',
-                    'type' => 'link',
-                    'vname' => 'LBL_CAMPAIGN_CONTACT',
-                    'relationship' => 'campaign_contacts',
-                    'source' => 'non-db',
-                ),
+            'campaign_contacts' => array(
+                'name' => 'campaign_contacts',
+                'type' => 'link',
+                'vname' => 'LBL_CAMPAIGN_CONTACT',
+                'relationship' => 'campaign_contacts',
+                'source' => 'non-db',
+            ),
             'c_accept_status_fields' => array(
                 'name' => 'c_accept_status_fields',
                 'rname' => 'id',
@@ -571,6 +588,20 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'type' => 'varchar',
                 'source' => 'non-db'
             ),
+            'catalogorders' => [
+                'name' => 'catalogorders',
+                'type' => 'link',
+                'module' => 'CatalogOrders',
+                'relationship' => 'contacts_catalogorders',
+                'source' => 'non-db'
+            ],
+            'inquiries' => [
+                'name' => 'inquiries',
+                'type' => 'link',
+                'module' => 'Inquiries',
+                'relationship' => 'contact_inquiries',
+                'source' => 'non-db'
+            ]
             /*
             'portal_user_id' => array(
                 'name' => 'portal_user_id',
@@ -616,7 +647,7 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
                 'unified_search' => true,
             ),
             */
-    ),
+        ),
     'indices' => array(
         array(
             'name' => 'idx_cont_last_first',
@@ -682,12 +713,12 @@ $dictionary['Contact'] = array('table' => 'contacts', 'audited' => true,
             'rhs_key' => 'contact_id',
             'relationship_type' => 'one-to-many'),
         'contact_textmessages' => [
-            'lhs_module'        => 'Contacts',
-            'lhs_table'         => 'contacts',
-            'lhs_key'           => 'id',
-            'rhs_module'        => 'TextMessages',
-            'rhs_table'         => 'textmessages',
-            'rhs_key'           => 'contact_id',
+            'lhs_module' => 'Contacts',
+            'lhs_table' => 'contacts',
+            'lhs_key' => 'id',
+            'rhs_module' => 'TextMessages',
+            'rhs_table' => 'textmessages',
+            'rhs_key' => 'contact_id',
             'relationship_type' => 'one-to-many',
         ],
         'contact_tasks' => array('lhs_module' => 'Contacts',
@@ -854,7 +885,7 @@ if (is_file("modules/ServiceOrders/ServiceOrder.php")) {
     );
 }
 if (is_file("modules/ServiceTickets/ServiceTicket.php")) {
-    $dictionary['Contact']['fields']['servicetickets'] = array(
+    $dictionary['Contact']['fields']['servicetickets'] = [
         'name' => 'servicetickets',
         'type' => 'link',
         'relationship' => 'servicetickets_contacts',
@@ -862,7 +893,7 @@ if (is_file("modules/ServiceTickets/ServiceTicket.php")) {
         'vname' => 'LBL_SERVICETICKETS',
         'module' => 'ServiceTickets',
         'default' => false
-    );
+    ];
 }
 if (is_file("modules/ServiceCalls/ServiceCall.php")) {
     $dictionary['Contact']['fields']['servicecalls'] = array(
@@ -901,14 +932,14 @@ if (is_file("modules/ServiceFeedbacks/ServiceFeedback.php")) {
 //    );
 //}
 
-if (is_file('modules/SalesVouchers/SalesVoucher.php')){
+if (is_file('modules/SalesVouchers/SalesVoucher.php')) {
     $dictionary['Contact']['fields']['salesvouchers'] = [
-        'name'         => 'salesvouchers',
-        'type'         => 'link',
+        'name' => 'salesvouchers',
+        'type' => 'link',
         'relationship' => 'contacts_salesvouchers',
-        'module'       => 'SalesVouchers',
-        'source'       => 'non-db',
-        'vname'        => 'LBL_SALESVOUCHERS',
+        'module' => 'SalesVouchers',
+        'source' => 'non-db',
+        'vname' => 'LBL_SALESVOUCHERS',
     ];
 }
 VardefManager::createVardef('Contacts', 'Contact', array('default', 'assignable', 'person'));

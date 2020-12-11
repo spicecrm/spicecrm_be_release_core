@@ -140,6 +140,17 @@ $dictionary['ProspectList'] = array(
             'source' => 'non-db',
             'vname' => 'LBL_LIST_ENTRIES',
         ),
+        'ext_id' => array (
+            'name' => 'ext_id',
+            'vname' => 'LBL_EXT_ID',
+            'type' => 'varchar',
+            'len' => '50'
+        ),
+        'attribute_id' => array (
+            'name' => 'attribute_id',
+            'type' => 'varchar',
+            'len' => '50'
+        ),
         'prospectlists_accounts_quantity' => array(
             'name' => 'prospectlists_accounts_quantity',
             'vname' => 'LBL_QUANTITY',
@@ -228,12 +239,13 @@ $dictionary['ProspectList'] = array(
             'relationship' => 'prospect_list_users',
             'source' => 'non-db',
         ),
-        'email_marketing' => array(
-            'name' => 'email_marketing',
-            'type' => 'link',
-            'relationship' => 'email_marketing_prospect_lists',
-            'source' => 'non-db',
-        ),
+// CR1000465 cleanup Email
+//        'email_marketing' => array(
+//            'name' => 'email_marketing',
+//            'type' => 'link',
+//            'relationship' => 'email_marketing_prospect_lists',
+//            'source' => 'non-db',
+//        ),
         'marketing_id' => array(
             'name' => 'marketing_id',
             'vname' => 'LBL_MARKETING_ID',

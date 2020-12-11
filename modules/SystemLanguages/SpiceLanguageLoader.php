@@ -35,120 +35,31 @@
  */
 
 namespace SpiceCRM\modules\SystemLanguages;
-// require_once 'modules/SystemUI/SpiceUILoader.php';
+use SpiceCRM\modules\SystemUI\SpiceUILoader;
 
 class SpiceLanguageLoader{
 
     public $loader;
-    public $routebase = "";
-    public $release = true;
+    public $routebase = 'config/language'; // the common part in endpoint after domain url itself
 
     public function __construct($endpoint = null){
-        $this->loader = new \SpiceCRM\modules\SystemUI\SpiceUILoader($endpoint);
-        $this->routebase = $this->getRouteBase();
-
-        if(empty($endpoint)){
-            $this->routebase = $this->getRouteBase();
-            if (!preg_match('/release/', $this->routebase))
-                $this->release = false;
-
-        }else{
-            if (!preg_match('/packages.spicecrm.io/', $this->endpoint))
-                $this->release = false;
-        }
-    }
-
-
-    public function getRouteBase(){
-        $routebase = $this->loader->getRouteBase();
-        return $routebase."language";
-    }
-    public function getRouteBaseConfig(){
-        $routebase = $this->loader->getRouteBase();
-        return $routebase."config";
-    }
-
-
-    /**
-     * Display load language form in SpiceCRM Backend Administration
-     */
-    public function displayDefaultConfForm($params, $possibleparams, $obsoleteprams){
-        $sm = new \Sugar_Smarty();
-        //current config
-        if(!empty($params['languages'])) $sm->assign('currentlanguages', $params['languages']);
-        if(!empty($params['packages'])) $sm->assign('currentpackages', $params['packages']);
-        if(!empty($params['versions'])) $sm->assign('currentversions', $params['versions']);
-
-        //for settings
-        if(!empty($possibleparams['languages'])) $sm->assign('possiblelanguages', $possibleparams['languages']);
-        if(!empty($possibleparams['packages'])) $sm->assign('possiblepackages', $possibleparams['packages']);
-        if(!empty($possibleparams['versions'])) $sm->assign('possibleversions', $possibleparams['versions']);
-        if(!empty($obsoleteprams)) $sm->assign('obsoletepackages', $obsoleteprams);
-
-        //check on release
-        $sm->assign("release", $this->release);
-
-        //check on running change request
-        $sm->assign("hasOpenChangeRequest", $this->loader->hasOpenChangeRequest());
-
-        return $sm->display("modules/Administration/templates/UILanguage.tpl");
+        $this->loader = new SpiceUILoader($endpoint);
     }
 
     /**
-     * @param $params
+     * load language from referenced database
+     * @param $language
+     * @return array
+     * @throws \Exception
      */
-    public function deleteOldRecords($params){
-        $queries = array();
-        //get tables information
-        $tb_labels = 'syslanguagelabels';
-//        $tb_labels_cols = array();
-//        foreach($GLOBALS['dictionary']['syslanguagelabels']['fields'] as $id => $field){
-//            if($field['type'] != 'link' && $field['type'] != 'relate'){
-//                $tb_labels_cols[] = $field['name'];
-//            }
-//        }
-
-        $tb_trans = 'syslanguagetranslations';
-//        $tb_trans_cols = array();
-//        foreach($GLOBALS['dictionary']['syslanguagelabels']['fields'] as $id => $field){
-//            if($field['type'] != 'link' && $field['type'] != 'relate'){
-//                $tb_trans_cols[] = $field['name'];
-//            }
-//        }
-        //delete old syslanguagelabels
-        $delQ = "DELETE FROM $tb_labels WHERE package IN('".implode("','", $params['packages'])."') ";
-        if(in_array('core', $params['packages']))
-            $delQ.= "OR package IS NULL OR package=''";
-        $queries[] = $delQ;
-        //delete old translations for selected language: translations without the label since delete above
-        $queries[] = "DELETE $tb_trans.* FROM $tb_trans LEFT JOIN $tb_labels ON $tb_labels.id = $tb_trans.syslanguagelabel_id 
-        WHERE $tb_labels.id IS NULL AND $tb_trans.syslanguage IN('".implode("','", $params['languages'])."')";
-
-//        echo '<pre>'.print_r($deletes, true);
-
-        $errors = array();
-        foreach ($queries as $q) {
-            if(!$GLOBALS['db']->query($q)) {
-                $errors[] = 'Error with query: ' . $q . " " . $GLOBALS['db']->last_error;
-            }
-        }
-
-        if(count($errors) > 0)
-            die(implode('<br>', $errors));
-//        die(implode('<br>', $queries));
-
-    }
-
     public function loadLanguage($language){
-
-        global $db;
-
         // $route = "referencelanguage";
         $package = '*';
 
-        $endpoint = implode("/", array('language', $language, $package, '*'));
-        $results = $this->loadDefaultConf($endpoint, array('route' => $this->routebase, 'languages' => $language, 'package' => '*', 'version' => '*'), false);
-        //BEGIN CR1000150: $sugar_config['syslanguages']['spiceuisource'] to 'db'
+        $route = implode("/", array($this->routebase, $language, $package, '*'));
+
+        $results = $this->loadDefaultConf($route, array('route' => $this->routebase, 'languages' => $language), false);
+        //BEGIN CR1000150: set $sugar_config['syslanguages']['spiceuisource'] to 'db'
         if($results['success']){
             if(!class_exists('Configurator', false)){
                 require_once 'modules/Configurator/Configurator.php';
@@ -162,15 +73,23 @@ class SpiceLanguageLoader{
         return $results;
     }
 
+    /**
+     * delete language translations and system_language flag
+     * for a given language
+     * @param $language
+     * @return bool
+     */
     public function deleteLanguage($language){
-
         global $db;
 
         // remove Translations
-        $db->query("DELETE FROM syslanguagetranslations WHERE syslanguage='$language'");
+        $delWhere = ['syslanguage' => $language];
+        $db->deleteQuery('syslanguagetranslations', $delWhere);
 
         // set as non system language
-        $db->query("UPDATE syslangs SET system_language = 0, is_default = 0 WHERE language_code = '$language'");
+        $updateWhere = ['language_code' => $language];
+        $updateFields = ['system_language' => 0, 'is_default' => 0];
+        $db->updateQuery('syslangs', $updateWhere, $updateFields);
 
         return true;
     }
@@ -181,13 +100,12 @@ class SpiceLanguageLoader{
      * @param $params
      */
     public function loadDefaultConf($route, $params, $checkopen = true){
-        global $sugar_config;
-        $truncates = array();
-        $inserts = array();
+        global $sugar_config, $db;
+        $inserts = [];
         $success = false;
 
         if($checkopen && $this->loader->hasOpenChangeRequest())
-            throw new \Exception("Open Change Requests found! They would be erased...");
+            throw new \Exception("Open Change Requests found! Action aborted. They would be erased...");
 
         if(!$response = $this->loader->callMethod("GET", $route)){
             //die("REST Call error somewhere... Action aborted");
@@ -206,41 +124,54 @@ class SpiceLanguageLoader{
         $tb_labels = 'syslanguagelabels';
         $tb_trans = 'syslanguagetranslations';
 
-        //delete old syslanguagelabels
-        $langs = explode(',', $params['languages']);
-        $version = $params['version'];
-        if(empty($version)) $version = '*';
-        if($version == '*')
-            $delQ = "TRUNCATE TABLE $tb_labels";
-        else {
-            $delQ = "DELETE FROM $tb_labels WHERE (`version` ='{$version}' OR `version` IS NULL OR `version` = '')";
-        }
-        $truncates[] = $delQ;
-
         //delete old translations for selected language: translations without the label since delete above
         $languages = explode(',', $params['languages']);
-        $truncates[] = "DELETE $tb_trans.* FROM $tb_trans LEFT JOIN $tb_labels ON $tb_labels.id = $tb_trans.syslanguagelabel_id 
-        WHERE $tb_labels.id IS NULL AND $tb_trans.syslanguage IN ('".implode("','", $languages)."')";
+        // ORACLE COMPATIBILITY -
+        $delQ = "DELETE FROM $tb_trans WHERE $tb_trans.syslanguage IN ('".implode("','", $languages)."')";
+        $db->query($delQ);
 
+        // get labels that are already loaded
         $labelIDs = [];
+        $qL = "SELECT id FROM $tb_labels";
+        if($resL = $db->query($qL)){
+            while($rowL = $db->fetchByAssoc($resL)){
+                $labelIDs[] = $rowL['id'];
+            }
+        }
 
         foreach($response as $index => $content) {
             $decodeData = json_decode($content, true);
-            $tbColCheck = false;
             //insert command label
             if(!in_array($decodeData['id'], $labelIDs)) {
-                $inserts[] = "INSERT INTO $tb_labels (id, name, version, package) " .
-                    "VALUES ( '" . $decodeData['id'] . "', '" . $decodeData['name'] . "', '" . $decodeData['version'] . "', " . (!empty($decodeData['package']) && $decodeData['package'] != "*" ? "'" . $decodeData['package'] . "'" : "NULL") . ")";
                 $labelIDs[] = $decodeData['id'];
+                //run insert
+                $entryL = [
+                    'id' => $decodeData['id'],
+                    'name' => $decodeData['name'],
+                ];
+
+                if($dbRes = $db->insertQuery($tb_labels, $entryL)){
+                    $inserts[] = $dbRes;
+                } else{
+                    $errors[] = $db->lastError();
+                }
             }
             //insert command translation
-            $translabel_id = create_guid();
-            $inserts[] = "INSERT INTO $tb_trans ".
-                "(id, syslanguagelabel_id, syslanguage, translation_default, translation_short, translation_long) ".
-                "VALUES ('".$translabel_id."', '".$decodeData['id']."', '".$decodeData['syslanguage']."', ".
-                (!empty($decodeData['translation_default'])  ? "'".$GLOBALS['db']->quote($decodeData['translation_default'])."'" : "NULL").", ".
-                (!empty($decodeData['translation_short'])  ? "'".$GLOBALS['db']->quote($decodeData['translation_short'])."'" : "NULL").", ".
-                (!empty($decodeData['translation_long'])  ? "'".$GLOBALS['db']->quote($decodeData['translation_long'])."'" : "NULL").")";
+            $entryT = [
+                'id' => create_guid(),
+                'syslanguagelabel_id' => $decodeData['id'],
+                'syslanguage' => $decodeData['syslanguage'],
+                'translation_default' => $decodeData['translation_default'],
+                'translation_short' => $decodeData['translation_short'],
+                'translation_long' => $decodeData['translation_long']
+            ];
+
+            //run insert
+            if($dbRes = $db->insertQuery($tb_trans, $entryT)){
+                $inserts[] = $dbRes;
+            } else{
+                $errors[] = $db->lastError();
+            }
         }
 
         //if no inserts where created => abort
@@ -249,25 +180,12 @@ class SpiceLanguageLoader{
             throw new \Exception("REST Call error somewhere... Action aborted");
         }
 
-        $queries = array_merge($truncates, $inserts);
-//        echo '<pre>'. print_r(implode(";\n",$queries), true);
-
-        //process queries
-        if(count($queries) > 2) {
-            $errors = array();
-            foreach ($queries as $q) {
-                if(!$GLOBALS['db']->query($q))
-                    $errors[] = 'Error with query: '.$GLOBALS['db']->last_error;
-            }
-        }
-
         if(count($errors) > 0){
             $GLOBALS['log']->fatal(__CLASS__."::".__FUNCTION__."() Errors:".print_r($errors, true));
         }
         else {
             $success = true;
             //check if language is available
-            $queriessyslang = array();
             $syslangstatus = $GLOBALS['db']->query("SELECT * from syslangs 
                   WHERE language_code IN ('".implode("','", $languages)."') 
                   ORDER BY sort_sequence ASC");
@@ -275,100 +193,33 @@ class SpiceLanguageLoader{
                 $syslangs[$syslangrow['language_code']] = $syslangrow;
             }
             for($i = 0; $i < count($languages); $i++){
-
-
                 if(in_array($languages[$i], array_keys($syslangs))){
-                    $queriessyslang[] = "UPDATE syslangs SET system_language = 1 WHERE language_code='".$languages[$i]."'";
+                    $updateWhere = ['language_code' => $languages[$i]];
+                    $updateFields = ['system_language' => 1];
+                    $db->updateQuery('syslangs', $updateWhere, $updateFields);
                     $syslangs[$languages[$i]]['system_language'] = 1;
                 } else{
                     //try to find a language name
                     $appForLang = return_app_list_strings_language($languages[$i]);
-                    $lang = array("id" => create_guid(),
-                        "language_code" => $languages[$i],
-                        "language_name" => (!empty($appForLang['language_pack_name']) ? $appForLang['language_pack_name'] : $languages[$i]),
-                        "sort_sequence" => $i+1,
-                        "is_default" => ($languages[$i] == $sugar_config['default_language'] ? 1 : 0),
-                        "system_language" => 1,
-                        "communication_language" => 1
-                    );
-                    $values = "'".$lang['id']."','".$lang['language_code']."', '".$lang['language_name']."', ".$lang['sort_sequence'].", ".$lang['is_default'].", ".$lang['system_language'].", ".$lang['communication_language'];
-                    $queriessyslang[] = "INSERT INTO syslangs (".implode(",", array_keys($lang)).") VALUES(".$values.")";
+                    $lang = [
+                        'id' => create_guid(),
+                        'language_code' => $languages[$i],
+                        'language_name' => (!empty($appForLang['language_pack_name']) ? $appForLang['language_pack_name'] : $languages[$i]),
+                        'sort_sequence' => $i+1,
+                        'is_default' => ($languages[$i] == $sugar_config['default_language'] ? 1 : 0),
+                        'system_language' => 1,
+                        'communication_language' => 1
+                    ];
 
-                    // add to syslangs array to return fromt he call
+                    if(!$db->insertQuery('syslangs', $lang)){
+                        $errors[] = $db->lastError();
+                    }
+                    // add to syslangs array to return from the call
                     $syslangs[$languages[$i]] = $lang;
                 }
             }
-
-            // update syslanguages
-            foreach($queriessyslang as $q) {
-                if (!$GLOBALS['db']->query($q)) {
-                    $success = false;
-                    if(!_is_array($errors)) $errors = array();
-                    $errors[] = 'Error with query: '.$GLOBALS['db']->last_error;
-                }
-            }
         }
-
-        return array("success" => $success, "queries" => count($queries), "languages" => $syslangs,  "errors" => $errors);
+        return array("success" => $success, "queries" => count($inserts), "languages" => $syslangs,  "errors" => $errors);
     }
 
-    public function getPossibleConf(){
-        //get data
-        $route = $this->getRouteBaseConfig();
-        if(!$response = $this->loader->callMethod("GET", $route)) {
-            throw new \Exception("REST Call error somewhere... Action aborted");
-        }
-
-        //check if release and force unique version number
-        if($this->release === true){
-            $response['versions'][0]['version'] = $GLOBALS['sugar_version'];
-        }
-
-        return $response;
-    }
-
-    /**
-     * Get main information about current languages loaded in client
-     * package, version....
-     */
-    public function getCurrentConf(){
-        global $db;
-        $q = "SELECT trans.syslanguage, lbl.package, lbl.version 
-        FROM syslanguagelabels lbl
-        INNER JOIN syslanguagetranslations trans ON trans.syslanguagelabel_id = lbl.id
-        ORDER BY trans.syslanguage, lbl.package, lbl.version";
-        $res = $db->query($q);
-        $languages = array();
-        $packages = array();
-        $versions = array();
-
-        while($row = $db->fetchByAssoc($res)){
-            if(!empty($row['syslanguage']) && !in_array( $row['syslanguage'], $languages)) $languages[] = $row['syslanguage'];
-            if(!empty($row['package'])  && !in_array( $row['package'], $packages)) $packages[] = $row['package'];
-            if(!empty($row['version'])  && !in_array( $row['version'], $versions)) $versions[] = $row['version'];
-        }
-        return array('languages' => $languages, 'packages' => $packages, 'versions' => $versions);
-    }
-
-    /**
-     * get package names which are in current conf but not in reference conf
-     * @param $currentconf
-     * @param $possibleconf
-     * @return array
-     */
-    public function getObsoleteConf($currentconf, $possibleconf){
-        $currentpackages = $currentconf['packages'];
-        $possiblepackages = array();
-        $obsoletepackages = array();
-
-        foreach($possibleconf['packages'] as $package){
-            $possiblepackages[] = $package['package'];
-        }
-
-        foreach($currentpackages as $package)
-            if(!in_array($package,$possiblepackages))
-                $obsoletepackages[] = $package;
-
-        return $obsoletepackages;
-    }
 }

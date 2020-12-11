@@ -1,2 +1,4 @@
 <?php
-$KRESTManager->registerExtension('opportunityrevenuelines', '1.0');
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
+$RESTManager->registerExtension('opportunityrevenuelines', '1.0');

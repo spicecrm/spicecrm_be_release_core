@@ -24,26 +24,32 @@ class OutlookAttachmentHandler
         $this->ewsUrl = $attachmentData['ewsUrl'];
         $this->token  = $attachmentData['attachmentToken'];
 
-        foreach ($attachmentData['attachments'] as $item) {
+        foreach ($attachmentData['outlookAttachments'] as $item) {
             $attachment = new OutlookAttachment($item, $this->email);
             array_push($this->attachments, $attachment);
         }
     }
 
     public function saveAttachments() {
+        global $sugar_config;
         $result = [];
 
         foreach ($this->attachments as $attachment) {
             // todo check if the attachment already exists
             $attachment->content = $this->getAttachmentContent($attachment);
-            $result[$attachment->id] = SpiceAttachments::saveEmailAttachmentFromOutlook($this->email, $attachment);
-        }
+            // CR1000475 BWS compatibility: use another saveEmailAttachmentFromOutlook().
+            // Mainly to create a Note instead of a SpiceAttachment
+            $class = 'SpiceAttachments';
+            if(isset($sugar_config['SpiceCRMExchange']['saveEmailAttachmentFromOutlookClass'])){
+                $class = $sugar_config['SpiceCRMExchange']['saveEmailAttachmentFromOutlookClass'];
+            }
+            $result[$attachment->id] = $class::saveEmailAttachmentFromOutlook($this->email, $attachment);        }
 
         return $result;
     }
 
     private function getAttachmentContent(OutlookAttachment $attachment) {
-        $soapAction = 'https://outlook.office365.com/EWS/GetAttachment'; // todo remove hardcode
+        $soapAction = 'https://'.$GLOBALS['sugar_config']['SpiceCRMExchange']['host'].'/EWS/GetAttachment';
         $soapString = $attachment->getSoap();
         $errors     = '';
 

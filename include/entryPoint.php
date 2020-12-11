@@ -35,55 +35,12 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-/*********************************************************************************
-
- * Description:
- * Portions created by SugarCRM are Copyright (C) SugarCRM, Inc. All Rights
- * Reserved. Contributor(s): ______________________________________..
- * *******************************************************************************/
-
-/**
- * Known Entry Points as of 4.5
- * cron.php
- * dictionary.php
- * emailmandelivery.php
- * export_dataset.php
- * index.php
- * json.php
- * maintenance.php
- * phprint.php
- * process_queue.php
- * process_workflow.php
- * schedulers.php
- * soap.php
- * su.php
- * sugar_version.php
- * tree_level.php
- * tree.php
- * vcal_server.php
- * zipatcher.php
- */
-/*
- * for 50, added:
- * minify.php
- */
-/*
-* for 510, added:
-* dceActionCleanup.php
-*/
-
 $GLOBALS['starttTime'] = microtime(true);
 
 set_include_path(
-    dirname(__FILE__) . '/..' . PATH_SEPARATOR .
+    dirname(__FILE__) . PATH_SEPARATOR .
     get_include_path()
 );
-
-if (!defined('PHP_VERSION_ID')) {
-    $version_array = explode('.', phpversion());
-    define('PHP_VERSION_ID', ($version_array[0] * 10000 + $version_array[1] * 100 + $version_array[2]));
-}
-
 
 // config|_override.php
 if (is_file('config.php')) {
@@ -95,51 +52,58 @@ if (is_file('config_override.php')) {
     require_once('config_override.php');
 }
 
-
-if (!empty($sugar_config['xhprof_config'])) {
-    require_once 'include/SugarXHprof/SugarXHprof.php';
-    SugarXHprof::getInstance()->start();
-}
-
-// make sure SugarConfig object is available
-require_once 'include/SugarObjects/SugarConfig.php';
+// make sure SpiceConfig object is available
+require_once 'include/SugarObjects/SpiceConfig.php';
 
 ///////////////////////////////////////////////////////////////////////////////
 ////	DATA SECURITY MEASURES
 require_once('include/utils.php');
 require_once('include/clean.php');
-clean_special_arguments();
-clean_incoming_data();
+
+// since we do now REST only .. no longer needed
+// clean_special_arguments();
+// clean_incoming_data();
+
 ////	END DATA SECURITY MEASURES
 ///////////////////////////////////////////////////////////////////////////////
 
-// cn: set php.ini settings at entry points
-setPhpIniSettings();
+require_once('sugar_version.php'); // provides $sugar_version, $sugar_db_version
 
-require_once('sugar_version.php'); // provides $sugar_version, $sugar_db_version, $sugar_flavor
-require_once('include/database/DBManagerFactory.php');
-require_once('include/dir_inc.php');
 
+// require_once('include/dir_inc.php');
 require_once('include/Localization/Localization.php');
-require_once('include/javascript/jsAlerts.php');
 require_once('include/TimeDate.php');
-require_once('include/modules.php'); // provides $moduleList, $beanList, $beanFiles, $modInvisList, $adminOnlyList, $modInvisListActivities
 
+// get the logger
+$GLOBALS['log'] = SpiceCRM\includes\Logger\LoggerManager::getLogger();
+$GLOBALS['log']::setLogger('default',(SpiceConfig::getInstance()->get('logger.default') ?: 'SpiceLogger'));
+$GLOBALS['log']::setDbConfig(SpiceConfig::getInstance()->get('dbconfig'));
+$GLOBALS['log']::getLevelCategories();
+
+// set the autoloaders
 require('include/utils/autoloader.php');
-
 require_once dirname(__FILE__).'/../vendor/autoload.php';
-
 spl_autoload_register(array('SugarAutoLoader', 'autoload'));
+
+// get a DB Instance
+require_once('include/database/DBManagerFactory.php');
+$db = DBManagerFactory::getInstance();
+$db->resetQueryCount();
+
+// set the db to the logger
+$GLOBALS['log']::setDbManager($db);
+
+// load the modules
+// require_once('include/modules.php'); // provides $moduleList, $beanList, $beanFiles, $modInvisList, $adminOnlyList, $modInvisListActivities
+\SpiceCRM\includes\SugarObjects\SpiceModules::loadModules();
+
 require_once('data/SugarBean.php');
-require_once('include/utils/mvc_utils.php');
 require('include/SugarObjects/LanguageManager.php');
 require('include/SugarObjects/VardefManager.php');
 
-require('modules/DynamicFields/templates/Fields/TemplateText.php');
-
 require_once('include/utils/file_utils.php');
 require_once('include/SugarEmailAddress/SugarEmailAddress.php');
-require_once('include/SugarLogger/LoggerManager.php');
+
 require_once('modules/Trackers/BreadCrumbStack.php');
 require_once('modules/Trackers/Tracker.php');
 require_once('modules/Trackers/TrackerManager.php');
@@ -148,27 +112,17 @@ require_once('modules/Trackers/TrackerManager.php');
 // require_once('modules/ACL/ACLController.php');
 //CR1000428: SpiceACL controller is now default controller (release 2020.02.001)
 //$controllerfile = isset( $sugar_config['acl']['controller']{0} ) ? $sugar_config['acl']['controller'] : 'modules/ACL/ACLController.php';
-$controllerfile = isset( $sugar_config['acl']['controller']{0} ) ? $sugar_config['acl']['controller'] : 'modules/SpiceACL/SpiceACLController.php';
+$controllerfile = isset( $sugar_config['acl']['controller'][0] ) ? $sugar_config['acl']['controller'] : 'modules/SpiceACL/SpiceACLController.php';
 require_once ($controllerfile);
 
+
 require_once('modules/Administration/Administration.php');
-require_once('modules/Administration/updater_utils.php');
 require_once('modules/Users/User.php');
 require_once('modules/Users/authentication/AuthenticationController.php');
 require_once('include/utils/LogicHook.php');
-require_once('include/SugarTheme/SugarTheme.php');
-require_once('include/MVC/SugarModule.php');
 require_once('include/SugarCache/SugarCache.php');
 require('modules/Currencies/Currency.php');
 require_once('include/MVC/SugarApplication.php');
-require_once('modules/KDeploymentMWs/KDeploymentMW.php');
-require_once('include/SpiceNumberRanges/SpiceNumberRanges.php');
-
-// include the FTS Handler
-//require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
-
-// the trashcan handler
-require_once ('include/SysTrashCan/SysTrashCan.php');
 
 require_once('include/upload_file.php');
 UploadStream::register();
@@ -180,59 +134,32 @@ UploadStream::register();
 if (!defined('SUGAR_PATH')) {
     define('SUGAR_PATH', realpath(dirname(__FILE__) . '/..'));
 }
-require_once 'include/SugarObjects/SugarRegistry.php';
+// require_once 'include/SugarObjects/SugarRegistry.php';
 
 if (empty($GLOBALS['installing'])) {
 ///////////////////////////////////////////////////////////////////////////////
 ////	SETTING DEFAULT VAR VALUES
-    $GLOBALS['log'] = LoggerManager::getLogger();
-
-    //BEGIN SpiceCRM enhancements SpiceLogger
-    $GLOBALS['log']::setLogger('default',(SugarConfig::getInstance()->get('logger.default') ?: 'SugarLogger'));
-    $GLOBALS['log']::setDbConfig(SugarConfig::getInstance()->get('dbconfig'));
-    $GLOBALS['log']::getLevelCategories();
-    //END
 
     $error_notice = '';
     $use_current_user_login = false;
-
-// Allow for the session information to be passed via the URL for printing.
-    //2018-04-20: use session_anme instead of key 'PHPSESSID'
-    if (isset($_GET[session_name()])) {
-        if (!empty($_COOKIE[session_name()]) && strcmp($_GET[session_name()], $_COOKIE[session_name()]) == 0) {
-            session_id($_REQUEST[session_name()]);
-        } else {
-            unset($_GET[session_name()]);
-        }
-    }
 
     if (!empty($sugar_config['session_dir'])) {
         session_save_path($sugar_config['session_dir']);
     }
 
-    // moved getting the db instance up so we can load the language from teh DB
-    $db = DBManagerFactory::getInstance();
-    $db->resetQueryCount();
-    //BEGIN SpiceCRM enhancements SpiceLogger
-    $GLOBALS['log']::setDbManager($db);
-    //END
-
     // load the config from the db and populate to $sugar_config
     SugarApplication::loadConfig();
 
-    SugarApplication::preLoadLanguages();
+    // SugarApplication::preLoadLanguages();
 
     $timedate = TimeDate::getInstance();
 
-    $GLOBALS['sugar_version'] = $sugar_version;
-    $GLOBALS['sugar_flavor'] = $sugar_flavor;
     $GLOBALS['timedate'] = $timedate;
-    $GLOBALS['js_version_key'] = md5($GLOBALS['sugar_config']['unique_key'] . $GLOBALS['sugar_version'] . $GLOBALS['sugar_flavor']);
 
-    $locale = new Localization();
+    $locale = new Localization(); // to be removed after SugarView has been removed.
 
-// Emails uses the REQUEST_URI later to construct dynamic URLs.
-// IIS does not pass this field to prevent an error, if it is not set, we will assign it to ''.
+    // Emails uses the REQUEST_URI later to construct dynamic URLs.
+    // IIS does not pass this field to prevent an error, if it is not set, we will assign it to ''.
     if (!isset ($_SERVER['REQUEST_URI'])) {
         $_SERVER['REQUEST_URI'] = '';
     }
@@ -245,16 +172,6 @@ if (empty($GLOBALS['installing'])) {
 
     $GLOBALS['ACLController'] = new ACLController();
 
-//    // if we have auth management then load it
-//    if (1 == 2 && file_exists('modules/KAuthProfiles/KAuthAccess.php')) {
-//        require_once('modules/KAuthProfiles/KAuthAccess.php');
-//        $GLOBALS['KAuthAccessController'] = new KAuthAccessController();
-//    }
-
     LogicHook::initialize()->call_custom_logic('', 'after_entry_point');
 }
-
-
-////	END SETTING DEFAULT VAR VALUES
-///////////////////////////////////////////////////////////////////////////////
 

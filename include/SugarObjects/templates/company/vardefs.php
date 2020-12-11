@@ -370,10 +370,6 @@ $vardefs = array(
             'vname' => 'LBL_EMAIL',
             'group' => 'email1',
             'type' => 'varchar',
-            'function' => array(
-                'name' => 'getEmailAddressWidget',
-                'returns' => 'html'
-            ),
             'source' => 'non-db',
             'studio' => array('editField' => true, 'searchview' => false),
             'full_text_search' => array('boost' => 3, 'analyzer' => 'whitespace'), //bug 54567

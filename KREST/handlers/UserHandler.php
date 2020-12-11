@@ -3,6 +3,7 @@
 namespace SpiceCRM\KREST\handlers;
 
 use \BeanFactory;
+use SpiceCRM\includes\ErrorHandlers\Exception;
 
 /*
  * This File is part of KREST is a Restful service extension for SugarCRM
@@ -104,7 +105,7 @@ class UserHandler{
             $memmy = $user;
             $user = new \User();
             $user->retrieve( $memmy );
-            if ( empty( $user->id )) throw ( new \SpiceCRM\KREST\Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve user with ID "'.$memmy.'"');
+            if ( empty( $user->id )) throw ( new Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve user with ID "'.$memmy.'"');
         }
 
         $destUserPrefs = new \UserPreference( $user );
@@ -120,7 +121,7 @@ class UserHandler{
             $GLOBALS['log']->warn('Could not retrieve email template "'.$type.'" for language "'.$destLang.'", will try "en_us" instead');
             $destLang = 'en_us';
             $emailTempl->retrieve_by_string_fields( [ 'for_bean' => 'Users', 'type' => $type, 'language' => $destLang ], false );
-            if ( empty( $emailTempl->id )) throw ( new \SpiceCRM\KREST\Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve email template "'.$type.'" (for language "' . $destLang . '")');
+            if ( empty( $emailTempl->id )) throw ( new Exception( 'Could not compose Email. Contact the administrator.' ))->setLogMessage('Could not retrieve email template "'.$type.'" (for language "' . $destLang . '")');
         }
 
         return $emailTempl;
@@ -222,7 +223,7 @@ class UserHandler{
 
         if (!empty($user_id)) {
 
-            $token = User::generatePassword();
+            $token = \User::generatePassword();
             $db->query( sprintf('INSERT INTO users_password_tokens ( id, user_id, date_generated ) VALUES ( "%s", "%s", NOW() )', $db->quote( $token ), $db->quote( $user_id )));
 
             $emailTempl = $this->getProperEmailTemplate( $user_id, 'sendTokenForNewPassword' );
@@ -250,7 +251,7 @@ class UserHandler{
                 $emailObj->deleted = '0';
                 $emailObj->parent_type = 'User';
                 $emailObj->mailbox_id = $sugar_config['passwordsetting']['mailbox'];
-                $emailObj->date_sent = TimeDate::getInstance()->nowDb();
+                $emailObj->date_sent = \TimeDate::getInstance()->nowDb();
                 $emailObj->modified_user_id = '1';
                 $emailObj->created_by = '1';
                 $emailObj->status = 'sent';

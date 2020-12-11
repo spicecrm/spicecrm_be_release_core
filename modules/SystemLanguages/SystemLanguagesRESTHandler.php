@@ -2,6 +2,8 @@
 
 namespace SpiceCRM\modules\SystemLanguages;
 
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+
 class SystemLanguagesRESTHandler
 {
     private $db;
@@ -200,21 +202,21 @@ class SystemLanguagesRESTHandler
         if(empty($version)) $version = "*";
 
         $languages = $params['languages'];
-        $endpoint = implode("/", array($route, $languages, $package, $version));
-        $results = $loader->loadDefaultConf($endpoint, array('route' => $route, 'languages' => $languages, 'package' => $package, 'version' => $version));
+        $route = implode("/", array($route, $languages, $package, $version));
+        $results = $loader->loadDefaultConf($route, array('route' => $route, 'languages' => $languages, 'package' => $package, 'version' => $version));
         return $results;
     }
 
     /**
      * restrict access to admin users
-     * @throws \KREST\ForbiddenException
+     * @throws ForbiddenException
      */
     public function checkAdmin()
     {
         global $current_user;
 
         if(!$current_user->is_admin)
-            throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
         # header("Access-Control-Allow-Origin: *");
     }
 
@@ -240,4 +242,33 @@ class SystemLanguagesRESTHandler
         return ( new SpiceLanguageFilesToDB() )->transferFromFilesToDB();
     }
 
+    /**
+     * retrieve label by name
+     * @param $labelName string
+     */
+    public function retrieveLabelDataByName($labelName)
+    {
+        $query = $this->db->query("SELECT *, 'global' scope FROM syslanguagelabels WHERE name = '$labelName'");
+        $label = $this->db->fetchByAssoc($query);
+        if (!$label) {
+            $query = $this->db->query("SELECT *, 'custom' scope FROM syslanguagecustomlabels WHERE name = '$labelName'");
+            $label = $this->db->fetchByAssoc($query);
+        }
+        if (!$label) return 0;
+
+        foreach (['global', 'custom'] as $scope) {
+            $label[$scope . '_translations'] = [];
+            if ($scope == 'global')
+                $table = 'syslanguagetranslations';
+            else
+                $table = 'syslanguagecustomtranslations';
+
+            $query = "SELECT * FROM $table WHERE syslanguagelabel_id = '{$label['id']}'";
+            $result = $this->db->query($query);
+            while ($translation = $this->db->fetchByAssoc($result)) {
+                $label[$scope . '_translations'][] = $translation;
+            }
+        }
+        return $label;
+    }
 }

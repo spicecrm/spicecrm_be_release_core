@@ -1,7 +1,7 @@
 <?php
 namespace SpiceCRM\modules\OutputTemplates\handlers\pdf;
 
-use SpiceCRM\KREST\Exception;
+use SpiceCRM\includes\ErrorHandlers\Exception;
 
 class RocketPdfHandler extends ApiPdfHandler
 {

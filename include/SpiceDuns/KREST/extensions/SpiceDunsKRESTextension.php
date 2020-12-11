@@ -26,9 +26,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\SpiceDuns\KREST\controllers\SpiceDunsKRESTController;
 
-$KRESTManager->registerExtension('duns', '1.0');
+$RESTManager = RESTManager::getInstance();
+$RESTManager->registerExtension('duns', '1.0');
 
-$app->group('/SpiceDuns', function () use ($app, $uiRestHandler) {
-    $app->get('', 'SpiceCRM\includes\SpiceDuns\KREST\controllers\SpiceDunsKRESTController::getDuns');
+$RESTManager->app->group('/SpiceDuns', function () {
+    $this->get('', 'SpiceCRM\includes\SpiceDuns\KREST\controllers\SpiceDunsKRESTController::getDuns');
 });

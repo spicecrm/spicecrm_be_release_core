@@ -3,7 +3,7 @@
 namespace SpiceCRM\includes\SpiceFTSManager;
 
 // require_once('include/SpiceFTSManager/ElasticHandler.php');
-require_once('include/MVC/View/views/view.list.php');
+//require_once('include/MVC/View/views/view.list.php');
 
 // require_once('KREST/handlers/ModuleHandler.php');
 
@@ -31,6 +31,18 @@ class SpiceFTSHandler
     }
 
     /**
+     * returns if the module shoudl be considered in the global search
+     *
+     * @param $module the name of the module
+     * @return array|bool
+     */
+    static function checkGlobal($module)
+    {
+        $settings = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexSettings($module);
+        return $settings['globalsearch'] ? true : false;
+    }
+
+    /**
      * processes the search
      *
      * @param $req
@@ -40,8 +52,53 @@ class SpiceFTSHandler
     function search($req, $res, $args)
     {
         $postBody = $req->getParsedBody();
+        $useFts = !empty($postBody['modules']);
+        $result = [];
 
-        $result = $this->getGlobalSearchResults($postBody['modules'], $postBody['searchterm'], json_decode($postBody['searchtags']), $postBody, $postBody['aggregates'], $postBody['sort']);
+        // CR1000458: when no fts configuration is set fall back to backend global search and query on database
+        $modArray = $postBody['modules'];
+        if(!is_array($postBody['modules'])){
+            $modArray = explode(",", $postBody['modules']);
+        }
+        if(is_array($modArray)){
+            foreach($modArray as $module){
+                if(!self::checkModule($module, false)){
+                    $useFts = false;
+                    break;
+                }
+            }
+        }
+
+        // use FTS
+        if($useFts){
+            $result = $this->getGlobalSearchResults($postBody['modules'], $postBody['searchterm'], json_decode($postBody['searchtags']), $postBody, $postBody['aggregates'], $postBody['sort']);
+        } else{
+            // else go for a DB query and guess global modules
+            // get unified_search modules (bwc)
+            require_once 'include/utils/UnifiedSearchAdvanced.php';
+            if(empty($modArray)){
+                $usearch = new \UnifiedSearchAdvanced();
+                $modArray = array_keys($usearch->getUnifiedSearchModules());
+            }
+            // loop modules
+            foreach($modArray as $module) {
+                $krestHandler = new \SpiceCRM\KREST\Handlers\ModuleHandler();
+                $listData = $krestHandler->get_bean_list($module, ['searchterm' => $postBody['searchterm']]);
+                $result[$module]['aggregations'] = [];
+                $result[$module]['total'] = intval($listData['totalcount']);
+                $result[$module]['hits'] = [];
+                foreach($listData['list'] as $hit){
+                    $hit['_module'] = $module;
+                    $result[$module]['hits'][] = [
+                        '_id' => $hit['id'],
+                        '_source' => $hit,
+                        '_type' => $module,
+                        '_index' => 'spice_'.strtolower($module)
+                    ];
+                }
+            }
+        }
+
         return $res->withJson($result);
     }
 
@@ -64,6 +121,9 @@ class SpiceFTSHandler
             $phonenumber = '+' . substr($phonenumber, 2);
         }
 
+        // format as in fts index
+        $phonenumber = \SpiceCRM\includes\SpicePhoneNumberParser\SpicePhoneNumberParser::convertToE164($phonenumber);
+
         // determine the modules
         // ToDo: move to fts utils and utilize cache
         $searchresults = [];
@@ -71,7 +131,7 @@ class SpiceFTSHandler
         $modulesObject = $db->query("SELECT * FROM sysfts");
         while ($ftsmodule = $db->fetchByAssoc($modulesObject)) {
             $ftsParams = json_decode(html_entity_decode($ftsmodule['settings']));
-            if ($ftsParams->phonesearch === true) {
+            if ($ftsParams->phonesearch == true) {
                 $module = $ftsmodule['module'];
                 $searchresultsraw = $this->searchModuleByPhoneNumber($module, $phonenumber);
 
@@ -242,9 +302,25 @@ class SpiceFTSHandler
         $modArray = array();
         $modLangArray = array();
         $viewDefs = array();
+        $modules = array();
 
-        $modules = $db->query("SELECT * FROM sysfts");
-        while ($module = $db->fetchByAssoc($modules)) {
+        // default FTS
+        $modListFts = $db->query("SELECT * FROM sysfts");
+        while ($row = $db->fetchByAssoc($modListFts)) {
+            $modules[] = $row;
+        }
+        // BWC when no FTS is set. Fall back on unified search definition
+        if(empty($modules)){
+            // try unified search
+            require_once 'include/utils/UnifiedSearchAdvanced.php';
+            $usa = new \UnifiedSearchAdvanced();
+            $modListUS = $usa->getUnifiedSearchModules();
+            foreach($modListUS as $modName => $modData){
+                $modules[] = ['module' => $modName, 'settings' => '{"globalsearch":true}'];
+            }
+        }
+
+        foreach ($modules as $module)  {
             $settings = json_decode(html_entity_decode($module['settings']), true);
 
             if (!$settings['globalsearch']) continue;
@@ -352,11 +428,11 @@ class SpiceFTSHandler
      */
     function indexBean($bean)
     {
-        global $beanList, $timedate, $disable_date_format;
+        global $beanList, $timedate;
 
         $beanHandler = new SpiceFTSBeanHandler($bean);
 
-        $beanModule = array_search(get_class($bean), $beanList);
+        $beanModule = array_search($bean->object_name, $beanList);
         $indexProperties = SpiceFTSUtils::getBeanIndexProperties($beanModule);
         if ($indexProperties) {
             $indexArray = $beanHandler->normalizeBean();
@@ -393,7 +469,7 @@ class SpiceFTSHandler
     {
         global $beanList;
 
-        $beanModule = array_search(get_class($bean), $beanList);
+        $beanModule = array_search($bean->object_name, $beanList);
         $indexProperties = SpiceFTSUtils::getBeanIndexProperties($beanModule);
         if ($indexProperties) {
             $this->elasticHandler->document_delete($beanModule, $bean->id);
@@ -457,7 +533,13 @@ class SpiceFTSHandler
                 if ($indexProperty['metadata']['sort_on']) {
                     return array($indexProperty['metadata']['sort_on'] . '.raw' => $sortdirection);
                 } else {
-                    return array($sortfield . '.raw' => $sortdirection);
+                    switch($indexProperty['indextype']){
+                        case 'date';
+                        case 'double';
+                            return array($sortfield => $sortdirection);
+                        default:
+                            return array($sortfield . '.raw' => $sortdirection);
+                    }
                 }
                 break;
             }
@@ -504,6 +586,13 @@ class SpiceFTSHandler
             }
         }
 
+        // add Standard Fields
+        foreach (SpiceFTSUtils::$standardFields as $standardField => $standardFieldData) {
+            if ($standardFieldData['search']) {
+                $searchFields[] = $standardField;
+            }
+        }
+
         $aggregates = new SpiceFTSAggregates($indexProperties, $aggregatesFilters, $indexSettings);
 
         if (count($searchFields) == 0)
@@ -511,6 +600,7 @@ class SpiceFTSHandler
 
         // build the query
         $queryParam = array(
+            'track_total_hits' => true,
             'size' => $size,
             'from' => $from
         );
@@ -544,7 +634,7 @@ class SpiceFTSHandler
         if (!empty($searchterm)) {
             $multimatch = [
                 "query" => "$searchterm",
-                'analyzer' => 'spice_standard',
+                'analyzer' => $indexSettings['search_analyzer'] ?: 'spice_standard',
                 'fields' => $searchFields,
             ];
 
@@ -789,7 +879,7 @@ class SpiceFTSHandler
     {
         global $current_user, $beanList;
 
-        $module = array_search(get_class($bean), $beanList);
+        $module = array_search($bean->object_name, $beanList);
 
         // get the app list strings for the enum processing
         $appListStrings = return_app_list_strings_language($GLOBALS['current_language']);
@@ -894,6 +984,7 @@ class SpiceFTSHandler
     }
 
     /**
+     * @deprecated
      * @param $module
      * @param string $searchTerm
      *
@@ -926,6 +1017,7 @@ class SpiceFTSHandler
     }
 
     /**
+     * @deprecated
      * @param $aggretgates
      *
      * @return string
@@ -935,13 +1027,13 @@ class SpiceFTSHandler
      * legacy function for getting aggregates int eh old UI .. will be deleted sooner or later
      *
      */
-    function getArrgetgatesHTML($aggretgates)
-    {
-        // prepare the aggregates
-        $aggSmarty = new \Sugar_Smarty();
-        $aggSmarty->assign('aggregates', $aggretgates);
-        return $aggSmarty->fetch('include/SpiceFTSManager/tpls/aggregates.tpl');
-    }
+//    function getArrgetgatesHTML($aggretgates)
+//    {
+//        // prepare the aggregates
+//        $aggSmarty = new \Sugar_Smarty();
+//        $aggSmarty->assign('aggregates', $aggretgates);
+//        return $aggSmarty->fetch('include/SpiceFTSManager/tpls/aggregates.tpl');
+//    }
 
 
     /**
@@ -1078,7 +1170,7 @@ class SpiceFTSHandler
                         $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
                         $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($module, $hit['_id']);
 
-                        $hit['acl'] = $this->get_acl_actions($seed);
+                        $hit['acl'] = $seed->getACLActions();
                         $hit['acl_fieldcontrol'] = $this->get_acl_fieldaccess($seed);
 
                         // unset hidden fields
@@ -1114,6 +1206,10 @@ class SpiceFTSHandler
 
                 foreach ($searchresults[$module]['hits'] as &$hit) {
                     $seed = \BeanFactory::getBean($module, $hit['_id']);
+
+                    // if we do not find the record .. do not return it
+                    if(!$seed) continue;
+
                     foreach ($seed->field_name_map as $field => $fieldData) {
                         //if (!isset($hit['_source']{$field}))
                         $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
@@ -1123,7 +1219,7 @@ class SpiceFTSHandler
                     $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
                     $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($module, $hit['_id']);
 
-                    $hit['acl'] = $this->get_acl_actions($seed);
+                    $hit['acl'] = $seed->getACLActions();
                     $hit['acl_fieldcontrol'] = $this->get_acl_fieldaccess($seed);
 
                     // unset hidden fields
@@ -1403,22 +1499,6 @@ class SpiceFTSHandler
 
 
     private
-    function get_acl_actions($bean)
-    {
-        $aclArray = [];
-        $aclActions = ['detail', 'edit', 'delete'];
-        foreach ($aclActions as $aclAction) {
-            if ($bean)
-                $aclArray[$aclAction] = $bean->ACLAccess($aclAction);
-            // $aclArray[$aclAction] = true;
-            else
-                $aclArray[$aclAction] = false;
-        }
-
-        return $aclArray;
-    }
-
-    private
     function get_acl_fieldaccess($bean)
     {
         global $current_user;
@@ -1439,57 +1519,65 @@ class SpiceFTSHandler
         return $aclArray;
     }
 
-    function getSearchResults($module, $searchTerm, $page = 0, $aggregates = [])
-    {
-
-        $GLOBALS['app_list_strings'] = return_app_list_strings_language($GLOBALS['current_language']);
-        $seed = \BeanFactory::getBean($module);
-
-        $_REQUEST['module'] = $module;
-        $_REQUEST['query'] = true;
-        $_REQUEST['searchterm'] = $searchTerm;
-        $_REQUEST['search_form_view'] = 'fts_search';
-        $_REQUEST['searchFormTab'] = 'fts_search';
-
-        ob_start();
-        $vl = new \ViewList();
-        $vl->bean = $seed;
-        $vl->module = $module;
-        $GLOBALS['module'] = $module;
-        $GLOBALS['currentModule'] = $module;
-        $vl->preDisplay();
-        $vl->listViewPrepare();
-
-        // prepare the aggregates
-        $aggregatesFilters = array();
-        foreach ($aggregates as $aggregate) {
-            $aggregateDetails = explode('::', $aggregate);
-            $aggregatesFilters[$aggregateDetails[0]][] = $aggregateDetails[1];
-        }
-
-        // make the search
-        $searchresults = $this->searchModule($module, $searchTerm, array(), $aggregatesFilters, 25, $page * 25);
-
-        $rows = array();
-        foreach ($searchresults['hits']['hits'] as $searchresult) {
-            // todo: check why we need to decode here
-            /*
-            foreach ($searchresult['_source'] as $fieldName => $fieldValue) {
-                $searchresult['_source'][$fieldName] = utf8_decode($fieldValue);
-            }
-            */
-
-            $rows[] = $seed->convertRow($searchresult['_source']);
-        }
-
-        $vl->lv->setup($vl->bean, 'include/ListView/ListViewFTSTable.tpl', '', array('fts' => true, 'fts_rows' => $rows, 'fts_total' => $this->elasticHandler->getHitsTotalValue($searchresults), 'fts_offset' => $page * 25));
-        ob_end_clean();
-
-        return array(
-            'result' => $vl->lv->display(),
-            'aggregates' => $this->getArrgetgatesHTML($searchresults['aggregations'])
-        );
-    }
+    /**
+     * @deprecated
+     * @param $module
+     * @param $searchTerm
+     * @param int $page
+     * @param array $aggregates
+     * @return array
+     */
+//    function getSearchResults($module, $searchTerm, $page = 0, $aggregates = [])
+//    {
+//
+//        $GLOBALS['app_list_strings'] = return_app_list_strings_language($GLOBALS['current_language']);
+//        $seed = \BeanFactory::getBean($module);
+//
+//        $_REQUEST['module'] = $module;
+//        $_REQUEST['query'] = true;
+//        $_REQUEST['searchterm'] = $searchTerm;
+//        $_REQUEST['search_form_view'] = 'fts_search';
+//        $_REQUEST['searchFormTab'] = 'fts_search';
+//
+//        ob_start();
+//        $vl = new \ViewList();
+//        $vl->bean = $seed;
+//        $vl->module = $module;
+//        $GLOBALS['module'] = $module;
+//        $GLOBALS['currentModule'] = $module;
+//        $vl->preDisplay();
+//        $vl->listViewPrepare();
+//
+//        // prepare the aggregates
+//        $aggregatesFilters = array();
+//        foreach ($aggregates as $aggregate) {
+//            $aggregateDetails = explode('::', $aggregate);
+//            $aggregatesFilters[$aggregateDetails[0]][] = $aggregateDetails[1];
+//        }
+//
+//        // make the search
+//        $searchresults = $this->searchModule($module, $searchTerm, array(), $aggregatesFilters, 25, $page * 25);
+//
+//        $rows = array();
+//        foreach ($searchresults['hits']['hits'] as $searchresult) {
+//            // todo: check why we need to decode here
+//            /*
+//            foreach ($searchresult['_source'] as $fieldName => $fieldValue) {
+//                $searchresult['_source'][$fieldName] = utf8_decode($fieldValue);
+//            }
+//            */
+//
+//            $rows[] = $seed->convertRow($searchresult['_source']);
+//        }
+//
+//        $vl->lv->setup($vl->bean, 'include/ListView/ListViewFTSTable.tpl', '', array('fts' => true, 'fts_rows' => $rows, 'fts_total' => $this->elasticHandler->getHitsTotalValue($searchresults), 'fts_offset' => $page * 25));
+//        ob_end_clean();
+//
+//        return array(
+//            'result' => $vl->lv->display(),
+//            'aggregates' => $this->getArrgetgatesHTML($searchresults['aggregations'])
+//        );
+//    }
 
     function indexBeans($packagesize, $toConsole = false)
     {
@@ -1605,7 +1693,7 @@ class SpiceFTSHandler
                 if ($indexBean['deleted'] == 0) {
                     $seed->retrieve($indexBean['id']);
 
-                    if ($this->elasticHandler->version == '6') {
+                    if ($this->elasticHandler->getMajorVersion() == '6') {
                         $bulkItems[] = json_encode([
                             'index' => [
                                 '_index' => $sugar_config['fts']['prefix'] . strtolower($bean['module']),
@@ -1734,6 +1822,17 @@ class SpiceFTSHandler
     }
 
     /**
+     * returns the basic infor and status of the elastic engine
+     *
+     * @return array|bool|string
+     */
+    function check()
+    {
+        $res = $this->elasticHandler->getStatus();
+        return $res != null;
+    }
+
+    /**
      * retuens the stats on the elastic cluster
      *
      * @return array|mixed
@@ -1743,6 +1842,34 @@ class SpiceFTSHandler
         global $current_user;
         if ($current_user->is_admin)
             return $this->elasticHandler->getStats();
+        else
+            return [];
+    }
+
+    /**
+     * returns the settings on the elastic cluster
+     *
+     * @return array|mixed
+     */
+    function getSettings()
+    {
+        global $current_user;
+        if ($current_user->is_admin)
+            return $this->elasticHandler->getSettings();
+        else
+            return [];
+    }
+
+    /**
+     * returns the settings on the elastic cluster
+     *
+     * @return array|mixed
+     */
+    function unblock()
+    {
+        global $current_user;
+        if ($current_user->is_admin)
+            return $this->elasticHandler->unblock();
         else
             return [];
     }

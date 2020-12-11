@@ -63,7 +63,7 @@ class SugarRestRSS extends SugarRest
 
 	protected function generateResponseHeader($count)
 	{
-	    global $app_strings, $sugar_version, $sugar_flavor;
+	    global $app_strings, $sugar_version;
 
 		$date = TimeDate::httpTime();
 
@@ -75,7 +75,7 @@ class SugarRestRSS extends SugarRest
     <link>{$GLOBALS['sugar_config']['site_url']}</link>
     <description>{$count} {$app_strings['LBL_RSS_RECORDS_FOUND']}</description>
     <pubDate>{$date}</pubDate>
-    <generator>SugarCRM $sugar_version $sugar_flavor</generator>
+    <generator>SugarCRM $sugar_version</generator>
 
 EORSS;
 	}

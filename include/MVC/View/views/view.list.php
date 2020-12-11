@@ -35,10 +35,10 @@
 ********************************************************************************/
 
 require_once('include/MVC/View/SugarView.php');
-
-require_once('include/ListView/ListViewSmarty.php');
-
-require_once('modules/MySettings/StoreQuery.php');
+//
+//require_once('include/ListView/ListViewSmarty.php');
+//
+//require_once('modules/MySettings/StoreQuery.php');
 class ViewList extends SugarView{
     var $type ='list';
     var $lv;
@@ -111,7 +111,7 @@ class ViewList extends SugarView{
                 }
             }
             else if(empty($_REQUEST['button']) && (empty($_REQUEST['clear_query']) || $_REQUEST['clear_query']!='true')) {
-                $this->saved_search = loadBean('SavedSearch');
+                $this->saved_search = BeanFactory::getBean('SavedSearch');
                 $this->saved_search->retrieveSavedSearch($_REQUEST['saved_search_select']);
                 $this->saved_search->populateRequest();
             }

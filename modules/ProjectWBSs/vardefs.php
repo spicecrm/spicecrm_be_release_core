@@ -142,6 +142,22 @@ $dictionary['ProjectWBS'] = array(
             'source' => 'non-db',
             'module' => 'ScrumUserStories'
         ),
+        'meetings' => array(
+            'name' => 'meetings',
+            'type' => 'link',
+            'module' => 'Meetings',
+            'relationship' => 'projectwbss_meetings',
+            'source' => 'non-db',
+            'vname' => 'LBL_MEETINGS',
+        ),
+        'calls' => array(
+            'name' => 'calls',
+            'type' => 'link',
+            'module' => 'Calls',
+            'relationship' => 'projectwbss_calls',
+            'source' => 'non-db',
+            'vname' => 'LBL_CALLS',
+        ),
 
     ),
     'relationships' => array(
@@ -191,7 +207,28 @@ $dictionary['ProjectWBS'] = array(
             'rhs_key' => 'projectwbs_id',
             'relationship_type' => 'one-to-many'
         ),
-
+        'projectwbss_meetings' => array(
+            'lhs_module' => 'ProjectWBSs',
+            'lhs_table' => 'projectwbss',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Meetings',
+            'rhs_table' => 'meetings',
+            'rhs_key' => 'parent_id',
+            'relationship_type' => 'one-to-many',
+            'relationship_role_column' => 'parent_type',
+            'relationship_role_column_value' => 'ProjectWBSs'
+        ),
+        'projectwbss_calls' => array(
+            'lhs_module' => 'ProjectWBSs',
+            'lhs_table' => 'projectwbss',
+            'lhs_key' => 'id',
+            'rhs_module' => 'Calls',
+            'rhs_table' => 'calls',
+            'rhs_key' => 'parent_id',
+            'relationship_type' => 'one-to-many',
+            'relationship_role_column' => 'parent_type',
+            'relationship_role_column_value' => 'ProjectWBSs'
+        ),
     ),
     'indices' => array(
         'id' => array('name' => 'projectwbss_pk', 'type' => 'primary', 'fields' => array('id')),

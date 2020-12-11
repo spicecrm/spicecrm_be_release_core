@@ -147,7 +147,16 @@ class SpiceFTSActivityHandler
 
         $items = [];
         foreach ($results['hits']['hits'] as &$hit) {
-            $seed = \BeanFactory::getBean($elastichandler->getHitModule($hit), $hit['_id']);
+            if(!$seed = \BeanFactory::getBean($elastichandler->getHitModule($hit), $hit['_id'])){
+                $GLOBALS['log']->fatal(__CLASS__. 'on line '.__LINE__.': no '.$elastichandler->getHitModule($hit).' found with id='.$hit['_id'].'. Check if bean is indexed properly');
+                $GLOBALS['log']->fatal($hit);
+                // make correction in total count
+// not sure it's a good idea because of debugging since "correct total" doesn't point to any problem
+//                $newtotal = $elastichandler->getHitsTotalValue($results);
+//                $newtotal--;
+//                $elastichandler->setHitsTotalValue($results, $newtotal);
+                continue;
+            }
             foreach ($seed->field_name_map as $field => $fieldData) {
                 //if (!isset($hit['_source']{$field}))
                 $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
@@ -157,7 +166,7 @@ class SpiceFTSActivityHandler
             $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
             $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($elastichandler->getHitModule($hit), $hit['_id']);
 
-            $hit['acl'] = $krestHandler->get_acl_actions($seed);
+            $hit['acl'] = $seed->getACLActions();
             // $hit['acl_fieldcontrol'] = $krestHandler->get_acl_fieldaccess($seed);
 
             // unset hidden fields
@@ -325,7 +334,7 @@ class SpiceFTSActivityHandler
 
             $hit['_source']['emailaddresses'] = $moduleHandler->getEmailAddresses($elastichandler->getHitModule($hit), $hit['_id']);
 
-            $hit['acl'] = $moduleHandler->get_acl_actions($seed);
+            $hit['acl'] = $seed->getACLActions();
             // $hit['acl_fieldcontrol'] = $krestHandler->get_acl_fieldaccess($seed);
 
             // unset hidden fields

@@ -16,7 +16,6 @@ if (!defined('sugarEntry') || !sugarEntry)
 // CR1000349 spiceinstaller
 //require_once('modules/DynamicFields/DynamicField.php');
 require_once("data/Relationships/RelationshipFactory.php");
-require_once 'modules/UserPreferences/UserPreference.php';
 
 /**
  * SugarBean is the base class for all business objects in Sugar.  It implements
@@ -42,8 +41,8 @@ class SugarBean
     const BEAN_ACTION_CREATE = 1;
     const BEAN_ACTION_UPDATE = 2;
     const BEAN_ACTION_DELETE = 4;
-   // const BEAN_ACTION_DUPLICATE = 8;
-    const BEAN_ACTIONS =[self::BEAN_ACTION_CREATE, self::BEAN_ACTION_UPDATE, self::BEAN_ACTION_DELETE];
+    // const BEAN_ACTION_DUPLICATE = 8;
+    const BEAN_ACTIONS = [self::BEAN_ACTION_CREATE, self::BEAN_ACTION_UPDATE, self::BEAN_ACTION_DELETE];
     //
 
     /**
@@ -208,7 +207,6 @@ class SugarBean
     var $module_name = '';
     var $field_name_map;
     var $field_defs;
-    var $custom_fields;
     var $column_fields = array();
     var $list_fields = array();
     var $additional_column_fields = array();
@@ -219,8 +217,6 @@ class SugarBean
     var $layout_def;
     var $force_load_details = false;
     var $optimistic_lock = false;
-    var $disable_custom_fields = false;
-    var $number_formatting_done = false;
     /*
      * The default ACL type
      */
@@ -234,11 +230,6 @@ class SugarBean
     var $importable = false;
 
     /**
-     * Set to true in the child beans if the module use the special notification template
-     */
-    var $special_notification = false;
-
-    /**
      * Set to true if the bean is being dealt with in a workflow
      */
     var $in_workflow = false;
@@ -250,11 +241,6 @@ class SugarBean
      *
      */
     var $tracker_visibility = true;
-
-    /**
-     * Used to pass inner join string to ListView Data.
-     */
-    var $listview_inner_join = array();
 
     /**
      * Set to true in <modules>/Import/views/view.step4.php if a module is being imported
@@ -303,6 +289,13 @@ class SugarBean
      */
     function __construct()
     {
+        $this->initialize_bean();
+    }
+
+    /**
+     * initializes the bean
+     */
+    public function initialize_bean(){
         global $dictionary, $current_user;
         static $loaded_defs = array();
         $this->db = DBManagerFactory::getInstance();
@@ -325,12 +318,6 @@ class SugarBean
                 $this->column_fields = $column_fields;
             }
 
-            //setup custom fields
-            if (!isset($this->custom_fields) &&
-                empty($this->disable_custom_fields)
-            ) {
-                $this->setupCustomFields($this->module_dir);
-            }
             //load up field_arrays from CacheHandler;
             if (empty($this->list_fields))
                 $this->list_fields = $this->_loadCachedArray($this->module_dir, $this->object_name, 'list_fields');
@@ -347,24 +334,11 @@ class SugarBean
                     $this->optimistic_lock = true;
                 }
             }
-            $loaded_defs[$this->object_name]['column_fields'] = &$this->column_fields;
-            $loaded_defs[$this->object_name]['list_fields'] = &$this->list_fields;
-            $loaded_defs[$this->object_name]['required_fields'] = &$this->required_fields;
-            $loaded_defs[$this->object_name]['field_name_map'] = &$this->field_name_map;
-            $loaded_defs[$this->object_name]['field_defs'] = &$this->field_defs;
+
         } else {
-            $this->column_fields = &$loaded_defs[$this->object_name]['column_fields'];
-            $this->list_fields = &$loaded_defs[$this->object_name]['list_fields'];
-            $this->required_fields = &$loaded_defs[$this->object_name]['required_fields'];
             $this->field_name_map = &$loaded_defs[$this->object_name]['field_name_map'];
             $this->field_defs = &$loaded_defs[$this->object_name]['field_defs'];
-            $this->added_custom_field_defs = true;
 
-            if (!isset($this->custom_fields) &&
-                empty($this->disable_custom_fields)
-            ) {
-                $this->setupCustomFields($this->module_dir, false);
-            }
             if (!empty($dictionary[$this->object_name]['optimistic_locking'])) {
                 $this->optimistic_lock = true;
             }
@@ -383,8 +357,9 @@ class SugarBean
      * only create || update for now
      * @param null $action
      */
-    private function set_bean_action($action = null){
-        if($action && !in_array($action, self::BEAN_ACTIONS))
+    private function set_bean_action($action = null)
+    {
+        if ($action && !in_array($action, self::BEAN_ACTIONS))
             return;
         $this->_bean_action = $action;
     }
@@ -394,8 +369,9 @@ class SugarBean
      * CR1000154
      * @return mixed
      */
-    public function get_bean_action(){
-       return $this->_bean_action;
+    public function get_bean_action()
+    {
+        return $this->_bean_action;
     }
 
     /**
@@ -403,7 +379,8 @@ class SugarBean
      * CR1000154
      * @return bool
      */
-    public function isNew(){
+    public function isNew()
+    {
         // added check on new_with_id for BW compatibility
         // return ($this->_bean_action == self::BEAN_ACTION_CREATE);
         return ($this->_bean_action == self::BEAN_ACTION_CREATE || $this->new_with_id);
@@ -415,37 +392,28 @@ class SugarBean
      */
     public function __debugInfo()
     {
+        global $current_user;
+
+        // only if the current user is an admin
+        if(!$current_user->isAdmin()) return [];
+
         $fields = $this->getFieldDefinitions();
-        foreach($fields as $field => $data)
-        {
+        foreach ($fields as $field => $data) {
             $ret[$field] = $this->{$field};
         }
         return $ret;
     }
 
-    /**
-     * Loads the definition of custom fields defined for the module.
-     * Local file system cache is created as needed.
-     *
-     * @param string $module_name setting up custom fields for this module.
-     * @param boolean $clean_load Optional, default true, rebuilds the cache if set to true.
-     */
-    function setupCustomFields($module_name, $clean_load = true)
-    {
-        // CR1000349 spiceinstaller
-//        $this->custom_fields = new DynamicField($module_name);
-//        $this->custom_fields->setup($this);
-    }
 
     /**
      * This function is designed to cache references to field arrays that were previously stored in the
      * bean files and have since been moved to separate files. Was previously in include/CacheHandler.php
      *
-     * @deprecated
      * @param $module_dir string the module directory
      * @param $module string the name of the module
      * @param $key string the type of field array we are referencing, i.e. list_fields, column_fields, required_fields
-     * */
+     * *@deprecated
+     */
     private function _loadCachedArray(
         $module_dir, $module, $key
     )
@@ -490,6 +458,10 @@ class SugarBean
 
     function bean_implements($interface)
     {
+        // by default return ACL true
+        switch($interface){
+            case 'ACL':return true;
+        }
         return false;
     }
 
@@ -502,17 +474,6 @@ class SugarBean
                 $type = $value['type'];
 
                 switch ($type) {
-                    case 'date':
-                        if (!empty($value['display_default'])) {
-                            $this->$field = $this->parseDateDefault($value['display_default']);
-                        }
-                        break;
-                    case 'datetime':
-                    case 'datetimecombo':
-                        if (!empty($value['display_default'])) {
-                            $this->$field = $this->parseDateDefault($value['display_default'], true);
-                        }
-                        break;
                     case 'multienum':
                         if (empty($value['default']) && !empty($value['display_default']))
                             $this->$field = $value['display_default'];
@@ -535,29 +496,6 @@ class SugarBean
     }
 
     /**
-     * Create date string from default value
-     * like '+1 month'
-     * @param string $value
-     * @param bool $time Should be expect time set too?
-     * @return string
-     */
-    protected function parseDateDefault($value, $time = false)
-    {
-        global $timedate;
-        if ($time) {
-            $dtAry = explode('&', $value, 2);
-            $dateValue = $timedate->getNow(true)->modify($dtAry[0]);
-            if (!empty($dtAry[1])) {
-                $timeValue = $timedate->fromString($dtAry[1]);
-                $dateValue->setTime($timeValue->hour, $timeValue->min, $timeValue->sec);
-            }
-            return $timedate->asUser($dateValue);
-        } else {
-            return $timedate->asUserDate($timedate->getNow(true)->modify($value));
-        }
-    }
-
-    /**
      * Returns a list of fields with their definitions that have the audited property set to true.
      * Before calling this function, check whether audit has been enabled for the table/module or not.
      * You would set the audit flag in the implemting module's vardef file.
@@ -576,13 +514,13 @@ class SugarBean
             $this->audit_enabled_fields = array();
             foreach ($this->field_defs as $field => $properties) {
 
-               if (
+                if (
                     // todo: figure out why the modified fields are always set to wrong audited value
                     $properties['audited'] !== false && $properties['name'] != 'modified_by_name' && $properties['name'] != 'date_modified'
-               ) {
+                ) {
 
                     $this->audit_enabled_fields[$field] = $properties;
-               }
+                }
             }
         }
         return $this->audit_enabled_fields;
@@ -597,7 +535,8 @@ class SugarBean
      * @return array
      *
      * Internal function, do not override.     */
-    function getAuditedFirstLogEnabledFieldDefinitions() {
+    function getAuditedFirstLogEnabledFieldDefinitions()
+    {
         $aclcheck = $this->bean_implements('ACL');
         $is_owner = $this->isOwner($GLOBALS['current_user']->id);
         if (!isset($this->firstlog_enabled_fields)) {
@@ -607,8 +546,7 @@ class SugarBean
                 if (
                 (
                 !empty($properties['auditedfirstlog']))
-                )
-                {
+                ) {
 
                     $this->firstlog_enabled_fields[$field] = $properties;
                 }
@@ -648,18 +586,6 @@ class SugarBean
         return false;
     }
 
-    /**
-     * Returns the name of the custom table.
-     * Custom table's name is based on implementing class' table name.
-     *
-     * @return String Custom table name.
-     *
-     * Internal function, do not override.
-     */
-    public function get_custom_table_name()
-    {
-        return $this->getTableName() . '_cstm';
-    }
 
     /**
      * Returns the implementing class' table name.
@@ -786,91 +712,6 @@ class SugarBean
     }
 
     /**
-     * Basically undoes the effects of SugarBean::populateDefaultValues(); this method is best called right after object
-     * initialization.
-     */
-    public function unPopulateDefaultValues()
-    {
-        if (!is_array($this->field_defs))
-            return;
-
-        foreach ($this->field_defs as $field => $value) {
-            if (!empty($this->$field) && ((isset($value['default']) && $this->$field == $value['default']) || (!empty($value['display_default']) && $this->$field == $value['display_default']))
-            ) {
-                $this->$field = null;
-                continue;
-            }
-            if (!empty($this->$field) && !empty($value['display_default']) && in_array($value['type'], array('date', 'datetime', 'datetimecombo')) &&
-                $this->$field == $this->parseDateDefault($value['display_default'], ($value['type'] != 'date'))
-            ) {
-                $this->$field = null;
-            }
-        }
-    }
-
-    /**
-     * This method has been deprecated.
-     *
-     * @see removeRelationshipMeta()
-     * @deprecated 4.5.1 - Nov 14, 2006
-     * @static
-     */
-    function remove_relationship_meta($key, $db, $log, $tablename, $dictionary, $module_dir)
-    {
-        SugarBean::removeRelationshipMeta($key, $db, $tablename, $dictionary, $module_dir);
-    }
-
-    /**
-     * Removes relationship metadata cache.
-     *
-     * Every module that has relationships defined with other modules, has this meta data cached.  The cache is
-     * stores in 2 locations: relationships table and file system. This method clears the cache from both locations.
-     *
-     * @param string $key module whose meta cache is to be cleared.
-     * @param string $db database handle.
-     * @param string $tablename table name
-     * @param string $dictionary vardef for the module
-     * @param string $module_dir name of subdirectory where module is installed.
-     *
-     * @return Nothing
-     * @static
-     *
-     * Internal function, do not override.
-     */
-    function removeRelationshipMeta($key, $db, $tablename, $dictionary, $module_dir)
-    {
-        //load the module dictionary if not supplied.
-        if ((!isset($dictionary) or empty($dictionary)) && !empty($module_dir)) {
-            $filename = 'modules/' . $module_dir . '/vardefs.php';
-            if (file_exists($filename)) {
-                include($filename);
-            }
-        }
-        if (!is_array($dictionary) or !array_key_exists($key, $dictionary)) {
-            $GLOBALS['log']->fatal("removeRelationshipMeta: Metadata for table " . $tablename . " does not exist");
-            display_notice("meta data absent for table " . $tablename . " keyed to $key ");
-        } else {
-            if (isset($dictionary[$key]['relationships'])) {
-                $RelationshipDefs = $dictionary[$key]['relationships'];
-                foreach ($RelationshipDefs as $rel_name) {
-                    Relationship::delete($rel_name, $db);
-                }
-            }
-        }
-    }
-
-    /**
-     * This method has been deprecated.
-     * @see createRelationshipMeta()
-     * @deprecated 4.5.1 - Nov 14, 2006
-     * @static
-     */
-    function create_relationship_meta($key, &$db, &$log, $tablename, $dictionary, $module_dir)
-    {
-        SugarBean::createRelationshipMeta($key, $db, $tablename, $dictionary, $module_dir);
-    }
-
-    /**
      * Populates the relationship meta for a module.
      *
      * It is called during setup/install. It is used statically to create relationship meta data for many-to-many tables.
@@ -889,7 +730,7 @@ class SugarBean
     {
         //forget relationships if tablename is empty. Will be the case with MergeRecords.
         //avoid unnecessary log line "createRelationshipMeta: Metadata for table  does not exist"
-        if(empty($tablename)) return;
+        if (empty($tablename)) return;
 
         //load the module dictionary if not supplied.
         if (empty($dictionary) && !empty($module_dir)) {
@@ -943,6 +784,9 @@ class SugarBean
 
 
                     //check whether relationship exists or not first.
+                    if(!class_exists('Relationship')){
+                        require_once 'modules/Relationships/Relationship.php';
+                    }
                     if (Relationship::exists($rel_name, $db)) {
                         $GLOBALS['log']->debug('Skipping, reltionship already exists ' . $rel_name);
                     } else {
@@ -1022,11 +866,7 @@ class SugarBean
      */
     function get_linked_fields()
     {
-
         $linked_fields = array();
-
-        //   	require_once('data/Link.php');
-
         $fieldDefs = $this->getFieldDefinitions();
 
         //find all definitions of type link.
@@ -1078,16 +918,13 @@ class SugarBean
         if (!empty($fieldDefs[$rel_name])) {
             //initialize a variable of type Link
             require_once('data/Link2.php');
-            $class = load_link_class($fieldDefs[$rel_name]);
+            $class = 'Link2';
             if (isset($this->$rel_name) && $this->$rel_name instanceof $class) {
                 return true;
             }
             //if rel_name is provided, search the fieldef array keys by name.
             if (isset($fieldDefs[$rel_name]['type']) && $fieldDefs[$rel_name]['type'] == 'link') {
-                if ($class == "Link2")
-                    $this->$rel_name = new $class($rel_name, $this);
-                else
-                    $this->$rel_name = new $class($fieldDefs[$rel_name]['relationship'], $this, $fieldDefs[$rel_name]);
+                $this->$rel_name = new $class($rel_name, $this);
 
                 if (empty($this->$rel_name) ||
                     (method_exists($this->$rel_name, "loadedSuccesfully") && !$this->$rel_name->loadedSuccesfully())
@@ -1100,7 +937,8 @@ class SugarBean
                 return true;
             }
         }
-        $GLOBALS['log']->debug("SugarBean.load_relationships, Error Loading relationship (" . $rel_name . ")");
+        $GLOBALS['log']->fatal("SugarBean.load_relationships, Error Loading relationship (passed link name = " . $rel_name . ") in module ".$this->module_dir);
+
         return false;
     }
 
@@ -1112,7 +950,7 @@ class SugarBean
      * Method will load the relationship if not done so already.
      *
      * @param string $field_name relationship to be loaded.
-     * @param string $bean name  class name of the related bean.
+     * @param string $bean name  class name of the related bean. @deprecated parameter. Not necessary
      * @param array $sort_array optional, unused
      * @param int $begin_index Optional, default 0, unused.
      * @param int $end_index Optional, default -1
@@ -1121,50 +959,37 @@ class SugarBean
      *
      * Internal function, do not override.
      */
-    function get_linked_beans($field_name, $bean_name, $sort_array = array(), $begin_index = 0, $end_index = -1, $deleted = 0, $optional_where = "")
+    function get_linked_beans($field_name, $bean_name = null, $sort_array = array(), $begin_index = 0, $end_index = -1, $deleted = 0, $optional_where = "")
     {
-        //if bean_name is Case then use aCase
-// CR1000426 cleanup backend, module Cases removed
-//        if ($bean_name == "Case")
-//            $bean_name = "aCase";
-
         if ($this->load_relationship($field_name)) {
-            if ($this->$field_name instanceof Link) {
-                // some classes are still based on Link, e.g. TeamSetLink
-                return array_values($this->$field_name->getBeans(new $bean_name(), $sort_array, $begin_index, $end_index, $deleted, $optional_where));
-            } else {
-                // Link2 style
-                if ($end_index != -1 || !empty($deleted) || !empty($optional_where)) {
 
-                    // BEGIN CR1000382: move sort_array content to 'sorthook' when sortfield is non-db
-                    if(!empty($sort_array) && isset($sort_array['sortfield'])) {
-                        if(isset($this->field_defs[$sort_array['sortfield']]['source']) && $this->field_defs[$sort_array['sortfield']]['source'] == 'non-db') {
-                            $sorthook['sorthook'] = $sort_array;
-                            $sort_array = $sorthook;
-                        }
+            // Link2 style
+            if ($end_index != -1 || !empty($deleted) || !empty($optional_where)) {
+
+                // BEGIN CR1000382: move sort_array content to 'sorthook' when sortfield is non-db
+                if (!empty($sort_array) && isset($sort_array['sortfield'])) {
+                    if (isset($this->field_defs[$sort_array['sortfield']]['source']) && $this->field_defs[$sort_array['sortfield']]['source'] == 'non-db') {
+                        $sorthook['sorthook'] = $sort_array;
+                        $sort_array = $sorthook;
                     }
-                    // END
+                }
+                // END
 
-                    return array_values($this->$field_name->getBeans(array(
-                        'where' => $optional_where,
-                        'deleted' => $deleted,
-                        'offset' => $begin_index,
-                        'limit' => ($end_index - $begin_index),
-                        'sort' => $sort_array
-                    )));
-                } else
-                    return array_values($this->$field_name->getBeans());
-            }
+                return array_values($this->$field_name->getBeans(array(
+                    'where' => $optional_where,
+                    'deleted' => $deleted,
+                    'offset' => $begin_index,
+                    'limit' => ($end_index - $begin_index),
+                    'sort' => $sort_array
+                )));
+            } else
+                return array_values($this->$field_name->getBeans());
         } else
             return array();
     }
 
     function get_linked_beans_count($field_name, $bean_name, $deleted = 0, $optional_where = "")
     {
-        //if bean_name is Case then use aCase
-//        if ($bean_name == "Case")
-//            $bean_name = "aCase";
-
         if ($this->load_relationship($field_name)) {
             if ($this->$field_name instanceof Link) {
                 // some classes are still based on Link, e.g. TeamSetLink
@@ -1178,68 +1003,6 @@ class SugarBean
             }
         } else
             return 0;
-    }
-
-    /**
-     * Returns an array of fields that are required for import
-     *
-     * @return array
-     */
-    function get_import_required_fields()
-    {
-        $importable_fields = $this->get_importable_fields();
-        $required_fields = array();
-
-        foreach ($importable_fields as $name => $properties) {
-            if (isset($properties['importable']) && is_string($properties['importable']) && $properties['importable'] == 'required') {
-                $required_fields[$name] = $properties;
-            }
-        }
-
-        return $required_fields;
-    }
-
-    /**
-     * Returns an array of fields that are able to be Imported into
-     * i.e. 'importable' not set to 'false'
-     *
-     * @return array List of fields.
-     *
-     * Internal function, do not override.
-     */
-    function get_importable_fields()
-    {
-        $importableFields = array();
-
-        $fieldDefs = $this->getFieldDefinitions();
-
-        if (!empty($fieldDefs)) {
-            foreach ($fieldDefs as $key => $value_array) {
-                if ((isset($value_array['importable']) && (is_string($value_array['importable']) && $value_array['importable'] == 'false' || is_bool($value_array['importable']) && $value_array['importable'] == false)) || (isset($value_array['type']) && $value_array['type'] == 'link') || (isset($value_array['auto_increment']) && ($value_array['type'] == true || $value_array['type'] == 'true'))
-                ) {
-                    // only allow import if we force it
-                    if (isset($value_array['importable']) && (is_string($value_array['importable']) && $value_array['importable'] == 'true' || is_bool($value_array['importable']) && $value_array['importable'] == true)
-                    ) {
-                        $importableFields[$key] = $value_array;
-                    }
-                } else {
-
-                    //Expose the cooresponding id field of a relate field if it is only defined as a link so that users can relate records by id during import
-                    if (isset($value_array['type']) && ($value_array['type'] == 'relate') && isset($value_array['id_name'])) {
-                        $idField = $value_array['id_name'];
-                        if (isset($fieldDefs[$idField]) && isset($fieldDefs[$idField]['type']) && $fieldDefs[$idField]['type'] == 'link') {
-                            $tmpFieldDefs = $fieldDefs[$idField];
-                            $tmpFieldDefs['vname'] = translate($value_array['vname'], $this->module_dir) . " " . $GLOBALS['app_strings']['LBL_ID'];
-                            $importableFields[$idField] = $tmpFieldDefs;
-                        }
-                    }
-
-                    $importableFields[$key] = $value_array;
-                }
-            }
-        }
-
-        return $importableFields;
     }
 
     /**
@@ -1313,23 +1076,24 @@ class SugarBean
      * @param $fields .. array of Fields to be checked
      * @return array of changed fields
      */
-    public function getAuditChangesAfterDate($date, $fields = []){
+    public function getAuditChangesAfterDate($date, $fields = [])
+    {
         $records = [];
 
         // CR1000308
-        if(!$this->db->tableExists($this->get_audit_table_name())){
+        if (!$this->db->tableExists($this->get_audit_table_name())) {
             return $records;
         }
 
         $query = "SELECT {$this->get_audit_table_name()}.*, users.user_name FROM {$this->get_audit_table_name()}, users WHERE users.id = {$this->get_audit_table_name()}.created_by AND parent_id = '$this->id' AND date_created > '$date'";
-        if(count($fields) > 0){
-            $query .= " AND field_name in ('".implode("','", $fields)."')";
+        if (count($fields) > 0) {
+            $query .= " AND field_name in ('" . implode("','", $fields) . "')";
         }
         $query .= " ORDER BY date_created DESC";
 
         $recordsObject = $this->db->query($query);
-        while($record = $this->db->fetchByAssoc($recordsObject)){
-            if(!isset($records[$record['field_name']])){
+        while ($record = $this->db->fetchByAssoc($recordsObject)) {
+            if (!isset($records[$record['field_name']])) {
                 $records[$record['field_name']] = [
                     'value' => $this->{$record['field_name']},
                     'changes' => []
@@ -1423,7 +1187,7 @@ class SugarBean
             $indices[$nr]['name'] = 'idx_' . strtolower($this->getTableName()) . '_audit_' . $properties['name'];
         }
 
-        $this->db->repairAuditTable($table_name, $fieldDefs, $indices, $execute);
+        return $this->db->repairAuditTable($table_name, $fieldDefs, $indices, $execute);
     }
 
     /**
@@ -1444,11 +1208,7 @@ class SugarBean
                 return;
             if ($this->db->tableExists($this->table_name))
                 $this->db->dropTable($this);
-            if ($this->db->tableExists($this->table_name . '_cstm')) {
-                $this->db->dropTableName($this->table_name . '_cstm');
-                // CR1000349 spiceinstaller
-//                DynamicField::deleteCache();
-            }
+
             if ($this->db->tableExists($this->get_audit_table_name())) {
                 $this->db->dropTableName($this->get_audit_table_name());
             }
@@ -1467,46 +1227,37 @@ class SugarBean
      */
     public function save($check_notify = false, $fts_index_bean = true)
     {
+        global $current_user;
 
-        if ( isset( $this->newFromTemplate{0} ) ) {
+        if (isset($this->newFromTemplate{0})) {
             // CRNR: 1000375: Bug Fix
             // used "module_dir" instead of "module_name", because "OutputTemplates" has the field "module_name" in vardefs which
             // overrides sugar bean variable "module_name".
             // this fix should not have any side effects, as long as all extended beans has the variable "module_dir" set.
-            $GLOBALS['cloningData'] = [ 'count' => 1, 'cloned' => [[ 'module' => $this->module_dir, 'id' => $this->newFromTemplate, 'bean' => &$this, 'cloneId' => $this->id ]], 'custom' => null ];
-            $templateBean = BeanFactory::getBean( $this->module_dir, $this->newFromTemplate );
-            $templateBean->cloneBeansOfAllLinks( $this );
+            $GLOBALS['cloningData'] = ['count' => 1, 'cloned' => [['module' => $this->module_dir, 'id' => $this->newFromTemplate, 'bean' => &$this, 'cloneId' => $this->id]], 'custom' => null];
+            $templateBean = BeanFactory::getBean($this->module_dir, $this->newFromTemplate);
+            $templateBean->cloneBeansOfAllLinks($this);
         }
 
         $this->in_save = true;
         // cn: SECURITY - strip XSS potential vectors
         $this->cleanBean();
-        // This is used so custom/3rd-party code can be upgraded with fewer issues, this will be removed in a future release
-        $this->fixUpFormatting();
-        global $timedate;
-        global $current_user, $action;
 
         $isUpdate = true;
-        if (empty($this->id)) {
-            $isUpdate = false;
-        }
-
-        if ($this->new_with_id == true) {
+        if (empty($this->id) || $this->new_with_id == true) {
             $isUpdate = false;
         }
 
         //set current bean_action
-        if($isUpdate){
+        if ($isUpdate) {
             $this->set_bean_action(self::BEAN_ACTION_UPDATE);
-        }else{
+        } else {
             $this->set_bean_action(self::BEAN_ACTION_CREATE);
         }
 
         if (empty($this->date_modified) || $this->update_date_modified) {
             $this->date_modified = $GLOBALS['timedate']->nowDb();
         }
-
-        $this->_checkOptimisticLocking($action, $isUpdate);
 
         if (!empty($this->modified_by_name))
             $this->old_modified_by_name = $this->modified_by_name;
@@ -1533,8 +1284,6 @@ class SugarBean
             }
         }
 
-
-        require_once("data/BeanFactory.php");
         BeanFactory::registerBean($this->module_name, $this);
 
         if (empty($GLOBALS['updating_relationships']) && empty($GLOBALS['saving_relationships']) && empty($GLOBALS['resavingRelatedBeans'])) {
@@ -1564,15 +1313,6 @@ class SugarBean
             $this->emailAddress->save($this->id, $this->module_dir);
         }
 
-        if (isset($this->custom_fields)) {
-            $this->custom_fields->bean = $this;
-            $this->custom_fields->save($isUpdate);
-        }
-
-
-        // use the db independent query generator
-        $this->preprocess_fields_on_save();
-
         //construct the SQL to create the audit record if auditing is enabled.
         $auditDataChanges = array();
         if ($this->is_AuditEnabled()) {
@@ -1581,8 +1321,8 @@ class SugarBean
             } else {
                 $auditDataChanges = $this->db->getAuditDataChanges($this);
                 //BEGIN introduced 2018-06-19 maretval: log first value set to audit table (vardefs property auditedfirstlog)
-                if(!$isUpdate)
-                    $dataFirstLog =  $this->db->getDataAuditedFirstLog($this);
+                if (!$isUpdate)
+                    $dataFirstLog = $this->db->getDataAuditedFirstLog($this);
                 //END
             }
         }
@@ -1591,6 +1331,7 @@ class SugarBean
         $this->auditDataChanges = $auditDataChanges;
         //END
 
+        // create a notification
         $this->createNotification($check_notify);
 
         if ($isUpdate) {
@@ -1616,17 +1357,6 @@ class SugarBean
             SugarRelationship::resaveRelatedBeans();
         }
 
-        // populate fetched row with current bean values
-        foreach ($auditDataChanges as $change) {
-            $this->fetched_row[$change['field_name']] = $change['after'];
-        }
-
-
-        //If we aren't in setup mode and we have a current user and module, then we track
-        if (isset($GLOBALS['current_user']) && isset($this->module_dir)) {
-            $this->track_view($current_user->id, $this->module_dir, 'save');
-        }
-
         $this->call_custom_logic('after_save', '');
 
         // call fts manager to index the bean
@@ -1634,11 +1364,6 @@ class SugarBean
             $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
             $spiceFTSHandler->indexBean($this);
         }
-
-        // workflow handler
-        //if($thisWorkflow = BeanFactory::getBean('Workflows')) {
-        //    $thisWorkflow->WorkflowHandler($this);
-        //}
 
         //Now that the record has been saved, we don't want to insert again on further saves
         $this->new_with_id = false;
@@ -1674,123 +1399,6 @@ class SugarBean
     }
 
     /**
-     * Function corrects any bad formatting done by 3rd party/custom code
-     *
-     * This function will be removed in a future release, it is only here to assist upgrading existing code that expects formatted data in the bean
-     */
-    function fixUpFormatting()
-    {
-        global $timedate, $disable_fixup_format;
-
-        if($disable_fixup_format === true)
-            return;
-
-        static $boolean_false_values = array('off', 'false', '0', 'no');
-
-
-        foreach ($this->field_defs as $field => $def) {
-            if (!isset($this->$field)) {
-                continue;
-            }
-            if ((isset($def['source']) && $def['source'] == 'non-db') || $field == 'deleted') {
-                continue;
-            }
-            if (isset($this->fetched_row[$field]) && $this->$field == $this->fetched_row[$field]) {
-                // Don't hand out warnings because the field was untouched between retrieval and saving, most database drivers hand pretty much everything back as strings.
-                continue;
-            }
-            $reformatted = false;
-            switch ($def['type']) {
-                case 'datetime':
-                case 'datetimecombo':
-                    if (empty($this->$field))
-                        break;
-                    if ($this->$field == 'NULL') {
-                        $this->$field = '';
-                        break;
-                    }
-                    if (!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/', $this->$field)) {
-                        // This appears to be formatted in user date/time
-                        $this->$field = $timedate->to_db($this->$field);
-                        $reformatted = true;
-                    }
-                    break;
-                case 'date':
-                    if (empty($this->$field))
-                        break;
-                    if ($this->$field == 'NULL') {
-                        $this->$field = '';
-                        break;
-                    }
-                    if (!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $this->$field)) {
-                        // This date appears to be formatted in the user's format
-                        $this->$field = $timedate->to_db_date($this->$field, false);
-                        $reformatted = true;
-                    }
-                    break;
-                case 'time':
-                    if (empty($this->$field))
-                        break;
-                    if ($this->$field == 'NULL') {
-                        $this->$field = '';
-                        break;
-                    }
-                    if (preg_match('/(am|pm)/i', $this->$field)) {
-                        // This time appears to be formatted in the user's format
-                        $this->$field = $timedate->fromUserTime($this->$field)->format(TimeDate::DB_TIME_FORMAT);
-                        $reformatted = true;
-                    }
-                    break;
-                case 'double':
-                case 'decimal':
-                case 'currency':
-                case 'float':
-                    if ($this->$field === '' || $this->$field == NULL || $this->$field == 'NULL') {
-                        continue;
-                    }
-                    if (is_string($this->$field)) {
-                        $this->$field = (float)unformat_number($this->$field);
-                        $reformatted = true;
-                    }
-                    break;
-                case 'uint':
-                case 'ulong':
-                case 'long':
-                case 'short':
-                case 'tinyint':
-                case 'int':
-                    if ($this->$field === '' || $this->$field == NULL || $this->$field == 'NULL') {
-                        continue;
-                    }
-                    if (is_string($this->$field)) {
-                        $this->$field = (int)unformat_number($this->$field);
-                        $reformatted = true;
-                    }
-                    break;
-                case 'bool':
-                    if (empty($this->$field)) {
-                        $this->$field = false;
-                    } else if (true === $this->$field || 1 == $this->$field) {
-                        $this->$field = true;
-                    } else if (in_array(strval($this->$field), $boolean_false_values)) {
-                        $this->$field = false;
-                        $reformatted = true;
-                    } else {
-                        $this->$field = true;
-                        $reformatted = true;
-                    }
-                    break;
-                case 'encrypt':
-                    $this->$field = $this->encrpyt_before_save($this->$field);
-                    break;
-            }
-            if ($reformatted) {
-                $GLOBALS['log']->deprecated('Formatting correction: ' . $this->module_dir . '->' . $field . ' had formatting automatically corrected. This will be removed in the future, please upgrade your external code');
-            }
-        }
-    }
-
-    /**
      * Encrpyt and base64 encode an 'encrypt' field type in the bean using Blowfish. The default system key is stored in cache/Blowfish/{keytype}
      * @param STRING value -plain text value of the bean field.
      * @return string
@@ -1809,72 +1417,6 @@ class SugarBean
         return self::$field_key;
     }
 
-    /**
-     * Moved from save() method, functionality is the same, but this is intended to handle
-     * Optimistic locking functionality.
-     */
-    private function _checkOptimisticLocking($action, $isUpdate)
-    {
-        if ($this->optimistic_lock && !isset($_SESSION['o_lock_fs'])) {
-            if (isset($_SESSION['o_lock_id']) && $_SESSION['o_lock_id'] == $this->id && $_SESSION['o_lock_on'] == $this->object_name) {
-                if ($action == 'Save' && $isUpdate && isset($this->modified_user_id) && $this->has_been_modified_since($_SESSION['o_lock_dm'], $this->modified_user_id)) {
-                    $_SESSION['o_lock_class'] = get_class($this);
-                    $_SESSION['o_lock_module'] = $this->module_dir;
-                    $_SESSION['o_lock_object'] = $this->toArray();
-                    $saveform = "<form name='save' id='save' method='POST'>";
-                    foreach ($_POST as $key => $arg) {
-                        $saveform .= "<input type='hidden' name='" . addslashes($key) . "' value='" . addslashes($arg) . "'>";
-                    }
-                    $saveform .= "</form><script>document.getElementById('save').submit();</script>";
-                    $_SESSION['o_lock_save'] = $saveform;
-                    header('Location: index.php?module=OptimisticLock&action=LockResolve');
-                    die();
-                } else {
-                    unset($_SESSION['o_lock_object']);
-                    unset($_SESSION['o_lock_id']);
-                    unset($_SESSION['o_lock_dm']);
-                }
-            }
-        } else {
-            if (isset($_SESSION['o_lock_object'])) {
-                unset($_SESSION['o_lock_object']);
-            }
-            if (isset($_SESSION['o_lock_id'])) {
-                unset($_SESSION['o_lock_id']);
-            }
-            if (isset($_SESSION['o_lock_dm'])) {
-                unset($_SESSION['o_lock_dm']);
-            }
-            if (isset($_SESSION['o_lock_fs'])) {
-                unset($_SESSION['o_lock_fs']);
-            }
-            if (isset($_SESSION['o_lock_save'])) {
-                unset($_SESSION['o_lock_save']);
-            }
-        }
-    }
-
-    /**
-     * Performs a check if the record has been modified since the specified date
-     *
-     * @param date $date Datetime for verification
-     * @param string $modified_user_id User modified by
-     */
-    function has_been_modified_since($date, $modified_user_id)
-    {
-        global $current_user;
-        $date = $this->db->convert($this->db->quoted($date), 'datetime');
-        if (isset($current_user)) {
-            $query = "SELECT date_modified FROM $this->table_name WHERE id='$this->id' AND modified_user_id != '$current_user->id'
-            	AND (modified_user_id != '$modified_user_id' OR date_modified > $date)";
-            $result = $this->db->query($query);
-
-            if ($this->db->fetchByAssoc($result)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * returns this bean as an array
@@ -1943,10 +1485,6 @@ class SugarBean
             // if we should use relation data from properties (for REQUEST-independent calls)
             $rel_id = isset($this->new_rel_id) ? $this->new_rel_id : '';
             $rel_link = isset($this->new_rel_relname) ? $this->new_rel_relname : '';
-        } else {
-            // if we should use relation data from REQUEST
-            $rel_id = isset($_REQUEST['relate_id']) ? $_REQUEST['relate_id'] : '';
-            $rel_link = isset($_REQUEST['relate_to']) ? $_REQUEST['relate_to'] : '';
         }
 
         // filter relation data
@@ -1978,12 +1516,12 @@ class SugarBean
      *
      * TODO: remove this mechanism and replace with mechanism exclusively based on the vardefs
      *
-     * @api
-     * @see save_relationship_changes
      * @param string|boolean $new_rel_id String of the ID to add
      * @param string                        Relationship Name
      * @param array $exclude any relationship's to exclude
      * @return string|boolean               Return the new_rel_id if it was not used.  False if it was used.
+     * @api
+     * @see save_relationship_changes
      */
     protected function handle_preset_relationships($new_rel_id, $new_rel_link, $exclude = array())
     {
@@ -2026,10 +1564,10 @@ class SugarBean
      * If the vardef has entries for field <a> of type relate, where a->id_name = <b> and field <b> of type link
      * then we receive a value for b from the MVC in the _REQUEST, and it should be set in the bean as $this->$b
      *
-     * @api
-     * @see save_relationship_changes
      * @param array $exclude any relationship's to exclude
      * @return array                    the list of relationships that were added or removed successfully or if they were a failure
+     * @api
+     * @see save_relationship_changes
      */
     protected function handle_remaining_relate_fields($exclude = array())
     {
@@ -2158,11 +1696,11 @@ class SugarBean
     /**
      * Finally, we update a field listed in the _REQUEST['%/relate_id']/_REQUEST['relate_to'] mechanism (if it has not already been updated)
      *
-     * @api
-     * @see save_relationship_changes
      * @param string|boolean $new_rel_id
      * @param string $new_rel_link
      * @return boolean
+     * @see save_relationship_changes
+     * @api
      */
     protected function handle_request_relate($new_rel_id, $new_rel_link)
     {
@@ -2266,307 +1804,6 @@ class SugarBean
         }
     }
 
-    /**
-     * This function processes the fields before save.
-     * Interal function, do not override.
-     */
-    function preprocess_fields_on_save()
-    {
-        $GLOBALS['log']->deprecated('SugarBean.php: preprocess_fields_on_save() is deprecated');
-    }
-
-    /**
-     * Send assignment notifications and invites for meetings and calls
-     */
-    private function _sendNotifications($check_notify)
-    {
-        if ($check_notify || (isset($this->notify_inworkflow) && $this->notify_inworkflow == true) // cn: bug 5795 - no invites sent to Contacts, and also bug 25995, in workflow, it will set the notify_on_save=true.
-            && !$this->isOwner($this->created_by)
-        ) {  // cn: bug 42727 no need to send email to owner (within workflow)
-            $admin = new Administration();
-            $admin->retrieveSettings();
-            $sendNotifications = false;
-
-            if ($admin->settings['notify_on']) {
-                $GLOBALS['log']->info("Notifications: user assignment has changed, checking if user receives notifications");
-                $sendNotifications = true;
-            } elseif (isset($_REQUEST['send_invites']) && $_REQUEST['send_invites'] == 1) {
-                // cn: bug 5795 Send Invites failing for Contacts
-                $sendNotifications = true;
-            } else {
-                $GLOBALS['log']->info("Notifications: not sending e-mail, notify_on is set to OFF");
-            }
-
-
-            if ($sendNotifications == true) {
-                $notify_list = $this->get_notification_recipients();
-                foreach ($notify_list as $notify_user) {
-                    $this->send_assignment_notifications($notify_user, $admin);
-                }
-            }
-        }
-    }
-
-    /**
-     * Determines which users receive a notification
-     *
-     * todo Meeting and Calls too
-     */
-    function get_notification_recipients()
-    {
-        $notify_user = new User();
-        $notify_user->retrieve($this->assigned_user_id);
-        $this->new_assigned_user_name = $notify_user->full_name;
-
-        $GLOBALS['log']->info("Notifications: recipient is $this->new_assigned_user_name");
-
-        $user_list = array($notify_user);
-        return $user_list;
-        /*
-          //send notifications to followers, but ensure to not query for the assigned_user.
-          return SugarFollowing::getFollowers($this, $notify_user);
-         */
-    }
-
-    /**
-     * Handles sending out email notifications when items are first assigned to users
-     *
-     * @param string $notify_user user to notify
-     * @param string $admin the admin user that sends out the notification
-     */
-    function send_assignment_notifications( $notify_user, $admin ) {
-
-        global $current_user;
-
-        if ( $this->object_name !== 'Meeting' and $this->object_name !== 'Call' and !$notify_user->receive_notifications ) return;
-
-        $sendToEmail = $notify_user->emailAddress->getPrimaryAddress( $notify_user );
-        if ( empty( $sendToEmail )) {
-            $GLOBALS['log']->warn("Notifications: No e-mail address set for user '{$notify_user->user_name}', cancelling send.");
-            return false;
-        }
-
-        //BEGIN introduced SpiceCRM 201809001. Apply email template from database
-        if ( @$GLOBALS['isREST'] ) {
-
-            $destUserPrefs = new UserPreference($notify_user);
-            $destUserPrefs->reloadPreferences();
-            $destLang = $destUserPrefs->getPreference('language');
-
-            // load notification email_templates (introduced in spicecrm 2021809001)
-            if ( !isset( $_SESSION['notification_templates'] ) || empty( $_SESSION['notification_templates'] )) {
-                $_SESSION['notification_templates'] = array();
-                $restpl = $this->db->query('SELECT * FROM email_templates WHERE (type="notification" OR type="notification_custom") AND deleted=0 ORDER BY type ASC');
-                while ( $row = $this->db->fetchByAssoc( $restpl )) {
-                    $_SESSION['notification_templates'][$row['for_bean']][$row['language']] = $row;
-                }
-            }
-
-            if ( !isset( $_SESSION['notification_templates'][$this->module_name] )) {
-                $GLOBALS['log']->fatal("Notifications: Not any template available in DB for module '{$this->module_name}', cancelling send.");
-                return false;
-            }
-
-            if ( isset( $_SESSION['notification_templates'][$this->module_name][$destLang] )) $tplId = $_SESSION['notification_templates'][$this->module_name][$destLang]['id'];
-            else if ( isset( $_SESSION['notification_templates'][$this->module_name]['en_us'] )) $tplId = $_SESSION['notification_templates'][$this->module_name]['en_us']['id'];
-            else {
-                $GLOBALS['log']->fatal("Notifications: No suitable template available in DB (in the langue of the destination user or in english) for module '{$this->module_name}', cancelling send.");
-                return false;
-            }
-
-            $tpl = BeanFactory::getBean( 'EmailTemplates', $tplId );
-            $parsedTpl = $tpl->parse( $this );
-
-            try {
-                $defaultMailbox = Mailbox::getDefaultMailbox();
-
-                $email = BeanFactory::getBean( 'Emails' );
-                $email->mailbox_id = $defaultMailbox->id;
-                $email->name = $parsedTpl['subject'];
-                $email->body = $parsedTpl['body_html'];
-                $email->addEmailAddress( 'to', $sendToEmail );
-                // add the from address
-                $email->addEmailAddress( 'from', $current_user->emailAddress->getPrimaryAddress( $current_user ) );
-                $sendResults = $email->sendEmail();
-                if ( isset( $sendResults['errors'] ) ) {
-                    $GLOBALS['log']->fatal('Error sending notification email over Mailbox in SugarBean on file '.__FILE__.', line '.__LINE__.'.');
-                    $GLOBALS['log']->fatal( $sendResults );
-                }
-                return true;
-            } catch (Exception $e) {
-                $GLOBALS['log']->fatal('Notifications: No Notification sent. Please check if default mailbox is set.');
-                return false;
-            }
-            //END
-
-        } else {
-
-            $notify_mail = $this->create_notification_email($notify_user);
-            $notify_mail->setMailerForSystem();
-
-            if (empty($admin->settings['notify_send_from_assigning_user'])) {
-                $notify_mail->From = $admin->settings['notify_fromaddress'];
-                $notify_mail->FromName = (empty($admin->settings['notify_fromname'])) ? "" : $admin->settings['notify_fromname'];
-            } else {
-                // Send notifications from the current user's e-mail (if set)
-                $fromAddress = $current_user->emailAddress->getReplyToAddress($current_user);
-                $fromAddress = !empty($fromAddress) ? $fromAddress : $admin->settings['notify_fromaddress'];
-                $notify_mail->From = $fromAddress;
-                //Use the users full name is available otherwise default to system name
-                $from_name = !empty($admin->settings['notify_fromname']) ? $admin->settings['notify_fromname'] : "";
-                $from_name = !empty($current_user->full_name) ? $current_user->full_name : $from_name;
-                $notify_mail->FromName = $from_name;
-            }
-
-            $oe = new OutboundEmail();
-            $oe = $oe->getUserMailerSettings($current_user);
-
-            //only send if smtp server is defined
-            $smtpVerified = false;
-
-            //first check the user settings
-            if (!empty($oe->mail_smtpserver)) {
-                $smtpVerified = true;
-            }
-
-            //if still not verified, check against the system settings
-            if (!$smtpVerified) {
-                $oe = $oe->getSystemMailerSettings();
-                if (!empty($oe->mail_smtpserver)) {
-                    $smtpVerified = true;
-                }
-            }
-            //if smtp was not verified against user or system, then do not send out email
-            if (!$smtpVerified) {
-                $GLOBALS['log']->fatal("Notifications: error sending e-mail, smtp server was not found ");
-                //break out
-                return;
-            }
-
-            if (!$notify_mail->send()) {
-                $GLOBALS['log']->fatal("Notifications: error sending e-mail (method: {$notify_mail->Mailer}), (error: {$notify_mail->ErrorInfo})");
-            } else {
-                $GLOBALS['log']->info("Notifications: e-mail successfully sent");
-            }
-
-        }
-    }
-
-    /**
-     * This function handles create the email notifications email.
-     * @param string $notify_user the user to send the notification email to
-     */
-    function create_notification_email($notify_user)
-    {
-        global $sugar_version;
-        global $sugar_config;
-        global $app_list_strings;
-        global $current_user;
-        global $locale;
-        global $beanList;
-        $OBCharset = $locale->getPrecedentPreference('default_email_charset');
-
-
-        require_once("include/SugarPHPMailer.php");
-
-        $notify_address = $notify_user->emailAddress->getPrimaryAddress($notify_user);
-        $notify_name = $notify_user->full_name;
-        $GLOBALS['log']->debug("Notifications: user has e-mail defined");
-
-        $notify_mail = new SugarPHPMailer();
-        $notify_mail->addAddress($notify_address, $locale->translateCharsetMIME(trim($notify_name), 'UTF-8', $OBCharset));
-
-        if (empty($_SESSION['authenticated_user_language'])) {
-            $current_language = $sugar_config['default_language'];
-        } else {
-            $current_language = $_SESSION['authenticated_user_language'];
-        }
-        $xtpl = new XTemplate(get_notify_template_file($current_language));
-        if ($this->module_dir == "Cases") {
-            $template_name = "Case"; //we should use Case, you can refer to the en_us.notify_template.html.
-        } else {
-            $template_name = $beanList[$this->module_dir]; //bug 20637, in workflow this->object_name = strange chars.
-        }
-
-        $this->current_notify_user = $notify_user;
-
-        if (in_array('set_notification_body', get_class_methods($this))) {
-            $xtpl = $this->set_notification_body($xtpl, $this);
-        } else {
-            $xtpl->assign("OBJECT", translate('LBL_MODULE_NAME'));
-            $template_name = "Default";
-        }
-        if (!empty($_SESSION["special_notification"]) && $_SESSION["special_notification"]) {
-            $template_name = $beanList[$this->module_dir] . 'Special';
-        }
-        if ($this->special_notification) {
-            $template_name = $beanList[$this->module_dir] . 'Special';
-        }
-        $xtpl->assign("ASSIGNED_USER", $this->new_assigned_user_name);
-        $xtpl->assign("ASSIGNER", $current_user->name);
-        $port = '';
-
-        if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) {
-            $port = $_SERVER['SERVER_PORT'];
-        }
-
-        if (!isset($_SERVER['HTTP_HOST'])) {
-            $_SERVER['HTTP_HOST'] = '';
-        }
-
-        $httpHost = $_SERVER['HTTP_HOST'];
-
-        if ($colon = strpos($httpHost, ':')) {
-            $httpHost = substr($httpHost, 0, $colon);
-        }
-
-        $parsedSiteUrl = parse_url($sugar_config['site_url']);
-        $host = $parsedSiteUrl['host'];
-        if (!isset($parsedSiteUrl['port'])) {
-            $parsedSiteUrl['port'] = 80;
-        }
-
-        $port = ($parsedSiteUrl['port'] != 80) ? ":" . $parsedSiteUrl['port'] : '';
-        $path = !empty($parsedSiteUrl['path']) ? $parsedSiteUrl['path'] : "";
-        $cleanUrl = "{$parsedSiteUrl['scheme']}://{$host}{$port}{$path}";
-
-        $xtpl->assign("URL", $cleanUrl . "/index.php?module={$this->module_dir}&action=DetailView&record={$this->id}");
-        $xtpl->assign("SUGAR", "Sugar v{$sugar_version}");
-        $xtpl->parse($template_name);
-        $xtpl->parse($template_name . "_Subject");
-
-        $notify_mail->Body = from_html(trim($xtpl->text($template_name)));
-        $notify_mail->Subject = from_html($xtpl->text($template_name . "_Subject"));
-
-        // cn: bug 8568 encode notify email in User's outbound email encoding
-        $notify_mail->prepForOutbound();
-
-        return $notify_mail;
-    }
-
-    /**
-     * Tracks the viewing of a detail record.
-     * This leverages get_summary_text() which is object specific.
-     *
-     * Internal function, do not override.
-     * @param string $user_id - String value of the user that is viewing the record.
-     * @param string $current_module - String value of the module being processed.
-     * @param string $current_view - String value of the current view
-     */
-    function track_view($user_id, $current_module, $current_view = '')
-    {
-        $trackerManager = TrackerManager::getInstance();
-        if ($monitor = $trackerManager->getMonitor('tracker')) {
-            $monitor->setValue('date_modified', $GLOBALS['timedate']->nowDb());
-            $monitor->setValue('user_id', $user_id);
-            $monitor->setValue('module_name', $current_module);
-            $monitor->setValue('action', $current_view);
-            $monitor->setValue('item_id', $this->id);
-            $monitor->setValue('item_summary', $this->get_summary_text());
-            $monitor->setValue('visible', $this->tracker_visibility);
-            $trackerManager->saveMonitor($monitor);
-        }
-    }
 
     /**
      * Returns the summary text that should show up in the recent history list for this object.
@@ -2575,55 +1812,16 @@ class SugarBean
      */
     public function get_summary_text()
     {
-        return "Base Implementation.  Should be overridden.";
+        // by default return name
+        return $this->name;
+
     }
 
-    /**
-     * Removes formatting from values posted from the user interface.
-     * It only unformats numbers.  Function relies on user/system prefernce for format strings.
-     *
-     * Internal Function, do not override.
-     */
-    function unformat_all_fields()
-    {
-        $GLOBALS['log']->deprecated('SugarBean.php: unformat_all_fields() is deprecated');
-    }
-
-    /**
-     * This functions adds formatting to all number fields before presenting them to user interface.
-     *
-     * Internal function, do not override.
-     */
-    function format_all_fields()
-    {
-        $GLOBALS['log']->deprecated('SugarBean.php: format_all_fields() is deprecated');
-    }
-
-    function format_field($fieldDef)
-    {
-        $GLOBALS['log']->deprecated('SugarBean.php: format_field() is deprecated');
-    }
-
-    /**
-     * Add any required joins to the list count query.  The joins are required if there
-     * is a field in the $where clause that needs to be joined.
-     *
-     * @param string $query
-     * @param string $where
-     *
-     * Internal Function, do Not override.
-     */
-    function add_list_count_joins(&$query, $where)
-    {
-        $custom_join = $this->getCustomJoin();
-        $query .= $custom_join['join'];
-    }
 
     /**
      * This function returns a paged list of the current object type.  It is intended to allow for
      * hopping back and forth through pages of data.  It only retrieves what is on the current page.
      *
-     * @internal This method must be called on a new instance.  It trashes the values of all the fields in the current one.
      * @param string $order_by
      * @param string $where Additional where clause
      * @param int $row_offset Optaional,default 0, starting row number
@@ -2634,6 +1832,7 @@ class SugarBean
      *
      * Internal function, do not override.
      *
+     * @internal This method must be called on a new instance.  It trashes the values of all the fields in the current one.
      */
     function get_list($order_by = "", $where = "", $row_offset = 0, $limit = -1, $max = -1, $show_deleted = 0, $singleSelect = false, $select_fields = array())
     {
@@ -2696,7 +1895,8 @@ class SugarBean
      */
     public function create_new_list_query($order_by, $where, $filter = [], $params = [], $show_deleted = 0,
                                           $join_type = '', $return_array = false, $parentbean = null,
-                                          $singleSelect = false, $ifListForExport = false) {
+                                          $singleSelect = false, $ifListForExport = false)
+    {
         global $beanFiles, $beanList;
         $selectedFields = array();
         $secondarySelectedFields = array();
@@ -2731,19 +1931,15 @@ class SugarBean
         } else {
             $ret_array['secondary_select'] = '';
         }
-        $custom_join = $this->getCustomJoin(empty($filter) ? true : $filter);
-        if ((!isset($params['include_custom_fields']) || $params['include_custom_fields'])) {
-            $ret_array['select'] .= $custom_join['select'];
-        }
-        $ret_array['from'] .= $custom_join['join'];
-        // Bug 52490 - Captivea (Sve) - To be able to add custom fields inside where clause in a subpanel
-        $ret_array['from_min'] .= $custom_join['join'];
+
         $jtcount = 0;
         //LOOP AROUND FOR FIXIN VARDEF ISSUES
+        /*
         require('include/VarDefHandler/listvardefoverride.php');
         if (file_exists('custom/include/VarDefHandler/listvardefoverride.php')) {
             require('custom/include/VarDefHandler/listvardefoverride.php');
         }
+        */
 
         $joined_tables = array();
         if (!empty($params['joined_tables'])) {
@@ -2772,7 +1968,8 @@ class SugarBean
                 $fields = $filter;
             }
         } else {
-            $fields = $this->field_defs;
+            // only retrieve the id from the database .. all other fields are loaded by the bean anyway
+            $fields = [$this->field_defs['id']];
         }
 
         $used_join_key = array();
@@ -2815,15 +2012,17 @@ class SugarBean
             if ((!isset($data['source']) || $data['source'] == 'db') && (!empty($alias) || !empty($filter))) {
                 $ret_array['select'] .= ", $this->table_name.$field $alias";
                 $selectedFields["$this->table_name.$field"] = true;
-            } else if ((!isset($data['source']) || $data['source'] == 'custom_fields') && (!empty($alias) || !empty($filter))) {
-                //add this column only if it has NOT already been added to select statement string
-                $colPos = strpos($ret_array['select'], "$this->table_name" . "_cstm" . ".$field");
-                if (!$colPos || $colPos < 0) {
-                    $ret_array['select'] .= ", $this->table_name" . "_cstm" . ".$field $alias";
-                }
-
-                $selectedFields["$this->table_name.$field"] = true;
             }
+// CR1000452
+//            else if ((!isset($data['source']) || $data['source'] == 'custom_fields') && (!empty($alias) || !empty($filter))) {
+//                //add this column only if it has NOT already been added to select statement string
+//                $colPos = strpos($ret_array['select'], "$this->table_name" . "_cstm" . ".$field");
+//                if (!$colPos || $colPos < 0) {
+//                    $ret_array['select'] .= ", $this->table_name" . "_cstm" . ".$field $alias";
+//                }
+//
+//                $selectedFields["$this->table_name.$field"] = true;
+//            }
 
             if ($data['type'] != 'relate' && isset($data['db_concat_fields'])) {
                 $ret_array['select'] .= ", " . $this->db->concat($this->table_name, $data['db_concat_fields']) . " as $field";
@@ -2851,12 +2050,8 @@ class SugarBean
                     $joinModule = $matches[2];
                     $joinTable = $matches[3];
                     $localTable = $this->table_name;
-                    if (!empty($data['custom_module'])) {
-                        $localTable .= '_cstm';
-                    }
-                    global $beanFiles, $beanList, $module;
-                    require_once($beanFiles[$beanList[$joinModule]]);
-                    $rel_mod = new $beanList[$joinModule]();
+
+                    $rel_mod = BeanFactory::getBean($joinModule);
                     $nameField = "$joinTableAlias.name";
                     if (isset($rel_mod->field_defs['name'])) {
                         $name_field_def = $rel_mod->field_defs['name'];
@@ -2964,7 +2159,7 @@ class SugarBean
                         }
                         if (!$table_joined) {
                             $ret_array['secondary_from'] .= ' ' . $join['join'] . ' AND ' . $params['join_table_alias'] . '.deleted=0';
-                            if (isset($data['link_type']) && $data['link_type'] == 'relationship_info' && ($parentbean instanceOf SugarBean)) {
+                            if (isset($data['link_type']) && $data['link_type'] == 'relationship_info' && ($parentbean instanceof SugarBean)) {
                                 $ret_array['secondary_where'] = $params['join_table_link_alias'] . '.' . $join['rel_key'] . "='" . $parentbean->id . "'";
                             }
                         }
@@ -2985,8 +2180,7 @@ class SugarBean
                         if (!$table_joined) {
                             $ret_array['from'] .= ' ' . $join['join'] . ' AND ' . $params['join_table_alias'] . '.deleted=0';
                             if (!empty($beanList[$rel_module]) && !empty($beanFiles[$beanList[$rel_module]])) {
-                                require_once($beanFiles[$beanList[$rel_module]]);
-                                $rel_mod = new $beanList[$rel_module]();
+                                $rel_mod = BeanFactory::getBean($rel_module);
                                 if (isset($value['target_record_key']) && !empty($filter)) {
                                     $selectedFields[$this->table_name . '.' . $value['target_record_key']] = true;
                                     $ret_array['select'] .= " , $this->table_name.{$value['target_record_key']} ";
@@ -3144,9 +2338,11 @@ class SugarBean
                 if (empty($field_defs['table']) && !$suppress_table_name) {
                     if ($source == 'db') {
                         $list_column[0] = $bean_queried->table_name . '.' . $list_column[0];
-                    } elseif ($source == 'custom_fields') {
-                        $list_column[0] = $bean_queried->table_name . '_cstm.' . $list_column[0];
                     }
+// CR1000452
+//                    elseif ($source == 'custom_fields') {
+//                        $list_column[0] = $bean_queried->table_name . '_cstm.' . $list_column[0];
+//                    }
                 }
 
                 // Bug 38803 - Use CONVERT() function when doing an order by on ntext, text, and image fields
@@ -3235,7 +2431,7 @@ class SugarBean
             $result = $db->query($query, true, "Error retrieving $this->object_name list: ");
         }
 
-        $list = Array();
+        $list = array();
 
         $previous_offset = $row_offset - $max_per_page;
         $next_offset = $row_offset + $max_per_page;
@@ -3253,7 +2449,7 @@ class SugarBean
             //by reference by default so if we continually update $this, we will
             //at the end have a list of all the same objects
             /** @var SugarBean $temp */
-            $temp = new $class();
+            $temp = BeanFactory::getBean($this->_module);
 
             foreach ($this->field_defs as $field => $value) {
                 if (isset($row[$field])) {
@@ -3277,13 +2473,11 @@ class SugarBean
             // needs to be processed as well
             $temp->fill_in_relationship_fields();
 
-            if ($temp->hasCustomFields())
-                $temp->custom_fields->fill_relationships();
             $temp->call_custom_logic("process_record");
 
             // fix defect #44206. implement the same logic as sugar_currency_format
             // Smarty modifier does.
-            $temp->populateCurrencyFields();
+            // $temp->populateCurrencyFields();
             $list[] = $temp;
 
             $index++;
@@ -3300,7 +2494,7 @@ class SugarBean
             $rows_found = $row_offset + count($list);
         }
 
-        $response = Array();
+        $response = array();
         $response['list'] = $list;
         $response['row_count'] = $rows_found;
         $response['next_offset'] = $next_offset;
@@ -3404,108 +2598,6 @@ class SugarBean
         $this->fill_in_additional_parent_fields();
     }
 
-    function hasCustomFields()
-    {
-        return !empty($GLOBALS['dictionary'][$this->object_name]['custom_fields']);
-    }
-
-    /**
-     * Returns a detail object like retrieving of the current object type.
-     *
-     * It is intended for use in navigation buttons on the DetailView.  It will pass an offset and limit argument to the sql query.
-     * @internal This method must be called on a new instance.  It overrides the values of all the fields in the current one.
-     *
-     * @param string $order_by
-     * @param string $where Additional where clause
-     * @param int $row_offset Optaional,default 0, starting row number
-     * @param init $limit Optional, default -1
-     * @param int $max Optional, default -1
-     * @param boolean $show_deleted Optioanl, default 0, if set to 1 system will show deleted records.
-     * @return array Fetched data.
-     *
-     * Internal function, do not override.
-     */
-    function get_detail($order_by = "", $where = "", $offset = 0, $row_offset = 0, $limit = -1, $max = -1, $show_deleted = 0)
-    {
-        $GLOBALS['log']->debug("get_detail:  order_by = '$order_by' and where = '$where' and limit = '$limit' and offset = '$offset'");
-        if (isset($_SESSION['show_deleted'])) {
-            $show_deleted = 1;
-        }
-
-        if ($this->bean_implements('ACL') && $GLOBALS['ACLController']->requireOwner($this->module_dir, 'list')) {
-            global $current_user;
-            $owner_where = $this->getOwnerWhere($current_user->id);
-
-            if (empty($where)) {
-                $where = $owner_where;
-            } else {
-                $where .= ' AND ' . $owner_where;
-            }
-        }
-        $query = $this->create_new_list_query($order_by, $where, array(), array(), $show_deleted, $offset);
-
-        //Add Limit and Offset to query
-        //$query .= " LIMIT 1 OFFSET $offset";
-
-        return $this->process_detail_query($query, $row_offset, $limit, $max, $where, $offset);
-    }
-
-    /**
-     * Applies pagination window to select queries used by detail view,
-     * executes the query and returns fetched data.
-     *
-     * Internal function, do not override.
-     * @param string $query query to be processed.
-     * @param int $row_offset
-     * @param int $limit optional, default -1
-     * @param int $max_per_page Optional, default -1
-     * @param string $where Custom where clause.
-     * @param int $offset Optional, default 0
-     * @return array Fetched data.
-     *
-     */
-    function process_detail_query($query, $row_offset, $limit = -1, $max_per_page = -1, $where = '', $offset = 0)
-    {
-        global $sugar_config;
-        $GLOBALS['log']->debug("process_detail_query: " . $query);
-        if ($max_per_page == -1) {
-            $max_per_page = $sugar_config['list_max_entries_per_page'];
-        }
-
-        // Check to see if we have a count query available.
-        $count_query = $this->create_list_count_query($query);
-
-        if (!empty($count_query) && (empty($limit) || $limit == -1)) {
-            // We have a count query.  Run it and get the results.
-            $result = $this->db->query($count_query, true, "Error running count query for $this->object_name List: ");
-            $assoc = $this->db->fetchByAssoc($result);
-            if (!empty($assoc['c'])) {
-                $total_rows = $assoc['c'];
-            }
-        }
-
-        if (empty($row_offset)) {
-            $row_offset = 0;
-        }
-
-        $result = $this->db->limitQuery($query, $offset, 1, true, "Error retrieving $this->object_name list: ");
-
-        $previous_offset = $row_offset - $max_per_page;
-        $next_offset = $row_offset + $max_per_page;
-
-        $row = $this->db->fetchByAssoc($result);
-        $this->retrieve($row['id']);
-
-        $response = Array();
-        $response['bean'] = $this;
-        if (empty($total_rows))
-            $total_rows = 0;
-        $response['row_count'] = $total_rows;
-        $response['next_offset'] = $next_offset;
-        $response['previous_offset'] = $previous_offset;
-
-        return $response;
-    }
 
     /**
      * Function fetches a single row of data given the primary key value.
@@ -3528,11 +2620,8 @@ class SugarBean
         if ($id == -1) {
             $id = $this->id;
         }
-        $custom_join = $this->getCustomJoin();
 
-        $query = "SELECT $this->table_name.*" . $custom_join['select'] . " FROM $this->table_name ";
-
-        $query .= $custom_join['join'];
+        $query = "SELECT $this->table_name.*" . " FROM $this->table_name ";
         $query .= " WHERE $this->table_name.id = " . $this->db->quoted($id);
         if ($deleted)
             $query .= " AND $this->table_name.deleted=0";
@@ -3552,30 +2641,15 @@ class SugarBean
         $this->fetched_row = $row;
         $this->populateFromRow($row);
 
-        // fix defect #52438. implement the same logic as sugar_currency_format
-        // Smarty modifier does.
-        $this->populateCurrencyFields();
-
-        global $module, $action;
-        //Just to get optimistic locking working for this release
-        if ($this->optimistic_lock && $module == $this->module_dir && $action == 'EditView') {
-            $_SESSION['o_lock_id'] = $id;
-            $_SESSION['o_lock_dm'] = $this->date_modified;
-            $_SESSION['o_lock_on'] = $this->object_name;
-        }
         $this->processed_dates_times = array();
         $this->check_date_relationships_load();
-
-        if (isset($this->custom_fields)) {
-            $this->custom_fields->fill_relationships();
-        }
 
         $this->is_updated_dependent_fields = false;
         $this->fill_in_additional_detail_fields();
 
         if ($relationships) {
             $this->fill_in_relationship_fields();
-// save related fields values for audit
+            // save related fields values for audit
             foreach ($this->get_related_fields() as $rel_field_name) {
                 $rel_field_name_name = $rel_field_name['name']; //PHP7 COMPAT
                 if (!empty($this->$rel_field_name_name)) { //PHP7 COMPAT
@@ -3624,7 +2698,8 @@ class SugarBean
      * @param array $beanDataArray
      * @return array
      */
-    public function mapToRestArray($beanDataArray){
+    public function mapToRestArray($beanDataArray)
+    {
         return $beanDataArray;
     }
 
@@ -3638,32 +2713,14 @@ class SugarBean
      * @param array $beanDataArray
      * @return array
      */
-    public function mapFromRestArray($beanDataArray){
+    public function mapFromRestArray($beanDataArray)
+    {
         return;
     }
 
     /*
      * Fill in a link field
      */
-
-    /**
-     * Proxy method for DynamicField::getJOIN
-     * @param bool $expandedList
-     * @param bool $includeRelates
-     * @param string|bool $where
-     * @return array
-     */
-    public function getCustomJoin($expandedList = false, $includeRelates = false, &$where = false)
-    {
-        $result = array(
-            'select' => '',
-            'join' => ''
-        );
-        if (isset($this->custom_fields)) {
-            $result = $this->custom_fields->getJOIN($expandedList, $includeRelates, $where);
-        }
-        return $result;
-    }
 
     /**
      * Convert row data from DB format to internal format
@@ -3729,32 +2786,6 @@ class SugarBean
     }
 
     /**
-     * Populates currency fields in case of currency is default and it's
-     * attributes are not retrieved from database (bugs ##44206, 52438)
-     */
-    protected function populateCurrencyFields()
-    {
-        if (property_exists($this, 'currency_id') && $this->currency_id == -99) {
-            // manually retrieve default currency object as long as it's
-            // not stored in database and thus cannot be joined in query
-            $currency = BeanFactory::getBean('Currencies', $this->currency_id);
-
-            if ($currency) {
-                // walk through all currency-related fields
-                foreach ($this->field_defs as $this_field) {
-                    if (isset($this_field['type']) && $this_field['type'] == 'relate' && isset($this_field['module']) && $this_field['module'] == 'Currencies' && isset($this_field['id_name']) && $this_field['id_name'] == 'currency_id'
-                    ) {
-                        // populate related properties manually
-                        $this_property = $this_field['name'];
-                        $currency_property = $this_field['rname'];
-                        $this->$this_property = $currency->$currency_property;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * This function retrieves a record of the appropriate type from the DB.
      * It fills in all of the fields from the DB into the object it was called on.
      *
@@ -3764,7 +2795,6 @@ class SugarBean
      */
     function check_date_relationships_load()
     {
-        global $disable_date_format;
         global $timedate;
         if (empty($timedate))
             $timedate = TimeDate::getInstance();
@@ -3780,9 +2810,6 @@ class SugarBean
                     continue;
                 if ($field == 'date_modified' || $field == 'date_entered') {
                     $this->$field = $this->db->fromConvert($this->$field, 'datetime');
-                    if (empty($disable_date_format)) {
-                        $this->$field = $timedate->to_display_date_time($this->$field);
-                    }
                 } elseif (isset($this->field_name_map[$field]['type'])) {
                     $type = $this->field_name_map[$field]['type'];
 
@@ -3796,37 +2823,15 @@ class SugarBean
                         } elseif (!empty($this->field_name_map[$field]['rel_field'])) {
                             $rel_field = $this->field_name_map[$field]['rel_field'];
 
-                            if (!empty($this->$rel_field)) {
-                                if (empty($disable_date_format)) {
-                                    $mergetime = $timedate->merge_date_time($this->$field, $this->$rel_field);
-                                    $this->$field = $timedate->to_display_date($mergetime);
-                                    $this->$rel_field = $timedate->to_display_time($mergetime);
-                                }
-                            }
-                        } else {
-                            if (empty($disable_date_format)) {
-                                $this->$field = $timedate->to_display_date($this->$field, false);
-                            }
                         }
                     } elseif ($type == 'datetime' || $type == 'datetimecombo') {
                         if ($this->$field == '0000-00-00 00:00:00') {
                             $this->$field = '';
-                        } else {
-                            if (empty($disable_date_format)) {
-                                $this->$field = $timedate->to_display_date_time($this->$field, true, true);
-                            }
                         }
                     } elseif ($type == 'time') {
                         if ($this->$field == '00:00:00') {
                             $this->$field = '';
-                        } else {
-                            //$this->$field = from_db_convert($this->$field, 'time');
-                            if (empty($this->field_name_map[$field]['rel_field']) && empty($disable_date_format)) {
-                                $this->$field = $timedate->to_display_time($this->$field, true, false);
-                            }
                         }
-                    } elseif ($type == 'encrypt' && empty($disable_date_format)) {
-                        $this->$field = $this->decrypt_after_retrieve($this->$field);
                     }
                 }
             }
@@ -4001,9 +3006,19 @@ class SugarBean
     {
         $idField = $linkFieldName;
         //If the id_name provided really was an ID, don't try to load it as a link. Use the normal link
-        if (!empty($this->field_defs[$linkFieldName]['type']) && $this->field_defs[$linkFieldName]['type'] == "id" && !empty($def['link'])) {
+        // CR1000476: remove check on type shall be id. Not always the case (see companycode_id in Users)
+        // if (!empty($this->field_defs[$linkFieldName]['type']) && $this->field_defs[$linkFieldName]['type'] == "id" && !empty($def['link'])) {
+        // check field type
+        $typeIsId = false;
+        if($this->field_defs[$linkFieldName]['type'] == "id" ||
+            $this->field_defs[$linkFieldName]['dbType'] == "id" ||
+            $this->field_defs[$linkFieldName]['dbtype'] == "id" ) {
+            $typeIsId = true;
+        }
+        if (!empty($this->field_defs[$linkFieldName]['type']) && $typeIsId && !empty($def['link'])) {
             $linkFieldName = $def['link'];
         }
+
         if ($this->load_relationship($linkFieldName)) {
             $list = $this->$linkFieldName->get();
             $this->$idField = ''; // match up with null value in $this->populateFromRow()
@@ -4041,655 +3056,6 @@ class SugarBean
     }
 
     /**
-     * Fetches data from all related tables.
-     *
-     * @param object $child_seed
-     * @param string $related_field_name relation to fetch data for
-     * @param string $order_by Optional, default empty
-     * @param string $where Optional, additional where clause
-     * @return array Fetched data.
-     *
-     * Internal function, do not override.
-     */
-    function get_related_list($child_seed, $related_field_name, $order_by = "", $where = "", $row_offset = 0, $limit = -1, $max = -1, $show_deleted = 0)
-    {
-        global $layout_edit_mode;
-        $query_array = array();
-
-        if (isset($layout_edit_mode) && $layout_edit_mode) {
-            $response = array();
-            $child_seed->assign_display_fields($child_seed->module_dir);
-            $response['list'] = array($child_seed);
-            $response['row_count'] = 1;
-            $response['next_offset'] = 0;
-            $response['previous_offset'] = 0;
-
-            return $response;
-        }
-        $GLOBALS['log']->debug("get_related_list:  order_by = '$order_by' and where = '$where' and limit = '$limit'");
-        if (isset($_SESSION['show_deleted'])) {
-            $show_deleted = 1;
-        }
-
-        $this->load_relationship($related_field_name);
-
-        if ($this->$related_field_name instanceof Link) {
-
-            $query_array = $this->$related_field_name->getQuery(true);
-        } else {
-
-            $query_array = $this->$related_field_name->getQuery(array(
-                "return_as_array" => true,
-                'where' => '1=1' // hook for 'where' clause in M2MRelationship file
-            ));
-        }
-
-        $entire_where = $query_array['where'];
-        if (!empty($where)) {
-            if (empty($entire_where)) {
-                $entire_where = ' WHERE ' . $where;
-            } else {
-                $entire_where .= ' AND ' . $where;
-            }
-        }
-
-        $query = 'SELECT ' . $child_seed->table_name . '.* ' . $query_array['from'] . ' ' . $entire_where;
-        if (!empty($order_by)) {
-            $query .= " ORDER BY " . $order_by;
-        }
-
-        return $child_seed->process_list_query($query, $row_offset, $limit, $max, $where);
-    }
-
-    /**
-     * Constructs a query to fetch data for supanels and list views
-     *
-     * It constructs union queries for activities subpanel.
-     *
-     * @param SugarBean $parentbean constructing queries for link attributes in this bean
-     * @param string $order_by Optional, order by clause
-     * @param string $sort_order Optional, sort order
-     * @param string $where Optional, additional where clause
-     * @param int $row_offset
-     * @param int $limit
-     * @param int $max
-     * @param int $show_deleted
-     * @param aSubPanel $subpanel_def
-     *
-     * @return array
-     *
-     * Internal Function, do not overide.
-     */
-    public static function get_union_related_list($parentbean, $order_by = "", $sort_order = '', $where = "", $row_offset = 0, $limit = -1, $max = -1, $show_deleted = 0, $subpanel_def)
-    {
-        $secondary_queries = array();
-        global $layout_edit_mode, $beanFiles, $beanList;
-
-        if (isset($_SESSION['show_deleted'])) {
-            $show_deleted = 1;
-        }
-        $final_query = '';
-        $final_query_rows = '';
-        $subpanel_list = array();
-        if ($subpanel_def->isCollection()) {
-            $subpanel_def->load_sub_subpanels();
-            $subpanel_list = $subpanel_def->sub_subpanels;
-        } else {
-            $subpanel_list[] = $subpanel_def;
-        }
-
-        $first = true;
-
-        //Breaking the building process into two loops. The first loop gets a list of all the sub-queries.
-        //The second loop merges the queries and forces them to select the same number of columns
-        //All columns in a sub-subpanel group must have the same aliases
-        //If the subpanel is a datasource function, it can't be a collection so we just poll that function for the and return that
-        foreach ($subpanel_list as $this_subpanel) {
-            if ($this_subpanel->isDatasourceFunction() && empty($this_subpanel->_instance_properties['generate_select'])) {
-                $shortcut_function_name = $this_subpanel->get_data_source_name();
-                $parameters = $this_subpanel->get_function_parameters();
-                if (!empty($parameters)) {
-                    //if the import file function is set, then import the file to call the custom function from
-                    if (is_array($parameters) && isset($parameters['import_function_file'])) {
-                        //this call may happen multiple times, so only require if function does not exist
-                        if (!function_exists($shortcut_function_name)) {
-                            require_once($parameters['import_function_file']);
-                        }
-                        //call function from required file
-                        $tmp_final_query = $shortcut_function_name($parameters);
-                    } else {
-                        //call function from parent bean
-                        $tmp_final_query = $parentbean->$shortcut_function_name($parameters);
-                    }
-                } else {
-                    $tmp_final_query = $parentbean->$shortcut_function_name();
-                }
-                if (!$first) {
-                    $final_query_rows .= ' UNION ALL ( ' . $parentbean->create_list_count_query($tmp_final_query, $parameters) . ' )';
-                    $final_query .= ' UNION ALL ( ' . $tmp_final_query . ' )';
-                } else {
-                    $final_query_rows = '(' . $parentbean->create_list_count_query($tmp_final_query, $parameters) . ')';
-                    $final_query = '(' . $tmp_final_query . ')';
-                    $first = false;
-                }
-            }
-        }
-        //If final_query is still empty, its time to build the sub-queries
-        if (empty($final_query)) {
-            $subqueries = SugarBean::build_sub_queries_for_union($subpanel_list, $subpanel_def, $parentbean, $order_by);
-            $all_fields = array();
-            foreach ($subqueries as $i => $subquery) {
-                $query_fields = $GLOBALS['db']->getSelectFieldsFromQuery($subquery['select']);
-                foreach ($query_fields as $field => $select) {
-                    if (!in_array($field, $all_fields))
-                        $all_fields[] = $field;
-                }
-                $subqueries[$i]['query_fields'] = $query_fields;
-            }
-            $first = true;
-            //Now ensure the queries have the same set of fields in the same order.
-            foreach ($subqueries as $subquery) {
-                $subquery['select'] = "SELECT";
-                foreach ($all_fields as $field) {
-                    if (!isset($subquery['query_fields'][$field])) {
-                        $subquery['select'] .= " NULL $field,";
-                    } else {
-                        $subquery['select'] .= " {$subquery['query_fields'][$field]},";
-                    }
-                }
-                $subquery['select'] = substr($subquery['select'], 0, strlen($subquery['select']) - 1);
-                //Put the query into the final_query
-                $query = $subquery['select'] . " " . $subquery['from'] . " " . $subquery['where'];
-                if (!$first) {
-                    $query = ' UNION ALL ( ' . $query . ' )';
-                    $final_query_rows .= " UNION ALL ";
-                } else {
-                    $query = '(' . $query . ')';
-                    $first = false;
-                }
-                $query_array = $subquery['query_array'];
-                $select_position = strpos($query_array['select'], "SELECT");
-                $distinct_position = strpos($query_array['select'], "DISTINCT");
-                if (!empty($subquery['params']['distinct']) && !empty($subpanel_def->table_name)) {
-                    $query_rows = "( SELECT count(DISTINCT " . $subpanel_def->table_name . ".id)" . $subquery['from_min'] . $query_array['join'] . $subquery['where'] . ' )';
-                } elseif ($select_position !== false && $distinct_position != false) {
-                    $query_rows = "( " . substr_replace($query_array['select'], "SELECT count(", $select_position, 6) . ")" . $subquery['from_min'] . $query_array['join'] . $subquery['where'] . ' )';
-                } else {
-                    //resort to default behavior.
-                    $query_rows = "( SELECT count(*)" . $subquery['from_min'] . $query_array['join'] . $subquery['where'] . ' )';
-                }
-                if (!empty($subquery['secondary_select'])) {
-
-                    $subquerystring = $subquery['secondary_select'] . $subquery['secondary_from'] . $query_array['join'] . $subquery['where'];
-                    if (!empty($subquery['secondary_where'])) {
-                        if (empty($subquery['where'])) {
-                            $subquerystring .= " WHERE " . $subquery['secondary_where'];
-                        } else {
-                            $subquerystring .= " AND " . $subquery['secondary_where'];
-                        }
-                    }
-                    $secondary_queries[] = $subquerystring;
-                }
-                $final_query .= $query;
-                $final_query_rows .= $query_rows;
-            }
-        }
-
-        if (!empty($order_by)) {
-            $isCollection = $subpanel_def->isCollection();
-            if ($isCollection) {
-                /** @var aSubPanel $header */
-                $header = $subpanel_def->get_header_panel_def();
-                $submodule = $header->template_instance;
-                $suppress_table_name = true;
-            } else {
-                $submodule = $subpanel_def->template_instance;
-                $suppress_table_name = false;
-            }
-
-            if (!empty($sort_order)) {
-                $order_by .= ' ' . $sort_order;
-            }
-
-            $order_by = $parentbean->process_order_by($order_by, $submodule, $suppress_table_name);
-            if (!empty($order_by)) {
-                $final_query .= ' ORDER BY ' . $order_by;
-            }
-        }
-
-
-        if (isset($layout_edit_mode) && $layout_edit_mode) {
-            $response = array();
-            if (!empty($submodule)) {
-                $submodule->assign_display_fields($submodule->module_dir);
-                $response['list'] = array($submodule);
-            } else {
-                $response['list'] = array();
-            }
-            $response['parent_data'] = array();
-            $response['row_count'] = 1;
-            $response['next_offset'] = 0;
-            $response['previous_offset'] = 0;
-
-            return $response;
-        }
-
-        return $parentbean->process_union_list_query($parentbean, $final_query, $row_offset, $limit, $max, '', $subpanel_def, $final_query_rows, $secondary_queries);
-    }
-
-    protected static function build_sub_queries_for_union($subpanel_list, $subpanel_def, $parentbean, $order_by)
-    {
-        global $layout_edit_mode, $beanFiles, $beanList;
-        $subqueries = array();
-        foreach ($subpanel_list as $this_subpanel) {
-            if (!$this_subpanel->isDatasourceFunction() || ($this_subpanel->isDatasourceFunction() && isset($this_subpanel->_instance_properties['generate_select']) && $this_subpanel->_instance_properties['generate_select'] == true)
-            ) {
-                //the custom query function must return an array with
-                if ($this_subpanel->isDatasourceFunction()) {
-                    $shortcut_function_name = $this_subpanel->get_data_source_name();
-                    $parameters = $this_subpanel->get_function_parameters();
-                    if (!empty($parameters)) {
-                        //if the import file function is set, then import the file to call the custom function from
-                        if (is_array($parameters) && isset($parameters['import_function_file'])) {
-                            //this call may happen multiple times, so only require if function does not exist
-                            if (!function_exists($shortcut_function_name)) {
-                                require_once($parameters['import_function_file']);
-                            }
-                            //call function from required file
-                            $query_array = $shortcut_function_name($parameters);
-                        } else {
-                            //call function from parent bean
-                            $query_array = $parentbean->$shortcut_function_name($parameters);
-                        }
-                    } else {
-                        $query_array = $parentbean->$shortcut_function_name();
-                    }
-                } else {
-                    $related_field_name = $this_subpanel->get_data_source_name();
-                    if (!$parentbean->load_relationship($related_field_name)) {
-                        unset($parentbean->$related_field_name);
-                        continue;
-                    }
-                    $query_array = $parentbean->$related_field_name->getSubpanelQuery(array(), true);
-                }
-                $table_where = preg_replace('/^\s*WHERE/i', '', $this_subpanel->get_where());
-                $where_definition = preg_replace('/^\s*WHERE/i', '', $query_array['where']);
-
-                if (!empty($table_where)) {
-                    if (empty($where_definition)) {
-                        $where_definition = $table_where;
-                    } else {
-                        $where_definition .= ' AND ' . $table_where;
-                    }
-                }
-
-                $submodulename = $this_subpanel->_instance_properties['module'];
-                $submoduleclass = $beanList[$submodulename];
-                //require_once($beanFiles[$submoduleclass]);
-
-                /** @var SugarBean $submodule */
-                $submodule = new $submoduleclass();
-                $subwhere = $where_definition;
-
-
-                $list_fields = $this_subpanel->get_list_fields();
-                foreach ($list_fields as $list_key => $list_field) {
-                    if (isset($list_field['usage']) && $list_field['usage'] == 'display_only') {
-                        unset($list_fields[$list_key]);
-                    }
-                }
-
-
-                if (!$subpanel_def->isCollection() && isset($list_fields[$order_by]) && isset($submodule->field_defs[$order_by]) && (!isset($submodule->field_defs[$order_by]['source']) || $submodule->field_defs[$order_by]['source'] == 'db')) {
-                    $order_by = $submodule->table_name . '.' . $order_by;
-                }
-                $table_name = $this_subpanel->table_name;
-                $panel_name = $this_subpanel->name;
-                $params = array();
-                $params['distinct'] = $this_subpanel->distinct_query();
-
-                $params['joined_tables'] = $query_array['join_tables'];
-                $params['include_custom_fields'] = !$subpanel_def->isCollection();
-                $params['collection_list'] = $subpanel_def->get_inst_prop_value('collection_list');
-
-                // use single select in case when sorting by relate field
-                $singleSelect = $submodule->is_relate_field($order_by);
-
-                $subquery = $submodule->create_new_list_query('', $subwhere, $list_fields, $params, 0, '', true, $parentbean, $singleSelect);
-
-                $subquery['select'] = $subquery['select'] . " , '$panel_name' panel_name ";
-                $subquery['from'] = $subquery['from'] . $query_array['join'];
-                $subquery['query_array'] = $query_array;
-                $subquery['params'] = $params;
-
-                $subqueries[] = $subquery;
-            }
-        }
-        return $subqueries;
-    }
-
-    /**
-     * Applies pagination window to union queries used by list view and subpanels,
-     * executes the query and returns fetched data.
-     *
-     * Internal function, do not override.
-     * @param object $parent_bean
-     * @param string $query query to be processed.
-     * @param int $row_offset
-     * @param int $limit optional, default -1
-     * @param int $max_per_page Optional, default -1
-     * @param string $where Custom where clause.
-     * @param array $subpanel_def definition of sub-panel to be processed
-     * @param string $query_row_count
-     * @param array $seconday_queries
-     * @return array Fetched data.
-     */
-    function process_union_list_query($parent_bean, $query, $row_offset, $limit = -1, $max_per_page = -1, $where = '', $subpanel_def, $query_row_count = '', $secondary_queries = array())
-    {
-        $db = DBManagerFactory::getInstance('listviews');
-        /**
-         * if the row_offset is set to 'end' go to the end of the list
-         */
-        $toEnd = strval($row_offset) == 'end';
-        global $sugar_config;
-        $use_count_query = false;
-        $processing_collection = $subpanel_def->isCollection();
-
-        $GLOBALS['log']->debug("process_union_list_query: " . $query);
-        if ($max_per_page == -1) {
-            $max_per_page = $sugar_config['list_max_entries_per_subpanel'];
-        }
-        if (empty($query_row_count)) {
-            $query_row_count = $query;
-        }
-        $distinct_position = strpos($query_row_count, "DISTINCT");
-
-        if ($distinct_position != false) {
-            $use_count_query = true;
-        }
-        $performSecondQuery = true;
-        if (empty($sugar_config['disable_count_query']) || $toEnd) {
-            $rows_found = $this->_get_num_rows_in_query($query_row_count, $use_count_query);
-            if ($rows_found < 1) {
-                $performSecondQuery = false;
-            }
-            if (!empty($rows_found) && (empty($limit) || $limit == -1)) {
-                $limit = $sugar_config['list_max_entries_per_subpanel'];
-            }
-            if ($toEnd) {
-                $row_offset = (floor(($rows_found - 1) / $limit)) * $limit;
-            }
-        } else {
-            if ((empty($limit) || $limit == -1)) {
-                $limit = $max_per_page + 1;
-                $max_per_page = $limit;
-            }
-        }
-
-        if (empty($row_offset)) {
-            $row_offset = 0;
-        }
-        $list = array();
-        $previous_offset = $row_offset - $max_per_page;
-        $next_offset = $row_offset + $max_per_page;
-
-        if ($performSecondQuery) {
-            if (!empty($limit) && $limit != -1 && $limit != -99) {
-                $result = $db->limitQuery($query, $row_offset, $limit, true, "Error retrieving $parent_bean->object_name list: ");
-            } else {
-                $result = $db->query($query, true, "Error retrieving $this->object_name list: ");
-            }
-            //use -99 to return all
-            // get the current row
-            $index = $row_offset;
-            $row = $db->fetchByAssoc($result);
-
-            $post_retrieve = array();
-            $isFirstTime = true;
-            while ($row) {
-                $function_fields = array();
-                if (($index < $row_offset + $max_per_page || $max_per_page == -99)) {
-                    if ($processing_collection) {
-                        $current_bean = $subpanel_def->sub_subpanels[$row['panel_name']]->template_instance;
-                        if (!$isFirstTime) {
-                            $class = get_class($subpanel_def->sub_subpanels[$row['panel_name']]->template_instance);
-                            $current_bean = new $class();
-                        }
-                    } else {
-                        $current_bean = $subpanel_def->template_instance;
-                        if (!$isFirstTime) {
-                            $class = get_class($subpanel_def->template_instance);
-                            $current_bean = new $class();
-                        }
-                    }
-                    $isFirstTime = false;
-                    //set the panel name in the bean instance.
-                    if (isset($row['panel_name'])) {
-                        $current_bean->panel_name = $row['panel_name'];
-                    }
-                    foreach ($current_bean->field_defs as $field => $value) {
-
-                        if (isset($row[$field])) {
-                            $current_bean->$field = $this->convertField($row[$field], $value);
-                            unset($row[$field]);
-                        } else if (isset($row[$this->table_name . '.' . $field])) {
-                            $current_bean->$field = $this->convertField($row[$this->table_name . '.' . $field], $value);
-                            unset($row[$this->table_name . '.' . $field]);
-                        } else {
-                            $current_bean->$field = "";
-                            unset($row[$field]);
-                        }
-                        if (isset($value['source']) && $value['source'] == 'function') {
-                            $function_fields[] = $field;
-                        }
-                    }
-                    foreach ($row as $key => $value) {
-                        $current_bean->$key = $value;
-                    }
-                    foreach ($function_fields as $function_field) {
-                        $value = $current_bean->field_defs[$function_field];
-                        $can_execute = true;
-                        $execute_params = array();
-                        $execute_function = array();
-                        if (!empty($value['function_class'])) {
-                            $execute_function[] = $value['function_class'];
-                            $execute_function[] = $value['function_name'];
-                        } else {
-                            $execute_function = $value['function_name'];
-                        }
-                        foreach ($value['function_params'] as $param) {
-                            if (empty($value['function_params_source']) or $value['function_params_source'] == 'parent') {
-                                if (empty($this->$param)) {
-                                    $can_execute = false;
-                                } else if ($param == '$this') {
-                                    $execute_params[] = $this;
-                                } else {
-                                    $execute_params[] = $this->$param;
-                                }
-                            } else if ($value['function_params_source'] == 'this') {
-                                if (empty($current_bean->$param)) {
-                                    $can_execute = false;
-                                } else if ($param == '$this') {
-                                    $execute_params[] = $current_bean;
-                                } else {
-                                    $execute_params[] = $current_bean->$param;
-                                }
-                            } else {
-                                $can_execute = false;
-                            }
-                        }
-                        if ($can_execute) {
-                            if (!empty($value['function_require'])) {
-                                require_once($value['function_require']);
-                            }
-                            $current_bean->$function_field = call_user_func_array($execute_function, $execute_params);
-                        }
-                    }
-                    if (!empty($current_bean->parent_type) && !empty($current_bean->parent_id)) {
-                        if (!isset($post_retrieve[$current_bean->parent_type])) {
-                            $post_retrieve[$current_bean->parent_type] = array();
-                        }
-                        $post_retrieve[$current_bean->parent_type][] = array('child_id' => $current_bean->id, 'parent_id' => $current_bean->parent_id, 'parent_type' => $current_bean->parent_type, 'type' => 'parent');
-                    }
-                    //$current_bean->fill_in_additional_list_fields();
-                    $list[$current_bean->id] = $current_bean;
-                }
-                // go to the next row
-                $index++;
-                $row = $db->fetchByAssoc($result);
-            }
-            //now handle retrieving many-to-many relationships
-            if (!empty($list)) {
-                foreach ($secondary_queries as $query2) {
-                    $result2 = $db->query($query2);
-
-                    $row2 = $db->fetchByAssoc($result2);
-                    while ($row2) {
-                        $id_ref = $row2['ref_id'];
-
-                        if (isset($list[$id_ref])) {
-                            foreach ($row2 as $r2key => $r2value) {
-                                if ($r2key != 'ref_id') {
-                                    $list[$id_ref]->$r2key = $r2value;
-                                }
-                            }
-                        }
-                        $row2 = $db->fetchByAssoc($result2);
-                    }
-                }
-            }
-
-            if (isset($post_retrieve)) {
-                $parent_fields = $this->retrieve_parent_fields($post_retrieve);
-            } else {
-                $parent_fields = array();
-            }
-            if (!empty($sugar_config['disable_count_query']) && !empty($limit)) {
-                //C.L. Bug 43535 - Use the $index value to set the $rows_found value here
-                $rows_found = isset($index) ? $index : $row_offset + count($list);
-
-                if (count($list) >= $limit) {
-                    array_pop($list);
-                }
-                if (!$toEnd) {
-                    $next_offset--;
-                    $previous_offset++;
-                }
-            }
-        } else {
-            $row_found = 0;
-            $parent_fields = array();
-        }
-        $response = array();
-        $response['list'] = $list;
-        $response['parent_data'] = $parent_fields;
-        $response['row_count'] = $rows_found;
-        $response['next_offset'] = $next_offset;
-        $response['previous_offset'] = $previous_offset;
-        $response['current_offset'] = $row_offset;
-        $response['query'] = $query;
-
-        return $response;
-    }
-
-    /**
-     * Returns the number of rows that the given SQL query should produce
-     *
-     * Internal function, do not override.
-     * @param string $query valid select  query
-     * @param boolean $is_count_query Optional, Default false, set to true if passed query is a count query.
-     * @return int count of rows found
-     */
-    function _get_num_rows_in_query($query, $is_count_query = false)
-    {
-        $num_rows_in_query = 0;
-        if (!$is_count_query) {
-            $count_query = SugarBean::create_list_count_query($query);
-        } else
-            $count_query = $query;
-
-        $result = $this->db->query($count_query, true, "Error running count query for $this->object_name List: ");
-        $row_num = 0;
-        while ($row = $this->db->fetchByAssoc($result, true)) {
-            $num_rows_in_query += current($row);
-        }
-
-        return $num_rows_in_query;
-    }
-
-    /**
-     * Returns parent record data for objects that store relationship information
-     *
-     * @param array $type_info
-     *
-     * Interal function, do not override.
-     */
-    function retrieve_parent_fields($type_info)
-    {
-        $queries = array();
-        global $beanList, $beanFiles;
-        $templates = array();
-        $parent_child_map = array();
-        foreach ($type_info as $children_info) {
-            foreach ($children_info as $child_info) {
-                if ($child_info['type'] == 'parent') {
-                    if (empty($templates[$child_info['parent_type']])) {
-                        //Test emails will have an invalid parent_type, don't try to load the non-existent parent bean
-                        if ($child_info['parent_type'] == 'test') {
-                            continue;
-                        }
-                        $class = $beanList[$child_info['parent_type']];
-                        // Added to avoid error below; just silently fail and write message to log
-                        if (empty($beanFiles[$class])) {
-                            $GLOBALS['log']->error($this->object_name . '::retrieve_parent_fields() - cannot load class "' . $class . '", skip loading.');
-                            continue;
-                        }
-                        require_once($beanFiles[$class]);
-                        $templates[$child_info['parent_type']] = new $class();
-                    }
-
-                    if (empty($queries[$child_info['parent_type']])) {
-                        $queries[$child_info['parent_type']] = "SELECT id ";
-                        $field_def = $templates[$child_info['parent_type']]->field_defs['name'];
-                        if (isset($field_def['db_concat_fields'])) {
-                            $queries[$child_info['parent_type']] .= ' , ' . $this->db->concat($templates[$child_info['parent_type']]->table_name, $field_def['db_concat_fields']) . ' parent_name';
-                        } else {
-                            $queries[$child_info['parent_type']] .= ' , name parent_name';
-                        }
-                        if (isset($templates[$child_info['parent_type']]->field_defs['assigned_user_id'])) {
-                            $queries[$child_info['parent_type']] .= ", assigned_user_id parent_name_owner , '{$child_info['parent_type']}' parent_name_mod";;
-                        } else if (isset($templates[$child_info['parent_type']]->field_defs['created_by'])) {
-                            $queries[$child_info['parent_type']] .= ", created_by parent_name_owner, '{$child_info['parent_type']}' parent_name_mod";
-                        }
-                        $queries[$child_info['parent_type']] .= " FROM " . $templates[$child_info['parent_type']]->table_name . " WHERE id IN ('{$child_info['parent_id']}'";
-                    } else {
-                        if (empty($parent_child_map[$child_info['parent_id']]))
-                            $queries[$child_info['parent_type']] .= " ,'{$child_info['parent_id']}'";
-                    }
-                    $parent_child_map[$child_info['parent_id']][] = $child_info['child_id'];
-                }
-            }
-        }
-        $results = array();
-        foreach ($queries as $query) {
-            $result = $this->db->query($query . ')');
-            while ($row = $this->db->fetchByAssoc($result)) {
-                $results[$row['id']] = $row;
-            }
-        }
-
-        $child_results = array();
-        foreach ($parent_child_map as $parent_key => $parent_child) {
-            foreach ($parent_child as $child) {
-                if (isset($results[$parent_key])) {
-                    $child_results[$child] = $results[$parent_key];
-                }
-            }
-        }
-        return $child_results;
-    }
-
-    /**
      * Returns a full (ie non-paged) list of the current object type.
      *
      * @param string $order_by the order by SQL parameter. defaults to ""
@@ -4722,15 +3088,14 @@ class SugarBean
         $GLOBALS['log']->debug("process_full_list_query: query is " . $query);
         $result = $this->db->query($query, false);
         $GLOBALS['log']->debug("process_full_list_query: result is " . print_r($result, true));
-        $class = get_class($this);
         $isFirstTime = true;
-        $bean = new $class();
+        $bean = BeanFactory::getBean($this->_module);
 
         // We have some data.
         while (($row = $bean->db->fetchByAssoc($result)) != null) {
             $row = $this->convertRow($row);
             if (!$isFirstTime) {
-                $bean = new $class();
+                $bean = BeanFactory::getBean($this->_module);
             }
             $isFirstTime = false;
 
@@ -4760,16 +3125,6 @@ class SugarBean
     }
 
     /**
-     * This is a helper function that is used to quickly created indexes when creating tables.
-     */
-    function create_index($query)
-    {
-        $GLOBALS['log']->info("create_index: $query");
-
-        $result = $this->db->query($query, true, "Error creating index:");
-    }
-
-    /**
      * This function should be overridden in each module.  It marks an item as deleted.
      *
      * If it is not overridden, then marking this type of item is not allowed
@@ -4787,7 +3142,7 @@ class SugarBean
             $this->deleted = 1;
 
             // add to the trashcan
-            SystemTrashCan::addRecord('bean', get_class($this), $this->id, $this->get_summary_text());
+            \SpiceCRM\includes\SysTrashCan\SysTrashCan::addRecord('bean', get_class($this), $this->id, $this->get_summary_text());
 
             $this->mark_relationships_deleted($id);
             if (isset($this->field_defs['modified_user_id'])) {
@@ -4807,9 +3162,6 @@ class SugarBean
             // Take the item off the recently viewed lists
             $tracker = new Tracker();
             $tracker->makeInvisibleForAll($id);
-
-
-            $this->deleteFiles();
 
             // delete from the index
             $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
@@ -4834,8 +3186,6 @@ class SugarBean
         $date_modified = $GLOBALS['timedate']->nowDb();
         $query = "UPDATE $this->table_name set deleted=0 , date_modified = '$date_modified' where id='$id'";
         $this->db->query($query, true, "Error marking record undeleted: ");
-
-        $this->restoreFiles();
 
         // reindex the bean
         $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
@@ -4998,129 +3348,9 @@ class SugarBean
         }
     }
 
-    /**
-     * Restores files from deleted folder
-     *
-     * @return bool success of operation
-     */
-    protected function restoreFiles()
-    {
-        if (!$this->id) {
-            return true;
-        }
-        if (!$this->haveFiles()) {
-            return true;
-        }
-        $files = $this->getFiles();
-        if (empty($files)) {
-            return true;
-        }
-
-        $directory = $this->deleteFileDirectory();
-
-        foreach ($files as $file) {
-            if (sugar_is_file('upload://deleted/' . $directory . '/' . $file)) {
-                if (!sugar_rename('upload://deleted/' . $directory . '/' . $file, 'upload://' . $file)) {
-                    $GLOBALS['log']->error('Could not move file ' . $directory . '/' . $file . ' from deleted directory');
-                }
-            }
-        }
-
-        /**
-         * @var DBManager $db
-         */
-        global $db;
-        $db->query('DELETE FROM cron_remove_documents WHERE bean_id=' . $db->quoted($this->id));
-
-        return true;
-    }
-
-    /**
-     * Method returns true if bean has files
-     *
-     * @return bool
-     */
-    public function haveFiles()
-    {
-        $return = false;
-        if ($this->bean_implements('FILE')) {
-            $return = true;
-        } elseif ($this instanceof File) {
-            $return = true;
-        } elseif (!empty(self::$fileFields[$this->module_name])) {
-            $return = true;
-        } elseif (!empty($this->field_defs)) {
-            foreach ($this->field_defs as $fieldDef) {
-                if ($fieldDef['type'] != 'image') {
-                    continue;
-                }
-                $return = true;
-                break;
-            }
-        }
-        return $return;
-    }
-
     /*
      * 	RELATIONSHIP HANDLING
      */
-
-    /**
-     * Method returns array of names of files for current bean
-     *
-     * @return array
-     */
-    public function getFiles()
-    {
-        $files = array();
-        foreach ($this->getFilesFields() as $field) {
-            if (!empty($this->$field)) {
-                $files[] = $this->$field;
-            }
-        }
-        return $files;
-    }
-
-    /**
-     * Method returns array of name of fields which contain names of files
-     *
-     * @param bool $resetCache do not use cache
-     * @return array
-     */
-    public function getFilesFields($resetCache = false)
-    {
-        if (isset(self::$fileFields[$this->module_name]) && $resetCache == false) {
-            return self::$fileFields[$this->module_name];
-        }
-
-        self::$fileFields = array();
-        if ($this->bean_implements('FILE') || $this instanceof File) {
-            self::$fileFields[$this->module_name][] = 'id';
-        }
-        foreach ($this->field_defs as $fieldName => $fieldDef) {
-            if ($fieldDef['type'] != 'image') {
-                continue;
-            }
-            self::$fileFields[$this->module_name][] = $fieldName;
-        }
-
-        return self::$fileFields[$this->module_name];
-    }
-
-    // TODO: this function needs adjustment
-
-    /**
-     * Returns path for files of bean or false on error
-     *
-     * @return bool|string
-     */
-    public function deleteFileDirectory()
-    {
-        if (empty($this->id)) {
-            return false;
-        }
-        return preg_replace('/^(..)(..)(..)/', '$1/$2/$3/', $this->id);
-    }
 
     /**
      * This function deletes relationships to this object.  It should be overridden
@@ -5157,65 +3387,6 @@ class SugarBean
         }
     }
 
-    /**
-     * Moves file to deleted folder
-     *
-     * @return bool success of movement
-     */
-    public function deleteFiles()
-    {
-        if (!$this->id) {
-            return true;
-        }
-        if (!$this->haveFiles()) {
-            return true;
-        }
-        $files = $this->getFiles();
-        if (empty($files)) {
-            return true;
-        }
-
-        $directory = $this->deleteFileDirectory();
-
-        $isCreated = sugar_is_dir('upload://deleted/' . $directory);
-        if (!$isCreated) {
-            sugar_mkdir('upload://deleted/' . $directory, 0777, true);
-            $isCreated = sugar_is_dir('upload://deleted/' . $directory);
-        }
-        if (!$isCreated) {
-            return false;
-        }
-
-        foreach ($files as $file) {
-            if (file_exists('upload://' . $file)) {
-                if (!sugar_rename('upload://' . $file, 'upload://deleted/' . $directory . '/' . $file)) {
-                    $GLOBALS['log']->error('Could not move file ' . $file . ' to deleted directory');
-                }
-            }
-        }
-
-        /**
-         * @var DBManager $db
-         */
-        global $db;
-        $record = array(
-            'bean_id' => $db->quoted($this->id),
-            'module' => $db->quoted($this->module_name),
-            'date_modified' => $db->convert($db->quoted(date('Y-m-d H:i:s')), 'datetime')
-        );
-        $recordDB = $db->fetchOne("SELECT id FROM cron_remove_documents WHERE module={$record['module']} AND bean_id={$record['bean_id']}");
-        if (!empty($recordDB)) {
-            $record['id'] = $db->quoted($recordDB['id']);
-        }
-        if (empty($record['id'])) {
-            $record['id'] = $db->quoted(create_guid());
-            $db->query('INSERT INTO cron_remove_documents (' . implode(', ', array_keys($record)) . ') VALUES(' . implode(', ', $record) . ')');
-        } else {
-            $db->query("UPDATE cron_remove_documents SET date_modified={$record['date_modified']} WHERE id={$record['id']}");
-        }
-
-        return true;
-    }
 
     /**
      * This function is used to execute the query and create an array template objects
@@ -5239,7 +3410,7 @@ class SugarBean
             $result = $db->query($query, true);
         }
 
-        $list = Array();
+        $list = array();
         $isFirstTime = true;
         $class = get_class($template);
         while ($row = $this->db->fetchByAssoc($result)) {
@@ -5254,70 +3425,6 @@ class SugarBean
                 $list[] = $template;
             }
         }
-        return $list;
-    }
-
-    /**
-     * This function is used to execute the query and create an array template objects
-     * from the resulting ids from the query.
-     * It is currently used for building sub-panel arrays. It supports an additional
-     * where clause that is executed as a filter on the results
-     *
-     * @param string $query - the query that should be executed to build the list
-     * @param object $template - The object that should be used to copy the records.
-     */
-    function build_related_list_where($query, &$template, $where = '', $in = '', $order_by, $limit = '', $row_offset = 0)
-    {
-        $db = DBManagerFactory::getInstance('listviews');
-        // No need to do an additional query
-        $GLOBALS['log']->debug("Finding linked records $this->object_name: " . $query);
-        if (empty($in) && !empty($query)) {
-            $idList = $this->build_related_in($query);
-            $in = $idList['in'];
-        }
-        // MFH - Added Support For Custom Fields in Searches
-        $custom_join = $this->getCustomJoin();
-
-        $query = "SELECT id ";
-
-        $query .= $custom_join['select'];
-        $query .= " FROM $this->table_name ";
-
-        $query .= $custom_join['join'];
-
-        $query .= " WHERE deleted=0 AND id IN $in";
-        if (!empty($where)) {
-            $query .= " AND $where";
-        }
-
-
-        if (!empty($order_by)) {
-            $query .= "ORDER BY $order_by";
-        }
-        if (!empty($limit)) {
-            $result = $db->limitQuery($query, $row_offset, $limit, true, "Error retrieving $this->object_name list: ");
-        } else {
-            $result = $db->query($query, true);
-        }
-
-        $list = Array();
-        $isFirstTime = true;
-        $class = get_class($template);
-
-        $disable_security_flag = ($template->disable_row_level_security) ? true : false;
-        while ($row = $db->fetchByAssoc($result)) {
-            if (!$isFirstTime) {
-                $template = new $class();
-                $template->disable_row_level_security = $disable_security_flag;
-            }
-            $isFirstTime = false;
-            $record = $template->retrieve($row['id']);
-            if ($record != null) {
-                // this copies the object into the array
-                $list[] = $template;
-            }
-        }
-
         return $list;
     }
 
@@ -5350,117 +3457,6 @@ class SugarBean
     }
 
     /**
-     * Optionally copies values from fetched row into the bean.
-     *
-     * Internal function, do not override.
-     *
-     * @param string $query - the query that should be executed to build the list
-     * @param object $template - The object that should be used to copy the records
-     * @param array $field_list List of  fields.
-     * @return array
-     */
-    function build_related_list2($query, &$template, &$field_list)
-    {
-        $GLOBALS['log']->debug("Finding linked values $this->object_name: " . $query);
-
-        $result = $this->db->query($query, true);
-
-        $list = Array();
-        $isFirstTime = true;
-        $class = get_class($template);
-        while ($row = $this->db->fetchByAssoc($result)) {
-            // Create a blank copy
-            $copy = $template;
-            if (!$isFirstTime) {
-                $copy = new $class();
-            }
-            $isFirstTime = false;
-            foreach ($field_list as $field) {
-                // Copy the relevant fields
-                $copy->$field = $row[$field];
-            }
-
-            // this copies the object into the array
-            $list[] = $copy;
-        }
-
-        return $list;
-    }
-
-    /**
-     * Let implementing classes to fill in row specific columns of a list view form
-     *
-     */
-    function list_view_parse_additional_sections(&$list_form)
-    {
-
-    }
-
-    /**
-     * Override this function to set values in the array used to render list view data.
-     *
-     */
-    function get_list_view_data()
-    {
-        return $this->get_list_view_array();
-    }
-
-    /**
-     * Assigns all of the values into the template for the list view
-     */
-    function get_list_view_array()
-    {
-        static $cache = array();
-        // cn: bug 12270 - sensitive fields being passed arbitrarily in listViews
-        $sensitiveFields = array('user_hash' => '');
-
-        $return_array = Array();
-        global $app_list_strings, $mod_strings;
-        foreach ($this->field_defs as $field => $value) {
-
-            if (isset($this->$field)) {
-
-                // cn: bug 12270 - sensitive fields being passed arbitrarily in listViews
-                if (isset($sensitiveFields[$field]))
-                    continue;
-                if (!isset($cache[$field]))
-                    $cache[$field] = strtoupper($field);
-
-                //Fields hidden by Dependent Fields
-                if (isset($value['hidden']) && $value['hidden'] === true) {
-                    $return_array[$cache[$field]] = "";
-                }
-                //cn: if $field is a _dom, detect and return VALUE not KEY
-                //cl: empty function check for meta-data enum types that have values loaded from a function
-                else if (((!empty($value['type']) && ($value['type'] == 'enum' || $value['type'] == 'radioenum'))) && empty($value['function'])) {
-                    if (!empty($value['options']) && !empty($app_list_strings[$value['options']][$this->$field])) {
-                        $return_array[$cache[$field]] = $app_list_strings[$value['options']][$this->$field];
-                    } //nsingh- bug 21672. some modules such as manufacturers, Releases do not have a listing for select fields in the $app_list_strings. Must also check $mod_strings to localize.
-                    elseif (!empty($value['options']) && !empty($mod_strings[$value['options']][$this->$field])) {
-                        $return_array[$cache[$field]] = $mod_strings[$value['options']][$this->$field];
-                    } else {
-                        $return_array[$cache[$field]] = $this->$field;
-                    }
-                    //end bug 21672
-// tjy: no need to do this str_replace as the changes in 29994 for ListViewGeneric.tpl for translation handle this now
-//				}elseif(!empty($value['type']) && $value['type'] == 'multienum'&& empty($value['function'])){
-//					$return_array[strtoupper($field)] = str_replace('^,^', ', ', $this->$field );
-                } elseif (!empty($value['custom_module']) && $value['type'] != 'currency') {
-//					$this->format_field($value);
-                    $return_array[$cache[$field]] = $this->$field;
-                } else {
-                    $return_array[$cache[$field]] = $this->$field;
-                }
-                // handle "Assigned User Name"
-                if ($field == 'assigned_user_name') {
-                    $return_array['ASSIGNED_USER_NAME'] = get_assigned_user_name($this->assigned_user_id);
-                }
-            }
-        }
-        return $return_array;
-    }
-
-    /**
      * Constructs a select query and fetch 1 row using this query, and then process the row
      *
      * Internal function, do not override.
@@ -5472,8 +3468,7 @@ class SugarBean
     function retrieve_by_string_fields($fields_array, $encode = true, $deleted = true)
     {
         $where_clause = $this->get_where($fields_array, $deleted);
-        $custom_join = $this->getCustomJoin();
-        $query = "SELECT $this->table_name.*" . $custom_join['select'] . " FROM $this->table_name " . $custom_join['join'];
+        $query = "SELECT $this->table_name.*" . " FROM $this->table_name ";
         $query .= " $where_clause";
         $GLOBALS['log']->debug("Retrieve $this->object_name: " . $query);
         //requireSingleResult has been deprecated.
@@ -5540,23 +3535,6 @@ class SugarBean
     }
 
     /**
-     * This method is called during an import before inserting a bean
-     * Define an associative array called $special_fields
-     * the keys are user defined, and don't directly map to the bean's fields
-     * the value is the method name within that bean that will do extra
-     * processing for that field. example: 'full_name'=>'get_names_from_full_name'
-     *
-     */
-    function process_special_fields()
-    {
-        foreach ($this->special_functions as $func_name) {
-            if (method_exists($this, $func_name)) {
-                $this->$func_name();
-            }
-        }
-    }
-
-    /**
      * Override this function to build a where clause based on the search criteria set into bean .
      * @abstract
      */
@@ -5565,47 +3543,16 @@ class SugarBean
 
     }
 
-    function &parse_additional_headers(&$list_form, $xTemplateSection)
-    {
-        return $list_form;
-    }
-
-    function assign_display_fields($currentModule)
-    {
-        global $timedate;
-        foreach ($this->column_fields as $field) {
-            if (isset($this->field_name_map[$field]) && empty($this->$field)) {
-                if ($this->field_name_map[$field]['type'] != 'date' && $this->field_name_map[$field]['type'] != 'enum')
-                    $this->$field = $field;
-                if ($this->field_name_map[$field]['type'] == 'date') {
-                    $this->$field = $timedate->to_display_date('1980-07-09');
-                }
-                if ($this->field_name_map[$field]['type'] == 'enum') {
-                    $dom = $this->field_name_map[$field]['options'];
-                    global $current_language, $app_list_strings;
-                    $mod_strings = return_module_language($current_language, $currentModule);
-
-                    if (isset($mod_strings[$dom])) {
-                        $options = $mod_strings[$dom];
-                        foreach ($options as $key => $value) {
-                            if (!empty($key) && empty($this->$field)) {
-                                $this->$field = $key;
-                            }
-                        }
-                    }
-                    if (isset($app_list_strings[$dom])) {
-                        $options = $app_list_strings[$dom];
-                        foreach ($options as $key => $value) {
-                            if (!empty($key) && empty($this->$field)) {
-                                $this->$field = $key;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    /**
+     * ToDo: define what this does exaclt
+     *
+     * @param $table
+     * @param $relate_values
+     * @param bool $check_duplicates
+     * @param false $do_update
+     * @param null $data_values
+     *
+     */
     function set_relationship($table, $relate_values, $check_duplicates = true, $do_update = false, $data_values = null)
     {
         $where = '';
@@ -5658,74 +3605,7 @@ class SugarBean
         return $ids;
     }
 
-    function loadLayoutDefs()
-    {
-        global $layout_defs;
-        if (empty($this->layout_def) && file_exists('modules/' . $this->module_dir . '/layout_defs.php')) {
-            include_once('modules/' . $this->module_dir . '/layout_defs.php');
-            if (file_exists('custom/modules/' . $this->module_dir . '/Ext/Layoutdefs/layoutdefs.ext.php')) {
-                include_once('custom/modules/' . $this->module_dir . '/Ext/Layoutdefs/layoutdefs.ext.php');
-            }
-            if (empty($layout_defs[get_class($this)])) {
-                echo "\$layout_defs[" . get_class($this) . "]; does not exist";
-            }
 
-            $this->layout_def = $layout_defs[get_class($this)];
-        }
-    }
-
-    function getRealKeyFromCustomFieldAssignedKey($name)
-    {
-        if ($this->custom_fields->avail_fields[$name]['ext1']) {
-            $realKey = 'ext1';
-        } elseif ($this->custom_fields->avail_fields[$name]['ext2']) {
-            $realKey = 'ext2';
-        } elseif ($this->custom_fields->avail_fields[$name]['ext3']) {
-            $realKey = 'ext3';
-        } else {
-            $GLOBALS['log']->fatal("SUGARBEAN: cannot find Real Key for custom field of type dropdown - cannot return Value.");
-            return false;
-        }
-        if (isset($realKey)) {
-            return $this->custom_fields->avail_fields[$name][$realKey];
-        }
-    }
-
-    /**
-     * Get owner field
-     *
-     * @return STRING
-     */
-    function getOwnerField($returnFieldName = false)
-    {
-        if (isset($this->field_defs['assigned_user_id'])) {
-            return $returnFieldName ? 'assigned_user_id' : $this->assigned_user_id;
-        }
-
-        if (isset($this->field_defs['created_by'])) {
-            return $returnFieldName ? 'created_by' : $this->created_by;
-        }
-
-        return '';
-    }
-
-    /**
-     *
-     * Used in order to manage ListView links and if they should
-     * links or not based on the ACL permissions of the user
-     *
-     * @return ARRAY of STRINGS
-     */
-    function listviewACLHelper()
-    {
-        $array_assign = array();
-        if ($this->ACLAccess('DetailView')) {
-            $array_assign['MAIN'] = 'a';
-        } else {
-            $array_assign['MAIN'] = 'span';
-        }
-        return $array_assign;
-    }
 
     /**
      * Check whether the user has access to a particular view for the current bean/module
@@ -5791,6 +3671,16 @@ class SugarBean
         return true;
     }
 
+    function getACLActions()
+    {
+
+        // If we don't implement ACLs, return true.
+        if (!$this->bean_implements('ACL'))
+            return [];
+
+        return $GLOBALS['ACLController']->getBeanActions($this);
+    }
+
     /**
      * Loads a row of data into instance of a bean. The data is passed as an array to this function
      *
@@ -5807,179 +3697,83 @@ class SugarBean
 
         $this->fill_in_additional_list_fields();
 
-        if ($this->hasCustomFields())
-            $this->custom_fields->fill_relationships();
         $this->call_custom_logic("process_record");
     }
 
     /**
-     * Ensure that fields within order by clauses are properly qualified with
-     * their tablename.  This qualification is a requirement for sql server support.
+     * checks if there are duplicates for the bean based on the FTS search
      *
-     * @param string $order_by original order by from the query
-     * @param string $qualify prefix for columns in the order by list.
-     * @return  prefixed
-     *
-     * Internal function do not override.
+     * @return array
      */
-    function create_qualified_order_by($order_by, $qualify)
-    {    // if the column is empty, but the sort order is defined, the value will throw an error, so do not proceed if no order by is given
-        if (empty($order_by)) {
-            return $order_by;
-        }
-        $order_by_clause = " ORDER BY ";
-        $tmp = explode(",", $order_by);
-        $comma = ' ';
-        foreach ($tmp as $stmp) {
-            $stmp = (substr_count($stmp, ".") > 0 ? trim($stmp) : "$qualify." . trim($stmp));
-            $order_by_clause .= $comma . $stmp;
-            $comma = ", ";
-        }
-        return $order_by_clause;
-    }
-
-    /**
-     * Combined the contents of street field 2 thru 4 into the main field
-     *
-     * @param string $street_field
-     */
-    function add_address_streets(
-        $street_field
-    )
-    {
-        if (isset($this->$street_field)) {
-            $street_field_2 = $street_field . '_2';
-            $street_field_3 = $street_field . '_3';
-            $street_field_4 = $street_field . '_4';
-            if (isset($this->$street_field_2)) {
-                $this->$street_field .= "\n" . $this->$street_field_2;
-                unset($this->$street_field_2);
-            }
-            if (isset($this->$street_field_3)) {
-                $this->$street_field .= "\n" . $this->$street_field_3;
-                unset($this->$street_field_3);
-            }
-            if (isset($this->$street_field_4)) {
-                $this->$street_field .= "\n" . $this->$street_field_4;
-                unset($this->$street_field_4);
-            }
-            $this->$street_field = trim($this->$street_field, "\n");
-        }
-    }
-
-    /**
-     * Called from ImportFieldSanitize::relate(), when creating a new bean in a related module. Will
-     * copies fields over from the current bean into the related. Designed to be overriden in child classes.
-     *
-     * @param SugarBean $newbean newly created related bean
-     */
-    public function populateRelatedBean(
-        SugarBean $newbean
-    )
-    {
-
-    }
-
-    /**
-     * Called during the import process before a bean save, to handle any needed pre-save logic when
-     * importing a record
-     */
-    public function beforeImportSave()
-    {
-
-    }
-
-    /**
-     * Called during the import process after a bean save, to handle any needed post-save logic when
-     * importing a record
-     */
-    public function afterImportSave()
-    {
-
-    }
-
-    /**
-     * Returns the query used for the export functionality for a module. Override this method if you wish
-     * to have a custom query to pull this data together instead
-     *
-     * @param string $order_by
-     * @param string $where
-     * @param string $additionalParam see in child classes like Project, Campaign, Meeting, Contact...
-     * @return string SQL query
-     */
-    public function create_export_query($order_by, $where, $additionalParam = '')
-    {
-        return $this->create_new_list_query($order_by, $where, array(), array(), 0, '', false, $this, true, true);
-    }
-
     public function checkForDuplicates()
     {
         global $current_user, $beanList;
-        $module = array_search(get_class($this), $beanList);
+        $module = array_search($this->object_name, $beanList);
 
         $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
         $duplicates = $spiceFTSHandler->checkDuplicates($this);
 
         $dupRet = array();
         foreach ($duplicates['records'] as $duplicate) {
-            $dupRet[] = BeanFactory::getBean($module, $duplicate);
+            $seed = BeanFactory::getBean($module, $duplicate);
+            if($seed) {
+                $dupRet[] = $seed;
+            } else {
+                $duplicates['count']--;
+            }
         }
         return ['count' => $duplicates['count'], 'records' => $dupRet];
     }
 
-    public function beanToMail($data)
+    /**
+     * ToDo: add validation logic based on domains
+     *
+     * @return array|bool
+     */
+    function validate()
     {
-
-    }
-
-    function idExists( $id ) {
-        global $db;
-        if ( !isset( $this->table_name{0} )) return false;
-        $q = sprintf('SELECT count(*) FROM '.$this->table_name.' WHERE id = "%s"', $db->quote( $id ));
-        return $db->getOne( $q ) != 0;
-    }
-
-    function validate() {
-        $return =  [];
-        if (( $dummy = $this->validateContent()) !== true )
+        $return = [];
+        if (($dummy = $this->validateContent()) !== true)
             $return['invalidFields'] = $dummy;
-        if (( $dummy = $this->validateRequired()) !== true )
+        if (($dummy = $this->validateRequired()) !== true)
             $return['missingFields'] = $dummy;
         return $return ? $return : true;
     }
 
-    function validateRequired() {
+    function validateRequired()
+    {
         $missingFields = [];
-        foreach ( $this->field_defs as $field ) {
-            if (( $field['name'] !== 'id' or $this->new_with_id === true ) and $field['name'] !== 'date_entered' and $field['name'] !== 'date_modified'
-                    and isset( $field['required'] ) and $field['required']
-                    and (
-                        !isset( $this->{$field['name']} ) or
-                        is_null( $this->{$field['name']} ) or
-                        ( is_string( $this->{$field['name']} ) and strlen( $this->{$field['name']} ) === 0 )
-                    )
+        foreach ($this->field_defs as $field) {
+            if (($field['name'] !== 'id' or $this->new_with_id === true) and $field['name'] !== 'date_entered' and $field['name'] !== 'date_modified'
+                and isset($field['required']) and $field['required']
+                and (
+                    !isset($this->{$field['name']}) or
+                    is_null($this->{$field['name']}) or
+                    (is_string($this->{$field['name']}) and strlen($this->{$field['name']}) === 0)
                 )
+            )
                 $missingFields[] = $field['name'];
         }
         return $missingFields ? $missingFields : true;
     }
 
-    function validateContent() {
+    function validateContent()
+    {
         $invalidFields = [];
-        foreach ( $this->field_defs as $field ) {
-            if ( isset( $this->{$field['name']} )) {
-                switch ( $field['type'] ) {
+        foreach ($this->field_defs as $field) {
+            if (isset($this->{$field['name']})) {
+                switch ($field['type']) {
                     case 'enum':
-                        if ( !isset( $GLOBALS['app_list_strings'][$field['options']][$this->{$field['name']}] ))
-                            $invalidFields[$field['name']][] = 'Invalid enum value (allowed: \''.implode('\'|\'', $GLOBALS['app_list_strings'][$field['options']]) .'\').';
+                        if (!isset($GLOBALS['app_list_strings'][$field['options']][$this->{$field['name']}]))
+                            $invalidFields[$field['name']][] = 'Invalid enum value (allowed: \'' . implode('\'|\'', $GLOBALS['app_list_strings'][$field['options']]) . '\').';
                         break;
                     case 'varchar':
                     case 'text':
-                        if ( isset( $field['len'] ) and strlen( $this->{$field['name']} ) > $field['len'] )
-                            $invalidFields[$field['name']][] = 'String to long (max: '.$field['len'].').';
+                        if (isset($field['len']) and strlen($this->{$field['name']}) > $field['len'])
+                            $invalidFields[$field['name']][] = 'String to long (max: ' . $field['len'] . ').';
                         break;
                     case 'date':
-                        if ( ! ( preg_match('#^(\d{1,4})-(\d{1,2})-(\d{1,2})$#', $this->{$field['name']}, $matches ) and checkdate( $matches[2], $matches[3], $matches[1] )))
+                        if (!(preg_match('#^(\d{1,4})-(\d{1,2})-(\d{1,2})$#', $this->{$field['name']}, $matches) and checkdate($matches[2], $matches[3], $matches[1])))
                             $invalidFields[$field['name']][] = 'Date invalid.';
                 }
             }
@@ -5991,17 +3785,25 @@ class SugarBean
     {
         $GLOBALS['log']->deprecated(
             get_class() . " Deprecated. " .
-            \LoggerManager::formatBackTrace(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4))
+            \SpiceCRM\includes\Logger\LoggerManager::formatBackTrace(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4))
         );
     }
 
-    public function getFrontendUrl() {
-        if ( empty( $this->id )) return false;
-        return $GLOBALS['sugar_config']['frontend_url'].'#/module/'.$this->module_name.'/'.$this->id;
+    /**
+     * returns the frontend url
+     * ToDo: move to other general class
+     *
+     * @return false|string
+     */
+    public function getFrontendUrl()
+    {
+        if (empty($this->id)) return false;
+        return $GLOBALS['sugar_config']['frontend_url'] . '#/module/' . $this->module_name . '/' . $this->id;
     }
 
-    public function getFrontendUrlEncoded() {
-        return urlencode( $this->getFrontendUrl() );
+    public function getFrontendUrlEncoded()
+    {
+        return urlencode($this->getFrontendUrl());
     }
 
     /**
@@ -6010,15 +3812,15 @@ class SugarBean
      *
      * @param object $clone
      */
-    private function cloneBeansOfAllLinks( &$clone )
+    private function cloneBeansOfAllLinks(&$clone)
     {
-        foreach ( $this->field_defs as $v ) {
-            if ( $v['type'] === 'link' and @$v['deepClone'] === true ) {
-                foreach ( $this->get_linked_beans( $v['name'], $v['module'] ) as $v2 ) {
-                    if ( !$v2->isCloned() ) { # To prevent a recursion: Don´t clone in case this bean has already been cloned.
-                        $v2->cloneLinkedBean( $v['name'], $clone );
+        foreach ($this->field_defs as $v) {
+            if ($v['type'] === 'link' and @$v['deepClone'] === true) {
+                foreach ($this->get_linked_beans($v['name'], $v['module']) as $v2) {
+                    if (!$v2->isCloned()) { # To prevent a recursion: Don´t clone in case this bean has already been cloned.
+                        $v2->cloneLinkedBean($v['name'], $clone);
                     } else {
-                        $GLOBALS['log']->error('Bean cloning: A recursion has been prevented ( link: '.$v['name'].' in module '.$this->module_name.', bean to clone: '.$v2->object_name.' '.$v2->id.' ). Check configuration in vardefs for property "deepClone".');
+                        $GLOBALS['log']->error('Bean cloning: A recursion has been prevented ( link: ' . $v['name'] . ' in module ' . $this->module_name . ', bean to clone: ' . $v2->object_name . ' ' . $v2->id . ' ). Check configuration in vardefs for property "deepClone".');
                     }
                 }
             }
@@ -6031,11 +3833,11 @@ class SugarBean
      * @param string $linkName Name of the link.
      * @param string $oppositeBean The opposite cloned bean where the link is defined.
      */
-    public function cloneLinkedBean( $linkName, &$oppositeBean )
+    public function cloneLinkedBean($linkName, &$oppositeBean)
     {
         $clone = clone $this;
         $clone->id = create_guid();
-        $GLOBALS['cloningData']['cloned'][] = [ 'module' => $clone->module_name, 'id' => $this->id, 'cloneId' => $clone->id, 'clone' => $clone ];
+        $GLOBALS['cloningData']['cloned'][] = ['module' => $clone->module_name, 'id' => $this->id, 'cloneId' => $clone->id, 'clone' => $clone];
         $clone->cloningData['count']++;
         $clone->new_with_id = true;
         $clone->update_date_entered = true;
@@ -6043,10 +3845,10 @@ class SugarBean
         $clone->onClone();
         $clone->save();
 
-        $oppositeBean->load_relationship( $linkName );
-        $oppositeBean->{$linkName}->add( $clone->id );
+        $oppositeBean->load_relationship($linkName);
+        $oppositeBean->{$linkName}->add($clone->id);
 
-        $this->cloneBeansOfAllLinks( $clone );
+        $this->cloneBeansOfAllLinks($clone);
     }
 
     /**
@@ -6056,8 +3858,8 @@ class SugarBean
      */
     public function isCloned()
     {
-        foreach ( $GLOBALS['cloningData']['cloned'] as $v ) {
-            if ( $this->module_name === $v['module'] and $this->id === $v['id'] ) return true;
+        foreach ($GLOBALS['cloningData']['cloned'] as $v) {
+            if ($this->module_name === $v['module'] and $this->id === $v['id']) return true;
         }
         return false;
     }
@@ -6065,12 +3867,20 @@ class SugarBean
     /**
      * Placeholder
      */
-    public function onClone() { }
+    public function onClone()
+    {
+    }
 
-    protected function createNotification($check_notify) {
+    /**
+     * createa a SpiceNotification
+     *
+     * @param $check_notify
+     */
+    protected function createNotification($check_notify)
+    {
         global $current_user;
         if ($check_notify && $this->assigned_user_id != $current_user->id
-            && $this->assigned_user_id != $this->fetched_row['assigned_user_id'] ) {
+            && $this->assigned_user_id != $this->fetched_row['assigned_user_id']) {
             $notification = new SpiceCRM\includes\SpiceNotifications\SpiceNotifications($this);
             $notification->saveNotification();
         }

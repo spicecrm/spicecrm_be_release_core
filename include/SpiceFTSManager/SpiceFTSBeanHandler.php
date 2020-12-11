@@ -17,7 +17,7 @@ class SpiceFTSBeanHandler
 
         // check if we have a beanname or a bean object being passed in
         if (!is_string($bean)) {
-            $beanModule = array_search(get_class($bean), $beanList);
+            $beanModule = array_search($bean->object_name, $beanList);
             $this->seed = $bean;
             $this->seedModule = $beanModule;
         } else {
@@ -38,11 +38,12 @@ class SpiceFTSBeanHandler
     {
         $aggregates = [];
         foreach ($this->indexProperties as $indexProperty) {
-            if (isset($indexProperty['aggregate'])) {
+            $details = SpiceFTSUtils::getDetailsForField($indexProperty['path']);
+            if (isset($indexProperty['aggregate']) && (!empty($details['field']) || !empty($details['module']))) {
                 $aggregates[] = [
                     'fieldname' => $indexProperty['fieldname'],
                     'indexfieldname' => $indexProperty['indexfieldname'],
-                    'fielddetails' => SpiceFTSUtils::getDetailsForField($indexProperty['path']),
+                    'fielddetails' => $details,
                     'type' => $indexProperty['aggregate'],
                     'collapsed' => $indexProperty['aggregatecollapsed'] == 1 ? true : false,
                     'priority' => $indexProperty['aggregatepriority']
@@ -365,17 +366,11 @@ class SpiceFTSBeanHandler
                     $retvalue = trim($value, '^');
                 }
                 break;
-            case'date':
-                if ($GLOBALS['disable_date_format'] !== true)
-                    $retvalue = $timedate->to_db($value) ?: $value;
-                break;
             case'tags':
                 $retvalue = json_decode(html_entity_decode($value), true) ?: [];
                 break;
             case 'datetime':
             case 'datetimecombo':
-                if ($GLOBALS['disable_date_format'] !== true)
-                    $retvalue = $timedate->to_db($value) ?: $value;
                 // catch bad date format like '0000-00-00'
                 if ($retvalue == '0000-00-00' || $retvalue == '0000-00-00 00:00:00') {
                     $retvalue = null;
@@ -529,7 +524,7 @@ class SpiceFTSBeanHandler
         if ($indexProperty['format']) $properties[$indexFieldName]['format'] = $indexProperty['format'];
         if ($properties[$indexFieldName]['type'] == 'date') $properties[$indexFieldName]['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
 
-        if ($indexProperty['enablesort'] || $indexProperty['suggest'] || ($indexProperty['duplicatecheck'] && $indexProperty['duplicatequery'] == 'term')) {
+        if ($indexProperty['indextype'] !== 'date' && ($indexProperty['enablesort'] || $indexProperty['suggest'] || ($indexProperty['duplicatecheck'] && $indexProperty['duplicatequery'] == 'term'))) {
             $properties[$indexFieldName]['fields']['raw'] = array(
                 'type' => $indexProperty['indextype'] && $indexProperty['indextype'] != 'text' ? $indexProperty['indextype'] : 'keyword',
                 'index' => true

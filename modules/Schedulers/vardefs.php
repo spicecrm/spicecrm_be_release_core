@@ -73,10 +73,7 @@ $dictionary['Scheduler'] = array('table' => 'schedulers',
 			'vname' => 'LBL_DATE_TIME_START',
 			'type' => 'datetimecombo',
 			'required' => true,
-			'reportable' => false,
-			//Previously Editview on scheduler assigned default value as $timedate->fromString('2005-01-01')
-            //the bottom value follows previous default value.
-            'display_default' => '2005/01/01'
+			'reportable' => false
 		),
 		'date_time_end' => array (
 			'name' => 'date_time_end',

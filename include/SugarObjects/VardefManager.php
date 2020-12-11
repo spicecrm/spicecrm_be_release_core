@@ -59,7 +59,9 @@ class VardefManager{
         {
             VardefManager::addTemplate($module, $object, $template, $object_name);
         }
-        LanguageManager::createLanguageFile($module, $templates);
+
+        // @deprecated - no language files crated any longer
+        // LanguageManager::createLanguageFile($module, $templates);
 
         if (isset(VardefManager::$custom_disabled_modules[$module]))
         {
@@ -76,6 +78,15 @@ class VardefManager{
                 }
             }
         }
+
+        // BEGIN CR1000108: check system usage and overwrite vardefs
+        if(isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) && $GLOBALS['sugar_config']['systemvardefs']['dictionary']) {
+            require_once 'modules/SystemVardefs/SystemVardefs.php';
+            if(!is_array($GLOBALS['dictionary'])) $GLOBALS['dictionary'] = [];
+            if(!is_array($GLOBALS['relationships'])) $GLOBALS['relationships'] = SpiceCRM\modules\SystemVardefs\SystemVardefs::loadRelationships();
+            SpiceCRM\modules\SystemVardefs\SystemVardefs::loadDictionaryModule($module);
+        }
+        // END
     }
 
     /**
@@ -93,6 +104,7 @@ class VardefManager{
     }
 
     static function addTemplate($module, $object, $template, $object_name=false){
+        global $vardefs;
         if($template == 'default')$template = 'basic';
         $templates = array();
         $fields = array();
@@ -226,7 +238,7 @@ class VardefManager{
      * @param string $object the given object we wish to load the vardefs for
      * @param array $additional_search_paths an array which allows a consumer to pass in additional vardef locations to search
      */
-    static function refreshVardefs($module, $object, $additional_search_paths = null, $cacheCustom = true, $params = array()){
+    static function refreshVardefs($module, $object, $additional_search_paths = null, $cacheCustom = false, $params = array()){
         // Some of the vardefs do not correctly define dictionary as global.  Declare it first.
         global $dictionary, $beanList;
         $vardef_paths = array(
@@ -258,6 +270,7 @@ class VardefManager{
             }
         }
         //Some modules have multiple beans, we need to see if this object has a module_dir that is different from its module_name
+        /*
         if(!$found){
             $temp = BeanFactory::newBean($module);
             if ($temp)
@@ -269,6 +282,7 @@ class VardefManager{
                 }
             }
         }
+        */
 
         //Some modules like cases have a bean name that doesn't match the object name
         if (empty($dictionary[$object])) {
@@ -277,11 +291,13 @@ class VardefManager{
         }
 
         //load custom fields into the vardef cache
+        /*
         if($cacheCustom){
             require_once("modules/DynamicFields/DynamicField.php");
             $df = new DynamicField ($module) ;
             $df->buildCache($module, false);
         }
+        */
 
         //great! now that we have loaded all of our vardefs.
         //let's go save them to the cache file.
@@ -429,27 +445,46 @@ class VardefManager{
         // Some of the vardefs do not correctly define dictionary as global.  Declare it first.
         global $dictionary;
         if(empty($GLOBALS['dictionary'][$object]) || $refresh){
-            //if the consumer has demanded a refresh or the cache/modules... file
-            //does not exist, then we should do out and try to reload things
-
-			$cachedfile = sugar_cached('modules/'). $module . '/' . $object . 'vardefs.php';
-			if($refresh || !file_exists($cachedfile)){
-				VardefManager::refreshVardefs($module, $object, null, true, $params);
-			}
-
-            //at this point we should have the cache/modules/... file
-            //which was created from the refreshVardefs so let's try to load it.
-            if(file_exists($cachedfile))
-            {
-                if (is_readable($cachedfile))
-                {
-                    include($cachedfile);
+            // CR1000108 vardefs to db
+            if (isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) && $GLOBALS['sugar_config']['systemvardefs']['dictionary']) {
+                if(!is_array($GLOBALS['relationships'])) $GLOBALS['relationships'] = SpiceCRM\modules\SystemVardefs\SystemVardefs::loadRelationships();
+                $dict = SpiceCRM\modules\SystemVardefs\SystemVardefs::loadDictionaryModule($module);
+                if(!empty($dict)) {
+                    $GLOBALS['dictionary'][$object] = $dict[$object];
+                    // now that we hae loaded the data from disk, put it in the cache.
+                    if(!empty($GLOBALS['dictionary'][$object])) {
+                        $cachedfile = sugar_cached('modules/') . $module . '/' . $object . 'vardefs.php';
+                        if ($refresh || !file_exists($cachedfile)) {
+                            VardefManager::saveCache($module, $object);
+                        }
+                    }
                 }
-                // now that we hae loaded the data from disk, put it in the cache.
-                if(!empty($GLOBALS['dictionary'][$object]))
+            }
+
+            // CR1000108 fall back to old logik if no definition found
+            if(empty($GLOBALS['dictionary'][$object])){
+                //if the consumer has demanded a refresh or the cache/modules... file
+                //does not exist, then we should do out and try to reload things
+
+                $cachedfile = sugar_cached('modules/'). $module . '/' . $object . 'vardefs.php';
+                if($refresh || !file_exists($cachedfile)){
+                    VardefManager::refreshVardefs($module, $object, null, false, $params);
+                }
+
+                //at this point we should have the cache/modules/... file
+                //which was created from the refreshVardefs so let's try to load it.
+                if(file_exists($cachedfile))
                 {
-                    $GLOBALS['dictionary'][$object] = self::applyGlobalAccountRequirements($GLOBALS['dictionary'][$object]);
-                    sugar_cache_put($key,$GLOBALS['dictionary'][$object]);
+                    if (is_readable($cachedfile))
+                    {
+                        include($cachedfile);
+                    }
+                    // now that we hae loaded the data from disk, put it in the cache.
+                    if(!empty($GLOBALS['dictionary'][$object]))
+                    {
+                        $GLOBALS['dictionary'][$object] = self::applyGlobalAccountRequirements($GLOBALS['dictionary'][$object]);
+                        sugar_cache_put($key,$GLOBALS['dictionary'][$object]);
+                    }
                 }
             }
         }

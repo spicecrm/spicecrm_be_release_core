@@ -42,7 +42,6 @@ class ACLAction  extends SugarBean
     var $object_name = 'ACLAction';
     var $table_name = 'acl_actions';
     var $new_schema = true;
-    var $disable_custom_fields = true;
 
     public function __construct()
     {
@@ -74,7 +73,7 @@ class ACLAction  extends SugarBean
                     $action->acltype = $type;
                     $action->modified_user_id = 1;
                     $action->created_by = 1;
-                    $action->save();
+                    $action->save(false, false);
 
                 }
             }

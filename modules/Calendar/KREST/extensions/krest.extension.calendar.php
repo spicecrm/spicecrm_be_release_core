@@ -1,23 +1,25 @@
 <?php
+use SpiceCRM\modules\Calendar\KREST\handlers\CalendarRestHandler;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
+$restHandler = new  CalendarRestHandler();
 
-$restHandler = new  \SpiceCRM\modules\Calendar\KREST\handlers\CalendarRestHandler();
-
-$app->group('/calendar', function () use ($app, $restHandler) {
-    $app->get('/modules', function($req, $res, $args) use ($app, $restHandler) {
+$RESTManager->app->group('/calendar', function () use ($restHandler) {
+    $this->get('/modules', function($req, $res, $args) use ($restHandler) {
         return $res->withJson($restHandler->getCalendarModules());
     });
-    $app->get('/calendars', function($req, $res, $args) use ($app, $restHandler) {
+    $this->get('/calendars', function($req, $res, $args) use ($restHandler) {
         return $res->withJson($restHandler->getCalendars());
     });
-    $app->get('/other/{calendarid}', function($req, $res, $args) use ($app, $restHandler) {
+    $this->get('/other/{calendarid}', function($req, $res, $args) use ($restHandler) {
         $params = $req->getParams();
         return $res->withJson($restHandler->getOtherCalendars($args['calendarid'], $params));
     });
-    $app->get('/{user}', function($req, $res, $args) use ($app, $restHandler) {
+    $this->get('/{user}', function($req, $res, $args) use ($restHandler) {
         $params = $req->getParams();
         return $res->withJson($restHandler->getUserCalendar($args['user'], $params));
     });
-    $app->get('/users/{user}', function($req, $res, $args) use ($app, $restHandler) {
+    $this->get('/users/{user}', function($req, $res, $args) use ($restHandler) {
         $params = $req->getParams();
         return $res->withJson($restHandler->getUsersCalendar($args['user'], $params));
     });

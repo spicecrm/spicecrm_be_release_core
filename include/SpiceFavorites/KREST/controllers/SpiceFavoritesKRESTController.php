@@ -1,19 +1,22 @@
 <?php
-
 namespace SpiceCRM\includes\SpiceFavorites\KREST\controllers;
 
-class SpiceFavoritesKRESTController{
+use SpiceCRM\includes\SpiceFavorites\SpiceFavorites;
+use SpiceCRM\KREST\handlers\ModuleHandler;
+use BeanFactory;
 
-    static function getFavorites($req, $res, $args) {
-        return $res->write(json_encode(\SpiceCRM\includes\SpiceFavorites\SpiceFavorites::getFavoritesRaw('', 0)));
+class SpiceFavoritesKRESTController {
+
+    public static function getFavorites($req, $res, $args) {
+        return $res->write(json_encode(SpiceFavorites::getFavoritesRaw('', 0)));
     }
 
-    static function addFavorite($req, $res, $args){
-        \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::set_favorite($args['module'], $args['id']);
+    public static function addFavorite($req, $res, $args){
+        SpiceFavorites::set_favorite($args['module'], $args['id']);
 
-        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $moduleHandler = new ModuleHandler();
 
-        $bean = \BeanFactory::getBean($args['module'], $args['id']);
+        $bean = BeanFactory::getBean($args['module'], $args['id']);
         return $res->write(json_encode(array(
             'module' => $args['module'],
             'id' => $args['id'],
@@ -22,8 +25,8 @@ class SpiceFavoritesKRESTController{
         )));
     }
 
-     static function deleteFavorite($req, $res, $args) {
-        \SpiceCRM\includes\SpiceFavorites\SpiceFavorites::delete_favorite($args['module'], $args['id']);
+     public static function deleteFavorite($req, $res, $args) {
+        SpiceFavorites::delete_favorite($args['module'], $args['id']);
         return $res->write(json_encode(array('status' => 'success')));
     }
 }

@@ -2,15 +2,11 @@
 namespace SpiceCRM\modules\MediaFiles\KREST\controllers;
 
 use BeanFactory;
-use SpiceCRM\KREST\NotFoundException;
+use SpiceCRM\includes\ErrorHandlers\NotFoundException;
 
 class MediaFilesController
 {
     public function __construct() { }
-
-    public function fileUpload() {
-        echo \MediaFile::uploadMedia();
-    }
 
     public function saveMediaFile( $req, $res, $args ) {
         global $db;
@@ -47,17 +43,26 @@ class MediaFilesController
 
     public function getMediaFile( $req, $res, $args ) {
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
+        if ( $seed === false ) {
+            throw ( new NotFoundException('Media file not found.'))->setLookedFor([ 'id' => $args['mediaId'], 'module' => 'MediaFiles' ]);
+        }
         $seed->deliverOriginal();
     }
     public function getMediaFileBase64( $req, $res, $args ) {
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
+        if ( $seed === false ) {
+            throw ( new NotFoundException('Media file not found.'))->setLookedFor([ 'id' => $args['mediaId'], 'module' => 'MediaFiles' ]);
+        }
         $base64 = $seed->deliverOriginalBase64();
-        return $res->withJson(['img' => $base64]);
+        return $res->withJson(['img' => $base64, 'filetype' => $seed->filetype ]);
     }
 
     public function getThumbnail( $req, $res, $args ) {
         $thumbSize = $args['thumbSize'];
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
+        if ( $seed === false ) {
+            throw ( new NotFoundException('Media file not found.'))->setLookedFor([ 'id' => $args['mediaId'], 'module' => 'MediaFiles' ]);
+        }
         if ( !isset( $seed->width{0} ) or !isset( $seed->height{0} ))
             list( $seed->width, $seed->height ) = getimagesize( \MediaFile::getMediaPath( $seed->id ));
         if ( $thumbSize > $seed->width ) $thumbSize = $seed->width;
@@ -79,6 +84,9 @@ class MediaFilesController
 
     public function getImageWithMaxWidth( $req, $res, $args ) {
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
+        if ( $seed === false ) {
+            throw ( new NotFoundException('Media file not found.'))->setLookedFor([ 'id' => $args['mediaId'], 'module' => 'MediaFiles' ]);
+        }
         if ( !isset( $seed->width{0} ) or !isset( $seed->height{0} ))
             list( $seed->width, $seed->height ) = getimagesize( \MediaFile::getMediaPath( $seed->id ));
         if ( $args['maxWidth'] >= $seed->width ) {
@@ -107,6 +115,9 @@ class MediaFilesController
 
     public function getImageWithMaxWidthAndHeight( $req, $res, $args ) {
         $seed = BeanFactory::getBean( 'MediaFiles', $args['mediaId'] );
+        if ( $seed === false ) {
+            throw ( new NotFoundException('Media file not found.'))->setLookedFor([ 'id' => $args['mediaId'], 'module' => 'MediaFiles' ]);
+        }
         if ( !isset( $seed->width{0} ) or !isset( $seed->height{0} ))
             list( $seed->width, $seed->height ) = getimagesize( \MediaFile::getMediaPath( $seed->id ));
         if ( $args['maxWidth'] >= $seed->width and $args['maxHeight'] >= $seed->height ) {

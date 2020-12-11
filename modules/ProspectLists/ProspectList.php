@@ -40,28 +40,6 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  ********************************************************************************/
 class ProspectList extends SugarBean
 {
-    var $field_name_map;
-
-    // Stored fields
-    var $id;
-    var $date_entered;
-    var $date_modified;
-    var $modified_user_id;
-    var $assigned_user_id;
-    var $created_by;
-    var $created_by_name;
-    var $modified_by_name;
-    var $list_type;
-    var $domain_name;
-
-    var $name;
-    var $description;
-
-    // These are related
-    var $assigned_user_name;
-    var $prospect_id;
-    var $contact_id;
-    var $lead_id;
 
     // module name definitions and table relations
     var $table_name = "prospect_lists";
@@ -80,35 +58,21 @@ class ProspectList extends SugarBean
 
     var $entry_count;
 
-    function __construct()
-    {
-        global $sugar_config;
-        parent::__construct();
-
-    }
-
-    var $new_schema = true;
-
-    function get_summary_text()
-    {
-        return "$this->name";
-    }
 
     function create_list_query($order_by, $where, $show_deleted = 0)
     {
-        $custom_join = $this->getCustomJoin();
 
         $query = "SELECT ";
         $query .= "users.user_name as assigned_user_name, ";
         $query .= "prospect_lists.*";
 
-        $query .= $custom_join['select'];
+        // $query .= $custom_join['select'];
         $query .= " FROM prospect_lists ";
 
         $query .= "LEFT JOIN users
 					ON prospect_lists.assigned_user_id=users.id ";
 
-        $query .= $custom_join['join'];
+        // $query .= $custom_join['join'];
 
         $where_auto = '1=1';
         if ($show_deleted == 0) {
@@ -131,29 +95,6 @@ class ProspectList extends SugarBean
     }
 
 
-    function create_export_query($order_by, $where)
-    {
-
-        $query = "SELECT
-                                prospect_lists.*,
-                                users.user_name as assigned_user_name ";
-        $query .= "FROM prospect_lists ";
-        $query .= "LEFT JOIN users
-                                ON prospect_lists.assigned_user_id=users.id ";
-
-        $where_auto = " prospect_lists.deleted=0";
-
-        if ($where != "")
-            $query .= " WHERE $where AND " . $where_auto;
-        else
-            $query .= " WHERE " . $where_auto;
-
-        if ($order_by != "")
-            $query .= " ORDER BY $order_by";
-        else
-            $query .= " ORDER BY prospect_lists.name";
-        return $query;
-    }
 
     function create_export_members_query($record_id)
     {
@@ -265,23 +206,10 @@ FROM prospect_lists_prospects plp
     }
 
 
-    function mark_relationships_deleted($id)
-    {
-    }
-
-    function fill_in_additional_list_fields()
-    {
-    }
-
     function fill_in_additional_detail_fields()
     {
         parent::fill_in_additional_detail_fields();
         $this->entry_count = $this->get_entry_count();
-    }
-
-
-    function update_currency_id($fromid, $toid)
-    {
     }
 
 
@@ -299,62 +227,11 @@ FROM prospect_lists_prospects plp
     }
 
 
-    function get_list_view_data()
-    {
-        $temp_array = $this->get_list_view_array();
-        $temp_array["ENTRY_COUNT"] = $this->get_entry_count();
-        return $temp_array;
-    }
-
-    /**
-     * builds a generic search based on the query string using or
-     * do not include any $this-> because this is called on without having the class instantiated
-     */
-    function build_generic_where_clause($the_query_string)
-    {
-        $where_clauses = Array();
-        $the_query_string = $GLOBALS['db']->quote($the_query_string);
-        array_push($where_clauses, "prospect_lists.name like '$the_query_string%'");
-
-        $the_where = "";
-        foreach ($where_clauses as $clause) {
-            if ($the_where != "") $the_where .= " or ";
-            $the_where .= $clause;
-        }
-
-
-        return $the_where;
-    }
-
-    function save($check_notify = FALSE, $fts_index_bean = TRUE)
-    {
-
-        return parent::save($check_notify, $fts_index_bean);
-
-    }
-
     function mark_deleted($id)
     {
         $query = "UPDATE prospect_lists_prospects SET deleted = 1 WHERE prospect_list_id = '{$id}' ";
         $this->db->query($query);
         return parent::mark_deleted($id);
-    }
-
-    function bean_implements($interface)
-    {
-        switch ($interface) {
-            case 'ACL':
-                return true;
-        }
-        return false;
-    }
-
-    function createFromListDefs($listid)
-    {
-
-
-
-
     }
 
 }

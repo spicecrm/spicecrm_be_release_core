@@ -17,6 +17,11 @@ $dictionary['sysnumberranges'] = array(
             'type' => 'varchar',
             'len' => 10
         ),
+        'length' => array(
+            'name' => 'length',
+            'type' => 'int',
+            'isnull' => true
+        ),
         'range_from' => array(
             'name' => 'range_from',
             'type' => 'double'

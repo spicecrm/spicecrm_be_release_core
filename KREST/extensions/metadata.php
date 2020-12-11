@@ -15,16 +15,16 @@
  */
 
 // require_once('KREST/handlers/ModuleHandler.php');
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($RESTManager->app);
 
-$KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($app);
+\SpiceCRM\includes\RESTManager::getInstance()->registerExtension('metadata', '1.0');
 
-$KRESTManager->registerExtension('metadata', '1.0');
-
-$app->group('/metadata', function () use ($app, $KRESTModuleHandler) {
-    $this->get('/modules', function() use ($app, $KRESTModuleHandler) {
+$RESTManager->app->group('/metadata', function () use ( $KRESTModuleHandler) {
+    $this->get('/modules', function() use ($KRESTModuleHandler) {
         echo json_encode($KRESTModuleHandler->get_modules());
     });
-    $this->get('/vardefs/{module}', function($req, $res, $args) use ($app, $KRESTModuleHandler) {
+    $this->get('/vardefs/{module}', function($req, $res, $args) use ($KRESTModuleHandler) {
         $bean = BeanFactory::getBean($args['module']);
         echo json_encode($bean->field_name_map);
     });

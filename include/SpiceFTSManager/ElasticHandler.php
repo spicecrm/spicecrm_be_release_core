@@ -36,8 +36,8 @@ class ElasticHandler
         if(isset($sugar_config['fts']['ssl_verifypeer'])){$this->ssl_verifypeer = $sugar_config['fts']['ssl_verifypeer'];}
 
         // get the elastic version - only themajor number is important
-        $version = $this->getVersion();
-        $this->version = substr($version, 0, 1);
+        //$version = $this->getVersion();
+        //$this->version = substr($version, 0, 1);
 
         $this->buildSettings();
     }
@@ -52,6 +52,11 @@ class ElasticHandler
         }
 
         return $_SESSION['SpiceFTS']['elastic']->version->number;
+    }
+
+    function getMajorVersion(){
+        $fullVersion = $this->getVersion();
+        return substr($fullVersion, 0, 1);
     }
 
     /**
@@ -84,7 +89,7 @@ class ElasticHandler
      * @return mixed
      */
     function gettModuleTermFieldName(){
-        if($this->version == '6'){
+        if($this->getMajorVersion() == '6'){
             return '_type';
         }
         return '_module';
@@ -104,6 +109,22 @@ class ElasticHandler
             return $queryResponse['hits']['total'];
         }
         return $queryResponse['hits']['total']['value'] ?: 0;
+    }
+
+    /**
+     * correct total hits
+     * not sure it's a good idea because of debugging since "correct total" doesn't point to problem
+     * meant to be used in SpiceFTSActivityHandler::loadActivities()
+     * @param $queryResponse
+     * @param $newtotal
+     * @return int|mixed
+     */
+    public function setHitsTotalValue(&$queryResponse, $newtotal){
+        if(is_integer($queryResponse['hits']['total'])){
+            $queryResponse['hits']['total'] = $newtotal;
+        } else{
+            $queryResponse['hits']['total']['value'] = $newtotal;
+        }
     }
 
     /**
@@ -173,6 +194,31 @@ class ElasticHandler
 
 
     /**
+     * returns the settings for the index with the current prefix
+     *
+     * @return mixed
+     */
+    function getSettings()
+    {
+        $response = json_decode($this->query('GET',$this->indexPrefix . '*/_settings'), true);
+        $response['_prefix'] = $this->indexPrefix;
+        return $response;
+    }
+
+    /**
+     * returns the settings for the index with the current prefix
+     *
+     * @return mixed
+     */
+    function unblock()
+    {
+        $response = json_decode($this->query('PUT',$this->indexPrefix . '*/_settings', array(), array('index.blocks.read_only_allow_delete' => null)), true);
+        $response['_prefix'] = $this->indexPrefix;
+        return $response;
+    }
+
+
+    /**
      * index a document - create or update
      *
      * @param $module
@@ -185,7 +231,7 @@ class ElasticHandler
         $params = [];
         $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
         if($indexSettings['waitfor']) $params['refresh'] = 'wait_for';
-        if($this->version == '6') {
+        if($this->getMajorVersion() == '6') {
             $response = $this->query('POST', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $data['id'], $params, $data);
         } else {
             $response = $this->query('POST', $this->indexPrefix . strtolower($module) . '/_doc/' . $data['id'], $params, $data);
@@ -206,7 +252,7 @@ class ElasticHandler
         $indexSettings = SpiceFTSUtils::getBeanIndexSettings($module);
         if($indexSettings['waitfor']) $params['refresh'] = 'wait_for';
 
-        if($this->version == '6'){
+        if($this->getMajorVersion() == '6'){
             $response = $this->query('DELETE', $this->indexPrefix . strtolower($module) . '/' . $module . '/' . $id, $params);
         } else {
             $response = $this->query('DELETE', $this->indexPrefix . strtolower($module) . '/_doc/' . $id, $params);
@@ -326,7 +372,7 @@ class ElasticHandler
      */
     function putMapping($module, $properties)
     {
-        if($this->version == '6'){
+        if($this->getMajorVersion() == '6'){
             $mapping = array(
                 '_all' => array(
                     'analyzer' => 'spice_ngram'

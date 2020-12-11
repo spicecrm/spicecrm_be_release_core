@@ -140,4 +140,5 @@ $dictionary['Currency'] = array('table' => 'currencies',
                                                       )
 
                             );
-?>
+
+

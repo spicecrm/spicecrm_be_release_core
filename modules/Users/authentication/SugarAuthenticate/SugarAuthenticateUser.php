@@ -56,18 +56,18 @@ class SugarAuthenticateUser{
 	function authenticateUser( $name, $password, $loginByDev = null )
 	{
 		global $db;
-	    //$row = User::findUserPassword($name, $password, "(portal_only IS NULL OR portal_only !='1') AND (is_group IS NULL OR is_group !='1') AND status !='Inactive'");
+		//$row = User::findUserPassword($name, $password, "(portal_only IS NULL OR portal_only !='1') AND (is_group IS NULL OR is_group !='1') AND status !='Inactive'");
+		// ORACLE COMPATIBILITY - usage of single quotes instead of double quotes for value of status in WHERE condition in query
+		$sqlWhere = "( is_group IS NULL OR is_group != 1 ) AND status = 'Active' AND deleted = 0";
 
-        $sqlWhere = '( is_group IS NULL OR is_group != 1 ) AND status = "Active" AND deleted = 0';
-
-        if ( isset( $loginByDev{0} )) {
-            if ( ! User::findUserPassword( $loginByDev, $password, 'is_dev = 1 AND '.$sqlWhere )) return '';
-            $row = $db->fetchOne( sprintf('SELECT * from users where user_name="%s" AND '.$sqlWhere, $db->quote( $name )));
-        } else {
-            $row = User::findUserPassword($name, $password, $sqlWhere );
+		if (isset($loginByDev{0})) {
+			if (!User::findUserPassword($loginByDev, $password, 'is_dev = 1 AND ' . $sqlWhere)) return '';
+			$row = $db->fetchOne(sprintf('SELECT * from users where user_name="%s" AND ' . $sqlWhere, $db->quote($name)));
+		} else {
+			$row = User::findUserPassword($name, $password, $sqlWhere);
 		}
 
-	    // set the ID in the seed user.  This can be used for retrieving the full user record later
+		// set the ID in the seed user.  This can be used for retrieving the full user record later
 		//if it's falling back on Sugar Authentication after the login failed on an external authentication return empty if the user has external_auth_disabled for them
 		if (empty ($row) || !empty($row['external_auth_only'])) {
 			return '';

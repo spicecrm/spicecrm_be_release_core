@@ -523,7 +523,7 @@ class MysqlManager extends DBManager
 					if(isset($GLOBALS['app_strings']['ERR_NO_DB'])) {
 						sugar_die($GLOBALS['app_strings']['ERR_NO_DB']);
 					} else {
-						sugar_die("Could not connect to the database. Please refer to sugarcrm.log for details.");
+						sugar_die("Could not connect to the database. Please refer to spicecrm.log for details.");
 					}
 				} else {
 					return false;
@@ -605,7 +605,7 @@ class MysqlManager extends DBManager
 			$this->query($sql,'Error with MySQL repair table');
 
 		// and re-add the comments at the beginning
-		$sql = implode("\n",$commentBlocks) . "\n". $sql . "\n";
+		$sql = implode("\n",$commentBlocks) . "\n". $sql . ";\n";
 
 		return $sql;
 	}
@@ -955,9 +955,9 @@ class MysqlManager extends DBManager
 		$name = $index['name'];
 
 		if (is_array($index['fields']))
-			$fields = implode(", ", $index['fields']);
+			$fields = '`'.implode("`, `", $index['fields']).'`';
 		else
-			$fields = $index['fields'];
+			$fields = '`'.$index['fields'].'`';
 
 		switch ($type) {
 		case 'unique':
@@ -1239,16 +1239,14 @@ class MysqlManager extends DBManager
 	public function emptyValue($type)
 	{
 		$ctype = $this->getColumnType($type);
-		if($ctype == "datetime") {
-			return $this->convert($this->quoted("0000-00-00 00:00:00"), "datetime");
-		}
-		if($ctype == "date") {
-			return $this->convert($this->quoted("0000-00-00"), "date");
-		}
-		if($ctype == "time") {
-			return $this->convert($this->quoted("00:00:00"), "time");
-		}
-		return parent::emptyValue($type);
+		switch($ctype){
+            case 'datetime':
+            case 'date':
+            case 'time':
+                return 'NULL';
+            default:
+                return parent::emptyValue($type);
+        }
 	}
 
 	/**

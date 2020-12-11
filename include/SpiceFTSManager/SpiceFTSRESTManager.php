@@ -5,6 +5,8 @@ namespace SpiceCRM\includes\SpiceFTSManager;
 
 // require_once('include/SpiceFTSManager/ElasticHandler.php');
 
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+
 class SpiceFTSRESTManager
 {
 
@@ -21,7 +23,7 @@ class SpiceFTSRESTManager
         global $current_user;
 
         if(!$current_user->is_admin)
-            throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
             # header("Access-Control-Allow-Origin: *");
     }
 

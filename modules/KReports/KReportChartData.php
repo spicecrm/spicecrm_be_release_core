@@ -20,9 +20,6 @@ if (!defined('sugarEntry') || !sugarEntry)
 
 class KReportChartData {
 
-   function __construct() {
-      
-   }
 
    /*
     * function getChartData

@@ -158,5 +158,3 @@ $dictionary['MediaFile'] = array(
 );
 
 VardefManager::createVardef('MediaFiles','MediaFile', array('default','assignable'));
-
-?>

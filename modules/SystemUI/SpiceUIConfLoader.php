@@ -1,13 +1,27 @@
 <?php
 /*********************************************************************************
-* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
-* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
-* You can contact us at info@spicecrm.io
+* SugarCRM Community Edition is a customer relationship management program developed by
+* SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
 * 
-* SpiceCRM is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version
+* This program is free software; you can redistribute it and/or modify it under
+* the terms of the GNU Affero General Public License version 3 as published by the
+* Free Software Foundation with the addition of the following permission added
+* to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
+* IN WHICH THE COPYRIGHT IS OWNED BY SUGARCRM, SUGARCRM DISCLAIMS THE WARRANTY
+* OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
+* 
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
+* details.
+* 
+* You should have received a copy of the GNU Affero General Public License along with
+* this program; if not, see http://www.gnu.org/licenses or write to the Free
+* Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+* 02110-1301 USA.
+* 
+* You can contact SugarCRM, Inc. headquarters at 10050 North Wolfe Road,
+* SW2-130, Cupertino, CA 95014, USA. or at email address contact@sugarcrm.com.
 * 
 * The interactive user interfaces in modified source and object code versions
 * of this program must display Appropriate Legal Notices, as required under
@@ -18,13 +32,6 @@
 * SugarCRM" logo. If the display of the logo is not reasonably feasible for
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
-* 
-* SpiceCRM is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 
 /**
@@ -39,16 +46,17 @@ class SpiceUIConfLoader
     public $sysuitables = array();
 
     public $loader;
-    public $routebase = "";
-    public $release = true;
-
+    public $routebase = 'config'; // the common part in endpoint after domain url itself
 
     private $conftables = array(
+        'syshooks',
         'sysmodules',
         'sysmodulefilters',
+        'systemdeploymentrpdbentrys',
         'sysuiactionsetitems',
         'sysuiactionsets',
         'sysuiadmincomponents',
+        'sysuiadmingroups',
         'sysuicomponentdefaultconf',
         'sysuicomponentmoduleconf',
         'sysuicomponentsets',
@@ -59,14 +67,14 @@ class SpiceUIConfLoader
         'sysuifieldsetsitems',
         'sysuifieldtypemapping',
         'sysuilibs',
-        'sysuiloadtasks',
         'sysuiloadtaskitems',
+        'sysuiloadtasks',
+        'sysuifieldtypemapping',
         'sysuimodulerepository',
         'sysuiobjectrepository',
         'sysuirolemodules',
         'sysuiroles',
         'sysuiroutes',
-        'syshooks',
     );
 
     /**
@@ -77,56 +85,10 @@ class SpiceUIConfLoader
     {
         global $current_user;
         $this->loader = new SpiceUILoader($endpoint);
-
-//BEGIN CR1000133 multiple packageloader sources:
-// routebase not needed anymore but keep a while for BWC
-        $this->routebase = $this->getRouteBase();
-
-        if(empty($endpoint)){
-            if (!preg_match('/release/', $this->routebase))
-                $this->release = false;
-
-        }else{
-            if (!preg_match('/packages.spicecrm.io/', $this->endpoint.$this->routebase))
-                $this->release = false;
-        }
-//END
     }
 
-
-    /**
-     * @deprecated since release 201902001
-     * @return string
-     */
-    public function getRouteBase()
-    {
-        $routebase = $this->loader->getRouteBase();
-        return $routebase . "config";
-    }
-
-    /**
-     * Display load language form
-     * in SpiceCRM Backend Administration
-     * @return string
-     */
-    public function displayDefaultConfForm($params, $possibleparams, $obsoleteparams)
-    {
-        $sm = new \Sugar_Smarty();
-
-        if (!empty($params['packages'])) $sm->assign('currentpackages', $params['packages']);
-        if (!empty($params['versions'])) $sm->assign('currentversions', array_unique($params['versions']));
-
-        if (!empty($possibleparams['packages'])) $sm->assign('possiblepackages', $possibleparams['packages']);
-        if (!empty($possibleparams['versions'])) $sm->assign('possibleversions', $possibleparams['versions']);
-        if (!empty($obsoleteparams)) $sm->assign('obsoletepackages', $obsoleteparams);
-
-        //check on release
-        $sm->assign("release", $this->release);
-
-        //check on running change request
-        $sm->assign("hasOpenChangeRequest", $this->loader->hasOpenChangeRequest());
-
-        return $sm->display("modules/Administration/templates/UIDefault.tpl");
+    public static function getDefaultRoutes(){
+        return ;
     }
 
     /**
@@ -145,40 +107,79 @@ class SpiceUIConfLoader
     }
 
     /**
-     * @return array|mixed
-     * @throws Exception
+     * called bei SpiceInstaller
+     * @param $package
+     * @param string $version
+     * @return mixed|string[]
+     * @throws \Exception
      */
-    public function getPossibleConf()
+    public function loadPackageForInstall($package, $version = '*')
+    {
+        $endpoint = implode("/", array($this->routebase, $package, $version));
+        return $this->loadInstallConf($endpoint);
+    }
+
+    /**
+     * called by loadPackageForInstall
+     * @param $routeparams
+     * @return mixed|string[]
+     * @throws \Exception
+     */
+    public function loadInstallConf($routeparams)
     {
         //get data
-        if (!$response = $this->loader->callMethod("GET", $this->routebase)) {
-            die('<pre>' . print_r($response, true));
-            throw new \Exception("REST Call error somewhere... Action aborted");
+        if (!$response = $this->loader->callMethod("GET", $routeparams)) {
+            $errormsg = "REST Call error somewhere... Action aborted";
+            throw new \Exception($errormsg);
         }
-
-        //check if release and force unique version number
-        if ($this->release === true) {
-            $response['versions'] = array();
-            $response['versions'][0]['version'] = $GLOBALS['sugar_version'];
-        }
-
-        array_multisort($response['versions'], SORT_DESC, SORT_STRING);
-
         return $response;
     }
 
+    /**
+     * load table entries for a given package
+     * @param $package
+     * @param string $version
+     * @return array
+     * @throws \Exception
+     */
     public function loadPackage($package, $version = '*')
     {
-        $endpoint = implode("/", array('config', $package, $version));
+        $endpoint = implode("/", array($this->routebase, $package, $version));
         return $this->loadDefaultConf($endpoint, array('route' => $this->routebase, 'packages' => [$package], 'version' => $version), false);
     }
 
-    public function deletePackage($package)
+    /**
+     * delete table entries for a given package
+     * @param $package
+     */
+    public function deletePackage($package, $version = '*')
     {
         global $db;
-        foreach ($this->conftables as $conftable){
-            $db->query("DELETE FROM $conftable WHERE package = '$package'");
+        // get the package and grab table names in use for thi spackage
+        $route = implode("/", array($this->routebase, $package, $version));
+
+        if (!$response = $this->loadPackageData($route)) {
+            $errormsg = "ERROR deleting... Action aborted";
+            throw new \Exception($errormsg);
         }
+
+        $tables = array_keys($response);
+
+        foreach ($tables as $conftable){
+            $delWhere = ['package' => $package];
+            if(!$db->deleteQuery($conftable, $delWhere)){
+                $GLOBALS['log']->fatal('error deleting package {$package}  '.$db->lastError());
+            }
+        }
+    }
+
+    /**
+     * get the data
+     * @param $routeparams
+     * @return mixed|string[]
+     */
+    public function loadPackageData($routeparams){
+        return $this->loader->callMethod("GET", $routeparams);
     }
 
     /**
@@ -191,17 +192,19 @@ class SpiceUIConfLoader
      */
     public function loadDefaultConf($routeparams, $params, $checkopen = true)
     {
-        global $sugar_config;
-        $tables = array();
-        $truncates = array();
-        $inserts = array();
+        global $db;
+        $tables = [];
+        $inserts = [];
+        $errors = [];
+
+        $db->transactionStart();
 
         if ($checkopen && $this->loader->hasOpenChangeRequest()) {
             $errormsg = "Open Change Requests found! They would be erased...";
             throw new \Exception($errormsg);
         }
         //get data
-        if (!$response = $this->loader->callMethod("GET", $routeparams)) {
+        if (!$response = $this->loadPackageData($routeparams)) {
             $errormsg = "REST Call error somewhere... Action aborted";
             throw new \Exception($errormsg);
         }
@@ -214,87 +217,86 @@ class SpiceUIConfLoader
 
         foreach ($response as $tb => $content) {
             //truncate command
-            $tables[] = $tb;
+            $tables[$tb] = 0;
             $thisCols = $this->getTableColumns($tb);
             switch ($tb) {
                 case 'syslangs':
-                    $delQ = "DELETE FROM $tb WHERE 1=1";//$GLOBALS['db']->truncateTableSQL($tb);
+                    $db->truncateTableSQL($tb);
                     break;
                 case 'sysfts': //don't do anything.
                     // Since we have no custom fts table, delete the whole thing might delete custom entries.
-                    //therefore no action here
+                    // therefore no action here
                     // each reference entry will be deleted before insert. See below 'delete before insert'.
                     break;
                 default:
                     if(array_search('package', $thisCols) !== false) {
-                        $delQ = "DELETE FROM $tb WHERE package IN('" . implode("','", $params['packages']) . "') ";
+                        $deleteWhere = "package IN('" . implode("','", $params['packages']) . "') ";
                         //if (in_array($params['packages'][0], $params['packages']))
-                        $delQ .= "OR package IS NULL OR package=''";
+                        $deleteWhere .= "OR package IS NULL OR package=''";
+                        if(!$db->deleteQuery($tb, $deleteWhere, true)){
+                            $GLOBALS['log']->fatal('error deleting packages '.$db->lastError());
+                        }
                     }
             }
 
-            if($delQ){
-                $truncates[] = $delQ;
-            }
             $tbColCheck = false;
-
             foreach ($content as $id => $encoded) {
                 if (!$decodeData = json_decode(base64_decode($encoded), true))
                     die("Error decoding data: " . json_last_error_msg() .
-                        "<br/>Reference table = $tb" .
-                        "<br/>Action aborted");
+                        " Reference table = $tb" .
+                        " Action aborted");
 
                 //compare table column names
                 if (!$tbColCheck) {
                     $referenceCols = array_keys($decodeData);
                     if (!empty(array_diff($referenceCols, $thisCols))) {
                         die("Table structure for $tb is not up-to-date." .
-                            "<br/>Reference table = " . implode(", ", $referenceCols) .
-                            "<br/>Client table = " . implode(", ", $thisCols) .
-                            "<br/>Action aborted");
+                            " Reference table = " . implode(", ", $referenceCols) .
+                            " Client table = " . implode(", ", $thisCols) .
+                            " Action aborted");
                     }
                     $tbColCheck = true;
                 }
 
                 //prepare values for DB query
                 foreach ($decodeData as $key => $value) {
-                    $decodeData[$key] = (is_null($value) || $value === "" ? "NULL" : "'" . $GLOBALS['db']->quote($value) . "'");
+                    $decodeData[$key] = (is_null($value) || $value === "" ? NULL :  $value);
                 }
                 //delete before insert
-                $truncates[] = "DELETE FROM $tb WHERE id=".$decodeData['id'];
+                $delWhere = ['id' => $decodeData['id']];
+                if(!$db->deleteQuery($tb, $delWhere)){
+                    $GLOBALS['log']->fatal("error deleting entry {$decodeData['id']} ".$db->lastError());
+                }
 
-                //insert command
-                $inserts[] = "INSERT INTO $tb (" . implode(", ", $referenceCols) . ") " .
-                    "VALUES(" . implode(",", array_values($decodeData)) . ")";
+                //run insert
+                if($dbRes = $db->insertQuery($tb, $decodeData, true)){
+                    $tables[$tb]++;
+                    $inserts[] = $dbRes;
+                } else{
+                    $errors[] = $db->lastError();
+                }
             }
         }
 
         //if no inserts where created => abort
         if (count($inserts) < 1) {
-            throw new \Exception("No inserts found. Action aborted.");
+            $db->transactionRollback();
+            throw new \Exception("No inserts or no inserts run successfully. Action aborted.");
         }
 
-        $queries = array_merge($truncates, $inserts);
-//        echo '<pre>'. print_r(implode(";\n", $queries), true);die();
+        $db->transactionCommit();
 
-        //process queries
-        if (count($queries) > 2) {
-            $errors = array();
-            foreach ($queries as $q) {
-                if (!$GLOBALS['db']->query($q))
-                    $errors[] = "Error: " . $GLOBALS['db']->last_error. (preg_match("/Duplicate entry/", $GLOBALS['db']->last_error) ? " PACKAGE NAME might have changed. Delete duplicate entries manually and reload config." : "");
-            }
+        $success = true;
+        if(count($errors) > 0){
+            $success = false;
         }
 
-        if (count($errors) <= 0) $success = true;
-
-        return array("success" => $success, "queries" => count($queries), "errors" => $errors, "tables" => $tables);
-
+        return ["success" => $success, "queries" => count($inserts), "errors" => $errors, "tables" => $tables];
     }
 
 
     /**
-     * Remove sysmodules entries for modules that are not present in backend
+     * Remove sysmodules entries for modules that are not present in backend files
      * @return bool
      */
     public function cleanDefaultConf()
@@ -314,7 +316,10 @@ class SpiceUIConfLoader
         if (isset($GLOBALS['moduleList'])) {
             foreach ($sysmodules as $sysmodule) {
                 if (!in_array($sysmodule, $GLOBALS['moduleList'])) {
-                    $db->query("DELETE FROM sysmodules WHERE module='" . $sysmodule . "'");
+                    $delPks = ['module' => $sysmodule];
+                    if(!$db->deleteQuery('sysmodules', $delPks)){
+                        $GLOBALS['log']->fatal('error deleting packages '.$db->lastError());
+                    }
                 }
             }
         }
@@ -329,11 +334,16 @@ class SpiceUIConfLoader
     {
         global $db;
         $qArray = [];
-        foreach($this->conftables as $conftable) $qArray[] = "(SELECT package, version FROM $conftable WHERE version is not null AND version <> '')";
+        $excludePackageCheck = ['systemdeploymentrpdbentrys'];
+        foreach($this->conftables as $conftable) {
+            if(!in_array($conftable, $excludePackageCheck)){
+                $qArray[] = "(SELECT package, version FROM $conftable WHERE version is not null AND version <> '')";
+            }
+        }
         $q = implode(" UNION ", $qArray) . " ORDER BY package, version";
         $res = $db->query($q);
-        $packages = array();
-        $versions = array();
+        $packages = [];
+        $versions = [];
 
         while ($row = $db->fetchByAssoc($res)) {
             if (!empty($row['package']) && !in_array($row['package'], $packages)) {
@@ -345,25 +355,5 @@ class SpiceUIConfLoader
                 $versions[] = $row['version'];
         }
         return array('packages' => $packages, 'versions' => $versions);
-    }
-
-    /**
-     * get package names which are in current conf but not in reference conf
-     * @param $currentconf
-     * @param $possibleconf
-     * @return array
-     */
-    public function getObsoleteConf($currentconf, $possibleconf)
-    {
-        $currentpackages = $currentconf['packages'];
-        $possiblepackages = array();
-        $obsoletepackages = array();
-        foreach ($possibleconf['packages'] as $package) {
-            $possiblepackages[] = $package['package'];
-        }
-        foreach ($currentpackages as $package)
-            if (!in_array($package, $possiblepackages))
-                $obsoletepackages[] = $package;
-        return $obsoletepackages;
     }
 }

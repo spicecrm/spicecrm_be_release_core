@@ -90,7 +90,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 		$GLOBALS['log']->info('Begin: SoapHelperWebServices->getRelationshipResults');
 		require_once('include/TimeDate.php');
 		global  $beanList, $beanFiles, $current_user;
-		global $disable_date_format, $timedate;
+		global $timedate;
 
 		$bean->load_relationship($link_field_name);
 		if (isset($bean->$link_field_name)) {
@@ -118,9 +118,6 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
                 foreach ($filterFields as $field) {
                     if (isset($bean->$field))
                     {
-                        if (isset($bean->field_defs[$field]['type']) && $bean->field_defs[$field]['type'] == 'date') {
-                            $row[$field] = $timedate->to_display_date_time($bean->$field);
-                        }
                         $row[$field] = $bean->$field;
                     }
                     else

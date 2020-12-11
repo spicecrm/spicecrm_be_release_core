@@ -89,6 +89,13 @@ class Scheduler extends SugarBean {
         $this->job_queue_table = $job->table_name;
     }
 
+    function bean_implements($interface){
+        switch($interface){
+            case 'ACL':return true;
+        }
+        return false;
+    }
+
     protected function getUser()
     {
         if(empty($this->user)) {
@@ -146,7 +153,7 @@ class Scheduler extends SugarBean {
         }
 
         $now = TimeDate::getInstance()->getNow();
-        $now = $now->setTime($now->hour, $now->min, "00")->asDb();
+        $now = $now->setTime($now->hour, $now->min, "00")->format(TimeDate::DB_DATETIME_FORMAT);
         $validTimes = $this->deriveDBDateTimes($this);
 
         if(is_array($validTimes) && in_array($now, $validTimes)) {
@@ -208,7 +215,8 @@ class Scheduler extends SugarBean {
      */
     function deriveDBDateTimes($focus)
     {
-        global $timedate;
+        $timedate = new \TimeDate();
+
         $GLOBALS['log']->debug('----->Schedulers->deriveDBDateTimes() got an object of type: '.$focus->object_name);
         /* [min][hr][dates][mon][days] */
         $dateTimes = array();
@@ -218,7 +226,7 @@ class Scheduler extends SugarBean {
         $dates	= $ints[2];
         $hrs	= $ints[1];
         $mins	= $ints[0];
-        $today	= getdate($timedate->getNow()->ts);
+        $today	= getdate($timedate->getNow()->getTimestamp());
 
         // derive day part
         $dayName = array();
@@ -445,19 +453,21 @@ class Scheduler extends SugarBean {
         // prep some boundaries - these are not in GMT b/c gmt is a 24hour period, possibly bridging 2 local days
         if(empty($focus->time_from)  && empty($focus->time_to) ) {
             $timeFromTs = 0;
-            $timeToTs = $timedate->getNow(true)->get('+1 day')->ts;
+            $timeToTsDate = $timedate->getNow(true);
+            $timeToTsDate->add(new \DateInterval('P1D'));
+            $timeToTs = $timedate->getTimestamp($timeToTsDate);
         } else {
             $tfrom = $timedate->fromDbType($focus->time_from, 'time');
-            $timeFromTs = $timedate->getNow(true)->setTime($tfrom->hour, $tfrom->min)->ts;
+            $timeFromTs = $timedate->getNow(true)->setTime($tfrom->hour, $tfrom->min)->getTimestamp() ;
             $tto = $timedate->fromDbType($focus->time_to, 'time');
-            $timeToTs = $timedate->getNow(true)->setTime($tto->hour, $tto->min)->ts;
+            $timeToTs = $timedate->getNow(true)->setTime($tto->hour, $tto->min)->getTimestamp() ;
         }
         $timeToTs++;
 
         if(empty($focus->last_run)) {
             $lastRunTs = 0;
         } else {
-            $lastRunTs = $timedate->fromDb($focus->last_run)->ts;
+            $lastRunTs = $timedate->fromDb($focus->last_run)->getTimestamp() ;
         }
 
 
@@ -467,17 +477,20 @@ class Scheduler extends SugarBean {
         $validJobTime = array();
 
         global $timedate;
-        $timeStartTs = $timedate->fromDb($focus->date_time_start)->ts;
+        $timeStartTs = $timedate->fromDb($focus->date_time_start)->getTimestamp() ;
         if(!empty($focus->date_time_end)) { // do the same for date_time_end if not empty
-            $timeEndTs = $timedate->fromDb($focus->date_time_end)->ts;
+            $timeEndTs = $timedate->fromDb($focus->date_time_end)->getTimestamp() ;
         } else {
-            $timeEndTs = $timedate->getNow(true)->get('+1 day')->ts;
+            // $timeEndTs = $timedate->getNow(true)->get('+1 day')->ts;
+            $timeEndTsDate = $timedate->getNow(true);
+            $timeEndTsDate->add(new \DateInterval('P1D'));
+            $timeEndTs = $timedate->getTimestamp($timeEndTsDate);
 //			$dateTimeEnd = '2020-12-31 23:59:59'; // if empty, set it to something ridiculous
         }
         $timeEndTs++;
         /*_pp('hours:'); _pp($hrName);_pp('mins:'); _pp($minName);*/
         $dateobj = $timedate->getNow();
-        $nowTs = $dateobj->ts;
+        //$nowTs = $dateobj->ts;
         $GLOBALS['log']->debug(sprintf("Constraints: start: %s from: %s end: %s to: %s now: %s",
             gmdate('Y-m-d H:i:s', $timeStartTs), gmdate('Y-m-d H:i:s', $timeFromTs), gmdate('Y-m-d H:i:s', $timeEndTs),
             gmdate('Y-m-d H:i:s', $timeToTs), $timedate->nowDb()
@@ -498,14 +511,14 @@ class Scheduler extends SugarBean {
             foreach($minName as $kMin=>$min) {
                 $timedate->tzUser($dateobj);
                 $dateobj->setTime($hr, $min, 0);
-                $tsGmt = $dateobj->ts;
+                $tsGmt = $dateobj->getTimestamp() ;
 
                 if( $tsGmt >= $timeStartTs ) { // start is greater than the date specified by admin
                     if( $tsGmt >= $timeFromTs ) { // start is greater than the time_to spec'd by admin
                         if($tsGmt > $lastRunTs) { // start from last run, last run should not be included
                             if( $tsGmt <= $timeEndTs ) { // this is taken care of by the initial query - start is less than the date spec'd by admin
                                 if( $tsGmt <= $timeToTs ) { // start is less than the time_to
-                                    $validJobTime[] = $dateobj->asDb();
+                                    $validJobTime[] = $dateobj->format(TimeDate::DB_DATETIME_FORMAT);
                                 } else {
                                     //_pp('Job Time is NOT smaller that TimeTO: '.$tsGmt .'<='. $timeToTs);
                                 }
@@ -528,7 +541,7 @@ class Scheduler extends SugarBean {
          * If "Execute If Missed bit is set
          */
         $now = TimeDate::getInstance()->getNow();
-        $now = $now->setTime($now->hour, $now->min, "00")->asDb();
+        $now = $now->setTime($now->hour, $now->min, "00")->format(TimeDate::DB_DATETIME_FORMAT);
 
         if($focus->catch_up == 1) {
             if($focus->last_run == null) {
@@ -838,40 +851,6 @@ class Scheduler extends SugarBean {
         $sched3->catch_up           = '1';
         $sched3->save();
         $sched4 = new Scheduler();
-        $sched4->name				= $mod_strings['LBL_OOTB_IE'];
-        $sched4->job				= 'function::pollMonitoredInboxes';
-        $sched4->date_time_start	= create_date(2015,1,1) . ' ' . create_time(0,0,1);
-        $sched4->date_time_end		= create_date(2030,12,31) . ' ' . create_time(23,59,59);
-        $sched4->job_interval		= '*::*::*::*::*';
-        $sched4->status				= 'Active';
-        $sched4->created_by			= '1';
-        $sched4->modified_user_id	= '1';
-        $sched4->catch_up			= '0';
-        $sched4->save();
-
-        $sched5 = new Scheduler();
-        $sched5->name				= $mod_strings['LBL_OOTB_BOUNCE'];
-        $sched5->job				= 'function::pollMonitoredInboxesForBouncedCampaignEmails';
-        $sched5->date_time_start	= create_date(2015,1,1) . ' ' . create_time(0,0,1);
-        $sched5->date_time_end		= create_date(2030,12,31) . ' ' . create_time(23,59,59);
-        $sched5->job_interval		= '0::2-6::*::*::*';
-        $sched5->status				= 'Active';
-        $sched5->created_by			= '1';
-        $sched5->modified_user_id	= '1';
-        $sched5->catch_up			= '1';
-        $sched5->save();
-
-        $sched6 = new Scheduler();
-        $sched6->name				= $mod_strings['LBL_OOTB_CAMPAIGN'];
-        $sched6->job				= 'function::runMassEmailCampaign';
-        $sched6->date_time_start	= create_date(2015,1,1) . ' ' . create_time(0,0,1);
-        $sched6->date_time_end		= create_date(2030,12,31) . ' ' . create_time(23,59,59);
-        $sched6->job_interval		= '0::2-6::*::*::*';
-        $sched6->status				= 'Active';
-        $sched6->created_by			= '1';
-        $sched6->modified_user_id	= '1';
-        $sched6->catch_up			= '1';
-        $sched6->save();
 
 
         $sched7 = new Scheduler();
@@ -913,33 +892,10 @@ class Scheduler extends SugarBean {
         $sched13->catch_up           = '0';
         $sched13->save();
 
-        $sched14 = new Scheduler();
-        $sched14->name              = $mod_strings['LBL_OOTB_REMOVE_DOCUMENTS_FROM_FS'];
-        $sched14->job               = 'function::removeDocumentsFromFS';
-        $sched14->date_time_start   = create_date(2015, 1, 1) . ' ' . create_time(0, 0, 1);
-        $sched14->date_time_end     = create_date(2030, 12, 31) . ' ' . create_time(23, 59, 59);
-        $sched14->job_interval      = '0::3::1::*::*';
-        $sched14->status            = 'Active';
-        $sched14->created_by        = '1';
-        $sched14->modified_user_id  = '1';
-        $sched14->catch_up          = '0';
-        $sched14->save();
-
-//        $sched15 = new Scheduler();
-//        $sched15->name               = $mod_strings['LBL_OOTB_SUGARFEEDS'];
-//        $sched15->job                = 'function::trimSugarFeeds';
-//        $sched15->date_time_start    = create_date(2015,1,1) . ' ' . create_time(0,0,1);
-//        $sched15->date_time_end      = create_date(2030,12,31) . ' ' . create_time(23,59,59);
-//        $sched15->job_interval       = '0::2::1::*::*';
-//        $sched15->status             = 'Active';
-//        $sched15->created_by         = '1';
-//        $sched15->modified_user_id   = '1';
-//        $sched15->catch_up           = '1';
-//        $sched15->save();
 
         $sched16 = new Scheduler();
         $sched16->name				= $mod_strings['LBL_OOTB_FTS_INDEX'];
-        $sched16->job				= 'function::fullTextIndex';
+        $sched16->job				= 'function::fullTextIndexBulk';
         $sched16->date_time_start	= create_date(2015,1,1) . ' ' . create_time(0,0,1);
         $sched16->date_time_end		= create_date(2030,12,31) . ' ' . create_time(23,59,59);
         $sched16->job_interval		= '*/5::*::*::*::*';
@@ -982,16 +938,6 @@ class Scheduler extends SugarBean {
 
     ///////////////////////////////////////////////////////////////////////////
     ////	STANDARD SUGARBEAN OVERRIDES
-    /**
-     * function overrides the one in SugarBean.php
-     */
-    function create_export_query($order_by, $where, $show_deleted = 0) {
-        return $this->create_new_list_query($order_by, $where,array(),array(), $show_deleted = 0);
-    }
-
-    /**
-     * function overrides the one in SugarBean.php
-     */
 
     /**
      * function overrides the one in SugarBean.php
@@ -1004,7 +950,7 @@ class Scheduler extends SugarBean {
      * function overrides the one in SugarBean.php
      */
     function fill_in_additional_detail_fields() {
-        $this->job_interval_read = $this->getJobIntervalReadValue();
+        $this->job_interval_read = $this->job_interval; // temporary workaround to prevent code break
         $this->last_status = $this->getLastStatusValue();
     }
 
@@ -1026,33 +972,6 @@ class Scheduler extends SugarBean {
         return parent::save($check_notify, $fts_index_bean);
     }
 
-    /**
-     * function overrides the one in SugarBean.php
-     */
-    function get_list_view_data()
-    {
-        global $mod_strings;
-        $temp_array = $this->get_list_view_array();
-        $temp_array["ENCODED_NAME"]=$this->name;
-        $this->parseInterval();
-        $this->setIntervalHumanReadable();
-        $temp_array['JOB_INTERVAL'] = $this->intervalHumanReadable;
-        if($this->date_time_end == '2020-12-31 23:59' || $this->date_time_end == '') {
-            $temp_array['DATE_TIME_END'] = $mod_strings['LBL_PERENNIAL'];
-        }
-        $this->created_by_name = get_assigned_user_name($this->created_by);
-        $this->modified_by_name = get_assigned_user_name($this->modified_user_id);
-        return $temp_array;
-
-    }
-
-    /**
-     * returns the bean name - overrides SugarBean's
-     */
-    function get_summary_text()
-    {
-        return $this->name;
-    }
     ////	END STANDARD SUGARBEAN OVERRIDES
     ///////////////////////////////////////////////////////////////////////////
 

@@ -35,23 +35,11 @@
 /cache/upload/*
 
 /modules/SecurityGroups/*
-/custom/Extension/application/Ext/Language/*SecurityGroups*.php
-/custom/Extension/application/Ext/TableDictionary/securitygroups*.php
-/custom/Extension/application/Ext/Include/SecurityGroups.php
 /modules/SpiceUIGenerator/csv/*
 
 # Ignore some files and directories from the custom directory.
-/custom/history
-/custom/history/*
-/custom/modulebuilder
-/custom/modulebuilder/*
-/custom/working
-/custom/working/*
+/custom/blowfish/*.*
 /custom/modules/*/Ext
-/custom/modules/*/Ext/*
-/custom/application
-/custom/application/*
-/custom/blowfish/*
 /custom/modules/*/Ext/*
 
 # no media files
@@ -142,16 +130,8 @@ ehthumbs.db
 Thumbs.db
 .~*
 .*~
-custom/blowfish/rapelcg_svryq.php
 composer.lock
 xmlfiles
 
 # dompdf
 /vendor/dompdf/dompdf/lib/fonts/dompdf_font_family_cache.php
-/custom/Extension/application/Ext/Language/en_us.serviceorders.ext.php
-/custom/modules/Cases/logic_hooks.php
-/custom/modules/Connectors/metadata/display_config.php
-/custom/modules/Contacts/logic_hooks.php
-/custom/modules/Leads/logic_hooks.php
-/custom/modules/Opportunities/logic_hooks.php
-/custom/modules/Users/logic_hooks.php

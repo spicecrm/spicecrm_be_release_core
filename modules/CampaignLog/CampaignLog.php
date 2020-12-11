@@ -42,21 +42,6 @@ class CampaignLog extends SugarBean {
     var $object_name = 'CampaignLog';
     var $module_dir = 'CampaignLog';
 
-    var $new_schema = true;
-
-    var $campaign_id;
-    var $target_tracker_key;
-    var $target_id;
-    var $target_type;
-    var $activity_type;
-    var $activity_date;
-    var $related_id;
-    var $related_type;
-    var $deleted;
-    var $list_id;
-    var $hits;
-    var $more_information;
-    var $marketing_id;
 
     function __construct() {
         global $sugar_config;
@@ -73,49 +58,6 @@ class CampaignLog extends SugarBean {
         $this->target_name = $target->get_summary_text();
     }
 
-    function get_list_view_data(){
-        global $locale;
-        $temp_array = $this->get_list_view_array();
-        //make sure that both items in array are set to some value, else return null
-        if(!(isset($temp_array['TARGET_TYPE']) && $temp_array['TARGET_TYPE']!= '') || !(isset($temp_array['TARGET_ID']) && $temp_array['TARGET_ID']!= ''))
-        {   //needed values to construct query are empty/null, so return null
-            $GLOBALS['log']->debug("CampaignLog.php:get_list_view_data: temp_array['TARGET_TYPE'] and/or temp_array['TARGET_ID'] are empty, return null");
-            $emptyArr = array();
-            return $emptyArr;
-        }
-
-        $table = strtolower($temp_array['TARGET_TYPE']);
-
-        if($temp_array['TARGET_TYPE']=='Accounts'){
-            $query = "select name from $table where id = ".$this->db->quoted($temp_array['TARGET_ID']);
-        }else{
-            $query = "select first_name, last_name, ".$this->db->concat($table, array('first_name', 'last_name'))." name from $table" .
-                " where id = ".$this->db->quoted($temp_array['TARGET_ID']);
-        }
-        $result=$this->db->query($query);
-        $row=$this->db->fetchByAssoc($result);
-
-        if ($row) {
-            if($temp_array['TARGET_TYPE']=='Accounts'){
-                $temp_array['RECIPIENT_NAME']=$row['name'];
-            }else{
-                $full_name = $locale->getLocaleFormattedName($row['first_name'], $row['last_name'], '');
-                $temp_array['RECIPIENT_NAME']=$full_name;
-            }
-        }
-        $temp_array['RECIPIENT_EMAIL']=$this->retrieve_email_address($temp_array['TARGET_ID']);
-
-        $query = 'select name from email_marketing where id = \'' . $temp_array['MARKETING_ID'] . '\'';
-        $result=$this->db->query($query);
-        $row=$this->db->fetchByAssoc($result);
-
-        if ($row)
-        {
-        	$temp_array['MARKETING_NAME'] = $row['name'];
-        }
-
-        return $temp_array;
-    }
 
     function retrieve_email_address($trgt_id = ''){
         $return_str = '';

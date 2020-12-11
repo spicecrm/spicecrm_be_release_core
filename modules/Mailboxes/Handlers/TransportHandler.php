@@ -20,7 +20,7 @@ abstract class TransportHandler
 
         $this->initTransportHandler();
 
-        $this->logger = new \SugarLogger();
+        $this->logger = new \SpiceLogger();
     }
 
     abstract protected function initTransportHandler();

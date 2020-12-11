@@ -38,7 +38,7 @@ $dictionary['MailboxProcessor'] = array(
             'type'			=> 'varchar',
             'vname'         => 'LBL_FILE',
             'length'		=> 255,
-            'required'		=> true,
+            'required'		=> false,
         ],
         'processor_class' => [
             'name'			=> 'processor_class',

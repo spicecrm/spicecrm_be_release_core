@@ -8,9 +8,7 @@ use SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler;
 
 class ActivitiesKRESTController
 {
-
-    function loadHistory($req, $res, $args)
-    {
+    public function loadHistory($req, $res, $args) {
         global $db;
 
         $retArray = array();

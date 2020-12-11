@@ -38,7 +38,7 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 global $dictionary;
 //Load all relationship metadata
-// include_once("modules/TableDictionary.php");
+include_once("modules/TableDictionary.php");
 require_once("data/BeanFactory.php");
 
 
@@ -155,7 +155,7 @@ abstract class SugarRelationship
 
             // write trash record
             if ($link->def['recover'] !== false)
-                SystemTrashCan::addRecord('related', get_class($focus), $focus->id, $relBean->get_summary_text(), $link->name, get_class($relBean), $relBean->id);
+                \SpiceCRM\includes\SysTrashCan\SysTrashCan::addRecord('related', get_class($focus), $focus->id, $relBean->get_summary_text(), $link->name, get_class($relBean), $relBean->id);
 
             $result = $result && $sub_result;
         }
@@ -268,7 +268,7 @@ abstract class SugarRelationship
         if (empty($where))
             return false;
 
-        $date_modified = TimeDate::getInstance()->getNow()->asDb();
+        $date_modified = TimeDate::getInstance()->getNow()->format(TimeDate::DB_DATETIME_FORMAT);
         $stringSets = array();
         foreach ($where as $field => $val) {
             $stringSets[] = "$field = '$val'";

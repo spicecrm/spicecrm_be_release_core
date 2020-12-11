@@ -75,12 +75,6 @@ class SpiceFavorites
                     $thisBean = \BeanFactory::getBean($thisFav['bean']);
                 }
 
-                //BEGIN CR1000149
-                if (!isset($module_icons[$thisFav['bean']])) {
-                    $module_icons[$thisFav['bean']] = \SugarThemeRegistry::current()->getImageURL($thisFav['bean'] . '.gif');
-                }
-                //END
-
                 if ($thisBean->retrieve($thisFav['beanid'])) {
                     $favorites[] = array(
                         'item_id' => $thisFav['beanid'],

@@ -97,7 +97,6 @@ $dictionary['OpportunityStage'] = array(
             'type' => 'id',
             'group' => 'currency_id',
             'vname' => 'LBL_CURRENCY',
-            'function' => array('name' => 'getCurrencyDropDown', 'returns' => 'html'),
         ),
         'date_closed' => array(
             'name' => 'date_closed',

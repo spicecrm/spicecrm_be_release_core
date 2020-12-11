@@ -36,7 +36,6 @@ $app_list_strings = array (
         'Contacts'                                         => 'Contactos',
         'Accounts'                                         => 'Cuentas',
         'Opportunities'                                    => 'Oportunidades',
-        'Cases'                                            => 'Casos',
         'Notes'                                            => 'Notas',
         'Calls'                                            => 'Llamadas',
         'Emails'                                           => 'Emails',
@@ -100,7 +99,6 @@ $app_list_strings = array (
         'Contacts'                                         => 'Contacto',
         'Accounts'                                         => 'Cuenta',
         'Opportunities'                                    => 'Oportunidad',
-        'Cases'                                            => 'Caso',
         'Notes'                                            => 'Nota',
         'Calls'                                            => 'Llamada',
         'Emails'                                           => 'Email',
@@ -327,6 +325,7 @@ $app_list_strings = array (
 
 
     'reminder_time_options' => array(
+        -1 => 'no reminder',
         '60'                                               => '1 minuto antes',
         '300'                                              => '5 minutos antes',
         '600'                                              => '10 minutos antes',
@@ -3009,7 +3008,8 @@ $app_list_strings['textmessage_direction'] = [
 ];
 
 $app_list_strings['textmessage_delivery_status'] = [
-    'draft'  => 'Borrador',
-    'sent'   => 'Enviado',
-    'failed' => 'Fallado',
+    'draft'        => 'Borrador',
+    'sent'         => 'Enviado',
+    'failed'       => 'Fallado',
+    'transmitting' => 'Transmitting',
 ];

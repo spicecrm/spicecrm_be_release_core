@@ -5,6 +5,13 @@ use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
 
+/**
+ * Class SpicePhoneNumberParser
+ *
+ * implements the phone number util and pareses phone numbers
+ *
+ * @package SpiceCRM\includes\SpicePhoneNumberParser
+ */
 class SpicePhoneNumberParser
 {
     /**

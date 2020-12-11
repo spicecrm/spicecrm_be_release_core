@@ -639,7 +639,6 @@ function logout($session){
  */
 function get_server_info(){
 	$GLOBALS['log']->info('Begin: SugarWebServiceImpl->get_server_info');
-	global $sugar_flavor;
 	require_once('sugar_version.php');
 	require_once('modules/Administration/Administration.php');
 
@@ -653,7 +652,7 @@ function get_server_info(){
 	}
 
 	$GLOBALS['log']->info('End: SugarWebServiceImpl->get_server_info');
-	return array('flavor' => $sugar_flavor, 'version' => $sugar_version, 'gmt_time' => TimeDate::getInstance()->nowDb());
+	return array('flavor' => 'Spice', 'version' => $sugar_version, 'gmt_time' => TimeDate::getInstance()->nowDb());
 } // fn
 
 /**
@@ -902,7 +901,7 @@ function search_by_module($session, $search_string, $modules, $offset, $max_resu
 		$sugar_config['list_max_entries_per_page'] = $max_results;
 	}
 
-	require_once('modules/Home/UnifiedSearchAdvanced.php');
+	require_once('include/utils/UnifiedSearchAdvanced.php');
 	require_once 'include/utils.php';
 	$usa = new UnifiedSearchAdvanced();
     if(!file_exists($cachedfile = sugar_cached('modules/unified_search_modules.php'))) {
@@ -1136,9 +1135,6 @@ function get_entries_count($session, $module_name, $query, $deleted) {
 
 	$sql = 'SELECT COUNT(*) result_count FROM ' . $seed->table_name . ' ';
 
-
-    $customJoin = $seed->getCustomJoin();
-    $sql .= $customJoin['join'];
 
 	// build WHERE clauses, if any
 	$where_clauses = array();

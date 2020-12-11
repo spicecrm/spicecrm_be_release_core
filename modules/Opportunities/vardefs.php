@@ -222,7 +222,6 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
             'type' => 'id',
             'group' => 'currency_id',
             'vname' => 'LBL_CURRENCY',
-            'function' => array('name' => 'getCurrencyDropDown', 'returns' => 'html'),
             'reportable' => false,
             'comment' => 'Currency used for display purposes'
         ),
@@ -341,23 +340,15 @@ $dictionary['Opportunity'] = array('table' => 'opportunities', 'audited' => true
             'bean_name' => 'Contact',
             'rel_fields' => array(
                 'contact_role' => array(
-                    'type' => 'enum',
-                    'options' => 'opportunity_relationship_type_dom',
                     'map' => 'opportunity_role'
                 ),
                 'propensity_to_buy' => array(
-                    'type' => 'enum',
-                    'options' => 'opportunity_relationship_buying_center_dom',
                     'map' => 'opportunity_propensity_to_buy'
                 ),
                 'level_of_support' => array(
-                    'type' => 'enum',
-                    'options' => 'opportunity_relationship_buying_center_dom',
                     'map' => 'opportunity_level_of_support'
                 ),
                 'level_of_influence' => array(
-                    'type' => 'enum',
-                    'options' => 'opportunity_relationship_buying_center_dom',
                     'map' => 'opportunity_level_of_influence'
                 )
             ),

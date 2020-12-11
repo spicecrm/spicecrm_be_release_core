@@ -130,7 +130,7 @@ class SpiceFTSCreator {
         $keepftsmodules = array();
         $ftsmodules = array(
             'AccountBankAccounts', 'AccountCCDetails', 'AccountKPIs', 'Accounts',
-            'Bugs', 'Calls', 'Campaigns', 'Cases', 'Contacts', 'CompetitorAssessments', 'Contacts',
+            'Bugs', 'Calls', 'Campaigns', 'Contacts', 'CompetitorAssessments', 'Contacts',
             'Documents', 'Emails', 'EmailTemplates', 'EventRegistrations',
             'KReports', 'Leads', 'Mailboxes', 'Meetings', 'Notes', 'Opportunities',
             'Projects', 'ProjectTasks', 'Proposals', 'ProspectLists', 'Prospects',

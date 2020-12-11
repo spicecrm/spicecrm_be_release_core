@@ -1,15 +1,15 @@
 <?php
-
 use SpiceCRM\KREST\handlers\UserHandler;
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\ErrorHandlers\Exception;
+use SpiceCRM\includes\ErrorHandlers\NotFoundException;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\ErrorHandlers\BadRequestException;
+$RESTManager = RESTManager::getInstance();
 
-use SpiceCRM\KREST\Exception;
-use SpiceCRM\KREST\NotFoundException;
-use SpiceCRM\KREST\ForbiddenException;
-use SpiceCRM\KREST\BadRequestException;
+$RESTManager->registerExtension('portal', '1.0');
 
-$KRESTManager->registerExtension('portal', '1.0');
-
-$app->get('/portal/{id}/portalaccess', function($req, $res, $args) use ( $app ) {
+$RESTManager->app->get('/portal/{id}/portalaccess', function($req, $res, $args) {
     global $db;
 
     $retArray = array(
@@ -66,7 +66,7 @@ $app->get('/portal/{id}/portalaccess', function($req, $res, $args) use ( $app ) 
     return $res->withJson( $retArray );
 });
 
-$app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($req, $res, $args) use ($app) {
+$RESTManager->app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($req, $res, $args) {
     global $db;
 
     $db->transactionStart();
@@ -202,7 +202,7 @@ $app->post('/portal/{contactId}/portalaccess/{action:create|update}', function($
     return $res->withJson(['success' => true, 'action' => $isNewUser ? 'create':'update', 'userId' => $user->id ]);
 });
 
-$app->get('/portal/{contactId}/testUsername', function( $req, $res, $args ) use ( $app ) {
+$RESTManager->app->get('/portal/{contactId}/testUsername', function( $req, $res, $args ) {
     global $db;
 
     $contact = $db->fetchOne( sprintf('SELECT portal_user_id FROM contacts WHERE id = "%s" AND deleted = 0', $db->quote( $args['contactId'] )));

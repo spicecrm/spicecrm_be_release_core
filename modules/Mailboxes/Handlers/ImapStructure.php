@@ -88,7 +88,11 @@ class ImapStructure
         foreach ($parts as $part) {
             switch ($part->type) {
                 case self::TYPE_TEXT:
-                    $this->fetchBody($part, $parent_section . $section);
+                    // WARNING! DANGER! Update for Schiedel. The plain text email body was overwritten by a garbage HTML email body. It works now in that particular case but might cause problems in others.
+                    // disabled for now
+                    //if (empty($this->email_body)) {
+                        $this->fetchBody($part, $parent_section . $section);
+                    //}
                     break;
                 case self::TYPE_MULTIPART:
                     $this->iterateParts($part->parts, $section . '.');

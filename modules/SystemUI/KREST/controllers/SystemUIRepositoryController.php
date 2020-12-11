@@ -7,9 +7,10 @@ class SystemUIRepositoryController
     static function getModuleRepository()
     {
         global $db;
-        
+
         $retArray = array();
-        $modules = $db->query("SELECT * FROM sysuimodulerepository UNION SELECT * FROM sysuicustommodulerepository");
+
+        $modules = $db->query("SELECT * FROM sysuimodulerepository UNION ALL SELECT * FROM sysuicustommodulerepository");
         while ($module = $db->fetchByAssoc($modules)) {
             $retArray[$module['id']] = array(
                 'id' => $module['id'],
@@ -24,16 +25,17 @@ class SystemUIRepositoryController
     static function getComponents()
     {
         global $db;
-        
+
         $retArray = array();
-        $components = $db->query("SELECT * FROM sysuiobjectrepository UNION SELECT * FROM sysuicustomobjectrepository");
+
+        $components = $db->query("SELECT * FROM sysuiobjectrepository UNION ALL SELECT * FROM sysuicustomobjectrepository");
         while ($component = $db->fetchByAssoc($components)) {
             $retArray[$component['object']] = array(
                 'path' => $component['path'],
                 'component' => $component['component'],
                 'module' => $component['module'],
                 'deprecated' => $component['deprecated'],
-                'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"','"'), html_entity_decode($component['componentconfig'])), true) ?: array()
+                'componentconfig' => json_decode(str_replace(array("\r", "\n", "\t", "&#039;", "'"), array('', '', '', '"', '"'), html_entity_decode($component['componentconfig'])), true) ?: array()
             );
         }
 

@@ -59,7 +59,7 @@ class M2MRelationship extends SugarRelationship
         $this->rhsLinkDef = $this->getLinkedDefForModuleByRelationship($rhsModule);
         $this->rhsLink = $this->rhsLinkDef['name'];
 
-        $this->self_referencing = $lhsModule == $rhsModule;
+        $this->self_referencing = $lhsModule == $rhsModule && $this->def['reverse'] !== false;
     }
 
     /**
@@ -338,6 +338,7 @@ class M2MRelationship extends SugarRelationship
             $targetKey = $this->def['join_key_rhs'];
             $relatedSeed = BeanFactory::getBean($this->getRHSModule());
             $relatedSeedKey = $this->def['rhs_key'];
+            $seedFocusKey = $this->def['lhs_key'];
             if (!empty($params['where']))
                 $whereTable = (empty($params['right_join_table_alias']) ? $relatedSeed->table_name : $params['right_join_table_alias']);
         }
@@ -347,18 +348,19 @@ class M2MRelationship extends SugarRelationship
             $targetKey = $this->def['join_key_lhs'];
             $relatedSeed = BeanFactory::getBean($this->getLHSModule());
             $relatedSeedKey = $this->def['lhs_key'];
+            $seedFocusKey = $this->def['rhs_key'];
             if (!empty($params['where']))
                 $whereTable = (empty($params['left_join_table_alias']) ? $relatedSeed->table_name : $params['left_join_table_alias']);
         }
         $rel_table = $this->getRelationshipTable();
 
-        $where = "$rel_table.$knownKey = '{$link->getFocus()->id}'" . $this->getRoleWhere();
+        $where = "$rel_table.$knownKey = '{$link->getFocus()->$seedFocusKey}'" . $this->getRoleWhere();
 
         //Add any optional where clause
         if (!empty($params['where'])){
             $add_where = is_string($params['where']) ? $params['where'] : "$whereTable." . $this->getOptionalWhereClause($params['where']);
             if (!empty($add_where) && $add_where != "()")
-                $where .= " AND $rel_table.$targetKey=$whereTable.id AND $add_where";
+                $where .= " AND {$rel_table}.{$targetKey}={$whereTable}.{$relatedSeedKey} AND {$add_where}";
         }
 
         $deleted = !empty($params['deleted']) ? 1 : 0;
@@ -388,12 +390,16 @@ class M2MRelationship extends SugarRelationship
             if(is_null($sortField)) $sortField = $params['sort']['sortfield'];
 
             if ($this->linkIsLHS($link)) {
+                // if we have an order by and the inner join, we need to reset $from .= ", $whereTable" to $from = $rel_table . " ";
+                $from = $rel_table . " ";
                 if (is_null($sortFieldTable))$sortFieldTable = $this->def['rhs_table'];
                 $from .= " INNER JOIN " . $this->def['rhs_table'] . ' ON ' . $this->def['rhs_table'] . '.' . $this->def['rhs_key'] . ' = ' . $rel_table . '.' . $this->def['join_key_rhs'];
                 if($params['sort']['sortfield']) { // CR1000382
                     $sort = ' ORDER BY ' . $sortFieldTable . '.' . $sortField . ' ' . ($params['sort']['sortdirection'] ?: 'ASC');
                 }
             } else {
+                // if we have an order by and the inner join, we need to reset $from .= ", $whereTable" to $from = $rel_table . " ";
+                $from = $rel_table . " ";
                 if (is_null($sortFieldTable))$sortFieldTable = $this->def['lhs_table'];
                 $from .= " INNER JOIN " . $this->def['lhs_table'] . ' ON ' . $this->def['lhs_table'] . '.' . $this->def['lhs_key'] . ' = ' . $rel_table . '.' . $this->def['join_key_lhs'];
                 if($params['sort']['sortfield']) { // CR1000382
@@ -501,62 +507,6 @@ class M2MRelationship extends SugarRelationship
             );
         }
         return $join . $where;
-    }
-
-    /**
-     * Similar to getQuery or Get join, except this time we are starting from the related table and
-     * searching for items with id's matching the $link->focus->id
-     * @param  $link
-     * @param array $params
-     * @param bool $return_array
-     * @return String|Array
-     */
-    public function getSubpanelQuery($link, $params = array(), $return_array = false)
-    {
-        $targetIsLHS = $link->getSide() == REL_RHS;
-        $startingTable = $targetIsLHS ? $this->def['lhs_table'] : $this->def['rhs_table'];;
-        $startingKey = $targetIsLHS ? $this->def['lhs_key'] : $this->def['rhs_key'];
-        $startingJoinKey = $targetIsLHS ? $this->def['join_key_lhs'] : $this->def['join_key_rhs'];
-        $joinTable = $this->getRelationshipTable();
-        $joinTableWithAlias = $joinTable;
-        $joinKey = $targetIsLHS ? $this->def['join_key_rhs'] : $this->def['join_key_lhs'];
-        $targetKey = $targetIsLHS ? $this->def['rhs_key'] : $this->def['lhs_key'];
-        $join_type= isset($params['join_type']) ? $params['join_type'] : ' INNER JOIN ';
-
-        $query = '';
-
-        //Set up any table aliases required
-        if (!empty($params['join_table_link_alias']))
-        {
-            $joinTableWithAlias = $joinTable . " ". $params['join_table_link_alias'];
-            $joinTable = $params['join_table_link_alias'];
-        }
-
-        $where = "$startingTable.$startingKey=$joinTable.$startingJoinKey AND $joinTable.$joinKey='{$link->getFocus()->$targetKey}' ".$this->getRoleFilterForJoin(); //CR1000269 added $this->getRoleFilterForJoin()
-
-        //Check if we should ignore the role filter.
-        $ignoreRole = !empty($params['ignore_role']);
-
-        //First join the relationship table
-        $query .= "$join_type $joinTableWithAlias ON $where AND $joinTable.deleted=0\n"
-        //Next add any role filters
-               . $this->getRoleWhere($joinTable, $ignoreRole) . "\n";
-
-        if (!empty($params['return_as_array'])) {
-            $return_array = true;
-        }
-        if($return_array){
-            return array(
-                'join' => $query,
-                'type' => $this->type,
-                'rel_key' => $joinKey,
-                'join_tables' => array($joinTable),
-                'where' => "",
-                'select' => " ",
-            );
-        }
-        return $query;
-
     }
 
     protected function getRoleFilterForJoin()

@@ -1,8 +1,8 @@
 <?php
+namespace SpiceCRM\includes\google;
 
-class googleAPIRestHandler
+class GoogleAPIRestHandler
 {
-
     public function search($term, $locationbias = 'ipbias')
     {
         global $sugar_config;
@@ -111,7 +111,4 @@ class googleAPIRestHandler
 
         return $results;
     }
-
-
-
 }

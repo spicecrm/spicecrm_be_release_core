@@ -88,10 +88,10 @@ $dictionary['queues_queue'] = array ('table' => 'queues_queue',
 			)
 		),
 		array(
-		'name' =>'idx_queue_id',
-		'type'=>'index',
-		'fields' => array(
-			'queue_id'
+			'name' => 'idx_queue_child_id',
+			'type' => 'index',
+			'fields' => array(
+				'queue_id'
 			)
 		),
 		array(

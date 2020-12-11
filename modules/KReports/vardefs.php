@@ -20,8 +20,7 @@ $dictionary['KReport'] = array('table' => 'kreports',
     'fields' => array(
         'report_module' => array(
             'name' => 'report_module',
-            'type' => 'enum',
-            'options' => 'moduleList',
+            'type' => 'varchar',
             'len' => '45',
             'vname' => 'LBL_MODULE',
             'massupdate' => false,
@@ -142,7 +141,4 @@ $dictionary['KReport'] = array('table' => 'kreports',
     ),
     'optimistic_locking' => true,
 );
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('KReports', 'KReport', array('default', 'assignable', 'team_security'));
-else
     VardefManager::createVardef('KReports', 'KReport', array('default', 'assignable'));

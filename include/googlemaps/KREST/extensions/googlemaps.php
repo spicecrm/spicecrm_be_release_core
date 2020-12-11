@@ -1,3 +1,3 @@
 <?php
 
-$KRESTManager->registerExtension('googlemaps', '1.0');
+\SpiceCRM\includes\RESTManager::getInstance()->registerExtension('googlemaps', '1.0');

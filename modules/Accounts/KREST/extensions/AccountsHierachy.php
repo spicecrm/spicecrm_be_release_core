@@ -1,7 +1,10 @@
 <?php
+use SpiceCRM\includes\RESTManager;
 
-$app->group('/AccountsHierachy/{id}', function () use ($app) {
-    $app->get('', function($req, $res, $args) use ($app) {
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->group('/AccountsHierachy/{id}', function () {
+    $this->get('', function($req, $res, $args) {
         global $db;
 
         $hierarchy = array();
@@ -20,7 +23,7 @@ $app->group('/AccountsHierachy/{id}', function () use ($app) {
 
         echo json_encode($hierarchy);
     });
-    $app->get('/{addfields}', function($req, $res, $args) use ($app) {
+    $this->get('/{addfields}', function($req, $res, $args) {
         global $db;
 
         $hierarchy = array();

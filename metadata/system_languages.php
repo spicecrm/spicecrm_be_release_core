@@ -115,17 +115,18 @@ $dictionary['syslanguagelabels'] = array (
             'len' => '100',
             'required' => true,
         ),
-        'version' => array (
-            'name' => 'version',
-            'vname' => 'LBL_VERSION',
-            'type' => 'varchar',
-            'len' => 16,
-        ),
-        'package' => array(
-            'name' => 'package',
-            'type' => 'varchar',
-            'len' => 32
-        )
+// removed in spice 2020.03.001
+//        'version' => array (
+//            'name' => 'version',
+//            'vname' => 'LBL_VERSION',
+//            'type' => 'varchar',
+//            'len' => 16,
+//        ),
+//        'package' => array(
+//            'name' => 'package',
+//            'type' => 'varchar',
+//            'len' => 32
+//        )
     ),
     'indices' => array (
         array('name' => 'syslanguagelabelspk', 'type' =>'primary', 'fields' => array('id')),
@@ -177,7 +178,7 @@ $dictionary['syslanguagetranslations'] = array (
         array('name' => 'syslanguagetranslationspk', 'type' =>'primary', 'fields' => array('id')),
         array('name' => 'syslanguagetranslationlabel_idx', 'type' =>'index', 'fields' => array('syslanguagelabel_id')),
         array('name' => 'syslanguagetranslationlang_idx', 'type' =>'index', 'fields' => array('syslanguage')),
-        array('name' => 'syslanguagelabelidlang_idx', 'type' =>'unique', 'fields' => array('syslanguagelabel_id', 'syslanguage')),
+        // array('name' => 'syslanguagelabelidlang_idx', 'type' =>'unique', 'fields' => array('syslanguagelabel_id', 'syslanguage')),
     ),
 );
 

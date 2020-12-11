@@ -80,7 +80,7 @@ $app_list_strings = array(
         'speaker' => 'متحدث',
         'moderator' => 'مشرف',
     ),
-    'events_consumer_roles_dom' =>        array(
+    'events_contact_roles_dom' =>        array(
         '' => '',
         'organizer' => 'منظّم',
         'speaker' => 'متحدث',
@@ -161,7 +161,6 @@ $app_list_strings = array(
         ),
     //Note:  do not translate opportunity_relationship_type_default_key
 //       it is the key for the default opportunity_relationship_type_dom value
-    'opportunity_relationship_type_default_key' => 'صانع القرار الرئيسي',
     'opportunity_relationship_type_dom' =>
         array(
             '' => '',
@@ -175,26 +174,12 @@ $app_list_strings = array(
             'Project Manager' => 'مدير المشاريع',
             'Other' => 'أخرى',
         ),
-    //Note:  do not translate case_relationship_type_default_key
-//       it is the key for the default case_relationship_type_dom value
-    'case_relationship_type_default_key' => 'جهة إتصال رئيسية',
-    'case_relationship_type_dom' =>
-        array(
-            '' => '',
-            'Primary Contact' => 'جهة إتصال رئيسية',
-            'Alternate Contact' => 'جهة إتصال بديلة',
-        ),
     'payment_terms' =>
         array(
             '' => '',
             'Net 15' => 'صافي 15',
             'Net 30' => 'صافي 30',
         ),
-    'sales_stage_default_key' => 'تقصّي',
-    'fts_type' => array(
-        '' => '',
-        'Elastic' => 'elasticsearch'
-    ),
     'sales_stage_dom' => array(
 // CR1000302 adapt to match opportunity spicebeanguidestages
 //        'Prospecting' => 'تقصّي',
@@ -231,19 +216,6 @@ $app_list_strings = array(
         'Closed Lost' => 'مغلق خاسر',
         'Closed Dead' => 'مغلق ميت',
     ),
-    'sales_probability_dom' => // keys must be the same as sales_stage_dom
-        array(
-            'Prospecting' => '10',
-            'Qualification' => '20',
-            'Needs Analysis' => '25',
-            'Value Proposition' => '30',
-            'Id. Decision Makers' => '40',
-            'Perception Analysis' => '50',
-            'Proposal/Price Quote' => '65',
-            'Negotiation/Review' => '80',
-            'Closed Won' => '100',
-            'Closed Lost' => '0',
-        ),
     'competitive_threat_dom' => array(
         '++' => 'عال جداً',
         '+' => 'عال',
@@ -330,6 +302,7 @@ $app_list_strings = array(
     ),
     'evaluationtypes_dom' => array(
         'default' => 'إفتراضي',
+        'avg_core' => 'Average',
         'spiderweb' => 'الشبكة العنكبوتية'
     ),
     'evaluationsorting_dom' => array(
@@ -354,7 +327,9 @@ $app_list_strings = array(
     ),
     //time is in seconds; the greater the time the longer it takes;
     'reminder_max_time' => 90000,
-    'reminder_time_options' => array(60 => '1 minute prior',
+    'reminder_time_options' => array(
+        -1 => 'no reminder',
+        60 => '1 minute prior',
         300 => 'قبل 5 دقائق',
         600 => 'قبل 10 دقائق',
         900 => 'قبل 15 دقيقة',
@@ -2183,7 +2158,7 @@ $app_list_strings['systemdeploymentpackage_repair_dom'] = array(
     'clearSearchCache' => 'تنظيف تغذية ذاكرة التخزين المؤقت للبحث',
     'clearAll' => 'تنظيف الكل',
 );
-include('include/modules.php');
+
 //include('modules/Administration/');
 $app_list_strings['systemdeploymentpackage_repair_modules_dom'] = array(
     translate('LBL_ALL_MODULES', 'Administration') => translate('LBL_ALL_MODULES', 'الإدارة')
@@ -2279,6 +2254,9 @@ $app_list_strings['comparators_dom'] = array(
     'less' => 'أقل',
     'lessequal' => 'أقل ويساوي',
     'contain' => 'يحتوي',
+    'empty' => 'فارغ',
+    'regex' => 'matches regex',
+    'notregex' => 'does not match regex'
 );
 
 $app_list_strings['mailboxes_imap_pop3_protocol_dom'] = array(
@@ -2419,9 +2397,10 @@ $app_list_strings['textmessage_direction'] = [
 ];
 
 $app_list_strings['textmessage_delivery_status'] = [
-    'draft'  => 'Draft',
-    'sent'   => 'Sent',
-    'failed' => 'Failed',
+    'draft'        => 'Draft',
+    'sent'         => 'Sent',
+    'failed'       => 'Failed',
+    'transmitting' => 'Transmitting',
 ];
 
 $app_list_strings['event_status_dom'] = array(
@@ -2435,3 +2414,36 @@ $app_list_strings['event_category_dom'] = array(
     'seminars' => 'ندوات',
     'conferences' => 'مؤتمرات'
 );
+
+$app_list_strings['inquiry_type'] = [
+    'normal' => 'عادي',
+    'complaint' => 'اعتراض',
+    'booking' => 'حجز',
+    'catalog' => 'كتالوج'
+];
+
+$app_list_strings['inquiry_status'] = [
+    'normal_new' => 'جديد',
+    'complaint_new' => 'جديد (اعتراض)',
+    'catalog_new' => 'جديد (كتالوج)',
+    'booking_new' => 'جديد (حجز)',
+    'booking_processing' => 'قيد الانجاز',
+    'booking_offered' => 'تم تقديمه',
+    'converted' => 'تم تحويله',
+    'closed' => 'مغلق',
+    'cancelled' => 'ملغى',
+];
+
+$app_list_strings['inquiry_source'] = [
+    'web' => 'ويب',
+    'email' => 'ايميل',
+    'manually' => 'يدوي',
+];
+
+$app_list_strings['catalogorder_status'] = [
+    'new' => 'جديد',
+    'approved' => 'مصادق',
+    'in_process' => 'قيد العمل',
+    'sent' => 'تم ارساله',
+    'cancelled' => 'ملغى',
+];

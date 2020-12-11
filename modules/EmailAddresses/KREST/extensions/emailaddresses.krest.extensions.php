@@ -1,13 +1,15 @@
 <?php
+use SpiceCRM\modules\EmailAddresses\EmailAddressRestHandler;
+use EmailAddress;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-require_once('modules/EmailAddresses/EmailAddress.php');
-
-$app->post('/EmailAddresses/{searchterm}', function ($req, $res, $args) use ($app, $ftsManager) {
+$RESTManager->app->post('/EmailAddresses/{searchterm}', function ($req, $res, $args) {
     $emailAddress = new EmailAddress();
     echo json_encode($emailAddress->search($args['searchterm']));
 });
 
-$app->post('/EmailAddress/searchBeans', function ($req, $res, $args) use ($app, $ftsManager) {
-    $result = \SpiceCRM\modules\EmailAddresses\EmailAddressRestHandler::searchBeans($req->getParsedBody());
+$RESTManager->app->post('/EmailAddress/searchBeans', function ($req, $res, $args) {
+    $result = EmailAddressRestHandler::searchBeans($req->getParsedBody());
     echo json_encode($result);
 });

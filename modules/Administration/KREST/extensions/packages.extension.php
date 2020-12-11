@@ -1,7 +1,9 @@
 <?php
-require_once('modules/Administration/KREST/controllers/packages.controller.php');
+use SpiceCRM\modules\Administration\KREST\controllers\PackageController;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$app->group('/packages', function () {
+$RESTManager->app->group('/packages', function () {
     $this->get('/repositories', [new PackageController(), 'getRepositories']);
     $this->get('[/{repository}]', [new PackageController(), 'getPackages']);
     $this->group('/package/{package}', function () {

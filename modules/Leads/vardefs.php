@@ -143,6 +143,7 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
                 'isnull' => 'true',
                 'module' => 'Contacts',
                 'dbType' => 'varchar',
+                'link' => 'reports_to_link',
                 'len' => 'id',
                 'source' => 'non-db',
                 'reportable' => false,
@@ -255,6 +256,7 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
             'source' => 'non-db',
             'vname' => 'LBL_CONTACT',
             'reportable' => false,
+            'side' => 'right'
         ),
         'consumer_linked_name' =>  array(
                 'name' => 'consumer_linked_name',
@@ -621,8 +623,9 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
             'name' => 'potential_id',
             'vname' => 'LBL_POTENTIAL_ID',
             'rname' => 'id',
-            'type' => 'varchar',
+            'type' => 'char',
             'len' => 36,
+            'dbType' => 'id',
             'table' => 'potentials',
             'module' => 'Potentials'
         ),
@@ -637,6 +640,13 @@ $dictionary['Lead'] = array('table' => 'leads', 'audited' => true, 'unified_sear
             'module' => 'Potentials',
             'source' => 'non-db'
         ),
+        'catalogorders' => [
+            'name' => 'catalogorders',
+            'type' => 'link',
+            'module' => 'CatalogOrders',
+            'relationship' => 'leads_catalogorders',
+            'source' => 'non-db'
+        ]
 
     )
 , 'indices' => array(

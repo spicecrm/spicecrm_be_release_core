@@ -39,19 +39,18 @@ $dictionary['OutputTemplate'] = array(
     'table' => 'outputtemplates',
     'comment' => 'Templates used to output something to .pdf or so...',
     'fields' => array(
-        'name' => array(
-            'name' => 'name',
-            'vname' => 'LBL_NAME',
-            'type' => 'varchar',
-            'len' => 100,
-            'importable' => 'required',
-            'required' => true
-        ),
         'header' => array(
             'name' => 'header',
             'vname' => 'LBL_HEADER',
             'type' => 'html',
             'comment' => 'The html template header',
+        ),
+        'body_spb' => array(
+            'name' => 'body_spb',
+            'vname' => 'LBL_BODY_SPB',
+            'type' => 'json',
+            'dbType' => 'text',
+            'comment' => 'save the json structure of the page builder'
         ),
         'body' => array(
             'name' => 'body',

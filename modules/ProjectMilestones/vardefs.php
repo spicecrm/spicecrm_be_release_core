@@ -83,7 +83,5 @@ $dictionary['ProjectMilestone'] = array(
         ),
 	)
 );
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('ProjectMilestones', 'ProjectMilestone', array('default', 'assignable', 'team_security'));
-else
-    VardefManager::createVardef('ProjectMilestones', 'ProjectMilestone', array('default', 'assignable'));
+
+VardefManager::createVardef('ProjectMilestones', 'ProjectMilestone', array('default', 'assignable'));

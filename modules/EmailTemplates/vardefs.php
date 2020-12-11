@@ -165,6 +165,19 @@ $dictionary['EmailTemplate'] = array(
             'len' => '255',
             'comment' => 'Email subject to be used in resulting email'
         ),
+        'body_spb' => array(
+            'name' => 'body_spb',
+            'vname' => 'LBL_BODY_SPB',
+            'type' => 'json',
+            'dbType' => 'text',
+            'comment' => 'save the json structure of the page builder'
+        ),
+        'via_spb' => array(
+            'name' => 'via_spb',
+            'vname' => 'LBL_VIA_SPICE_PAGE_BUILDER',
+            'type' => 'bool',
+            'comment' => 'True when the body is designed via the spice page builder'
+        ),
         'body' => array(
             'name' => 'body',
             'vname' => 'LBL_EMAIL_BODY_PLAIN',

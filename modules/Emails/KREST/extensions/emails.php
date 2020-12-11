@@ -1,9 +1,11 @@
 <?php
 use SpiceCRM\modules\Emails\KREST\controllers\EmailsKRESTController;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$app->group('/module/Emails', function () use ($app) {
+$RESTManager->app->group('/module/Emails', function () {
 
-    $app->group('/groupware', function() {
+    $this->group('/groupware', function() {
         $this->post('/saveGSuiteEmailWithBeans', [new EmailsKRESTController(), 'saveGSuiteEmailWithBeans']);
         $this->post('/saveOutlookEmailWithBeans', [new EmailsKRESTController(), 'saveOutlookEmailWithBeans']);
         $this->post('/getemail', [new EmailsKRESTController(), 'getEmail']);
@@ -12,13 +14,13 @@ $app->group('/module/Emails', function () use ($app) {
         $this->post('/search', [new EmailsKRESTController(), 'search']);
     });
 
-    $app->group('/{id}', function () {
+    $this->group('/{id}', function () {
         $this->post('/setstatus/{status}', [new EmailsKRESTController(), 'setStatus']);
         $this->post('/setopenness/{openness}', [new EmailsKRESTController(), 'setOpenness']);
         $this->get('/process', [new EmailsKRESTController(), 'process']);
     });
 
-    $app->group('/msg', function() {
+    $this->group('/msg', function() {
         $this->post('', [new EmailsKRESTController(), 'createEmailFromMSGFile']);
         $this->group('/{attachmentId}', function () {
             //  $this->get('/parse', [new EmailsKRESTController(), 'parseMsgAttachment']);

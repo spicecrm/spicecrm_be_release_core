@@ -29,7 +29,7 @@ class MailboxesController
     public function fetchEmails($req, $res, $args) {
         $id = $args['id'];
 
-        set_time_limit(120);
+        set_time_limit(300);
 
         $mailbox = \BeanFactory::getBean('Mailboxes', $id, ['encode' => false]);
 
@@ -210,16 +210,18 @@ class MailboxesController
 
         foreach ($mailboxes as $mailbox) {
             $type = self::TYPE_EMAIL;
-            if ($mailbox->outbund_comm == 'mass_sms' || $mailbox->outbound_comm == 'single_sms') {
+            if ($mailbox->outbound_comm == 'mass_sms' || $mailbox->outbound_comm == 'single_sms') {
                 $type = self::TYPE_SMS;
             }
 
-            array_push($result, [
+            if ($mailbox->isConnected()) {
+                array_push($result, [
                     'value'     => $mailbox->id,
-                    'display'   => $mailbox->name,
+                    'display'   => $mailbox->get_mailbox_display_name(),
                     'actionset' => $mailbox->actionset,
                     'type'      => $type,
-            ]);
+                ]);
+            }
         }
 
         return $res->write(json_encode($result));

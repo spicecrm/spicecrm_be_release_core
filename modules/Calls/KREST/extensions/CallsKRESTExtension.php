@@ -1,3 +1,6 @@
 <?php
+use SpiceCRM\modules\Calls\KREST\controllers\CallsKRESTController;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$app->post('/modules/Calls/{id}/setstatus/{userid}/{status}', 'SpiceCRM\modules\Calls\KREST\controllers\CallsKRESTController::setStatus');
+$RESTManager->app->post('/modules/Calls/{id}/setstatus/{userid}/{status}', 'SpiceCRM\modules\Calls\KREST\controllers\CallsKRESTController::setStatus');

@@ -1,21 +1,21 @@
 <?php
-
-require_once('include/google/googleAPIRestHandler.php');
+use SpiceCRM\includes\google\GoogleAPIRestHandler;
 
 global $sugar_config;
-$KRESTManager->registerExtension('google_api', '1.0', ['key' => $sugar_config['googleapi']['mapskey']? 'xxx' : '']);
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$RESTManager->registerExtension('google_api', '1.0', ['key' => $sugar_config['googleapi']['mapskey']? 'xxx' : '']);
 
-$googleAPIRestHandler = new googleAPIRestHandler();
+$googleAPIRestHandler = new GoogleAPIRestHandler();
 
-$app->group('/googleapi', function () use ($app, $googleAPIRestHandler) {
-    $app->group('/places', function () use ($app, $googleAPIRestHandler) {
-        $app->get('/search/{term}/{locationbias}', function($req, $res, $args) use ($app, $googleAPIRestHandler) {
+$RESTManager->app->group('/googleapi', function () use ($googleAPIRestHandler) {
+    $this->group('/places', function () use ($googleAPIRestHandler) {
+        $this->get('/search/{term}/{locationbias}', function($req, $res, $args) use ($googleAPIRestHandler) {
             echo json_encode($googleAPIRestHandler->search(utf8_encode(base64_decode(urldecode($args['term']))), utf8_encode(base64_decode(urldecode($args['locationbias'])))));
         });
-        $app->get('/autocomplete/{term}', function($req, $res, $args) use ($app, $googleAPIRestHandler) {
+        $this->get('/autocomplete/{term}', function($req, $res, $args) use ($googleAPIRestHandler) {
             echo json_encode($googleAPIRestHandler->autocomplete($args['term']));
         });
-        $app->get('/{placeid}',  function($req, $res, $args) use ($app, $googleAPIRestHandler) {
+        $this->get('/{placeid}',  function($req, $res, $args) use ($googleAPIRestHandler) {
             echo json_encode($googleAPIRestHandler->getplacedetails($args['placeid']));
         });
     });

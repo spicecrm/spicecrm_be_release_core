@@ -1,8 +1,18 @@
 <?php
+use SpiceCRM\modules\Users\KREST\controllers\UsersKRESTController;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-use \SpiceCRM\modules\Users\KREST\controllers\UsersKRESTController;
+$RESTManager->app->group('/module/Users/{id}', function () {
+    $this->post('', [new UsersKRESTController(), 'saveUser'] );
+    $this->delete( '', [new UsersKRESTController(), 'setUserInactive'] );
 
-$app->group('/module/Users/{id}', function () use ($app) {
-    $app->post('', [new UsersKRESTController(), 'saveUser'] );
-    $app->delete( '', [new UsersKRESTController(), 'setUserInactive'] );
+    // CR1000453
+    $this->group('/deactivate', function () {
+        $this->get('', [new UsersKRESTController(), 'getDeactivateUserStats'] );
+        $this->post('', [new UsersKRESTController(), 'deactivateUser'] );
+    });
+    $this->group('/activate', function () {
+        $this->post('', [new UsersKRESTController(), 'activateUser'] );
+    });
 });

@@ -1,7 +1,23 @@
 <?php
+namespace SpiceCRM\includes\SpiceNotes;
 
+/**
+ * Class SpiceNotes
+ *
+ * manages user notes attached to beans
+ *
+ * @package SpiceCRM\includes\SpiceNotes
+ */
 class SpiceNotes {
 
+    /**
+     * returns the notes for a bean
+     *
+     * @param $beanName
+     * @param $beanId
+     * @param int $lastN
+     * @return false|string
+     */
     public static function getQuickNotesForBean($beanName, $beanId,$lastN = 10) {
         global $current_user, $db, $beanFiles, $beanList;
         $quicknotes = array();
@@ -20,7 +36,7 @@ class SpiceNotes {
 							'user_name' => $thisQuickNote['user_name'],
 							'user_image' => $thisQuickNote['user_image'],
 							'own' => ($thisQuickNote['user_id']==$current_user->id || $current_user->is_admin) ? '1' : '0',
-							'date' => $GLOBALS['timedate']->to_display_date_time($thisQuickNote['trdate']),
+							'date' => $thisQuickNote['trdate'],
 							'text' => nl2br($thisQuickNote['text']),
 							'global' => $thisQuickNote['trglobal'] ? true : false
 						);
@@ -30,6 +46,14 @@ class SpiceNotes {
 		return json_encode($quicknotes);
 	}
 
+    /**
+     * returns the count
+     *
+     * @param $beanName
+     * @param $beanId
+     * @param int $lastN
+     * @return mixed
+     */
 	public static function getQuickNotesCount($beanName, $beanId,$lastN = 10){
         global $current_user, $db;
         $quicknotesRec = $db->fetchByAssoc($db->query("SELECT count(*) AS noteCount FROM spicenotes WHERE bean_id='{$beanId}' AND bean_type='{$beanName}'  AND (user_id = '".$current_user->id."' OR trglobal = '1') AND deleted = 0"));
@@ -37,6 +61,14 @@ class SpiceNotes {
         return $quicknotesRec['noteCount'];
 	}
 
+    /**
+     * adds a new note
+     *
+     * @param $beanName
+     * @param $beanId
+     * @param $data
+     * @return false|string
+     */
 	public static function saveQuickNote($beanName, $beanId, $data) {
 		global $current_user, $db;
 		$guid = create_guid();
@@ -46,18 +78,34 @@ class SpiceNotes {
 				'user_id' => $current_user->id,
 				'user_name' => $current_user->user_name,
 				'user_image' => $current_user->user_image,
-				'date' => $GLOBALS['timedate']->to_display_date_time(gmdate('Y-m-d H:i:s')),
+				'date' => gmdate('Y-m-d H:i:s'),
 				'text' => nl2br($data['text']),
 				'global' => $data['global'] ? true : false
 		);
 		return json_encode($quicknotes);
 	}
 
+    /**
+     * updates a quick note
+     *
+     * @param $beanName
+     * @param $beanId
+     * @param $noteId
+     * @param $data
+     * @return bool
+     */
 	public static function editQuickNote($beanName, $beanId, $noteId, $data) {
 		global $current_user, $db;
 		$db->query("UPDATE spicenotes SET text = '{$data['text']}', trglobal = '{$data['global']}' WHERE id = '{$noteId}'" . (!$current_user->is_admin ? " AND user_id='".$current_user->id."'":""));
 		return true;
 	}
+
+    /**
+     * deletes a note with a given id
+     *
+     * @param $noteId
+     * @return false|string
+     */
 	public static function deleteQuickNote($noteId) {
 		global $current_user, $db;
 		$db->query("UPDATE spicenotes SET deleted = 1 WHERE id='{$noteId}'" . (!$current_user->is_admin ? " AND user_id='".$current_user->id."'":""));

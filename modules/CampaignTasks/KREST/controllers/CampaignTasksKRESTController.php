@@ -1,6 +1,8 @@
 <?php
 
 namespace SpiceCRM\modules\CampaignTasks\KREST\controllers;
+use SpiceCRM\includes\ErrorHandlers\Exception;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
 use \SpiceCRM\KREST\handlers;
 
 class CampaignTasksKRESTController
@@ -10,11 +12,11 @@ class CampaignTasksKRESTController
         global $timedate;
 
         if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'detail', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden for details in module CampaignTasks."))->setErrorCode('noModuleDetails');
+            throw (new ForbiddenException("Forbidden for details in module CampaignTasks."))->setErrorCode('noModuleDetails');
 
         $getParams = $_GET;
         $now = $timedate->nowDb();
-        $campaignLog = BeanFactory::getBean('CampaignLog');
+        $campaignLog = \BeanFactory::getBean('CampaignLog');
         $list = $campaignLog->get_list(
             "planned_activity_date DESC",
             "campaigntask_id = '{$args['campaignid']}' AND IFNULL(planned_activity_date, '$now') <= '$now' AND activity_type != 'completed'",
@@ -23,7 +25,7 @@ class CampaignTasksKRESTController
             $getParams['limit'] ?: -1);
 
         // get a KREST Handler
-        $KRESTModuleHandler = new \KRESTModuleHandler();
+        $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
 
         // empty items structure for the return
         $items = [];
@@ -52,13 +54,13 @@ class CampaignTasksKRESTController
      * @param $req
      * @param $res
      * @param $args
-     * @throws \KREST\Exceptionn
+     * @throws Exception
      */
     function activateCampaignTask($req, $res, $args)
     {
         // ACL Check
         if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'edit', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to edit in module CampaignTasks."))->setErrorCode('noModuleEdit');
+            throw (new ForbiddenException("Forbidden to edit in module CampaignTasks."))->setErrorCode('noModuleEdit');
 
         // load the campaign task
         $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
@@ -80,7 +82,7 @@ class CampaignTasksKRESTController
     {
         // ACL Check
         if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'export', true))
-            throw (new \SpiceCRM\KREST\ForbiddenException("Forbidden to export for module CampaignTasks."));
+            throw (new ForbiddenException("Forbidden to export for module CampaignTasks."));
 
         // load the campaign task
         $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaignid']);
@@ -116,6 +118,23 @@ class CampaignTasksKRESTController
         $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
         $campaignTask->activate('queued');
         echo json_encode(array('success' => true));
+    }
+
+    /**
+     * queus the emails to be sent
+     *
+     * @param $req
+     * @param $res
+     * @param $args
+     */
+    public function liveCompileEmailBody($req, $res, $args) {
+    $params = $req->getParsedBody();
+    $emailTemplate = \BeanFactory::getBean('EmailTemplates');
+    $emailTemplate->body_html = $params['html'];
+    $bean = \BeanFactory::getBean($args['module'], $args['parent']);
+    $parsedTpl = $emailTemplate->parse($bean);
+
+    return $res->withJson(['html' => from_html(wordwrap($parsedTpl['body_html'], true))]);
     }
 
     function getExportReports($req, $res, $args)

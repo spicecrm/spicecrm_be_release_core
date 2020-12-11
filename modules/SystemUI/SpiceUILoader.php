@@ -2,18 +2,18 @@
 /**
  * Class SpiceUILoader
  * Utility class for SpiceCRM backend
- * get records from reference database
- * Endpoint to retrieve data is located in config.php
+ * get records from referenced database
+ * Endpoint for default values is located in SpiceCRM\modules\SystemDeploymentPackages\SystemDeploymentPackageSource
  */
 namespace SpiceCRM\modules\SystemUI;
+use SpiceCRM\modules\SystemDeploymentPackages\SystemDeploymentPackageSource;
 
 class SpiceUILoader
 {
 
     public $db;
-    public $endpoint = 'https://packages.spicecrm.io/';
+    public $endpoint;
     public $curl;
-
 
     /**
      * SpiceUIConfLoader constructor.
@@ -22,58 +22,42 @@ class SpiceUILoader
     public function __construct($endpoint = null)
     {
         global $sugar_config;
+
+        // get database object
         $this->db = \DBManagerFactory::getTypeInstance($sugar_config['dbconfig']['db_type']);
         if (!$this->db->connect($sugar_config['dbconfig']))
             die('database connection failed');
 
-        //CR1000133: old config til release 201901001
-        if(empty($endpoint)){
-            $endpoint = $sugar_config['spiceconfigreference']['endpoint'];
+        // set default endpoint
+        if (empty($this->endpoint)) {
+            $this->endpoint = SystemDeploymentPackageSource::getPublicSource();
         }
-        //CR1000133 new config from release 201902001 on
-        if(!empty($sugar_config['packageloader']['sources'][0])){
-            $endpoint = $sugar_config['packageloader']['sources'][0];
-        }
-
-
+        // set selected endpoint
         if (!empty($endpoint)) {
             $this->endpoint = $endpoint;
+            // cleanup endpoint (ending /)
             if (substr($this->endpoint, -1) != "/") {
                 $this->endpoint .= "/";
             }
-        }else{
+        }
+
+        // catch empty endpint
+        if(empty($this->endpoint) || strlen($this->endpoint) < 5){
             $GLOBALS['log']->error("No endpoint defined");
         }
 
+        // initialize curl
         $this->curl = curl_init();
     }
 
 
-    /**
-     * @deprecated CR1000133 since release 201902001 - keep a while for BWC
-     * @return bool|string
-     */
-    public function getRouteBase(){
-        global $sugar_config;
-        $routebase ="";
-        if (isset($sugar_config['spiceconfigreference']['routebase']) && !empty($sugar_config['spiceconfigreference']['routebase'])) {
-            $routebase = empty($sugar_config['spiceconfigreference']['routebase']) ? "release" : $sugar_config['spiceconfigreference']['routebase'];
-            if (substr($routebase, 0, 1) == "/") {
-                $routebase = substr($routebase, 1);
-            }
-            if (substr($this->routebase, -1) == "/") {
-                $routebase = substr($routebase, 0, strlen($routebase) - 1);
-            }
-        }
-
-        return $routebase;
-    }
 
     public function callMethod($method, $route, $getParams = null, $postParams = array())
     {
         if (!empty($getParams) && is_array($getParams))
             $getParams = "?" . http_build_query($getParams);
         $url = $this->endpoint . $route . $getParams;
+//        file_put_contents('spicecrm.log', $url."\n", FILE_APPEND);
 
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($this->curl, CURLOPT_URL, $url);

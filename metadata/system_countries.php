@@ -71,7 +71,7 @@ $dictionary['syscountrystates'] = array(
         'google_aa' => array(
             'name' => 'google_aa',
             'type' => 'varchar',
-            'len' => 25,
+            'len' => 50,
             'comment' => 'the subdivison code according to Google which is not necessarily conforming'
         ),
         'label' => array(

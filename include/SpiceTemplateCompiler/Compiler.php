@@ -74,6 +74,10 @@ class Compiler
                     $this->parseDom($node, $beans);
                     break;
 
+                case 'DOMCdataSection':
+                    $newElement = $this->doc->createCDATASection($node->data);
+                    $elements[] = $newElement;
+                    break;
                 case 'DOMText':
                     $elementcontent = $this->compileblock($node->textContent, $beans, $this->lang);
                     // check if we have embedded HTML that is returned from the replaceing functions
@@ -384,9 +388,15 @@ class Compiler
         // overwrite the current app_list_strings to the language of the template...
         $app_list_strings = return_app_list_strings_language($lang);
 
+
+        // if (preg_match_all("#\{([abcelmnrstuvy_]+[\.|])([^}]*)\}#", $txt, $matches)) {
         if (preg_match_all("#\{([a-zA-Z\.\_0-9]+)\}#", $txt, $matches)) {
             for ($i = 0; $i < count($matches[1]); $i++) {
                 $m = $matches[1][$i];
+
+                // match the pipes parameters by
+                // (["'])((\\{2})*|(.*?[^\\](\\{2})*))\1
+
                 $parts = explode('.', $m);
                 $part = $parts[0];
 
@@ -477,7 +487,7 @@ class Compiler
                                 break;
                             case 'currency':
                                 // $currency = \BeanFactory::getBean('Currencies');
-                                $value = currency_format_number($obj->{$part});
+                                $value = currency_format_number($obj->{$part}, ['symbol_space' => true] );
                                 break;
                             case 'html':
                                 $value = html_entity_decode($obj->{$part});

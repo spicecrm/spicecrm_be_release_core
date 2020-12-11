@@ -82,6 +82,15 @@ $dictionary['SpiceText'] = array(
             'module'       => 'ProductVariants',
             'default'      => true,
         ],
+        'accounts' => [
+            'name' => 'accounts',
+            'type' => 'link',
+            'relationship' => 'accounts_spicetexts',
+            'module' => 'Accounts',
+            'source' => 'non-db',
+            'vname' => 'LBL_Accounts',
+            'default'      => true
+        ]
 	),
 	'relationships' => array(
 	),

@@ -92,7 +92,7 @@ class SugarCacheMemcache extends SugarCacheAbstract
     {
         if ( !($this->_memcache instanceOf Memcache) ) {
             $this->_memcache = new Memcache();
-            $config = SugarConfig::getInstance();
+            $config = SpiceConfig::getInstance();
             $this->_host = $config->get('external_cache.memcache.host', $this->_host);
             $this->_port = $config->get('external_cache.memcache.port', $this->_port);
             if ( !@$this->_memcache->connect($this->_host,$this->_port) ) {

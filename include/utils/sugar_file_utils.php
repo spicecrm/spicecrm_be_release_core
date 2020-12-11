@@ -355,11 +355,11 @@ function sugar_chgrp($filename, $group='') {
 function get_mode($key = 'dir_mode', $mode=null) {
 	if ( !is_int($mode) )
         $mode = (int) $mode;
-    if(!class_exists('SugarConfig', true)) {
-		require 'include/SugarObjects/SugarConfig.php';
+    if(!class_exists('SpiceConfig', true)) {
+		require 'include/SugarObjects/SpiceConfig.php';
 	}
 	if(!is_windows()){
-		$conf_inst=SugarConfig::getInstance();
+		$conf_inst=SpiceConfig::getInstance();
 		$mode = $conf_inst->get('default_permissions.'.$key, $mode);
 	}
 	return $mode;

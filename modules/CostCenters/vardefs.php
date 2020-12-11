@@ -37,7 +37,14 @@ $dictionary['CostCenter'] = array(
             'rname' => 'user_name',
             'source' => 'non-db',
             'module' => 'Users'
-        )
+        ),
+        'resources' => [
+            'name'         => 'resources',
+            'type'         => 'link',
+            'module'       => 'Resources',
+            'relationship' => 'resource_costcenter',
+            'source'       => 'non-db',
+        ],
     ),
     'relationships' => array(
 

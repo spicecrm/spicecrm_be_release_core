@@ -41,70 +41,7 @@ $dictionary['Email'] = [
     'acl_fields' => false,
     'comment' => 'Contains a record of emails sent to and from the Sugar application',
     'fields' => [
-        'id' => [
-            'name'       => 'id',
-            'vname'      => 'LBL_ID',
-            'type'       => 'id',
-            'required'   => true,
-            'reportable' => true,
-            'comment'    => 'Unique identifier',
-        ],
-        'date_entered' => [
-            'name'     => 'date_entered',
-            'vname'    => 'LBL_DATE_ENTERED',
-            'type'     => 'datetime',
-            'required' => true,
-            'comment'  => 'Date record created',
-        ],
-        'date_modified' => [
-            'name'     => 'date_modified',
-            'vname'    => 'LBL_DATE_MODIFIED',
-            'type'     => 'datetime',
-            'required' => true,
-            'comment'  => 'Date record last modified',
-        ],
-        'assigned_user_id' => [
-            'name'       => 'assigned_user_id',
-            'rname'      => 'user_name',
-            'id_name'    => 'assigned_user_id',
-            'vname'      => 'LBL_ASSIGNED_TO',
-            'type'       => 'assigned_user_name',
-            'table'      => 'users',
-            'isnull'     => 'false',
-            'reportable' => true,
-            'dbType'     => 'id',
-            'comment'    => 'User ID that last modified record',
-        ],
-        'assigned_user_name' => [
-            'name'       => 'assigned_user_name',
-            'vname'      => 'LBL_ASSIGNED_TO',
-            'type'       => 'varchar',
-            'reportable' => false,
-            'source'     => 'non-db',
-            'table'      => 'users',
-        ],
-        'modified_user_id' => [
-            'name'       => 'modified_user_id',
-            'rname'      => 'user_name',
-            'id_name'    => 'modified_user_id',
-            'vname'      => 'LBL_MODIFIED_BY',
-            'type'       => 'assigned_user_name',
-            'table'      => 'users',
-            'isnull'     => 'false',
-            'reportable' => true,
-            'dbType'     => 'id',
-            'comment'    => 'User ID that last modified record',
-        ],
-        'created_by' => [
-            'name'       => 'created_by',
-            'vname'      => 'LBL_CREATED_BY',
-            'type'       => 'id',
-            'len'        => '36',
-            'reportable' => false,
-            'comment'    => 'User name who created record',
-        ],
-        'file_mime_type' =>
-            array (
+        'file_mime_type' =>            array (
                 'name' => 'file_mime_type',
                 'vname' => 'LBL_FILE_MIME_TYPE',
                 'type' => 'varchar',
@@ -112,9 +49,15 @@ $dictionary['Email'] = [
                 'comment' => 'Attachment MIME type',
                 'importable' => false,
             ),
-        'filename' =>
-            array (
-                'name' => 'filename',
+        'file_md5' =>            array (
+                'name' => 'file_md5',
+                'vname' => 'LBL_FILE_MD5',
+                'type' => 'char',
+                'len' => '32',
+                'comment' => 'the MD5 hash of the file attached'
+            ),
+        'file_name' =>            array (
+                'name' => 'file_name',
                 'vname' => 'LBL_FILENAME',
                 'type' => 'file',
                 'dbType' => 'varchar',
@@ -123,13 +66,12 @@ $dictionary['Email'] = [
                 'comment' => 'File name associated with the email (attachment)',
                 'importable' => false,
             ),
-        'deleted' => [
-            'name'       => 'deleted',
-            'vname'      => 'LBL_DELETED',
-            'type'       => 'bool',
-            'required'   => false,
-            'reportable' => false,
-            'comment'    => 'Record deletion indicator',
+        'attachments_count' => [
+            'name'       => 'attachments_count',
+            'vname'      => 'LBL_ATTACHMENTS_COUNT',
+            'type'       => 'int',
+            'source' => 'non-db',
+            'comment'    => 'the number of atatchments'
         ],
         'from_addr_name' => [
             'name'   => 'from_addr_name',
@@ -171,12 +113,6 @@ $dictionary['Email'] = [
             'name'   => 'description_html',
             'type'   => 'html',
             'vname'  => 'LBL_BODY_HTML',
-            'source' => 'non-db',
-        ],
-        'description' => [
-            'name'   => 'description',
-            'type'   => 'text',
-            'vname'  => 'LBL_BODY',
             'source' => 'non-db',
         ],
         'date_sent' => [
@@ -295,6 +231,8 @@ $dictionary['Email'] = [
         ],
         'parent_name' => [
             'name'       => 'parent_name',
+            'type_name'   => 'parent_type',
+            'id_name'     => 'parent_id',
             'type'       => 'parent',
             'vname'      => 'LBL_RELATED_TO',
             'reportable' => false,
@@ -340,7 +278,7 @@ $dictionary['Email'] = [
         /* added to support InboundEmail */
         'accounts' => [
             'name'         => 'accounts',
-            'vname'        => 'LBL_EMAILS_ACCOUNTS_REL',
+            'vname'        => 'LBL_ACCOUNTS',
             'type'         => 'link',
             'relationship' => 'emails_accounts_rel',
             'module'       => 'Accounts',
@@ -355,29 +293,9 @@ $dictionary['Email'] = [
             'module'       => 'Consumers',
             'source'       => 'non-db',
         ],
-// CR1000426 cleanup backend, module Bugs removed
-//        'bugs' => [
-//            'name'         => 'bugs',
-//            'vname'        => 'LBL_EMAILS_BUGS_REL',
-//            'type'         => 'link',
-//            'relationship' => 'emails_bugs_rel',
-//            'module'       => 'Bugs',
-//            'bean_name'    => 'Bug',
-//            'source'       => 'non-db',
-//        ],
-// CR1000426 cleanup backend, module Cases removed
-//        'cases' => [
-//            'name'         => 'cases',
-//            'vname'        => 'LBL_EMAILS_CASES_REL',
-//            'type'         => 'link',
-//            'relationship' => 'emails_cases_rel',
-//            'module'       => 'Cases',
-//            'bean_name'    => 'Case',
-//            'source'       => 'non-db',
-//        ],
         'contacts' => [
             'name'         => 'contacts',
-            'vname'        => 'LBL_EMAILS_CONTACTS_REL',
+            'vname'        => 'LBL_CONTACTS',
             'type'         => 'link',
             'relationship' => 'emails_contacts_rel',
             'module'       => 'Contacts',
@@ -386,7 +304,7 @@ $dictionary['Email'] = [
         ],
         'leads' => [
             'name'         => 'leads',
-            'vname'        => 'LBL_EMAILS_LEADS_REL',
+            'vname'        => 'LBL_LEADS',
             'type'         => 'link',
             'relationship' => 'emails_leads_rel',
             'module'       => 'Leads',
@@ -395,7 +313,7 @@ $dictionary['Email'] = [
         ],
         'opportunities' => [
             'name'         => 'opportunities',
-            'vname'        => 'LBL_EMAILS_OPPORTUNITIES_REL',
+            'vname'        => 'LBL_OPPORTUNITIES',
             'type'         => 'link',
             'relationship' => 'emails_opportunities_rel',
             'module'       => 'Opportunities',
@@ -404,7 +322,7 @@ $dictionary['Email'] = [
         ],
         'projects' => [
             'name'         => 'projects',
-            'vname'        => 'LBL_EMAILS_PROJECT_REL',
+            'vname'        => 'LBL_PROJECT',
             'type'         => 'link',
             'relationship' => 'emails_projects_rel',
             'module'       => 'Projects',
@@ -413,7 +331,7 @@ $dictionary['Email'] = [
         ],
         'projecttasks' => [
             'name'         => 'projecttasks',
-            'vname'        => 'LBL_EMAILS_PROJECT_TASK_REL',
+            'vname'        => 'LBL_PROJECTTASKT',
             'type'         => 'link',
             'relationship' => 'emails_project_task_rel',
             'module'       => 'ProjectTasks',
@@ -422,7 +340,7 @@ $dictionary['Email'] = [
         ],
         'prospects' => [
             'name'         => 'prospects',
-            'vname'        => 'LBL_EMAILS_PROSPECT_REL',
+            'vname'        => 'LBL_PROSPECT',
             'type'         => 'link',
             'relationship' => 'emails_prospects_rel',
             'module'       => 'Prospects',
@@ -431,7 +349,7 @@ $dictionary['Email'] = [
         ],
         'tasks' => [
             'name'         => 'tasks',
-            'vname'        => 'LBL_EMAILS_TASKS_REL',
+            'vname'        => 'LBL_TASKS',
             'type'         => 'link',
             'relationship' => 'emails_tasks_rel',
             'module'       => 'Tasks',
@@ -440,7 +358,7 @@ $dictionary['Email'] = [
         ],
         'users' => [
             'name'         => 'users',
-            'vname'        => 'LBL_EMAILS_USERS_REL',
+            'vname'        => 'LBL_USERS',
             'type'         => 'link',
             'relationship' => 'emails_users_rel',
             'module'       => 'Users',
@@ -449,21 +367,20 @@ $dictionary['Email'] = [
         ],
         'notes' => [
             'name'         => 'notes',
-            'vname'        => 'LBL_EMAILS_NOTES_REL',
+            'vname'        => 'LBL_NOTES',
             'type'         => 'link',
             'relationship' => 'emails_notes_rel',
             'module'       => 'Notes',
             'bean_name'    => 'Note',
             'source'       => 'non-db',
         ],
-        // SNIP
-        'meetings' => [
-            'name'         => 'meetings',
-            'vname'        => 'LBL_EMAILS_MEETINGS_REL',
+        'servicelocations' => [
+            'name'         => 'servicelocations',
+            'vname'        => 'LBL_SERVICELOCATIONS',
             'type'         => 'link',
-            'relationship' => 'emails_meetings_rel',
-            'module'       => 'Meetings',
-            'bean_name'    => 'Meeting',
+            'relationship' => 'emails_servicelocations_rel',
+            'module'       => 'ServiceLocations',
+            'bean_name'    => 'ServiceLocation',
             'source'       => 'non-db',
         ],
         'mailboxes' => [
@@ -493,7 +410,7 @@ $dictionary['Email'] = [
             'len'            => '255',
             'source'         => 'non-db',
             'unified_search' => true,
-            'required'       => true,
+            'required'       => false,
             'importable'     => 'required',
         ],
         'body' => [
@@ -585,6 +502,8 @@ $dictionary['Email'] = [
             'rhs_module'        => 'Notes',
             'rhs_table'         => 'notes',
             'rhs_key'           => 'parent_id',
+            'relationship_role_column' => 'parent_type',
+            'relationship_role_column_value' => 'Emails',
             'relationship_type' => 'one-to-many',
         ],
         'emails_contacts_rel' => [
@@ -629,15 +548,19 @@ $dictionary['Email'] = [
             'relationship_role_column'       => 'bean_module',
             'relationship_role_column_value' => 'Leads',
         ],
-        // SNIP
-        'emails_meetings_rel' => [
-            'lhs_module'        => 'Emails',
-            'lhs_table'         => 'emails',
-            'lhs_key'           => 'id',
-            'rhs_module'        => 'Meetings',
-            'rhs_table'         => 'meetings',
-            'rhs_key'           => 'parent_id',
-            'relationship_type' => 'one-to-many',
+        'emails_servicelocations_rel' => [
+            'lhs_module'                     => 'Emails',
+            'lhs_table'                      => 'emails',
+            'lhs_key'                        => 'id',
+            'rhs_module'                     => 'ServiceLocations',
+            'rhs_table'                      => 'servicelocations',
+            'rhs_key'                        => 'id',
+            'relationship_type'              => 'many-to-many',
+            'join_table'                     => 'emails_beans',
+            'join_key_lhs'                   => 'email_id',
+            'join_key_rhs'                   => 'bean_id',
+            'relationship_role_column'       => 'bean_module',
+            'relationship_role_column_value' => 'ServiceLocations',
         ],
         'mailboxes_emails_rel' => [
             'lhs_module'        => 'Mailboxes',
@@ -671,9 +594,9 @@ $dictionary['Email'] = [
             'fields' => ['assigned_user_id', 'type', 'status'],
         ],
         [
-            'name' => 'idx_email_external_id',
+            'name' => 'idx_email_external_id_mailbox',
             'type'   => 'index',
-            'fields' => ['external_id'],
+            'fields' => ['external_id', 'mailbox_id']
         ]
     ], // end indices
 ];

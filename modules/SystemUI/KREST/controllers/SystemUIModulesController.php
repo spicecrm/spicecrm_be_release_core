@@ -102,7 +102,8 @@ class SystemUIModulesController
                         'acl_multipleusers' => $module['acl_multipleusers'],
                         'ftsactivities' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::checkActivities($module['module']),
                         'ftsgeo' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler::checkGeo($module['module']),
-                        'ftsaggregates' => $ftsBeanHandler->getAggregates()
+                        'ftsaggregates' => $ftsBeanHandler->getAggregates(),
+                        'ftsglobalsearch' => \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler::checkGlobal($module['module']),
                     );
                 }
             }
@@ -114,6 +115,25 @@ class SystemUIModulesController
         return $retArray;
     }
 
+    /**
+     * CR1000453
+     * @param $moduleid
+     * @return array|false
+     */
+    public function getModuleDataById($moduleid)
+    {
+        global $db;
+        $ret = [];
+        if(!empty($moduleid)) {
+            $dbresult = $db->query("SELECT * FROM sysmodules WHERE id='{$moduleid}' UNION SELECT * FROM syscustommodules WHERE id='{$moduleid}'");
+            while ($m = $db->fetchByAssoc($dbresult)) {
+                // we should get only 1 record
+                $ret = $m;
+            }
+        }
+        return $ret;
+    }
+
 
     function getFieldDefs()
     {
@@ -121,7 +141,22 @@ class SystemUIModulesController
         $modules = self::getModules();
         foreach ($modules as $module => $moduleDetails) {
             $seed = \BeanFactory::getBean($module);
-            $retArray[$module] = $seed->field_name_map;
+            foreach($seed->field_name_map as $fieldname => $fielddata){
+                $retArray[$module][$fieldname] = $fielddata;
+                switch($fielddata['type']){
+                    case 'parent':
+                        $parentmodules = [];
+                        $relationships = $seed->db->query("SELECT lhs_module FROM relationships WHERE rhs_module='{$module}' AND rhs_key='{$fielddata['id_name']}'");
+                        while($relationship = $seed->db->fetchByAssoc($relationships)){
+                            if(isset($modules[$relationship['lhs_module']])){
+                                $parentmodules[] = $relationship['lhs_module'];
+                            }
+                        }
+                        $retArray[$module][$fieldname]['parent_modules'] = $parentmodules;
+                        break;
+                }
+            }
+
             $indexProperties = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexProperties($module);
             if ($indexProperties) {
                 foreach ($indexProperties as $indexProperty) {
@@ -203,9 +238,9 @@ class SystemUIModulesController
         $retArray = array();
         $modules = array();
         if ($current_user->portal_only)
-            $sysuiroles = $db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.portaldefault = 1) roles order by name");
+            $sysuiroles = $db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.portaldefault = 1) roles order by name");
         else
-            $sysuiroles = $db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.systemdefault = 1) roles order by name");
+            $sysuiroles = $db->query("select * from (SELECT sysuiroles.*, sysuiuserroles.defaultrole FROM sysuiroles, sysuiuserroles WHERE sysuiroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuiroles.*, 0 defaultrole FROM sysuiroles WHERE sysuiroles.systemdefault = 1) roles order by name");
         while ($sysuirole = $db->fetchByAssoc($sysuiroles)) {
             if (isset($retArray[$sysuirole['id']])) continue;
             $sysuirolemodules = $db->query("SELECT * FROM sysuirolemodules WHERE sysuirole_id in ('*', '" . $sysuirole['id'] . "') ORDER BY sequence");
@@ -222,9 +257,9 @@ class SystemUIModulesController
 
         // same for custom
         if ($current_user->portal_only)
-            $sysuiroles = $db->query("select id from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.portaldefault = 1) roles group by id,name order by name");
+            $sysuiroles = $db->query("select id from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.portaldefault = 1) roles group by id,name order by name");
         else
-            $sysuiroles = $db->query("select id from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.systemdefault = 1) roles group by id,name order by name");
+            $sysuiroles = $db->query("select id from (SELECT sysuicustomroles.*, sysuiuserroles.defaultrole FROM sysuicustomroles, sysuiuserroles WHERE sysuicustomroles.id = sysuiuserroles.sysuirole_id AND sysuiuserroles.user_id = '$current_user->id' UNION ALL SELECT sysuicustomroles.*, 0 defaultrole FROM sysuicustomroles WHERE sysuicustomroles.systemdefault = 1) roles group by id,name order by name");
         while ($sysuirole = $db->fetchByAssoc($sysuiroles)) {
             // if (isset($retArray[$sysuirole['id']])) continue;
             $sysuirolemodules = $db->query("SELECT * FROM sysuicustomrolemodules WHERE sysuirole_id in ('*', '" . $sysuirole['id'] . "') ORDER BY sequence");
@@ -248,7 +283,8 @@ class SystemUIModulesController
                 'fromfield' => $sysuirule['fromfield'],
                 'tofield' => $sysuirule['tofield'],
                 'fixedvalue' => $sysuirule['fixedvalue'],
-                'calculatedvalue' => $sysuirule['calculatedvalue']
+                'calculatedvalue' => $sysuirule['calculatedvalue'],
+                'params' => $sysuirule['params']
             );
         }
 
@@ -258,10 +294,38 @@ class SystemUIModulesController
                 'fromfield' => $sysuirule['fromfield'],
                 'tofield' => $sysuirule['tofield'],
                 'fixedvalue' => $sysuirule['fixedvalue'],
-                'calculatedvalue' => $sysuirule['calculatedvalue']
+                'calculatedvalue' => $sysuirule['calculatedvalue'],
+                'params' => $sysuirule['params']
             );
         }
 
         return $retArray;
     }
+
+    /**
+     * CR1000453
+     * getReassignModules
+     * retrieves a list of modules to consider in reassignment process
+     * @param $req
+     * @param $res
+     * @param $args
+     */
+    public function getReassignModules($moduleids = [] ){
+        $modules = [];
+        $addWhere = "";
+        if(!empty($moduleids)){
+            $addWhere.= " AND id IN('".implode("', '", $moduleids )."')";
+        }
+
+        $q = "SELECT id, module, reassign_modulefilter_id  FROM sysmodules WHERE reassignable = 1 {$addWhere} UNION SELECT id, module, reassign_modulefilter_id FROM syscustommodules WHERE reassignable = 1 {$addWhere}";
+
+        if ($results = $GLOBALS['db']->query($q)) {
+            while($row = $GLOBALS['db']->fetchByAssoc($results)){
+                $modules[$row['id']] = ['id' => $row['id'], 'module' => $row['module'], 'filterid' => $row['reassign_modulefilter_id']];
+            }
+        }
+
+        return $modules;
+    }
+
 }

@@ -29,8 +29,8 @@
 
 namespace SpiceCRM\includes\SysModuleFilters;
 
-use DateTime;
 use DateInterval;
+use DateTime;
 
 class SysModuleFilters
 {
@@ -56,8 +56,11 @@ class SysModuleFilters
 
         // load module filters list
         $moduleFilters = [];
-        $filters = "SELECT 'global' As `type`, `id`, `name`, `module`, `filterdefs` FROM `sysmodulefilters` UNION ";
-        $filters .= "SELECT 'custom' As `type`, `id`, `name`, `module`, `filterdefs` FROM `syscustommodulefilters`";
+
+        $filters = "SELECT 'global' As type, id, name, module, filterdefs FROM sysmodulefilters UNION ALL ";
+        $filters .= "SELECT 'custom' As type, id, name, module, filterdefs FROM syscustommodulefilters";
+
+
         $filters = $db->query($filters);
         while ($filter = $db->fetchByAssoc($filters)) {
             $moduleFilters[$filter['id']] = array(
@@ -194,16 +197,22 @@ class SysModuleFilters
             }
         }
 
+        // get also users we represent
+        $absence = \BeanFactory::getBean('UserAbsences');
+        $userIds = array_merge([$current_user->id], $absence->getSubstituteIDs());
+        $userIds = "'" . join("','") . "'";
+
+
         $filterCondition = "";
         if (!empty($filterConditionArray)) {
             $filterCondition = '(' . implode(' ' . $group->logicaloperator . ' ', $filterConditionArray) . ')';
             if ($group->groupscope == 'own') {
-                $filterCondition = "({$tablename}.assigned_user_id = '{$current_user->id}' AND ($filterCondition))";
+                $filterCondition = "({$tablename}.assigned_user_id IN ({$userIds}) AND ($filterCondition))";
             }
 
             // added an option for the creator
             if ($group->groupscope == 'creator') {
-                $filterCondition = "({$tablename}.created_by = '{$current_user->id}' AND ($filterCondition))";
+                $filterCondition = "({$tablename}.created_by IN ({$userIds}) AND ($filterCondition))";
             }
         }
 
@@ -233,7 +242,7 @@ class SysModuleFilters
                 return "{$tablename}.{$condition->field} IS NULL";
                 break;
             case 'emptyr':
-                if($this->filtermodule){
+                if ($this->filtermodule) {
                     $seed = \BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     return "{$tablename}.{$relatedField} IS NULL";
@@ -243,7 +252,7 @@ class SysModuleFilters
                 return "({$tablename}.{$condition->field} IS NOT NULL AND {$tablename}.{$condition->field} <> '')";
                 break;
             case 'notemptyr':
-                if($this->filtermodule){
+                if ($this->filtermodule) {
                     $seed = \BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     return "({$tablename}.{$relatedField} IS NOT NULL AND {$tablename}.{$relatedField} <> '')";
@@ -252,8 +261,11 @@ class SysModuleFilters
             case 'equals':
                 return "{$tablename}.{$condition->field} = '{$condition->filtervalue}'";
                 break;
+            case 'notequals':
+                return "{$tablename}.{$condition->field} <> '{$condition->filtervalue}'";
+                break;
             case 'equalr':
-                if($this->filtermodule){
+                if ($this->filtermodule) {
                     $seed = \BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     $filtervalues = explode('::', $condition->filtervalue);
@@ -348,6 +360,10 @@ class SysModuleFilters
                 $date->add(new \DateInterval("P{$condition->filtervalue}D"));
                 return "{$tablename}.{$condition->field} <= '" . $date->format('Y-m-d') . " 23:59:59'";
                 break;
+            case 'inmorethanndays':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                return "{$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 23:59:59'";
             case 'inlastndays':
                 $date = new \DateTime(null, new \DateTimeZone('UTC'));
                 $date->sub(new \DateInterval("P{$condition->filtervalue}D"));
@@ -447,12 +463,16 @@ class SysModuleFilters
         }
 
         // handle group scope
+        // get also users we represent
+        $absence = \BeanFactory::getBean('UserAbsences');
+        $userIds = array_merge([$current_user->id], $absence->getSubstituteIDs());
+
         switch ($group->groupscope) {
             case 'own':
-                $filterCondition['must'][] = ["term" => ["assigned_user_id" => $current_user->id]];
+                $filterCondition['must'][] = ["terms" => ["assigned_user_id" => $userIds]];
                 break;
             case 'creator':
-                $filterCondition['must'][] = ["term" => ["created_by" => $current_user->id]];
+                $filterCondition['must'][] = ["terms" => ["created_by" => $userIds]];
                 break;
         }
 
@@ -486,14 +506,14 @@ class SysModuleFilters
                 return ['bool' => ['must_not' => [['exists' => ["field" => $condition->field]]]]];
                 break;
             case 'emptyr':
-                if($this->filtermodule){
+                if ($this->filtermodule) {
                     $seed = \BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     return ['bool' => ['must_not' => [['exists' => ["field" => $relatedField]]]]];
                 }
                 break;
             case 'notempty':
-                if($this->filtermodule){
+                if ($this->filtermodule) {
                     $seed = \BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     return ['exists' => ["field" => $relatedField]];
@@ -505,12 +525,15 @@ class SysModuleFilters
             case 'equals':
                 return ['term' => [$condition->field . '.raw' => $condition->filtervalue]];
                 break;
+            case 'notequals':
+                return ['bool' => ['must_not' => ['term' => [$condition->field . '.raw' => $condition->filtervalue]]]];
+                break;
             case 'equalr':
-                if($this->filtermodule){
+                if ($this->filtermodule) {
                     $seed = \BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     $filtervalues = explode('::', $condition->filtervalue);
-                    return ['term' => [$relatedField  => $filtervalues['0']]];
+                    return ['term' => [$relatedField => $filtervalues['0']]];
                 }
                 break;
             case 'oneof':
@@ -549,10 +572,10 @@ class SysModuleFilters
                 return ['range' => [$condition->field . '.raw' => ['lte' => $condition->filtervalue]]];
                 break;
             case 'between':
-                return ['range' => [$condition->field . '.raw' => ['gte' => $condition->filtervalue, 'lte' => $condition->filtervalueto, "include_lower" =>  true, "include_upper" => true]]];
+                return ['range' => [$condition->field . '.raw' => ['gte' => $condition->filtervalue, 'lte' => $condition->filtervalueto, "include_lower" => true, "include_upper" => true]]];
                 break;
             case 'betweend':
-                return ['range' => [$condition->field  => ['gte' => $condition->filtervalue . ' 00:00:00', 'lte' => $condition->filtervalueto . ' 23:59:59', "include_lower" =>  true, "include_upper" => true]]];
+                return ['range' => [$condition->field => ['gte' => $condition->filtervalue . ' 00:00:00', 'lte' => $condition->filtervalueto . ' 23:59:59', "include_lower" => true, "include_upper" => true]]];
                 break;
             case 'today':
                 $today = date_format(new DateTime(), 'Y-m-d');
@@ -606,6 +629,10 @@ class SysModuleFilters
                 $date->add(new \DateInterval("P{$condition->filtervalue}D"));
                 return ['range' => [$condition->field => ["lte" => $date->format('Y-m-d') . ' 23:59:59']]];
                 break;
+            case 'inmorethanndays':
+                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                return ['range' => [$condition->field => ["gte" => $date->format('Y-m-d') . ' 23:59:59']]];
             case 'inlastndays':
                 $date = new \DateTime(null, new \DateTimeZone('UTC'));
                 $date->sub(new \DateInterval("P{$condition->filtervalue}D"));
@@ -658,18 +685,22 @@ class SysModuleFilters
         global $current_user;
         $filterConditionArray = [];
 
+        // get also users we represent
+        $absence = \BeanFactory::getBean('UserAbsences');
+        $userIds = array_merge([$current_user->id], $absence->getSubstituteIDs());
+
         // if the criteria is won and the user does not match return false
-        if ($group->groupscope == 'own' && $bean->assigned_user_id != $current_user->id) return false;
+        if ($group->groupscope == 'own' && array_search($bean->assigned_user_id, $userIds) === false) return false;
 
         $conditionmet = false;
 
         foreach ($group->conditions as $condition) {
             if ($condition->conditions) {
                 // save bool value of each condition ($c) in array, then search for a false one, if there is one, $conditionmet is false
-                foreach ($condition->conditions as $c){
+                foreach ($condition->conditions as $c) {
                     $vals[] = $this->checkBeanForFilterMatchCondition($c, $bean);
                 }
-                if(in_array(false, $vals)) {
+                if (in_array(false, $vals)) {
                     $conditionmet = false;
                 } else {
                     $conditionmet = true;
@@ -679,9 +710,10 @@ class SysModuleFilters
             }
 
             // in case of AND .. one negative is all negative
-            if ($group->logicaloperator == 'AND' && !$conditionmet) {
+            // in case of OR one positive is enough
+            if (strtoupper($group->logicaloperator) == 'AND' && !$conditionmet) {
                 return false;
-            } else if ($conditionmet) {
+            } else if (strtoupper($group->logicaloperator) == 'OR' && $conditionmet) {
                 return true;
             }
         }

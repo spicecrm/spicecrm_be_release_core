@@ -1,10 +1,12 @@
 <?php
- require_once('KREST/handlers/ModuleHandler.php');
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\KREST\handlers\ModuleHandler;
 
-$KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($app);
+$RESTManager = RESTManager::getInstance();
+$KRESTModuleHandler = new ModuleHandler($RESTManager->app);
 
-$app->group('/assistant', function () use ($app, $KRESTModuleHandler) {
-    $app->get('/list', function ($req, $res, $args) use ($app, $KRESTModuleHandler) {
+$RESTManager->app->group('/assistant', function () use ($KRESTModuleHandler) {
+    $this->get('/list', function ($req, $res, $args) use ($KRESTModuleHandler) {
         global $db, $current_user;
 
         $params = $req->getParams();

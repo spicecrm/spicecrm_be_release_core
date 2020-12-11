@@ -466,11 +466,6 @@ $dictionary['User'] = array(
             'name' => 'employee_status',
             'vname' => 'LBL_EMPLOYEE_STATUS',
             'type' => 'varchar',
-            'function' => array(
-                'name' => 'getEmployeeStatusOptions',
-                'returns' => 'html',
-                'include' => 'modules/Employees/EmployeeStatus.php'
-            ),
             'len' => 100,
         ),
         'messenger_id' => array(
@@ -506,7 +501,21 @@ $dictionary['User'] = array(
             'source' => 'non-db',
             'vname' => 'LBL_ACTIVITY_ACCEPT_STATUS',
             'options' => 'dom_meeting_accept_status',
-            'comment' => 'non db field retirved from the relationship to the meeting call etc'
+            'comment' => 'non db field retrieved from the relationship to the meeting call etc'
+        ),
+        'activity_status_date_modified' => array(
+            'name' => 'activity_status_date_modified',
+            'type' => 'datetime',
+            'source' => 'non-db',
+            'vname' => 'LBL_ACTIVITY_STATUS_DATE_MODFIFIED',
+            'comment' => 'non db field retrieved from the relationship to the meeting call etc'
+        ),
+        'activity_required' => array(
+            'name' => 'activity_required',
+            'type' => 'bool',
+            'source' => 'non-db',
+            'vname' => 'LBL_ACTIVITY_REQUIRED',
+            'comment' => 'non db field retrieved from the relationship to the meeting call etc'
         ),
         // CR1000356
         'meeting_user_status_accept' => array(
@@ -612,8 +621,7 @@ $dictionary['User'] = array(
             'name' => 'companycode_id',
             'vname' => 'LBL_COMPANYCODE',
             'type' => 'companies',
-            'dbType' => 'varchar',
-            'len' => 36,
+            'dbType' => 'id',
             'required' => false
         ),
         'companycode_name' => array(
@@ -634,6 +642,7 @@ $dictionary['User'] = array(
             'vname' => 'LBL_COMPANYCODE',
             'relationship' => 'companycode_users',
             'source' => 'non-db',
+            'module' => 'CompanyCodes',
         ),
         'costcenter_id' => array(
             'name' => 'costcenter_id',
@@ -665,10 +674,6 @@ $dictionary['User'] = array(
             'name' => 'email1',
             'vname' => 'LBL_EMAIL',
             'type' => 'varchar',
-            'function' => array(
-                'name' => 'getEmailAddressWidget',
-                'returns' => 'html'
-            ),
             'source' => 'non-db',
             'group' => 'email1',
             'merge_filter' => 'enabled',
@@ -1018,6 +1023,17 @@ if (file_exists('modules/SystemDeploymentCRs/SystemDeploymentCR.php')) {
         'comment' => '',
     ];
 
+}
+if (is_file("modules/ServiceTickets/ServiceTicket.php")) {
+    $dictionary['User']['fields']['servicetickets'] = [
+        'name' => 'servicetickets',
+        'type' => 'link',
+        'relationship' => 'servicetickets_users',
+        'source' => 'non-db',
+        'vname' => 'LBL_SERVICETICKETS',
+        'module' => 'ServiceTickets',
+        'default' => false
+    ];
 }
 // Not sure we need this at all.... commented for now
 //if (is_file("modules/ServiceEquipments/ServiceEquipment.php")) {

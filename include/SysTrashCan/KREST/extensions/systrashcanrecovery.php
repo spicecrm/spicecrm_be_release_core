@@ -26,16 +26,21 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-$app->group('/systrashcan', function () {
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\SysTrashCan\SysTrashCan;
+
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->group('/systrashcan', function () {
     $this->get('', function () {
         global $current_user;
 
-        echo json_encode(SystemTrashCan::getRecords());
+        echo json_encode(SysTrashCan::getRecords());
     });
     $this->get('/related/{transactionid}/{recordid}', function ($req, $res, $args) {
         global $current_user;
 
-        echo json_encode(SystemTrashCan::getRelated($args['transactionid'], $args['recordid']));
+        echo json_encode(SysTrashCan::getRelated($args['transactionid'], $args['recordid']));
     });
     $this->post('/recover/{id}', function ($req, $res, $args)  {
         global $current_user;
@@ -43,7 +48,7 @@ $app->group('/systrashcan', function () {
         $requestData = $_GET;
         $params = $req->getParams();
 
-        $recovery = SystemTrashCan::recover($args['id'], $params['recoverrelated'] == '1' ? true : false);
+        $recovery = SysTrashCan::recover($args['id'], $params['recoverrelated'] == '1' ? true : false);
 
         return $res->withJson([
             'status' => $recovery === true ? 'success' : 'error',

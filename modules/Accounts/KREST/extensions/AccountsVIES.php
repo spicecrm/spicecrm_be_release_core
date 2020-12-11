@@ -1,6 +1,9 @@
 <?php
+use SpiceCRM\includes\RESTManager;
 
-$app->get('/module/Accounts/VIES/{vatid}', function($req, $res, $args) use ($app) {
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->get('/module/Accounts/VIES/{vatid}', function($req, $res, $args) {
 
     $countryCode = substr($args['vatid'], 0, 2);
     $vatNumber = substr($args['vatid'], 2);
@@ -48,7 +51,7 @@ $app->get('/module/Accounts/VIES/{vatid}', function($req, $res, $args) use ($app
                 'countrycode' => (string)$result->checkVatResponse->countryCode,
                 'vatnumber' => (string)$result->checkVatResponse->vatNumber,
                 'vatid' => (string)$result->checkVatResponse->countryCode . (string)$result->checkVatResponse->vatNumber,
-                'valid' => (boolean)$result->checkVatResponse->valid,
+                'valid' => filter_var((string)$result->checkVatResponse->valid, FILTER_VALIDATE_BOOLEAN),
                 'name' => (string)$result->checkVatResponse->name,
                 'address' => (string)$result->checkVatResponse->address,
                 'requestdate' => substr((string)$result->checkVatResponse->requestDate, 0, 10)

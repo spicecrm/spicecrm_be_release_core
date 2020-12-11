@@ -1,29 +1,13 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-
 /*********************************************************************************
-* SugarCRM Community Edition is a customer relationship management program developed by
-* SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
 * 
-* This program is free software; you can redistribute it and/or modify it under
-* the terms of the GNU Affero General Public License version 3 as published by the
-* Free Software Foundation with the addition of the following permission added
-* to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
-* IN WHICH THE COPYRIGHT IS OWNED BY SUGARCRM, SUGARCRM DISCLAIMS THE WARRANTY
-* OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-* FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
-* details.
-* 
-* You should have received a copy of the GNU Affero General Public License along with
-* this program; if not, see http://www.gnu.org/licenses or write to the Free
-* Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301 USA.
-* 
-* You can contact SugarCRM, Inc. headquarters at 10050 North Wolfe Road,
-* SW2-130, Cupertino, CA 95014, USA. or at email address contact@sugarcrm.com.
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
 * 
 * The interactive user interfaces in modified source and object code versions
 * of this program must display Appropriate Legal Notices, as required under
@@ -34,7 +18,16 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * SugarCRM" logo. If the display of the logo is not reasonably feasible for
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+
 class ACLController
 {
 
@@ -228,7 +221,7 @@ class ACLController
      */
     public function checkAccess($bean, $action, $is_owner = false, $type = 'module')
     {
-        return $GLOBALS['ACLController']->checkACLAccess($bean, $action);
+        return $this->checkACLAccess($bean, $action);
     }
 
 
@@ -431,6 +424,119 @@ class ACLController
             // return the value
             return $allowAccess;
         }
+    }
+
+    /**
+     * returns all actions (Standatd & Custom) defined for the module
+     *
+     * @param $module
+     */
+    private function getModuleActions($module){
+        global $db;
+        $actions = [];
+
+        // get the standard Actions
+        $standardActions = $db->query("SELECT action FROM spiceaclstandardactions");
+        while($standardAction = $db->fetchByAssoc($standardActions)){
+            $actions[$standardAction['action']] = $standardAction['action'];
+        }
+
+        $customActions = $db->query("SELECT spiceaclmoduleactions.id, action FROM spiceaclmoduleactions, sysmodules WHERE spiceaclmoduleactions.sysmodule_id = sysmodules.id AND sysmodules.module = '$module'");
+        while($customAction = $db->fetchByAssoc($customActions)){
+            $actions[$customAction['id']] = $customAction['action'];
+        }
+
+        return $actions;
+    }
+
+    /**
+     * returns all ACL Actions the user is allowed to do on the bean
+     *
+     * returns an array with the actionname and true or false
+     *
+     * @param $bean
+     * @return array
+     */
+    public function getBeanActions($bean)
+    {
+        global $db, $current_user;
+
+        if (!$this->aclObject)
+            $this->aclObject = \BeanFactory::getBean('SpiceACLObjects');
+
+        // get the actions
+        $actions = $this->getModuleActions($bean->_module ?: $bean->module_dir);
+
+        // array for actions with status true or false
+        $aArray = [];
+        // admins have access to all
+        if ($GLOBALS['current_user']->is_admin){
+            foreach($actions as $actionid => $actionname){
+                $aArray[$actionname] = true;
+            }
+            return $aArray;
+        }
+
+        $activitiesAllowed = [];
+        if (is_object($bean)) {
+
+            // get a territory Object
+            if (!$this->territory)
+                $this->territory = \BeanFactory::getBean('SpiceACLTerritories');
+
+            $userObjects = $this->aclObject->getUserACLObjects($bean->_module ?: $bean->module_dir);
+            foreach ($userObjects as $aclObjectId => $aclObjectData) {
+                // only check type 0
+                if ($aclObjectData['spiceaclobjecttype'] != 0)
+                    continue;
+
+                $activitiesAllowed = array_merge($activitiesAllowed, $this->aclObject->getObjectActivities($bean, $aclObjectData));
+            }
+
+            // only unique values
+            $activitiesAllowed = array_unique($activitiesAllowed);
+
+            // check if we shodul limit
+            if (count($activitiesAllowed) > 0) {
+                foreach ($userObjects as $aclObjectId => $aclObjectData) {
+                    // only check type 0
+                    if ($aclObjectData['spiceaclobjecttype'] != 3)
+                        continue;
+
+                    // match the object without activitiy
+                    $activities = $this->aclObject->getObjectActivities($bean, $aclObjectData);
+                    foreach($activitiesAllowed as $allowedid => $allwoedaction){
+                        if(!isset($activities[$allowedid])){
+                            unset($activitiesAllowed['$allowedid']);
+                        }
+                    }
+
+                }
+            }
+
+            // build the access array
+            foreach($actions as $actionid => $actionname){
+                $aArray[$actionname] = array_search($actionname, $activitiesAllowed) !== false;
+            }
+        } else {
+            //check if module is under ACL. Useful for modules like Activities, History, Calendar
+            //and corresponding subpanel display
+            if(!$GLOBALS['ACLController']->moduleSupportsACL($bean))
+                return true;
+
+            foreach ($this->aclObject->getUserACLObjects($bean) as $aclObjectId => $aclObjectData) {
+                $activitiesAllowed = array_merge($activitiesAllowed, $aclObjectData['objectactions']);
+            }
+
+            // only unique values
+            $activitiesAllowed = array_unique($activitiesAllowed);
+            // build the access array
+            foreach($actions as $actionid => $actionname){
+                $aArray[$actionname] = array_search($actionname, $activitiesAllowed) !== false;
+            }
+        }
+
+        return $aArray;
     }
 
     /*

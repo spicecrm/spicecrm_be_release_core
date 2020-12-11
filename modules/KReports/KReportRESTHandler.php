@@ -21,11 +21,6 @@ require_once 'modules/KReports/KReportUtil.php';
 class KReporterRESTHandler
 {
 
-    function __construct()
-    {
-
-    }
-
     function getCurrencies()
     {
         $curResArray = $GLOBALS['db']->query('SELECT id, symbol, conversion_rate FROM currencies WHERE deleted = \'0\'');
@@ -218,7 +213,7 @@ class KReporterRESTHandler
     function get_users_list($params = array())
     {
         $responseArray = array();
-        $tmpBean = new User();
+        $tmpBean = BeanFactory::getBean('Users');
         $order_by = "users.last_name ASC";
         $where = ""; // status='Active' ?
         $row_offset = 0;
@@ -278,8 +273,7 @@ class KReporterRESTHandler
         $moduleArray = explode(':', $pathArray[count($pathArray) - 2]);
 
         // load the parent module
-        require_once($beanFiles[$beanList[$moduleArray[1]]]);
-        $parentModule = new $beanList[$moduleArray[1]];
+        $parentModule = BeanFactory::getBean($moduleArray[1]);
 
         if ($moduleArray[0] == 'link') {
             // load the Relationshop to get the module
@@ -290,8 +284,7 @@ class KReporterRESTHandler
             //ORIGINAL: $parentModule->$moduleArray[2]->getRelatedModuleName();
             $moduleArrayEl = $moduleArray[2];
             $thisModuleName = $parentModule->$moduleArrayEl->getRelatedModuleName();
-            require_once($beanFiles[$beanList[$parentModule->$moduleArrayEl->getRelatedModuleName()]]);
-            $thisModule = new $beanList[$parentModule->$moduleArrayEl->getRelatedModuleName()];
+            $thisModule = BeanFactory::getBean($thisModuleName);
             //END
         } else
             $thisModule = $parentModule;
@@ -370,8 +363,7 @@ class KReporterRESTHandler
             $moduleArray = explode(':', $pathArray[count($pathArray) - 2]);
 
             // load the parent module
-            require_once($beanFiles[$beanList[$moduleArray[1]]]);
-            $parentModule = new $beanList[$moduleArray[1]];
+            $parentModule = BeanFactory::getBean($moduleArray[1]);
 
             // get the module we need to determine the type
             if ($moduleArray[0] == 'link') {
@@ -383,16 +375,13 @@ class KReporterRESTHandler
                 //PHP7 - 5.6 COMPAT
                 //ORIGINAL: require_once($beanFiles[$beanList[$parentModule->$moduleArray[2]->getRelatedModuleName()]]);
                 $moduleArrayEl = $moduleArray[2];
-                require_once($beanFiles[$beanList[$parentModule->$moduleArrayEl->getRelatedModuleName()]]);
-                $thisModule = new $beanList[$parentModule->$moduleArrayEl->getRelatedModuleName()];
+                $thisModule = BeanFactory::getBean($parentModule->$moduleArrayEl->getRelatedModuleName());
                 //END
             } //2013-09-25 add support for relate fields BUG #498
             elseif ($moduleArray[0] == 'relate') {
-                require_once($beanFiles[$beanList[$moduleArray['1']]]);
-                $nodeModule = new $beanList[$moduleArray['1']]();
+                $nodeModule = BeanFactory::getBean($moduleArray['1']);
                 $thisModuleName = $nodeModule->field_defs[$moduleArray[2]]['module'];
-                require_once($beanFiles[$beanList[$thisModuleName]]);
-                $thisModule = new $beanList[$thisModuleName]();
+                $thisModule = BeanFactory::getBean($thisModuleName);
             } else
                 $thisModule = $parentModule;
 
@@ -485,8 +474,7 @@ class KReporterRESTHandler
 
 
         // load the parent module
-        require_once($beanFiles[$beanList[$moduleArray[1]]]);
-        $parentModule = new $beanList[$moduleArray[1]];
+        $parentModule = BeanFactory::getBean($moduleArray[1]);
 
         if ($moduleArray[0] == 'link' || $moduleArray[0] == 'relate') {
             switch ($moduleArray[0]) {
@@ -499,17 +487,14 @@ class KReporterRESTHandler
                     //ORIGINAL: $parentModule->$moduleArray[2]->getRelatedModuleName();
                     $moduleArrayEl = $moduleArray[2];
                     $thisModuleName = $parentModule->$moduleArrayEl->getRelatedModuleName();
-                    require_once($beanFiles[$beanList[$parentModule->$moduleArrayEl->getRelatedModuleName()]]);
-                    $thisModule = new $beanList[$parentModule->$moduleArrayEl->getRelatedModuleName()];
+                    $thisModule = BeanFactory::getBean($parentModule->$moduleArrayEl->getRelatedModuleName());
                     //END
                     break;
                 //2013-09-25 add support for relate fields BUG #499
                 case 'relate':
-                    require_once($beanFiles[$beanList[$moduleArray['1']]]);
-                    $nodeModule = new $beanList[$moduleArray['1']]();
+                    $nodeModule = BeanFactory::getBean($moduleArray['1']);
                     $thisModuleName = $nodeModule->field_defs[$moduleArray[2]]['module'];
-                    require_once($beanFiles[$beanList[$thisModuleName]]);
-                    $thisModule = new $beanList[$thisModuleName]();
+                    $thisModule = BeanFactory::getBean($thisModuleName);
                     break;
             }
 
@@ -637,7 +622,7 @@ class KReporterRESTHandler
 
     function getFields($nodeid)
     {
-        global $_REQUEST, $beanFiles, $beanList;
+        global $beanFiles, $beanList;
         $pathArray = explode('::', $nodeid);
         //print_r($pathArray);
         $pathEnd = end($pathArray);
@@ -663,15 +648,13 @@ class KReporterRESTHandler
 
         //2013-01-09 add support for Studio Relate Fields
         if ($nodeArray[0] == 'relate') {
-            require_once($beanFiles[$beanList[$nodeArray['1']]]);
-            $nodeModule = new $beanList[$nodeArray['1']];
+            $nodeModule = BeanFactory::getBean($nodeArray['1']);
 
             $returnArray = $this->buildFieldArray($nodeModule->field_defs[$nodeArray[2]]['module']);
         }
 
         if ($nodeArray[0] == 'relationship') {
-            require_once($beanFiles[$beanList[$nodeArray['1']]]);
-            $nodeModule = new $beanList[$nodeArray['1']];
+            $nodeModule = BeanFactory::getBean($nodeArray['1']);
             $nodeModule->load_relationship($nodeArray['2']);
 
             //PHP7 - 5.6 COMPAT
@@ -705,8 +688,7 @@ class KReporterRESTHandler
         }
 
         if ($nodeArray[0] == 'link') {
-            require_once($beanFiles[$beanList[$nodeArray['1']]]);
-            $nodeModule = new $beanList[$nodeArray['1']];
+            $nodeModule = BeanFactory::getBean($nodeArray['1']);
             $nodeModule->load_relationship($nodeArray['2']);
             //PHP7 - 5.6 COMPAT
             //ORIGINAL $returnArray = return $this->buildNodeArray($nodeModule->$nodeArray['2']->getRelatedModuleName(), $nodeModule->{$nodeArray['2']});
@@ -717,8 +699,7 @@ class KReporterRESTHandler
 
         //2013-01-09 add support for Studio Relate Fields
         if ($nodeArray[0] == 'relate') {
-            require_once($beanFiles[$beanList[$nodeArray['1']]]);
-            $nodeModule = new $beanList[$nodeArray['1']];
+            $nodeModule = BeanFactory::getBean($nodeArray['1']);
 
             return $this->buildNodeArray($nodeModule->field_defs[$nodeArray[2]]['module']);
         }
@@ -859,9 +840,8 @@ class KReporterRESTHandler
         global $beanFiles, $beanList;
         require_once('include/utils.php');
         $returnArray = array();
-        if ($module != '' && $module != 'undefined' && file_exists($beanFiles[$beanList [$module]])) {
-            require_once($beanFiles[$beanList[$module]]);
-            $nodeModule = new $beanList[$module];
+        if ($module != '' && $module != 'undefined') {
+            $nodeModule = BeanFactory::getBean($module);
 
             foreach ($nodeModule->field_name_map as $field_name => $field_defs) {
                 if ($field_defs['type'] != 'link' && (!isset($field_defs['reportable']) || (isset($field_defs['reportable']) && $field_defs['reportable'] == true))
@@ -1342,7 +1322,7 @@ class KReporterRESTHandler
 
         $thisReport = BeanFactory::getBean('KReports', $reportId);
         if(!$thisReport->ACLAccess('edit')){
-            throw (new \SpiceCRM\KREST\ForbiddenException("not allowed to edit report"));
+            throw (new \SpiceCRM\includes\ErrorHandlers\ForbiddenException("not allowed to edit report"));
         }
 
         if(is_string($layoutParams)){
@@ -1929,28 +1909,28 @@ class KReporterRESTHandler
 ###################### END DListManager ######################
 
 ###################### BEGIN SecurityGroups ######################
-    public function saveSecurityGroups($record)
-    {
-//        file_put_contents("sugarcrm.log", print_r($record, true)."\n", FILE_APPEND);
-        if (!empty($record['id']) && !empty($record['securitygroup_id'])) {
-            $GLOBALS['db']->query("DELETE FROM securitygroups_records WHERE record_id = '" . $record['id'] . "'");
-            $GLOBALS['db']->query("INSERT INTO securitygroups_records (id, securitygroup_id, record_id, module, modified_user_id, created_by, deleted, date_modified) values ('" . create_guid() . "', '" . $record['securitygroup_id'] . "', '" . $record['id'] . "', 'KReports', '" . $GLOBALS['current_user']->id . "', '" . $GLOBALS['current_user']->id . "', 0, '" . gmdate('Y-m-d H:i:s') . "')");
-        }
-    }
-
-    public function getSecurityGroups($report_id)
-    {
-        if (!empty($report_id)) {
-            $res = $GLOBALS['db']->query("SELECT securitygroup_id, name securitygroup_name 
-              FROM securitygroups_records 
-              INNER JOIN securitygroups ON securitygroups.id = securitygroups_records.securitygroup_id
-              WHERE securitygroups_records.record_id='" . $report_id . "' AND securitygroups_records.deleted=0");
-            $row = $GLOBALS['db']->fetchByAssoc($res);
-            return (empty($row) ? array() : $row);
-        }
-        return array();
-    }
-
+// Old implementation. Keeping in it in case needed in future KReporter 5.x releases
+//    public function saveSecurityGroups($record)
+//    {
+////        file_put_contents("sugarcrm.log", print_r($record, true)."\n", FILE_APPEND);
+//        if (!empty($record['id']) && !empty($record['securitygroup_id'])) {
+//            $GLOBALS['db']->query("DELETE FROM securitygroups_records WHERE record_id = '" . $record['id'] . "'");
+//            $GLOBALS['db']->query("INSERT INTO securitygroups_records (id, securitygroup_id, record_id, module, modified_user_id, created_by, deleted, date_modified) values ('" . create_guid() . "', '" . $record['securitygroup_id'] . "', '" . $record['id'] . "', 'KReports', '" . $GLOBALS['current_user']->id . "', '" . $GLOBALS['current_user']->id . "', 0, '" . gmdate('Y-m-d H:i:s') . "')");
+//        }
+//    }
+//
+//    public function getSecurityGroups($report_id)
+//    {
+//        if (!empty($report_id)) {
+//            $res = $GLOBALS['db']->query("SELECT securitygroup_id, name securitygroup_name
+//              FROM securitygroups_records
+//              INNER JOIN securitygroups ON securitygroups.id = securitygroups_records.securitygroup_id
+//              WHERE securitygroups_records.record_id='" . $report_id . "' AND securitygroups_records.deleted=0");
+//            $row = $GLOBALS['db']->fetchByAssoc($res);
+//            return (empty($row) ? array() : $row);
+//        }
+//        return array();
+//    }
 ###################### END SecurityGroups ######################
 
 

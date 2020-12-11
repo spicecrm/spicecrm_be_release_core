@@ -44,7 +44,6 @@ THIS IS FOR SUGARCRM USERS
 
 
 *************************************************************************************/
-$disable_date_format = true;
 
 $server->register(
     'is_user_admin',
@@ -1103,9 +1102,8 @@ $server->register(
  *                  'ENT' -- For Enterprise
  */
 function get_sugar_flavor(){
- global $sugar_flavor;
 
- return $sugar_flavor;
+ return 'Spice';
 }
 
 
@@ -2085,8 +2083,6 @@ function get_entries_count($session, $module_name, $query, $deleted) {
 	$sql = 'SELECT COUNT(*) result_count FROM ' . $seed->table_name . ' ';
 
 
-    $customJoin = $seed->getCustomJoin();
-    $sql .= $customJoin['join'];
 
 	// build WHERE clauses, if any
 	$where_clauses = array();

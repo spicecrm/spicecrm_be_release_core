@@ -40,9 +40,7 @@ class SugarAutoLoader{
 		'XTemplate'=>'XTemplate/xtpl.php',
 		'ListView'=>'include/ListView/ListView.php',
 		'Sugar_Smarty'=>'include/Sugar_Smarty.php',
-		'Javascript'=>'include/javascript/javascript.php',
-        'SugarSearchEngineFullIndexer'=>'include/SugarSearchEngine/SugarSearchEngineFullIndexer.php',
-        'SugarSearchEngineSyncIndexer'=>'include/SugarSearchEngine/SugarSearchEngineSyncIndexer.php',
+		'Javascript'=>'include/javascript/javascript.php'
 	);
 
 	public static $noAutoLoad = array(
@@ -63,132 +61,22 @@ class SugarAutoLoader{
 		}
 
 		if(empty(SugarAutoLoader::$moduleMap)){
-			if(isset($GLOBALS['beanFiles'])){
-				SugarAutoLoader::$moduleMap = $GLOBALS['beanFiles'];
-			}else{
-				include('include/modules.php');
-				SugarAutoLoader::$moduleMap = $beanFiles;
-			}
+		    SugarAutoLoader::$moduleMap = $GLOBALS['beanFiles'];
 		}
 		if(!empty(SugarAutoLoader::$moduleMap[$class])){
-			require_once(SugarAutoLoader::$moduleMap[$class]);
-			return true;
+		    if(file_exists(SugarAutoLoader::$moduleMap[$class])) {
+                require_once(SugarAutoLoader::$moduleMap[$class]);
+                return true;
+            }
 		}
-        $viewPath = self::getFilenameForViewClass($class);
-        if (!empty($viewPath))
-        {
-            require_once($viewPath);
-            return true;
-        }
-        $reportWidget = self::getFilenameForSugarWidget($class);
-        if (!empty($reportWidget))
-        {
-            require_once($reportWidget);
-            return true;
-        }
-
-
-//BEGIN include/google-api-php-client was removed in SpiceCRM 2018.11.001
-//Use SpiceCRM modules Google* instead
-        // Autoload Google libraries
-//        $classPath = explode('_', $class);
-//
-//        if ($classPath[0] != 'Google') {
-//            return false;
-//        }
-//
-//        // Drop 'Google', and maximum class file path depth in this project is 3.
-//        $classPath = array_slice($classPath, 1, 2);
-//
-//        $filePath = 'include/google-api-php-client/src/Google/' . implode('/', $classPath) . '.php';
-//
-//        if (file_exists($filePath)) {
-//            require_once($filePath);
-//            return true;
-//        }
-//END
-
   		return false;
 	}
-
-    protected static function getFilenameForViewClass($class)
-    {
-        $module = false;
-        if (!empty($_REQUEST['module']) && substr($class, 0, strlen($_REQUEST['module'])) == $_REQUEST['module'])
-        {
-            //This is a module view
-            $module = $_REQUEST['module'];
-            $class = substr($class, strlen($module));
-        }
-
-        if (substr($class, 0, 4) == "View")
-        {
-            $view = strtolower(substr($class, 4));
-            if ($module)
-            {
-                $modulepath = "modules/$module/views/view.$view.php";
-                if (file_exists("custom/$modulepath"))
-                    return "custom/$modulepath";
-                if (file_exists($modulepath))
-                    return $modulepath;
-            } else {
-                $basepath = "include/MVC/View/views/view.$view.php";
-                if (file_exists("custom/$basepath")){
-                    return "custom/$basepath";
-                }
-                if (file_exists($basepath)) {
-                    return $basepath;
-                }
-            }
-        }
-    }
-
-    /**
-     * getFilenameForSugarWidget
-     * This method attempts to autoload classes starting with name "SugarWidget".  It first checks for the file
-     * in custom/include/generic/SugarWidgets directory and if not found defaults to include/generic/SugarWidgets.
-     * This method is used so that we can easily customize and extend these SugarWidget classes.
-     *
-     * @static
-     * @param $class String name of the class to load
-     * @return String file of the SugarWidget class; false if none found
-     */
-    protected static function getFilenameForSugarWidget($class)
-    {
-        //Only bother to check if the class name starts with SugarWidget
-        if(strpos($class, 'SugarWidget') !== false)
-        {
-            if(strpos($class, 'SugarWidgetField') !== false)
-            {
-                //We need to lowercase the portion after SugarWidgetField
-                $name = substr($class, 16);
-                if(!empty($name))
-                {
-                    $class = 'SugarWidgetField' . strtolower($name);
-                }
-            }
-
-            $file = get_custom_file_if_exists("include/generic/SugarWidgets/{$class}.php");
-            if(file_exists($file))
-            {
-               return $file;
-            }
-        }
-        return false;
-    }
-
 
 	public static function loadAll(){
 		foreach(SugarAutoLoader::$map as $class=>$file){
 			require_once($file);
 		}
 
-		if(isset($GLOBALS['beanFiles'])){
-			$files = $GLOBALS['beanFiles'];
-		}else{
-			include('include/modules.php');
-			$files = $beanList;
-		}
 		foreach(SugarAutoLoader::$map as $class=>$file){
 			require_once($file);
 		}

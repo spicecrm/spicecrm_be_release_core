@@ -262,7 +262,7 @@ function portal_get_entry_list_filter($session, $module_name, $order_by, $select
 
                         $where .=  "$sugar->table_name$cstm.$name $operator ";
                         if($sugar->field_defs['name']['type'] == 'datetime'){
-                            $where .= db_convert("'".$GLOBALS['db']->quote($value)."'", 'datetime');
+                            $where .= $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($value)."'", 'datetime');
                         }else{
                             if(empty($value)) {
                                 $tmp = array();
@@ -736,13 +736,16 @@ function portal_get_subscription_lists($session){
     $contact = new Contact();
     $contact->retrieve($_SESSION['user_id']);
 
+    /*
     if(!empty($contact->id)) {
         $result = get_subscription_lists_keyed($contact, true);
     }
+    */
 
 
     $return_results = array('unsubscribed' => array(), 'subscribed' => array());
 
+    /*
     foreach($result['unsubscribed'] as $newsletter_name => $data) {
         $return_results['unsubscribed'][] = array('name' => $newsletter_name, 'prospect_list_id' => $data['prospect_list_id'],
                                                   'campaign_id' => $data['campaign_id'], 'description' => $data['description'],
@@ -753,6 +756,7 @@ function portal_get_subscription_lists($session){
                                                 'campaign_id' => $data['campaign_id'], 'description' => $data['description'],
                                                 'frequency' => $data['frequency']);
     }
+    */
 
     return array('unsubscribed'=>$return_results['unsubscribed'], 'subscribed' => $return_results['subscribed'], 'error'=>$error->get_soap_array());
 }

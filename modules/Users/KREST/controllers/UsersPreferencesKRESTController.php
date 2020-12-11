@@ -2,8 +2,8 @@
 
 namespace SpiceCRM\modules\Users\KREST\controllers;
 
-use KREST\ForbiddenException;
-use SpiceCRM\KREST\NotFoundException;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\ErrorHandlers\NotFoundException;
 
 class UsersPreferencesKRESTController
 {
@@ -41,7 +41,7 @@ class UsersPreferencesKRESTController
 
         if ( $current_user->id === $userId ) $user = $current_user;
         else {
-            if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ) {
+         if ( $this->editingEnabled() ) {
                 $user = new \User();
                 $user->retrieve( $userId );
                 if ( empty( $user->id )) throw ( new NotFoundException('User not found.'))->setLookedFor([ 'id'=>$userId, 'module'=>'Users' ]);
@@ -66,7 +66,7 @@ class UsersPreferencesKRESTController
 
         if ( $current_user->id === $userId ) $user = $current_user;
         else {
-            if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ) {
+            if ( $this->editingEnabled() ) {
                 $user = new \User();
                 $user->retrieve( $userId );
                 if ( empty( $user->id )) throw ( new NotFoundException( 'User not found.' ) )->setLookedFor( [ 'id' => $userId, 'module' => 'Users' ] );
@@ -112,7 +112,7 @@ class UsersPreferencesKRESTController
 
         if ( $current_user->id === $userId ) $user = $current_user;
         else {
-            if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ) {
+            if ( $this->editingEnabled() ) {
                 $user = new \User();
                 $user->retrieve( $userId );
                 $setPreferenceFunction = "setPreferenceForUser";
@@ -138,12 +138,28 @@ class UsersPreferencesKRESTController
 
     public function getDefaultPreferences()
     {
-        $prefs = [];
-        $prefNames = [ 'currency', 'datef', 'num_grp_sep', 'timef', 'timezone', 'default_currency_significant_digits', 'default_locale_name_format', 'week_day_start'];
-        foreach ( $prefNames as $name ) {
-            if ( isset( $GLOBALS['sugar_config'][$name]{0} )) $prefs[$name] = $GLOBALS['sugar_config'][$name];
+        return $GLOBALS['sugar_config']['default_preferences'] ?: [];
+    }
+
+
+    /**
+     * CR1000463 use SpiceACL for user preferences editing
+     * keep bwc compatibility
+     * @return bool
+     */
+    public function editingEnabled(){
+        global $current_user;
+        $editEnabled = false;
+        if($GLOBALS['sugar_config']['acl']['controller'] && !preg_match('/SpiceACL/', $GLOBALS['sugar_config']['acl']['controller'])){
+            if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ){
+                $editEnabled = true;
+            }
+        } else{
+            if($GLOBALS['ACLController']->checkAccess('UserPreferences', 'edit')){
+                $editEnabled = true;
+            }
         }
-        return $prefs;
+        return $editEnabled;
     }
 
 }

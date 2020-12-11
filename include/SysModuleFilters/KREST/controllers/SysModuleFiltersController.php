@@ -29,6 +29,8 @@
 
 namespace SpiceCRM\includes\SysModuleFilters\KREST\controllers;
 
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+
 class SysModuleFiltersController
 {
 
@@ -41,7 +43,7 @@ class SysModuleFiltersController
     {
         global $current_user;
         if (!$current_user->is_admin) {
-            throw (new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            throw (new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
         }
     }

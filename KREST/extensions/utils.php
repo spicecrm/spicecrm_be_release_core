@@ -14,31 +14,35 @@
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 require_once('KREST/handlers/utils.php');
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$RESTManager->registerExtension('module', '2.0');
 
-$KRESTUtilsHandler = new KRESTUtilsHandler($app);
+$restapp = $RESTManager->app;
+$KRESTUtilsHandler = new KRESTUtilsHandler($restapp);
 
-$KRESTManager->registerExtension('utils', '1.0');
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$RESTManager->registerExtension('utils', '1.0');
 
-$app->group('/pdf', function () use ($app, $KRESTManager, $KRESTUtilsHandler) {
-    $app->group('/toImage', function () use ($app, $KRESTManager, $KRESTUtilsHandler) {
-        $app->get('/base64data/{filepath}', function($req, $res, $args) use ($app, $KRESTUtilsHandler) {
+$restapp->group('/pdf', function () use ($restapp, $RESTManager, $KRESTUtilsHandler) {
+    $restapp->group('/toImage', function () use ($restapp, $RESTManager, $KRESTUtilsHandler) {
+        $restapp->get('/base64data/{filepath}', function($req, $res, $args) use ($restapp, $KRESTUtilsHandler) {
             $data = $KRESTUtilsHandler->pdfToBase64Image($args['filepath']);
             echo json_encode($data);
         });
-        $app->get('/url/{filepath}', function($req, $res, $args) use ($app, $KRESTUtilsHandler) {
+        $restapp->get('/url/{filepath}', function($req, $res, $args) use ($restapp, $KRESTUtilsHandler) {
             $urls = $KRESTUtilsHandler->pdfToUrlImage($args['filepath']);
             echo json_encode($urls);
         });
     });
-    $app->group('/upload', function () use ($app, $KRESTManager, $KRESTUtilsHandler) {
-        $app->post('/tmp', function ($req, $res, $args) use ($app, $KRESTUtilsHandler) {
+    $restapp->group('/upload', function () use ($restapp, $RESTManager, $KRESTUtilsHandler) {
+        $restapp->post('/tmp', function ($req, $res, $args) use ($restapp, $KRESTUtilsHandler) {
             $postBody = $req->getParsedBody();
             $temppath = sys_get_temp_dir();
             $filename = create_guid() . '.pdf';
             file_put_contents($temppath . '/' . $filename, base64_decode($postBody));
             echo $temppath . '/' . $filename;
         });
-        $app->post('/uploadsDir', function ($req, $res, $args) use ($app, $KRESTUtilsHandler) {
+        $restapp->post('/uploadsDir', function ($req, $res, $args) use ($restapp, $KRESTUtilsHandler) {
             global $sugar_config;
             $postBody = $req->getParsedBody();
             $filename = create_guid() . '.pdf';

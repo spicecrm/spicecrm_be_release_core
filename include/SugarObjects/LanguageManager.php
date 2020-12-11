@@ -41,29 +41,6 @@
 class LanguageManager
 {
 
-	/**
-	 * Called from VardefManager to allow for caching a lang file for a module
-	 * @param module - the name of the module we are working with
-	 * @param templates - an array of templates this module uses
-	 */
-	public static function createLanguageFile($module , $templates=array('default'), $refresh = false){
-		global $mod_strings, $current_language;
-		if(inDeveloperMode() || !empty($_SESSION['developerMode'])){
-        	$refresh = true;
-    	}
-		$temp_mod_strings = $mod_strings;
-		$lang = $current_language;
-        if(empty($lang))
-            $lang = $GLOBALS['sugar_config']['default_language'];
-		static $createdModules = array();
-		if(empty($createdModules[$module]) && ($refresh || !file_exists(sugar_cached('modules/').$module.'/language/'.$lang.'.lang.php'))){
-            $loaded_mod_strings = array();
-			$loaded_mod_strings = LanguageManager::loadTemplateLanguage($module , $templates, $lang , $loaded_mod_strings);
-			$createdModules[$module] = true;
-			LanguageManager::refreshLanguage($module,$lang, $loaded_mod_strings);
-		}
-	}
-
     /**
      * syslanguage
      * @param bool $sysonly
@@ -160,117 +137,22 @@ class LanguageManager
         return $retArray;
     }
 
+
     /**
-     * syslanguage
-     * create extension language files for labels retrieved from database
+     * @deprectaed
+     *
+     * @todo : check if we shoudl add caching for retrieved results
+     *
      * @param $module
-     * @param $language
+     * @param $lang
+     * @param $loaded_mod_strings
+     * @param array $additonal_objects
      */
-    public static function createLanguageFileUIOverride($module, $language){
-        // loop vardefs and grab module labels
-        $bean = BeanFactory::getBean($module);
-        if($bean) {
-            $fieldDefs = $bean->getFieldDefinitions();
-            $extlabels = array();
-            foreach ($fieldDefs as $field => $f) {
-                if (isset($f['vname']) && !empty($f['vname'])) {
-                    $extlabels[] = $f['vname'];
-                }
-            }
-
-            // Grab labels from db and save to file
-            $path = dirname(__FILE__);
-            $path = substr($path, 0, strpos($path, "include".DIRECTORY_SEPARATOR."SugarObjects"));
-
-            $file = $path."custom/Extension/modules/". $module ."/Ext/Language/".$language . ".lang.uioverride.php";
-            //check dirs in path
-
-            if (count($extlabels) > 0) {
-                $q = "(SELECT trans.translation_default, labels.name
-                                FROM syslanguagelabels labels
-                                INNER JOIN syslanguagetranslations trans on trans.syslanguagelabel_id=labels.id
-                                WHERE trans.syslanguage= '" . $language . "' AND labels.name IN ('" . implode("','", $extlabels) . "') 
-                      ) UNION (
-                        SELECT trans.translation_default, labels.name
-                                FROM syslanguagelabels labels
-                                INNER JOIN syslanguagecustomtranslations trans on trans.syslanguagelabel_id=labels.id
-                                WHERE trans.syslanguage= '" . $language . "' AND labels.name IN ('" . implode("','", $extlabels) . "') 
-                      ) UNION (
-                        SELECT trans.translation_default, labels.name
-                                FROM syslanguagecustomlabels labels
-                                INNER JOIN syslanguagecustomtranslations trans on trans.syslanguagelabel_id=labels.id
-                                WHERE trans.syslanguage= '" . $language . "' AND labels.name IN ('" . implode("','", $extlabels) . "') 
-                      )         
-                ";
-                if (!$results = $GLOBALS['db']->query($q)) {
-                    $GLOBALS['log']->fatal($q . " => " . $GLOBALS['db']->last_error);
-                } else {
-                        $savefile = false;
-                        $extlblstr = "<?php\n";
-                        while ($row = $GLOBALS['db']->fetchByAssoc($results)) {
-                            if(!$savefile) $savefile = true;
-                            $extlblstr .= "\$mod_strings['" . $row['name'] . "'] = '" . addslashes($row['translation_default']) . "';\n";
-                        }
-                        if($savefile) {
-                            //check directories in path
-                            if (!is_dir($path . "custom/Extension")) sugar_mkdir($path . "custom/Extension", '0755');
-                            if (!is_dir($path . "custom/Extension/modules")) sugar_mkdir($path . "custom/Extension/modules", '0755');
-                            if (!is_dir($path . "custom/Extension/modules/" . $module)) sugar_mkdir($path . "custom/Extension/modules/" . $module, '0755');
-                            if (!is_dir($path . "custom/Extension/modules/" . $module . "/Ext")) sugar_mkdir($path . "custom/Extension/modules/" . $module . "/Ext", '0755');
-                            if (!is_dir($path . "custom/Extension/modules/" . $module . "/Ext/Language")) sugar_mkdir($path . "custom/Extension/modules/" . $module . "/Ext/Language", '0755');
-                            //save file
-                            sugar_file_put_contents($file, $extlblstr);
-                        }
-                }
-            }
-            else{
-                echo '<br>no count';
-            }
-            unset($bean);
-        }
-    }
-
-
-	/**
-	 * Load the module  tempalte lauguage files
-	 * @param module - the name of the module we are working with
-	 * @param templates - an array of templates this module uses
-	 * @param lang - current language this module use
-	 * @param loaded_mod_strings - the string that we will add the module template language  into
-	 */
-	public static function loadTemplateLanguage($module , $templates , $lang, $loaded_mod_strings){
-		$templates = array_reverse($templates);
-		foreach($templates as $template){
-			$temp = LanguageManager::addTemplate($module,$lang, $template);
-			$loaded_mod_strings = sugarLangArrayMerge($loaded_mod_strings, $temp);
-		}
-		return $loaded_mod_strings;
-	}
-
-    public static function addTemplate($module, $lang, $template){
-		if($template == 'default')$template = 'basic';
-		$templates = array();
-		$fields = array();
-		if(empty($templates[$template])){
-			$path = 'include/SugarObjects/templates/' . $template . '/language/'.$lang.'.lang.php';
-			if(file_exists($path)){
-				require($path);
-				$templates[$template] = $mod_strings;
-			}else{
-				$path = 'include/SugarObjects/implements/' . $template . '/language/'.$lang.'.lang.php';
-				if(file_exists($path)){
-					require($path);
-					$templates[$template] = $mod_strings;
-				}
-			}
-		}
-		if(!empty($templates[$template])){
-			return $templates[$template];
-		}
-	}
-
 	public static function saveCache($module,$lang, $loaded_mod_strings, $additonal_objects= array()){
-		if(empty($lang))
+
+	    if($module != 'Administration') return;
+
+	    if(empty($lang))
 			$lang = $GLOBALS['sugar_config']['default_language'];
 
 		$file = create_cache_directory('modules/' . $module . '/language/'.$lang.'.lang.php');
@@ -330,111 +212,6 @@ class LanguageManager
 		}
 	}
 
-	/**
-	 * Given a module, search all of the specified locations, and any others as specified
-	 * in order to refresh the cache file
-	 *
-	 * @param string $module the given module we want to load the vardefs for
-	 * @param string $lang the given language we wish to load
-	 * @param array $additional_search_paths an array which allows a consumer to pass in additional vardef locations to search
-	 */
-	public static function refreshLanguage($module, $lang, $loaded_mod_strings = array(), $additional_search_paths = null){
-		// Some of the vardefs do not correctly define dictionary as global.  Declare it first.
-		$lang_paths = array(
-					'modules/'.$module.'/language/'.$lang.'.lang.php',
-					'modules/'.$module.'/language/'.$lang.'.lang.override.php',
-					'custom/modules/'.$module.'/language/'.$lang.'.lang.php',
-					'custom/modules/'.$module.'/Ext/Language/'.$lang.'.lang.ext.php',
-				 );
-
-        if(is_array($additional_search_paths) && !empty($additional_search_paths))
-            $lang_paths = array_merge($lang_paths, $additional_search_paths);
-
-
-        #27023, if this module template language file was not attached , get the template from this module vardef cache file if exsits and load the template language files.
-		static $createdModules;
-		if(empty($createdModules[$module]) && isset($GLOBALS['beanList'][$module])){
-				$object = $GLOBALS['beanList'][$module];
-
-// CR1000426 cleanup backend, module Cases removed
-//				if ($object == 'aCase')
-//		            $object = 'Case';
-
-		        if(!empty($GLOBALS["dictionary"]["$object"]["templates"])){
-		        	$templates = $GLOBALS["dictionary"]["$object"]["templates"];
-					$loaded_mod_strings = LanguageManager::loadTemplateLanguage($module , $templates, $lang , $loaded_mod_strings);
-					$createdModules[$module] = true;
-		        }
-		}
-		//end of fix #27023
-
-		// Add in additional search paths if they were provided.
-		if(!empty($additional_search_paths) && is_array($additional_search_paths))
-		{
-			$lang_paths = array_merge($lang_paths, $additional_search_paths);
-		}
-
-		//search a predefined set of locations for the vardef files
-		foreach($lang_paths as $path){
-			if(file_exists($path)){
-				require($path);
-				if(!empty($mod_strings)){
-					if (function_exists('sugarArrayMergeRecursive')){
-						$loaded_mod_strings = sugarArrayMergeRecursive($loaded_mod_strings, $mod_strings);
-					}
-					else{
-						$loaded_mod_strings = sugarLangArrayMerge($loaded_mod_strings, $mod_strings);
-					}
-				}
-			}
-		}
-
-
-		//great! now that we have loaded all of our vardefs.
-		//let's go save them to the cache file.
-		if(!empty($loaded_mod_strings))
-			LanguageManager::saveCache($module, $lang, $loaded_mod_strings);
-	}
-
-	public static function loadModuleLanguage($module, $lang, $refresh=false){
-		//here check if the cache file exists, if it does then load it, if it doesn't
-		//then call refreshVardef
-		//if either our session or the system is set to developerMode then refresh is set to true
-
-		// Retrieve the vardefs from cache.
-		$key = self::getLanguageCacheKey($module,$lang);
-
-		if(!$refresh)
-		{
-			$return_result = sugar_cache_retrieve($key);
-			if(!empty($return_result) && is_array($return_result)){
-				return $return_result;
-			}
-		}
-
-		// Some of the vardefs do not correctly define dictionary as global.  Declare it first.
-		$cachedfile = sugar_cached('modules/').$module.'/language/'.$lang.'.lang.php';
-		if($refresh || !file_exists($cachedfile)){
-			LanguageManager::refreshLanguage($module, $lang);
-		}
-
-		//at this point we should have the cache/modules/... file
-		//which was created from the refreshVardefs so let's try to load it.
-		if(file_exists($cachedfile)){
-			global $mod_strings;
-
-			require $cachedfile;
-
-			// now that we hae loaded the data from disk, put it in the cache.
-			if(!empty($mod_strings))
-				sugar_cache_put($key,$mod_strings);
-			if(!empty($_SESSION['translation_mode'])){
-				$mod_strings = array_map('translated_prefix', $mod_strings);
-			}
-			return $mod_strings;
-		}
-	}
-
     /**
      * Return the cache key for the module language definition
      *
@@ -448,29 +225,4 @@ class LanguageManager
          return "LanguageManager.$module.$lang";
 	}
 
-    /**
-     * Remove any cached js language strings.
-     *
-     * @static
-     * @return void
-     */
-    public static function removeJSLanguageFiles()
-    {
-        $jsFiles = array();
-        getFiles($jsFiles, sugar_cached('jsLanguage'));
-        foreach($jsFiles as $file) {
-            unlink($file);
-        }
-
-        if( empty($GLOBALS['sugar_config']['js_lang_version']) )
-            $GLOBALS['sugar_config']['js_lang_version'] = 1;
-        else
-            $GLOBALS['sugar_config']['js_lang_version'] += 1;
-
-        write_array_to_file( "sugar_config", $GLOBALS['sugar_config'], "config.php");
-    }
-}
-
-function translated_prefix($key){
-	return '[translated]' . $key;
 }

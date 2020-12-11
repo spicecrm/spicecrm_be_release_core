@@ -35,6 +35,7 @@ class ImapHandler extends TransportHandler
         'imap_pop3_encryption',
         'imap_pop3_username',
         'imap_pop3_password',
+//        'imap_delete_after_fetch',
     ];
 
     protected $outgoing_settings = [
@@ -202,11 +203,24 @@ class ImapHandler extends TransportHandler
                     break;
                 }
 
+                $mailboxStatus = imap_mailboxmsginfo($stream);
+                if (isset($this->mailbox->imap_delete_after_fetch) && $this->mailbox->imap_delete_after_fetch == true) {
+                    imap_delete($stream, $item);
+                }
+
                 ++$new_mail_count;
             }
 
             $this->mailbox->last_checked = date('Y-m-d H:i:s');
             $this->mailbox->save();
+
+            $mailboxStatus = imap_mailboxmsginfo($stream);
+
+            if (isset($this->mailbox->imap_delete_after_fetch) && $this->mailbox->imap_delete_after_fetch == true) {
+                imap_expunge($stream);
+            }
+
+            $mailboxStatus = imap_mailboxmsginfo($stream);
         }
 
         imap_close($stream);

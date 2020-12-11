@@ -192,6 +192,7 @@ $dictionary['Meeting'] = [
             'len'     => '3',
             'comment' => 'Duration (hours)',
             'studio'  => 'false',
+            'source' => 'non-db' // CR1000436
         ],
         'duration_minutes' => [
             'name'    => 'duration_minutes',
@@ -201,6 +202,7 @@ $dictionary['Meeting'] = [
             'len'     => '2',
             'comment' => 'Duration (minutes)',
             'studio'  => 'false',
+            'source' => 'non-db' // CR1000436
         ],
         'date_start' => [
             'name'                => 'date_start',
@@ -253,7 +255,6 @@ $dictionary['Meeting'] = [
             'vname'      => 'LBL_TYPE',
             'type'       => 'enum',
             'len'        => 255,
-            'function'   => 'getMeetingsExternalApiDropDown',
             'comment'    => 'Meeting type (ex: WebEx, Other)',
             'options'    => 'eapm_list',
             'default'    => 'Sugar',
@@ -391,6 +392,10 @@ $dictionary['Meeting'] = [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
+                ),
+                'date_modified' => array(
+                    'type' => 'datetime',
+                    'map' => 'activity_status_date_modified'
                 )
             ),
         ],
@@ -418,6 +423,14 @@ $dictionary['Meeting'] = [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
+                ),
+                'date_modified' => array(
+                    'type' => 'datetime',
+                    'map' => 'activity_status_date_modified'
+                ),
+                'required' => array(
+                    'type' => 'bool',
+                    'map' => 'activity_required'
                 )
             )
         ],
@@ -431,10 +444,22 @@ $dictionary['Meeting'] = [
         'consumers' => [
             'name'         => 'consumers',
             'type'         => 'link',
-            'relationship' => 'consumers_meetings',
+            'relationship' => 'meetings_consumers',
             'module'       => 'Consumers',
             'source'       => 'non-db',
             'vname'        => 'LBL_CONSUMERS',
+            'default'      => true,
+            'rel_fields' => array(
+                'accept_status' => array(
+                    'type' => 'enum',
+                    'options' => 'dom_meeting_accept_status',
+                    'map' => 'activity_accept_status'
+                ),
+                'date_modified' => array(
+                    'type' => 'datetime',
+                    'map' => 'activity_status_date_modified'
+                )
+            ),
         ],
         'leads' => [
             'name'         => 'leads',

@@ -13,7 +13,17 @@ class EmailSchedulesKRESTController {
      */
     private function saveBean($postBody) {
         global $current_user;
+
+        // create a new bean
         $emailschedule = \BeanFactory::getBean('EmailSchedules');
+
+        // if the id is in the body assign it
+        if($postBody['id']) {
+            $emailschedule->id = $postBody['id'];
+            $emailschedule->new_with_id = true;
+        }
+
+        // pass over the data
         $emailschedule->email_subject = $postBody['data']['email_subject'];
         $emailschedule->name = $postBody['data']['email_subject'];
         $emailschedule->mailbox_id = $postBody['data']['mailbox_id'];
@@ -21,6 +31,8 @@ class EmailSchedulesKRESTController {
         $emailschedule->email_stylesheet_id = $postBody['data']['email_stylesheet_id'];
         $emailschedule->email_schedule_status = 'open';
         $emailschedule->assigned_user_id = $current_user->id;
+
+        // save the schedule
         $emailschedule->save();
 
         return $emailschedule->id;

@@ -1,8 +1,11 @@
 <?php
-require_once('modules/ProjectWBSs/ProjectWBS.php');
+use ProjectWBS;
+use BeanFactory;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$app->group('/ProjectWBSsHierarchy/{projectid}', function() use ($app) {
-    $app->get('', function($req, $res, $args) use ($app) {
+$RESTManager->app->group('/ProjectWBSsHierarchy/{projectid}', function() {
+    $this->get('', function($req, $res, $args) {
         global $db;
         $hierarchy = array();
 
@@ -27,7 +30,7 @@ $app->group('/ProjectWBSsHierarchy/{projectid}', function() use ($app) {
 
         echo json_encode($hierarchy);
     });
-    $app->get('/{addfields}', function($req, $res, $args) use ($app) {
+    $this->get('/{addfields}', function($req, $res, $args) {
         global $db;
         //file_put_contents("sugarcrm.log", print_r("p+id+addfields", true)."\n", FILE_APPEND);
 

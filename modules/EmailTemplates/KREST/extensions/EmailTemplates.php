@@ -1,7 +1,9 @@
 <?php
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$app->group('/EmailTemplates', function () use ($app) {
-    $app->get('/{module}', function($req, $res, $args) use ($app) {
+$RESTManager->app->group('/EmailTemplates', function () {
+    $this->get('/{module}', function($req, $res, $args) {
         global $db;
 
         $template_list = array();
@@ -12,7 +14,7 @@ $app->group('/EmailTemplates', function () use ($app) {
 
         echo json_encode($template_list);
     });
-    $app->get('/parse/{id}/{module}/{parent}', function($req, $res, $args) use ($app) {
+    $this->get('/parse/{id}/{module}/{parent}', function($req, $res, $args) {
         global $app_list_strings, $current_language, $current_user;
 
         $app_list_strings = return_app_list_strings_language($current_language);
@@ -30,5 +32,14 @@ $app->group('/EmailTemplates', function () use ($app) {
             'body_html' => from_html(wordwrap($parsedTpl['body_html'], true)),
             'body' => $parsedTpl['body']
         ));
+    });
+    $this->post('/liveCompile/{module}/{parent}', function($req, $res, $args) {
+        $params = $req->getParsedBody();
+        $emailTemplate = BeanFactory::getBean("EmailTemplates");
+        $emailTemplate->body_html = $params['html'];
+        $bean = BeanFactory::getBean($args['module'], $args['parent']);
+        $parsedTpl = $emailTemplate->parse($bean);
+
+        return $res->withJson(['html' => from_html(wordwrap($parsedTpl['body_html'], true))]);
     });
 });

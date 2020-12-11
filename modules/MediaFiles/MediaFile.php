@@ -356,31 +356,13 @@ class MediaFile extends SugarBean {
         if ( is_dir( $memmy = self::getFolderOfSizes())) array_map( 'unlink', glob( $memmy.$mediaId.'.*' ));
     }
 
-    public static function uploadMedia() {
-        $upload_file = new UploadFile( 'file' );
-        if ( isset( $_FILES['file'] )) { // && $upload_file->confirm_upload() ) {
-            $upload = new MediaFile();
-            list( $mediatype,  $upload->filetype ) = explode( '/', $upload_file->getMime( $_FILES['file'] ));
-            $upload->mediatype = ( $mediatype === 'image' ? '1':'0' );
-            $upload->filesize = $_FILES['file']['size'];
-            $upload->hash = md5_file( $_FILES['file']['tmp_name'] );
-            list( $upload->width, $upload->height  ) = getimagesize( $_FILES['file']['tmp_name'] );
-            $mediaId = $upload->save();
-            $upload->retrieve( $mediaId ); # important workaround, to get db data into property fetched_row (otherwise fetched_row is false)
-            $filedata = $upload->fetched_row;
-            rename( $_FILES['file']['tmp_name'], self::getMediaPath( $mediaId ));
-            return json_encode( $filedata );
-        }
-    }
-
     public function storeMedia( $file )
     {
         file_put_contents( self::getMediaPath( ( $this->id ) ), $file );
-        $this->filesize = strlen($file); // filesize( self::getMediaPath( $this->id ) );
+        $this->filesize = strlen( $file );
         $this->hash = md5($file);
         list( $this->width, $this->height ) = getimagesizefromstring($file);
         self::deleteVariants( $this->id );
-        // unset( $this->file );
     }
 
     public static function getMediaPath( $mediaId ) {
@@ -422,9 +404,8 @@ class MediaFile extends SugarBean {
                 $error = true;
             }
         }
-        if ( $error ) sugar_die( 'Error with media file directory/directories. Please refer to sugarcrm.log (and error.log) for details.' );
+        if ( $error ) sugar_die( 'Error with media file directory/directories. Please refer to spicecrm.log (and error.log) for details.' );
     }
-
 
     public function fill_in_additional_detail_fields() {
         parent::fill_in_additional_detail_fields();

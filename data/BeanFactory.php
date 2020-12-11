@@ -87,13 +87,23 @@ class BeanFactory {
         }
 
         $beanClass = self::getBeanName($module);
-        if (empty($beanClass) || !class_exists($beanClass)) return false;
+        if (empty($beanClass)) return false;
+
+        if(class_exists($beanClass)){
+            $bean = new $beanClass();
+        } else {
+            $bean = new SugarBean();
+            $bean->module_dir = $module;
+            $bean->object_name = $beanClass;
+            $bean->table_name = $GLOBALS['dictionary'][$beanClass]['table'] ?: strtolower($module);
+            $bean->initialize_bean();
+        }
 
         if (!empty($id))
         {
             if (empty(self::$loadedBeans[$module][$id]))
             {
-                $bean = new $beanClass();
+
                 $result = $bean->retrieve($id, $encode, $deleted, $relationships);
                 if($result == null)
                     return FALSE;
@@ -105,8 +115,6 @@ class BeanFactory {
                 self::$touched[$module][$id]++;
                 $bean = self::$loadedBeans[$module][$id];
             }
-        } else {
-            $bean = new $beanClass();
         }
 
         // add the bean module
@@ -116,7 +124,7 @@ class BeanFactory {
     }
 
     public static function moduleExists( $moduleName ) {
-        return (( $beanClass = self::getBeanName( $moduleName )) !== false ) and class_exists( $beanClass );
+        return (( $beanClass = self::getBeanName( $moduleName )) !== false ); //and class_exists( $beanClass );
     }
 
     public static function newBean($module)

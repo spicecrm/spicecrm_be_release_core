@@ -1,20 +1,20 @@
 <?php
 
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$RESTManager->registerExtension('gdpr', '1.0');
 
-$KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($app);
+$KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler($RESTManager->app);
 
-$KRESTManager->registerExtension('gdpr', '1.0');
+$RESTManager->app->group('/gdpr', function () use ($RESTManager, $KRESTModuleHandler) {
 
-$app->group('/gdpr', function () use ($app, $KRESTManager, $KRESTModuleHandler) {
-
-    $app->get('/{module}/{id}', function ($req, $res, $args) use ($app, $KRESTModuleHandler) {
+    $this->get('/{module}/{id}', function ($req, $res, $args) use ($KRESTModuleHandler) {
         $seed = BeanFactory::getBean($args['module'], $args['id']);
         if(!$seed){
-            throw new \SpiceCRM\KREST\NotFoundException();
+            throw new \SpiceCRM\includes\ErrorHandlers\NotFoundException();
         }
 
         if(!$seed->ACLAccess('detail')){
-            throw new \SpiceCRM\KREST\ForbiddenException();
+            throw new \SpiceCRM\includes\ErrorHandlers\ForbiddenException();
         }
 
         if(method_exists($seed, 'getGDPRRelease')){
@@ -27,11 +27,11 @@ $app->group('/gdpr', function () use ($app, $KRESTManager, $KRESTModuleHandler) 
     /*
      * Get the GDPR consent text for portal user from the CRM configuration.
      */
-    $app->get('/portalGDPRconsentText', [new \SpiceCRM\KREST\controllers\gdprController(), 'getPortalGDPRconsentText']);
+    $this->get('/portalGDPRconsentText', [new \SpiceCRM\KREST\controllers\gdprController(), 'getPortalGDPRconsentText']);
 
     /*
      * Saves the GDPR consent of a portal user.
      */
-    $app->post('/portalGDPRconsent', [new \SpiceCRM\KREST\controllers\gdprController(), 'setPortalGDPRconsent']);
+    $this->post('/portalGDPRconsent', [new \SpiceCRM\KREST\controllers\gdprController(), 'setPortalGDPRconsent']);
 
 });

@@ -185,4 +185,8 @@ $mod_strings = array(
     'LBL_SCHEDULERTEST' => 'Dummy function for testing the scheduler (does nothing)',
     'LBL_URL_SPECIFIED' => 'URL (to be specified)',
     'LBL_GENERATEQUESTIONNAIREEVALUATIONS' => 'Generate missing Questionnaire Evaluations',
+
+    'LBL_PROCESSEXCHANGESYNCHRONIZATION' => 'EWS: process exchange synchronization',
+    'LBL_RUNSYNCEWSSUBSCRIPTIONS' => 'EWS: resync exchange subscriptions (heart beat)',
+    'LBL_PROCESSEWSQUEUE' => 'EWS: process bean sync queue',
 );

@@ -64,10 +64,9 @@ $dictionary['ProjectPlannedActivity'] = array(
         array('name' => 'idx_ppwbsdel', 'type' => 'index', 'fields' => array('projectwbs_id', 'deleted'))
 	)
 );
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('ProjectPlannedActivities', 'ProjectPlannedActivity', array('default', 'assignable', 'team_security'));
-else
-    VardefManager::createVardef('ProjectPlannedActivities', 'ProjectPlannedActivity', array('default', 'assignable'));
+
+VardefManager::createVardef('ProjectPlannedActivities', 'ProjectPlannedActivity', array('default', 'assignable'));
+
 //BEGIN PHP7.1 compatibility: avoid PHP Fatal error:  Uncaught Error: Cannot use string offset as an array
 global $dictionary;
 //END

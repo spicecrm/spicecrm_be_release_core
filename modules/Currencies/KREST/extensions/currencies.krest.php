@@ -1,9 +1,13 @@
 <?php
+use SpiceCRM\modules\Currencies\KREST\controllers\CurrenciesKRESTcontroller;
+use Currency;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
 require_once 'modules/Currencies/Currency.php';
 
-$app->group('/currencies', function () use ($app) {
-    $app->get('', function () use ($app) {
+$RESTManager->app->group('/currencies', function () {
+    $this->get('', function () {
         global $current_user, $db;
 
         $currency = new Currency();
@@ -24,6 +28,6 @@ $app->group('/currencies', function () use ($app) {
 
         echo json_encode($retArray);
     });
-    $app->get('/defaultcurrency',[new SpiceCRM\modules\Currencies\KREST\controllers\CurrenciesKRESTcontroller(), 'getDefaultCurrency']);
-    $app->post('/add', [new SpiceCRM\modules\Currencies\KREST\controllers\CurrenciesKRESTcontroller(), 'addCurrency']);
+    $this->get('/defaultcurrency',[new CurrenciesKRESTcontroller(), 'getDefaultCurrency']);
+    $this->post('/add', [new CurrenciesKRESTcontroller(), 'addCurrency']);
 });

@@ -1,11 +1,33 @@
 <?php
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
+
 if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-/**
- * twentyreasons SpiceImport
- * @author Stefan Wölflinger (twentyreasons)
- */
-require_once('include/SugarObjects/templates/basic/Basic.php');
-require_once('include/utils.php');
 
 class SpiceImport extends SugarBean
 {
@@ -14,48 +36,18 @@ class SpiceImport extends SugarBean
     var $object_name = "SpiceImport";
     var $new_schema = true;
     var $module_dir = "SpiceImports";
-    var $id;
-    var $date_entered;
-    var $date_modified;
-    var $assigned_user_id;
-    var $modified_user_id;
-    var $created_by;
-    var $created_by_name;
-    var $modified_by_name;
-    var $description;
-    var $name;
-    var $data;
+
 
     var $objectimport;
 
-    function __construct()
+    public static function getFilePreview($params)
     {
-        parent::__construct();
-    }
+        global $current_user, $sugar_config;
 
-    function bean_implements($interface)
-    {
-        switch ($interface) {
-            case 'ACL':
-                return true;
-        }
-        return false;
-    }
-
-    function get_summary_text()
-    {
-        return $this->name;
-    }
-
-    public static function saveImportFiles($properties)
-    {
-
-        global $current_user, $db;
-        $guid = create_guid();
-        $delimiter = ($properties['separator'] == 'comma') ? ',' : ';';
+        $delimiter = ($params['separator'] == 'comma') ? ',' : ';';
         $enclosure = chr(8);
 
-        switch ($properties['enclosure']) {
+        switch ($params['enclosure']) {
             case 'single':
                 $enclosure = "'";
                 break;
@@ -64,60 +56,51 @@ class SpiceImport extends SugarBean
                 break;
         }
 
-        require_once('include/upload_file.php');
-        $upload_file = new UploadFile('file');
-
-        if (isset($_FILES['file']) && $upload_file->confirm_upload()) {
-            $filename = $upload_file->get_stored_file_name();
-            $file_mime_type = $upload_file->mime_type;
-            $filesize = $upload_file->get_uploaded_file_size();
-            $filemd5 = $upload_file->get_uploaded_file_md5();
-            $upload_file->use_proxy = $_FILES['file']['proxy'] ? true : false;
-            $upload_file->final_move($filemd5, false);
-        } else {
-            $errorMsg = $upload_file->get_upload_error();
-            return json_encode(array('status' => 'error', 'data' => $errorMsg));
-        }
-
         $row = 0;
-        $fileData = Array();
-        $fileTooBig = false;
-        global $sugar_config;
-        $file = file("upload://" . $filemd5);
-        $import_max_records_per_file = (isset($sugar_config['import_max_records_per_file']) ? $sugar_config['import_max_records_per_file'] : 50);
+        $fileData = [];
+        $fileHeader = [];
 
-        if (count($file) > $import_max_records_per_file)
-            $fileTooBig = true;
+        $file = file("upload://" . $params['file_md5']);
+        $maxRows = (isset($sugar_config['import_max_records_per_file']) ? $sugar_config['import_max_records_per_file'] : 50);
 
-        if (($handle = fopen("upload://" . $filemd5, "r")) !== FALSE) {
+        $fileTooBig = count($file) > $maxRows;
+
+        if (($handle = fopen("upload://" . $params['file_md5'], "r")) !== FALSE) {
             $fileHeader = fgetcsv($handle, 0, $delimiter, $enclosure);
+            $fileHeader = array_map(function($item) {
+                return !mb_detect_encoding($item,'utf-8',true) ? utf8_encode($item) : $item;
+            }, $fileHeader);
+
+            if (!is_array($fileHeader) || count($fileHeader) < 2) {
+                throw new \SpiceCRM\KREST\BadRequestException('separator or enclosure settings do not match the file settings');
+            }
+
             file_put_contents($file, preg_replace('{(.)\1+}', '$1', $handle), file_get_contents($file));
             while (($data = fgetcsv($handle, 0, $delimiter, $enclosure)) !== FALSE) {
-                if (array(null) !== $data && count(array_filter($data)) == count($data)) {
-                    if ($row < 2)
-                        $fileData[] = $data;
+                if (array(null) !== $data) {
+                    if ($row < 2) {
+                        $fileData[] = array_map(function ($item) {
+                            return !mb_detect_encoding($item, 'utf-8', true) ? utf8_encode($item) : $item;
+                        }, $data);
+                    } else {
+                        break;
+                    }
                     $row++;
+                } else {
+                    $data;
                 }
             }
             fclose($handle);
         }
 
-        $attachments[] = array(
-            'id' => $guid,
-            'user_id' => $current_user->id,
-            'user_name' => $current_user->user_name,
-            'date' => $GLOBALS['timedate']->to_display_date_time(gmdate('Y-m-d H:i:s')),
-            'text' => nl2br($_POST['text']),
-            'filename' => $filename,
-            'filesize' => $filesize,
-            'filemd5' => $filemd5,
-            'file_mime_type' => $file_mime_type,
-            'fileheader' => $fileHeader,
-            'filedata' => $fileData,
-            'filerows' => $row
-        );
+        $attachments = [
+            'fileHeader' => $fileHeader,
+            'fileData' => $fileData,
+            'fileRows' => $row,
+            'fileTooBig' => $fileTooBig
+        ];
 
-        return json_encode(array('files' => $attachments, 'fileTooBig' => $fileTooBig));
+        return json_encode($attachments);
     }
 
     public function deleteImportFile($filemd5)
@@ -211,10 +194,16 @@ class SpiceImport extends SugarBean
         if (($handle = fopen("upload://" . $this->objectimport->fileId, "r")) !== FALSE) {
 
             $fileHeader = fgetcsv($handle, 1000, $delimiter, $enclosure);
+            $fileHeader = array_map(function($item) {
+                return !mb_detect_encoding($item,'utf-8',true) ? utf8_encode($item) : $item;
+            }, $fileHeader);
 
             while (($row = fgetcsv($handle, 1000, $delimiter, $enclosure)) !== FALSE) {
 
-                if (array(null) !== $row && count(array_filter($row)) == count($row)) {
+                if (array(null) !== $row) {
+                    $row = array_map(function ($item) {
+                        return !mb_detect_encoding($item, 'utf-8', true) ? utf8_encode($item) : $item;
+                    }, $row);
 
                     $retrieve = array();
 

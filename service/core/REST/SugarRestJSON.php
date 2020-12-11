@@ -51,7 +51,6 @@ class SugarRestJSON extends SugarRestSerialize{
 	 * @return String - echos json encoded string of $input
 	 */
 	function generateResponse($input){
-		$json = getJSONobj();
 		ob_clean();
 		header('Content-Type: application/json; charset=UTF-8');
 		if (isset($this->faultObject)) {
@@ -61,7 +60,7 @@ class SugarRestJSON extends SugarRestSerialize{
 			if ( isset($_GET["jsoncallback"]) ) {
 				echo $_GET["jsoncallback"] . "(";
 			}
-			echo $json->encode($input);
+			echo json_encode($input);
 			if ( isset($_GET["jsoncallback"]) ) {
 				echo ")";
 			}
@@ -82,8 +81,7 @@ class SugarRestJSON extends SugarRestSerialize{
 			$this->fault($er);
 		}else{
 			$method = $_REQUEST['method'];
-			$json = getJSONobj();
-			$data = $json->decode($json_data);
+			$data = json_decode($json_data);
 			if(!is_array($data))$data = array($data);
 			$res = call_user_func_array(array( $this->implementation, $method),$data);
 			$GLOBALS['log']->info('End: SugarRestJSON->serve');
@@ -104,13 +102,12 @@ class SugarRestJSON extends SugarRestSerialize{
 	function generateFaultResponse($errorObject){
 		$error = $errorObject->number . ': ' . $errorObject->name . '<br>' . $errorObject->description;
 		$GLOBALS['log']->error($error);
-		$json = getJSONobj();
 		ob_clean();
 		// JSONP support
 		if ( isset($_GET["jsoncallback"]) ) {
 			echo $_GET["jsoncallback"] . "(";
 		}
-		echo $json->encode($errorObject);
+		echo json_encode($errorObject);
 		if ( isset($_GET["jsoncallback"]) ) {
 			echo ")";
 		}

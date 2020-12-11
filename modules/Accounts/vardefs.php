@@ -418,7 +418,7 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
         ),
         'vat_details' => array(
             'name' => 'vat_details',
-            'vname' => 'LBL_VAT_details',
+            'vname' => 'LBL_VAT_DETAILS',
             'type' => 'text'
         ),
         'accountkpis' => array(
@@ -495,13 +495,45 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'vname' => 'LBL_QUANTITY',
             'type' => 'varchar',
             'source' => 'non-db'
-        )
+        ),
+        'catalogorders' => [
+            'name' => 'catalogorders',
+            'type' => 'link',
+            'module' => 'CatalogOrders',
+            'relationship' => 'accounts_catalogorders',
+            'source' => 'non-db'
+        ],
+        'inquiries' => [
+            'name' => 'inquiries',
+            'type' => 'link',
+            'module' => 'Inquiries',
+            'relationship' => 'account_inquiries',
+            'source' => 'non-db'
+        ],
+        'spicetexts' => [
+            'name' => 'spicetexts',
+            'type' => 'link',
+            'relationship' => 'accounts_spicetexts',
+            'module' => 'SpiceTexts',
+            'source' => 'non-db',
+            'vname' => 'LBL_SPICE_TEXTS',
+        ],
+        'accountvatids' => [
+            'name' => 'accountvatids',
+            'type' => 'link',
+            'relationship' => 'account_accountvatids',
+            'rname' => 'vat_id',
+            'source' => 'non-db',
+            'module' => 'AccountVATIDs',
+            'default' => true
+        ],
     ),
     'indices' => array(
         array('name' => 'idx_accnt_id_del', 'type' => 'index', 'fields' => array('id', 'deleted')),
         array('name' => 'idx_accnt_name_del', 'type' => 'index', 'fields' => array('name', 'deleted')),//bug #5530
         array('name' => 'idx_accnt_assigned_del', 'type' => 'index', 'fields' => array('deleted', 'assigned_user_id')),
         array('name' => 'idx_accnt_parent_id', 'type' => 'index', 'fields' => array('parent_id')),
+        array('name' => 'idx_accnt_ext_id_del', 'type' => 'index', 'fields' => array('ext_id', 'deleted')),
     ),
     'relationships' => array(
         'member_accounts' => array('lhs_module' => 'Accounts', 'lhs_table' => 'accounts', 'lhs_key' => 'id',
@@ -594,6 +626,27 @@ $dictionary['Account'] = array('table' => 'accounts', 'audited' => true, 'unifie
             'relationship_role_column' => 'location_type',
             'relationship_role_column_value' => 'Accounts',
             'relationship_type' => 'one-to-many'
+        ),
+        'accounts_spicetexts' => array(
+            'lhs_module' => 'Accounts',
+            'lhs_table' => 'accounts',
+            'lhs_key' => 'id',
+            'rhs_module' => 'SpiceTexts',
+            'rhs_table' => 'spicetexts',
+            'rhs_key' => 'parent_id',
+            'relationship_type' => 'one-to-many',
+            'relationship_role_column' => 'parent_type',
+            'relationship_role_column_value' => 'Accounts'
+        ),
+        'account_accountvatids' => array(
+            'rhs_module' => 'AccountVATIDs',
+            'rhs_table' => 'accountvatids',
+            'rhs_key' => 'account_id',
+            'lhs_module' => 'Accounts',
+            'lhs_table' => 'accounts',
+            'lhs_key' => 'id',
+            'relationship_type' => 'one-to-many',
+            'default' => true
         )
     ),
     //This enables optimistic locking for Saves From EditView
@@ -662,6 +715,22 @@ if (is_file("modules/ServiceOrders/ServiceOrder.php")) {
         'module' => 'ServiceOrders',
         'default' => false
     );
+    $dictionary['Account']['fields']['serviceorders_add'] = array(
+        'name' => 'serviceorders_add',
+        'type' => 'link',
+        'relationship' => 'serviceorders_accounts_add',
+        'source' => 'non-db',
+        'vname' => 'LBL_SERVICEORDERS_ADD',
+        'module' => 'ServiceOrders',
+        'default' => false
+    );
+    $dictionary['Account']['fields']['serviceorder_role'] = array(
+        'name' => 'serviceorder_role',
+        'type' => 'enum',
+        'options' => 'serviceorders_accounts_roles_dom',
+        'source' => 'non-db',
+        'vname' => 'LBL_SERVICEORDER_ROLE'
+    );
 }
 if (is_file("modules/ServiceTickets/ServiceTicket.php")) {
     $dictionary['Account']['fields']['servicetickets'] = array(
@@ -725,12 +794,7 @@ $dictionary['Account']['fields']['name']['importable'] = 'required';
 
 // CR1000336
 if(is_file('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')){
-    $dictionary['Account']['relationships']['account_systemdeploymentreleases'] = array(
-        'lhs_module' => 'Accounts', 'lhs_table' => 'accounts', 'lhs_key' => 'id',
-        'rhs_module' => 'SystemDeploymentReleases', 'rhs_table' => 'systemdeploymentreleases', 'rhs_key' => 'parent_id',
-        'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
-        'relationship_role_column_value' => 'Accounts'
-    );
+
     $dictionary['Account']['fields']['systemdeploymentreleases'] = array(
         'name' => 'systemdeploymentreleases',
         'type' => 'link',
@@ -739,6 +803,12 @@ if(is_file('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')){
         'bean_name' => 'SystemDeploymentRelease',
         'source' => 'non-db',
         'vname' => 'LBL_SYSTEMDEPLOYMENTRELEASES',
+    );
+    $dictionary['Account']['relationships']['account_systemdeploymentreleases'] = array(
+        'lhs_module' => 'Accounts', 'lhs_table' => 'accounts', 'lhs_key' => 'id',
+        'rhs_module' => 'SystemDeploymentReleases', 'rhs_table' => 'systemdeploymentreleases', 'rhs_key' => 'parent_id',
+        'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
+        'relationship_role_column_value' => 'Accounts'
     );
 }
 

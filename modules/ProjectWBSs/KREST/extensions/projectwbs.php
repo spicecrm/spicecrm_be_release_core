@@ -1,24 +1,24 @@
 <?php
-require_once('modules/ProjectWBSs/ProjectWBS.php');
+use ProjectWBS;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$KRESTManager->registerExtension('projectmanagement', '1.0');
+$RESTManager->registerExtension('projectmanagement', '1.0');
 
-$app->group('/projectwbs', function () use ($app)
-{
-    $app->group('/my', function () use ($app)
-    {
-        $app->get('/wbss', function () use ($app) {
+$RESTManager->app->group('/projectwbs', function () {
+    $this->group('/my', function () {
+        $this->get('/wbss', function () {
             $wbs = new ProjectWBS();
             echo json_encode($wbs->getMyWBSs());
         });
     });
 
-    $app->get('/{id}', function($req, $res, $args) use ($app) {
+    $this->get('/{id}', function($req, $res, $args) {
         $wbs = new ProjectWBS();
         $list = $wbs->getList($args['id']);
         echo json_encode($list);
     });
-    $app->post('', function($req, $res, $args) use ($app) {
+    $this->post('', function($req, $res, $args) {
         $wbs = new ProjectWBS();
         $postBody = $req->getParsedBody();
         $postParams = $_GET;
@@ -26,7 +26,7 @@ $app->group('/projectwbs', function () use ($app)
         $res = $wbs->saveWBS($params);
         echo json_encode($res);
     });
-    $app->delete('/{id}', function($req, $res, $args) use ($app) {
+    $this->delete('/{id}', function($req, $res, $args) {
         $wbs = new ProjectWBS();
         $list = $wbs->delete_recursive($args['id']);
         echo json_encode(array('status' => 'DELETED ' . $args['id']));

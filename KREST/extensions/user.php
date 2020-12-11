@@ -15,12 +15,16 @@
  */
 
 // (( require_once('KREST/handlers/user.php');
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$RESTManager->registerExtension('module', '2.0');
 
-$UserHandler = new \SpiceCRM\KREST\handlers\UserHandler($app);
+$restapp = $RESTManager->app;
 
-$KRESTManager->registerExtension('user', '1.0');
+$UserHandler = new \SpiceCRM\KREST\handlers\UserHandler($restapp);
 
-$app->group('/user', function () use ($app, $UserHandler) {
+\SpiceCRM\includes\RESTManager::getInstance()->registerExtension('user', '1.0');
+
+$restapp->group('/user', function () use ($restapp, $UserHandler) {
 
     $this->get('/acl', function ($req, $res, $args) use ($UserHandler) {
         return $res->withJson( $UserHandler->get_modules_acl() );
@@ -39,7 +43,20 @@ $app->group('/user', function () use ($app, $UserHandler) {
 
         $this->post('/new', function ($req, $res, $args) use ($UserHandler) {
             global $current_user;
-            if (!$current_user->is_admin) throw ( new \SpiceCRM\KREST\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+            // CR1000463 use SpiceACL for user preferences editing
+            // keep bwc compatibility
+            $editEnabled = false;
+            if($GLOBALS['sugar_config']['acl']['controller'] && !preg_match('/SpiceACL/', $GLOBALS['sugar_config']['acl']['controller'])){
+                if ( $current_user->is_admin ){
+                    $editEnabled = true;
+                }
+            } else{
+                if($GLOBALS['ACLController']->checkAccess('Users', 'create')){
+                    $editEnabled = true;
+                }
+            }
+
+            if (!$editEnabled) throw ( new \SpiceCRM\includes\ErrorHandlers\ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
             return $res->withJson( $UserHandler->set_new_password( $req->getParsedBody() ));
         });
 
@@ -56,7 +73,7 @@ $app->group('/user', function () use ($app, $UserHandler) {
     });
 
     /*
-    $app->group('/preferences', function () use ( $app, $UserHandler ) {
+    $restapp->group('/preferences', function () use ( $restapp, $UserHandler ) {
 
         $this->get('/{category}', function ($req, $res, $args) use ($UserHandler) {
             $names = $req->getParam('names');

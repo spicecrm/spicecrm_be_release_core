@@ -41,18 +41,6 @@ class OpportunityStage extends SugarBean {
 	var $module_dir = "OpportunityStages";
 	var $object_name = "OpportunityStage";
 
-	function get_summary_text()
-	{
-		return "$this->name";
-	}
-
-    function bean_implements($interface) {
-        switch($interface) {
-            case 'ACL':return true;
-        }
-        return false;
-    }
-
     function ACLAccess($view, $is_owner = 'not_set'){
 
         switch($view){

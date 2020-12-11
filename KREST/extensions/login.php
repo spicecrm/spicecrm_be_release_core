@@ -16,31 +16,32 @@
 
 use \SpiceCRM\KREST\handlers\UserHandler;
 
-$KRESTUserHandler = new UserHandler($app);
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$RESTManager->registerExtension('login', '1.0');
 
-$KRESTManager->registerExtension('login', '1.0');
-$app->group('/login', function () use ($app, $KRESTManager) {
+$KRESTUserHandler = new UserHandler($RESTManager->app);
 
-    $app->post('', function () use ($app, $KRESTManager) {
-        echo json_encode($KRESTManager->getLoginData());
-        $KRESTManager->tmpSessionId = null;
+
+$RESTManager->app->group('/login', function () use ($RESTManager) {
+    $this->post('', function () use ($RESTManager) {
+        echo json_encode($RESTManager->getLoginData());
+        $RESTManager->tmpSessionId = null;
     });
-    $app->get('', function () use ($app, $KRESTManager) {
-        echo json_encode($KRESTManager->getLoginData());
+    $this->get('', function () use ($RESTManager) {
+        echo json_encode($RESTManager->getLoginData());
     });
-    $app->delete('', function () use ($app, $KRESTManager) {
+    $this->delete('', function () use ($RESTManager) {
         session_destroy();
     });
 });
 
 
 
-$KRESTManager->registerExtension('forgotPassword', '1.0');
-$KRESTManager->excludeFromAuthentication('/forgotPassword/*');
+$RESTManager->registerExtension('forgotPassword', '1.0');
+$RESTManager->excludeFromAuthentication('/forgotPassword/*');
 
-$app->group('/forgotPassword', function () use ($app, $KRESTManager, $KRESTUserHandler) {
-
-    $app->get('/info', function ($req, $res, $args) use ($app, $KRESTUserHandler) {
+$RESTManager->app->group('/forgotPassword', function () use ($RESTManager, $KRESTUserHandler) {
+    $this->get('/info', function ($req, $res, $args) use ($KRESTUserHandler) {
         $response = array(
             'pwdCheck' => array(
                 'regex' => '^' . UserHandler::getPwdCheckRegex() . '$',
@@ -49,19 +50,19 @@ $app->group('/forgotPassword', function () use ($app, $KRESTManager, $KRESTUserH
         );
         echo json_encode($response);
     });
-    $app->get('/{email}', function($req, $res, $args) use ($app, $KRESTManager, $KRESTUserHandler) {
+    $this->get('/{email}', function($req, $res, $args) use ($RESTManager, $KRESTUserHandler) {
         echo json_encode($KRESTUserHandler->sendTokenToUser($args['email']));
     });
-    $app->post('/{email}/{token}', function($req, $res, $args) use ($app, $KRESTManager, $KRESTUserHandler) {
+    $this->post('/{email}/{token}', function($req, $res, $args) use ($RESTManager, $KRESTUserHandler) {
         return $res->withJson([ 'token_valid' => $KRESTUserHandler->checkToken( $args['email'], $args['token'] )]);
     });
-    $app->post('/resetPass', function ($req) use ($app, $KRESTManager, $KRESTUserHandler) {
+    $this->post('/resetPass', function ($req) use ($RESTManager, $KRESTUserHandler) {
         $postBody = $req->getParsedBody();
         echo json_encode($KRESTUserHandler->resetPass($postBody));
     });
 });
 
-$app->post('/resetTempPass', function ($req) use ($app, $KRESTManager, $KRESTUserHandler) {
+$RESTManager->app->post('/resetTempPass', function ($req) use ($RESTManager, $KRESTUserHandler) {
     $postBody = $req->getParsedBody();
     echo json_encode($KRESTUserHandler->resetTempPass($postBody));
 });

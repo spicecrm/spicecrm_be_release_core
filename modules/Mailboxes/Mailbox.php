@@ -56,10 +56,13 @@ class Mailbox extends SugarBean {
     const LOG_ERROR = 1;
     const LOG_DEBUG = 2;
 
-    const TRANSPORT_EWS      = 'ews';
-    const TRANSPORT_IMAP     = 'imap';
-    const TRANSPORT_MAILGUN  = 'mailgun';
-    const TRANSPORT_SENDGRID = 'sendgrid';
+    const TRANSPORT_EWS            = 'ews';
+    const TRANSPORT_IMAP           = 'imap';
+    const TRANSPORT_MAILGUN        = 'mailgun';
+    const TRANSPORT_SENDGRID       = 'sendgrid';
+    const TRANSPORT_PERSONAL_EWS   = 'personalEws';
+    const TRANSPORT_GMAIL          = 'gmail';
+    const TRANSPORT_PERSONAL_GMAIL = 'personalGmail';
 
     /**
      * Mailbox constructor.
@@ -68,28 +71,19 @@ class Mailbox extends SugarBean {
         parent::__construct();
 	}
 
-	function get_summary_text()
+    /**
+     * get the summary text. Will try to checkif the handler returns a specific mailbox name
+     *
+     * @return string
+     * @throws Exception
+     */
+	function get_mailbox_display_name()
 	{
+	    $this->initTransportHandler();
+	    if(method_exists($this->transport_handler, 'getMailboxName')){
+	        return $this->transport_handler->getMailboxName();
+        }
 		return $this->name;
-	}
-
-	function fill_in_additional_list_fields()
-	{
-		parent::fill_in_additional_list_fields();
-	// Fill in the assigned_user_name
-	//	$this->assigned_user_name = get_assigned_user_name($this->assigned_user_id);
-
-	}
-
-	function fill_in_additional_detail_fields()
-	{
-        parent::fill_in_additional_detail_fields();
-	}
-	function bean_implements($interface){
-		switch($interface){
-			case 'ACL':return true;
-		}
-		return false;
 	}
 
     /**
@@ -289,6 +283,11 @@ class Mailbox extends SugarBean {
         switch ($this->transport) {
             case self::TRANSPORT_EWS:
                 return $this->ews_email ?? $this->ews_username;
+            case self::TRANSPORT_GMAIL:
+                return $this->gmail_email_address ?? $this->gmail_user_name;
+            case self::TRANSPORT_PERSONAL_GMAIL:
+                global $current_user;
+                return $current_user->user_name;
             default:
                 return $this->imap_pop3_username;
         }
@@ -325,6 +324,22 @@ class Mailbox extends SugarBean {
         }
 
         return $defaultSettings;
+    }
+
+    /**
+     * deletes an email from teh mailbox
+     *
+     * @param $email
+     * @return bool
+     * @throws Exception
+     */
+    public function deleteEmail($email){
+        $this->initTransportHandler();
+        if(method_exists($this->transport_handler, 'deleteEmail')){
+            $this->transport_handler->deleteEmail($email, json_decode(html_entity_decode($this->settings, ENT_QUOTES)));
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -478,5 +493,16 @@ class Mailbox extends SugarBean {
         }
 
         $this->message_type = $row['message_type'];
+    }
+
+    public function isConnected() {
+        if ($this->transport == self::TRANSPORT_PERSONAL_EWS) {
+            $this->initTransportHandler();
+            if ($this->transport_handler->checkConnection() == false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

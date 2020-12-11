@@ -155,8 +155,11 @@ $mod_strings = array(
     'LBL_SYNCGOOGLECALENDAR' => 'Sync Google Calendar',
     'LBL_SENDCAMPAIGNTASKEMAILS' => 'Send CampaignTask Emails',
     'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
-    'LBL_WORKFLOWHANDLER' => 'Workflow Handler',
     'LBL_SCHEDULERTEST' => 'Dummy-Funktion zum Testen des Zeitplaners (tut nichts)',
     'LBL_URL_SPECIFIED' => 'URL (anzugeben)',
     'LBL_GENERATEQUESTIONNAIREEVALUATIONS' => 'Generate missing Questionnaire Evaluations',
+
+    'LBL_PROCESSEXCHANGESYNCHRONIZATION' => 'EWS: process exchange synchronization',
+    'LBL_RUNSYNCEWSSUBSCRIPTIONS' => 'EWS: resync exchange subscriptions (heart beat)',
+    'LBL_PROCESSEWSQUEUE' => 'EWS: process bean sync queue',
 );

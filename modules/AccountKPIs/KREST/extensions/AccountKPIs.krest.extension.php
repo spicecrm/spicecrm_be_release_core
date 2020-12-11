@@ -1,6 +1,9 @@
 <?php
+use SpiceCRM\includes\RESTManager;
 
-$app->get('/module/AccountKPIs/{accountid}/getsummary', function ($req, $res, $args) use ($app) {
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->get('/module/AccountKPIs/{accountid}/getsummary', function ($req, $res, $args) {
     global $db;
 
     //todo .. load account to see if user has access rights

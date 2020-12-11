@@ -5,28 +5,9 @@ namespace SpiceCRM\includes\SpiceReminders;
 class SpiceReminders
 {
 
-    public static function setReminder($beanId, $beanModule, $reminderDate)
-    {
-        global $current_user, $db;
-        $GLOBALS['disable_date_format'] = false;
-        $dbReminderDate = $GLOBALS['timedate']->to_db_date($reminderDate, false);
-        if ($GLOBALS['db']->dbType == 'mysql')
-            $db->query("INSERT INTO spicereminders SET user_id = '$current_user->id', bean='$beanModule', bean_id = '$beanId', reminder_date='$dbReminderDate' ON DUPLICATE KEY UPDATE reminder_date='$dbReminderDate'");
-        else {
-            $reminderRecordObj = $db->query("SELECT * FROM spicereminders WHERE user_id='$current_user->id' AND bean_id='$beanId'");
-            if ($reminderRecord = $db->fetchByAssoc($reminderRecordObj))
-                $db->query("UPDATE spicereminders SET reminder_date='$dbReminderDate'WHERE user_id='$current_user->id' AND bean_id='$beanId'");
-            else
-                $db->query("INSERT INTO spicereminders (user_id, bean, bean_id, reminder_date) VALUES ('$current_user->id','$beanModule', '$beanId', '$dbReminderDate' )");
-        }
-        //$thisDate = $reminderDate;
-        return \SpiceCRM\includes\SpiceReminders\SpiceReminders::getReminders(5);
-    }
-
     public static function setReminderRaw($beanId, $beanModule, $reminderDate)
     {
         global $current_user, $db;
-        $GLOBALS['disable_date_format'] = false;
         $dbReminderDate = $reminderDate;
         if ($GLOBALS['db']->dbType == 'mysql')
             $db->query("INSERT INTO spicereminders SET user_id = '$current_user->id', bean='$beanModule', bean_id = '$beanId', reminder_date='$dbReminderDate' ON DUPLICATE KEY UPDATE reminder_date='$dbReminderDate'");
@@ -53,11 +34,6 @@ class SpiceReminders
             return $GLOBALS['timedate']->to_display_date($reminderRow['reminder_date'], false); //. SugarThemeRegistry::current()->getImage('close_inline');
         } else
             return '';
-    }
-
-    public static function getReminderIcon()
-    {
-        return SugarThemeRegistry::current()->getImage('jscalendar');
     }
 
     public static function removeReminder($beanId)

@@ -38,7 +38,6 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
  * Description:
  ********************************************************************************/
-require_once('include/externalAPI/ExternalAPIFactory.php');
 
 /**
  * @api
@@ -98,34 +97,7 @@ class UploadFile
         $this->file = $file;
     }
 
-    /**
-     * Get URL for a document
-     * @deprecated
-     * @param string stored_file_name File name in filesystem
-     * @param string bean_id note bean ID
-     * @return string path with file name
-     */
-    public static function get_url($stored_file_name, $bean_id)
-    {
-        if (empty($bean_id) && empty($stored_file_name)) {
-            return self::$url;
-        }
 
-        return self::$url . $bean_id;
-    }
-
-    /**
-     * Get URL of the uploaded file related to the document
-     * @param SugarBean $document
-     * @param string $type Type of the document, if different from $document
-     */
-    public static function get_upload_url($document, $type = null)
-    {
-        if (empty($type)) {
-            $type = $document->module_dir;
-        }
-        return "index.php?entryPoint=download&type=$type&id={$document->id}";
-    }
 
     /**
      * Try renaming a file to bean_id name
@@ -144,65 +116,6 @@ class UploadFile
         return false;
     }
 
-    /**
-     * builds a URL path for an anchor tag
-     * @param string stored_file_name File name in filesystem
-     * @param string bean_id note bean ID
-     * @return string path with file name
-     */
-    static public function get_file_path($stored_file_name, $bean_id, $skip_rename = false)
-    {
-        global $locale;
-
-        // if the parameters are empty strings, just return back the upload_dir
-        if (empty($bean_id) && empty($stored_file_name)) {
-            return "upload://";
-        }
-
-        if (!$skip_rename) {
-            self::tryRename(rawurlencode($stored_file_name), $bean_id) ||
-            self::tryRename(urlencode($stored_file_name), $bean_id) ||
-            self::tryRename($stored_file_name, $bean_id) ||
-            self::tryRename($locale->translateCharset($stored_file_name, 'UTF-8', $locale->getExportCharset()), $bean_id);
-        }
-
-        return "upload://$bean_id";
-    }
-
-    /**
-     * duplicates an already uploaded file in the filesystem.
-     * @param string old_id ID of original note
-     * @param string new_id ID of new (copied) note
-     * @param string filename Filename of file (deprecated)
-     */
-    public static function duplicate_file($old_id, $new_id, $file_name)
-    {
-        global $sugar_config;
-
-        // current file system (GUID)
-        $source = "upload://$old_id";
-
-        if (!file_exists($source)) {
-            // old-style file system (GUID.filename.extension)
-            $oldStyleSource = $source . $file_name;
-            if (file_exists($oldStyleSource)) {
-                // change to new style
-                if (copy($oldStyleSource, $source)) {
-                    // delete the old
-                    if (!unlink($oldStyleSource)) {
-                        $GLOBALS['log']->error("upload_file could not unlink [ {$oldStyleSource} ]");
-                    }
-                } else {
-                    $GLOBALS['log']->error("upload_file could not copy [ {$oldStyleSource} ] to [ {$source} ]");
-                }
-            }
-        }
-
-        $destination = "upload://$new_id";
-        if (!copy($source, $destination)) {
-            $GLOBALS['log']->error("upload_file could not copy [ {$source} ] to [ {$destination} ]");
-        }
-    }
 
     /**
      * Get upload error from system
@@ -248,7 +161,7 @@ class UploadFile
 
         if ($_FILES[$this->field_name]['proxy'] !== true && !is_uploaded_file($_FILES[$this->field_name]['tmp_name'])) {
             return false;
-        } elseif ($_FILES[$this->field_name]['size'] > $sugar_config['upload_maxsize']) {
+        } elseif (($_FILES[$this->field_name]['size'] > 1048576) && ($_FILES[$this->field_name]['size'] > $sugar_config['upload_maxsize'])) {
             $GLOBALS['log']->fatal("ERROR: uploaded file was too big: max filesize: {$sugar_config['upload_maxsize']}");
             return false;
         }
@@ -275,14 +188,76 @@ class UploadFile
      */
     function getMimeSoap($filename)
     {
+        $mime_types = array(
 
-        if (function_exists('ext2mime')) {
-            $mime = ext2mime($filename);
+            'txt' => 'text/plain',
+            'htm' => 'text/html',
+            'html' => 'text/html',
+            'php' => 'text/html',
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'xml' => 'application/xml',
+            'swf' => 'application/x-shockwave-flash',
+            'flv' => 'video/x-flv',
+
+            // images
+            'png' => 'image/png',
+            'jpe' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'jpg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp',
+            'ico' => 'image/vnd.microsoft.icon',
+            'tiff' => 'image/tiff',
+            'tif' => 'image/tiff',
+            'svg' => 'image/svg+xml',
+            'svgz' => 'image/svg+xml',
+
+            // archives
+            'zip' => 'application/zip',
+            'rar' => 'application/x-rar-compressed',
+            'exe' => 'application/x-msdownload',
+            'msi' => 'application/x-msdownload',
+            'cab' => 'application/vnd.ms-cab-compressed',
+
+            // audio/video
+            'mp3' => 'audio/mpeg',
+            'qt' => 'video/quicktime',
+            'mov' => 'video/quicktime',
+
+            // adobe
+            'pdf' => 'application/pdf',
+            'psd' => 'image/vnd.adobe.photoshop',
+            'ai' => 'application/postscript',
+            'eps' => 'application/postscript',
+            'ps' => 'application/postscript',
+
+            // ms office
+            'doc' => 'application/msword',
+            'rtf' => 'application/rtf',
+            'xls' => 'application/vnd.ms-excel',
+            'ppt' => 'application/vnd.ms-powerpoint',
+
+            // open office
+            'odt' => 'application/vnd.oasis.opendocument.text',
+            'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
+        );
+
+        $nameArray = explode('.', $filename);
+        $ext = strtolower(array_pop($nameArray));
+        if (array_key_exists($ext, $mime_types)) {
+            $mime = $mime_types[$ext];
+        } else if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME);
+            $mime = finfo_file($finfo, $filename);
+            finfo_close($finfo);
+        } else if (function_exists('mime_content_type')) {
+            $mime = mime_content_type($filename);
         } else {
             $mime = ' application/octet-stream';
         }
         return $mime;
-
     }
 
     /**
@@ -327,16 +302,6 @@ class UploadFile
         return $this->stored_file_name;
     }
 
-    function get_temp_file_location()
-    {
-        return $this->temp_file_location;
-    }
-
-    function get_uploaded_file_name()
-    {
-        return $this->uploaded_file_name;
-    }
-
     function get_uploaded_file_size()
     {
         return $this->uploaded_file_size;
@@ -345,11 +310,6 @@ class UploadFile
     function get_uploaded_file_md5()
     {
         return $this->uploaded_file_md5;
-    }
-
-    function get_mime_type()
-    {
-        return $this->mime_type;
     }
 
     /**
@@ -453,59 +413,6 @@ class UploadFile
         return true;
     }
 
-    /**
-     * Upload document to external service
-     * @param SugarBean $bean Related bean
-     * @param string $bean_id
-     * @param string $doc_type
-     * @param string $file_name
-     * @param string $mime_type
-     */
-    function upload_doc($bean, $bean_id, $doc_type, $file_name, $mime_type)
-    {
-        if (!empty($doc_type) && $doc_type != 'Sugar') {
-            global $sugar_config;
-            $destination = $this->get_upload_path($bean_id);
-            sugar_rename($destination, str_replace($bean_id, $bean_id . '_' . $file_name, $destination));
-            $new_destination = $this->get_upload_path($bean_id . '_' . $file_name);
-
-            try {
-                $this->api = ExternalAPIFactory::loadAPI($doc_type);
-
-                if (isset($this->api) && $this->api !== false) {
-                    $result = $this->api->uploadDoc(
-                        $bean,
-                        $new_destination,
-                        $file_name,
-                        $mime_type
-                    );
-                } else {
-                    $result['success'] = FALSE;
-                    // FIXME: Translate
-                    $GLOBALS['log']->error("Could not load the requested API (" . $doc_type . ")");
-                    $result['errorMessage'] = 'Could not find a proper API';
-                }
-            } catch (Exception $e) {
-                $result['success'] = FALSE;
-                $result['errorMessage'] = $e->getMessage();
-                $GLOBALS['log']->error("Caught exception: (" . $e->getMessage() . ") ");
-            }
-            if (!$result['success']) {
-                sugar_rename($new_destination, str_replace($bean_id . '_' . $file_name, $bean_id, $new_destination));
-                $bean->doc_type = 'Sugar';
-                // FIXME: Translate
-                if (!is_array($_SESSION['user_error_message']))
-                    $_SESSION['user_error_message'] = array();
-
-                $error_message = isset($result['errorMessage']) ? $result['errorMessage'] : $GLOBALS['app_strings']['ERR_EXTERNAL_API_SAVE_FAIL'];
-                $_SESSION['user_error_message'][] = $error_message;
-
-            } else {
-                unlink($new_destination);
-            }
-        }
-
-    }
 
     /**
      * returns the path with file name to save an uploaded file
@@ -544,30 +451,6 @@ class UploadFile
         return "upload://";
     }
 
-    /**
-     * Return real FS path of the file
-     * @param string $path
-     */
-    public static function realpath($path)
-    {
-        if (substr($path, 0, 9) == "upload://") {
-            $path = UploadStream::path($path);
-        }
-        $ret = realpath($path);
-        return $ret ? $ret : $path;
-    }
-
-    /**
-     * Return path of uploaded file relative to uploads dir
-     * @param string $path
-     */
-    public static function relativeName($path)
-    {
-        if (substr($path, 0, 9) == "upload://") {
-            $path = substr($path, 9);
-        }
-        return $path;
-    }
 }
 
 /**

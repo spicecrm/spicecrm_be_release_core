@@ -9,16 +9,10 @@ class SystemUISysTextIdsController {
         global $db;
         $list = [];
 
-        $query = "SELECT ids.*, idsm.module  FROM systextids AS ids";
-        $query .= " LEFT JOIN systextids_modules AS idsm ON ids.id = idsm.text_id";
-        $query .= " WHERE NOT ISNULL(idsm.module) ORDER BY idsm.module;";
-        $queryRes = $db->query($query);
+        $queryRes = $db->query("SELECT ids.*, idsm.module FROM systextids ids LEFT JOIN systextids_modules idsm ON ids.id = idsm.text_id WHERE idsm.module IS NOT NULL ORDER BY idsm.module");
         while ($row = $db->fetchByAssoc($queryRes)) $list[$row['text_id']] = $row;
 
-        $query = "SELECT ids.*, idsm.module  FROM syscustomtextids AS ids";
-        $query .= " LEFT JOIN syscustomtextids_modules AS idsm ON ids.id = idsm.text_id";
-        $query .= " WHERE NOT ISNULL(idsm.module) ORDER BY idsm.module;";
-        $queryRes = $db->query($query);
+        $queryRes = $db->query("SELECT ids.*, idsm.module  FROM syscustomtextids ids LEFT JOIN syscustomtextids_modules idsm ON ids.id = idsm.text_id WHERE idsm.module IS NOT NULL ORDER BY idsm.module");
         while ($row = $db->fetchByAssoc($queryRes)) $list[$row['text_id']] = $row;
 
         return $list;

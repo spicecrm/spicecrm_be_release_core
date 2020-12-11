@@ -16,53 +16,57 @@
 /**
  * exclkude various core calls from authentication
  */
-$KRESTManager->excludeFromAuthentication('/');
-$KRESTManager->excludeFromAuthentication('/sysinfo');
-$KRESTManager->excludeFromAuthentication('/test');
+$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+$RESTManager->excludeFromAuthentication('/');
+$RESTManager->excludeFromAuthentication('/sysinfo');
+$RESTManager->excludeFromAuthentication('/test');
+$RESTManager->excludeFromAuthentication('/shorturl/*');
+$RESTManager->excludeFromAuthentication('/landingpage/*');
 
 /**
  * register the extension
  */
-$KRESTManager->registerExtension('core', '2.0', ['edit_mode' => $sugar_config['workbench_edit_mode']['mode'] ?: 'custom']);
+global $sugar_config;
+$RESTManager->registerExtension('core', '2.0', ['edit_mode' => $sugar_config['workbench_edit_mode']['mode'] ?: 'custom']);
 
 /**
  * get the loaded Extensions
  */
-$app->get('/', [new \SpiceCRM\KREST\controllers\coreController(), 'getExtensions']);
+$RESTManager->app->get('/', [new \SpiceCRM\KREST\controllers\coreController(), 'getExtensions']);
 
-$app->get('/language/{language}', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
+$RESTManager->app->get('/language/{language}', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
 /**
  * fallback language routes in case no language value is found (asynchronous loading...)
  */
-$app->get('/language/', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
-$app->get('/language', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
+$RESTManager->app->get('/language/', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
+$RESTManager->app->get('/language', [new \SpiceCRM\KREST\controllers\coreController(), 'getLanguage']);
 
 /**
  * test Routes for get and Post
  */
-$app->get('/test', [new \SpiceCRM\KREST\controllers\coreController(), 'testGet']);
-$app->post('/test', [new \SpiceCRM\KREST\controllers\coreController(), 'testPost']);
+$RESTManager->app->get('/test', [new \SpiceCRM\KREST\controllers\coreController(), 'testGet']);
+$RESTManager->app->post('/test', [new \SpiceCRM\KREST\controllers\coreController(), 'testPost']);
 
 /**
  * get vital sysinfo for the startup
  */
-$app->get('/sysinfo', [new \SpiceCRM\KREST\controllers\coreController(), 'getSysinfo']);
+$RESTManager->app->get('/sysinfo', [new \SpiceCRM\KREST\controllers\coreController(), 'getSysinfo']);
 
 /**
  * helper to generate a GUID
  */
-$app->get('/system/guid', [new \SpiceCRM\KREST\controllers\coreController(), 'generateGuid']);
+$RESTManager->app->get('/system/guid', [new \SpiceCRM\KREST\controllers\coreController(), 'generateGuid']);
 
 
 /**
  * called from teh proxy to store a temp file storeTmpFile
  */
-$app->post('/tmpfile', [new \SpiceCRM\KREST\controllers\coreController(), 'storeTmpFile']);
+$RESTManager->app->post('/tmpfile', [new \SpiceCRM\KREST\controllers\coreController(), 'storeTmpFile']);
 
 /**
  * logs http errors
  */
-$app->post('/httperrors', [new SpiceCRM\KREST\controllers\coreController(), 'postHttpErrors']);
+$RESTManager->app->post('/httperrors', [new SpiceCRM\KREST\controllers\coreController(), 'postHttpErrors']);
 
 
 /**
@@ -70,5 +74,9 @@ $app->post('/httperrors', [new SpiceCRM\KREST\controllers\coreController(), 'pos
  *
  * get the backend timezones
  */
-$app->get('/timezones', [new SpiceCRM\KREST\controllers\coreController(), 'getTimeZones']);
+$RESTManager->app->get('/timezones', [new SpiceCRM\KREST\controllers\coreController(), 'getTimeZones']);
 
+/*
+ * get redirection data for a short url
+ */
+$RESTManager->app->get('/shorturl/{key}', [new SpiceCRM\KREST\controllers\coreController(), 'getRedirection'] );

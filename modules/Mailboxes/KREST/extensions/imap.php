@@ -1,9 +1,10 @@
 <?php
-
 use SpiceCRM\modules\Mailboxes\KREST\controllers\ImapController;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
 
-$KRESTManager->registerExtension('imap', '1.0');
+$RESTManager->registerExtension('imap', '1.0');
 
-$app->group('/mailboxes/imap', function () {
+$RESTManager->app->group('/mailboxes/imap', function () {
     $this->post('/getmailboxfolders', [new ImapController(), 'getMailboxFolders']);
 });

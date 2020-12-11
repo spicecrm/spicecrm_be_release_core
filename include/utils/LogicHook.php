@@ -60,6 +60,11 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  *
  * @api
  */
+
+use SpiceCRM\includes\ErrorHandlers\Exception;
+use SpiceCRM\includes\SpiceCRMExchange\Exceptions\MissingEwsCredentialsException;
+use SpiceCRM\includes\SpiceCRMExchange\Exceptions\EwsConnectionException;
+
 class LogicHook
 {
 
@@ -167,8 +172,8 @@ class LogicHook
 //        if(is_null($dbhooks) && empty( $GLOBALS['installing'] )) {
 //            if(!class_exists('DBManagerFactory', false)) {
 //                if(is_null($GLOBALS['log'])){
-//                    require_once "include/SugarLogger/LoggerManager.php";
-//                    $GLOBALS['log'] = LoggerManager::getLogger('SugarCRM');
+//                    require_once "include/Logger/LoggerManager.php";
+//                    $GLOBALS['log'] = LoggerManager::getLogger('SpiceCRM');
 //                }
 //                require_once "include/TimeDate.php";
 //                require_once "include/database/DBManagerFactory.php";
@@ -183,10 +188,15 @@ class LogicHook
                 if(isset($_SESSION['SpiceCRM']['hooks']['*'])){
                     $SpiceCRMHooks = $_SESSION['SpiceCRM']['hooks']['*'];
                 } else {
-                    $hooks = $dbhooks->query("SELECT event, hook_index, hook_include, hook_class, hook_method FROM syshooks WHERE ( module = '' OR module IS NULL ) AND hook_active = 1 UNION SELECT event, hook_index, hook_include, hook_class, hook_method FROM syscustomhooks WHERE ( module = '' OR module IS NULL ) AND hook_active = 1");
-
-                    while ($hook = $dbhooks->fetchByAssoc($hooks)) {
-                        $SpiceCRMHooks[$hook['event']][] = array($hook['hook_index'], '', $hook['hook_include'], $hook['hook_class'], $hook['hook_method']);
+                    $hooks_core = $this->getSpiceHooksQuery($dbhooks, 'syshooks');
+                    $hooks_custom = $this->getSpiceHooksQuery($dbhooks, 'syscustomhooks');
+                    $hooks = array_merge($hooks_core, $hooks_custom);
+                    if(is_array($hooks)){
+                        foreach($hooks as $hook_hash => $hook){
+                            if($hook['hook_active'] > 0) {
+                                $SpiceCRMHooks[$hook['event']][] = array($hook['hook_index'], '', $hook['hook_include'], $hook['hook_class'], $hook['hook_method']);
+                            }
+                        }
                     }
 
                     // write to the session to speed up performance
@@ -196,10 +206,15 @@ class LogicHook
                 if(isset($_SESSION['SpiceCRM']['hooks'][$module_dir])){
                     $SpiceCRMHooks = $_SESSION['SpiceCRM']['hooks'][$module_dir];
                 } else {
-                    $hooks = $dbhooks->query("SELECT event, hook_index, hook_include, hook_class, hook_method FROM syshooks WHERE module='$module_dir' AND hook_active = 1 UNION SELECT event, hook_index, hook_include, hook_class, hook_method FROM syscustomhooks WHERE module='$module_dir' AND hook_active = 1");
-
-                    while ($hook = $dbhooks->fetchByAssoc($hooks)) {
-                        $SpiceCRMHooks[$hook['event']][] = array($hook['hook_index'], '', $hook['hook_include'], $hook['hook_class'], $hook['hook_method']);
+                    $hooks_core = $this->getSpiceHooksQuery($dbhooks, 'syshooks', $module_dir);
+                    $hooks_custom = $this->getSpiceHooksQuery($dbhooks, 'syscustomhooks', $module_dir);
+                    $hooks = array_merge($hooks_core, $hooks_custom);
+                    if(is_array($hooks)){
+                        foreach($hooks as $hook_hash => $hook){
+                            if($hook['hook_active'] > 0) {
+                                $SpiceCRMHooks[$hook['event']][] = array($hook['hook_index'], '', $hook['hook_include'], $hook['hook_class'], $hook['hook_method']);
+                            }
+                        }
                     }
 
                     // write to the session to speed up performance
@@ -215,6 +230,28 @@ class LogicHook
             }
         }
         return $hook_array;
+    }
+
+    public function getSpiceHooksQuery($dbhooks, $table, $module = null){
+        // $q = "SELECT event, hook_index, hook_include, hook_class, hook_method, hook_active, event||hook_class||hook_method hook_hash FROM {$table} WHERE ";
+        // we can't use oracle || operator in mysql
+        // generate hash after data retrieve
+        $q = "SELECT event, hook_index, hook_include, hook_class, hook_method, hook_active FROM {$table} WHERE ";
+        if(empty($module)){
+            $q.= " ( module = '' OR module IS NULL ) ";
+        } else {
+            $q.= " ( module = '{$module}') ";
+        }
+        $rows = [];
+        if($res = $dbhooks->query($q)){
+            while ($row = $dbhooks->fetchByAssoc($res)){
+                $hook_hash = $row['event'].$row['hook_class'].$row['hook_method'];
+
+                $rows[$hook_hash] = $row;
+            }
+        }
+
+        return $rows;
     }
 
 	public function getHooks($module_dir, $refresh = false)
@@ -262,7 +299,7 @@ class LogicHook
      * @param array $hook_array
      * @param string $event
      * @param array $arguments
-     * @throws \SpiceCRM\KREST\Exception
+     * @throws Exception
      */
 	public function process_hooks($hook_array, $event, $arguments){
 		// Now iterate through the array for the appropriate hook
@@ -316,13 +353,13 @@ class LogicHook
                         } else {
                             $class->$hook_function($event, $arguments);
                         }
-                    } catch (\SpiceCRM\includes\SpiceCRMExchange\Exceptions\MissingEwsCredentialsException $e) {
+                    } catch (MissingEwsCredentialsException $e) {
                         // todo figure out if EWS should actually be turned on or off
-                        $krestException = new \SpiceCRM\KREST\Exception($e->getMessage(), $e->getCode());
+                        $krestException = new Exception($e->getMessage(), $e->getCode());
                         $krestException->setHttpCode($e->getCode());
                         throw $krestException;
-                    } catch (\SpiceCRM\includes\SpiceCRMExchange\Exceptions\EwsConnectionException $e) {
-                        $krestException = new \SpiceCRM\KREST\Exception($e->getMessage(), $e->getCode());
+                    } catch (EwsConnectionException $e) {
+                        $krestException = new Exception($e->getMessage(), $e->getCode());
                         $krestException->setHttpCode($e->getCode());
                         throw $krestException;
                     }

@@ -1,11 +1,15 @@
 <?php
-$app->group('/reference', function () {
+use SpiceCRM\modules\SystemDeploymentPackages\SystemDeploymentPackageSource;
+use SpiceCRM\modules\SystemUI\SpiceUIConfLoader;
+use SpiceCRM\modules\SystemLanguages\SystemLanguagesRESTHandler;
+use SpiceCRM\includes\RESTManager;
+$RESTManager = RESTManager::getInstance();
+
+$RESTManager->app->group('/reference', function () {
     $this->get('', function ($req, $res, $args) {
-        $getJSONcontent = file_get_contents('https://packages.spicecrm.io/referenceconfig');
+        $getJSONcontent = file_get_contents(SystemDeploymentPackageSource::getPublicSource().'referenceconfig');
 
         //BEGIN CR1000048 maretval: catch version and modify depending on reference / release
-        if (!class_exists('SpiceUIConfLoader', false))
-            require_once 'modules/SystemUI/SpiceUIConfLoader.php';
         $loader = new SpiceUIConfLoader();
         $content = json_decode($getJSONcontent);
         if ($loader->release === true) {
@@ -18,7 +22,6 @@ $app->group('/reference', function () {
 
     $this->group('/load', function () {
         $this->get('/languages/{languages}', function ($req, $res, $args) {
-            require_once 'modules/SystemLanguages/SystemLanguagesRESTHandler.php';
             $handler = new SystemLanguagesRESTHandler();
             $params = $_GET;
             $params['languages'] = $args['languages'];
@@ -27,8 +30,6 @@ $app->group('/reference', function () {
         });
         $this->get('/configs', function ($req, $res, $args) {
             $params = $_GET;
-            if (!class_exists('SpiceUIConfLoader', false))
-                require_once 'modules/SystemUI/SpiceUIConfLoader.php';
             $loader = new SpiceUIConfLoader();
             $route = $loader->routebase;
             $package = (isset($params['package']) ? $params['package'] : "*");

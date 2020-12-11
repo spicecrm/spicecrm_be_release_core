@@ -36,9 +36,6 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 ********************************************************************************/
 
 
-global $disable_date_format;
-$disable_date_format = true;
-
 class SoapHelperWebServices {
 
 	function get_field_list($value, $fields, $translate=true)
@@ -576,7 +573,7 @@ function validate_user($user_name, $password){
 
 	function getRelationshipResults($bean, $link_field_name, $link_module_fields, $optional_where = '') {
 		$GLOBALS['log']->info('Begin: SoapHelperWebServices->getRelationshipResults');
-		global $current_user, $disable_date_format,  $timedate;
+		global $current_user,  $timedate;
 
 		$bean->load_relationship($link_field_name);
 		if (isset($bean->$link_field_name)) {
@@ -603,9 +600,6 @@ function validate_user($user_name, $password){
                 foreach ($filterFields as $field) {
                     if (isset($bean->$field))
                     {
-                        if (isset($bean->field_defs[$field]['type']) && $bean->field_defs[$field]['type'] == 'date') {
-                            $row[$field] = $timedate->to_display_date_time($bean->$field);
-                        }
                         $row[$field] = $bean->$field;
                     }
                     else

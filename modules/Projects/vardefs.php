@@ -64,7 +64,7 @@ $dictionary['Project'] = array(
             'name' => 'project_type',
             'vname' => 'LBL_TYPE',
             'type' => 'enum',
-            'len' => 10,
+            'len' => 32,
             'options' => 'project_type_dom',
         ),
         'status' => array(
@@ -122,6 +122,7 @@ $dictionary['Project'] = array(
             'id_name' => 'account_id',
             'vname' => 'LBL_ACCOUNT_ID',
             'type' => 'relate',
+            'link' => 'accounts',
             'table' => 'accounts',
             'isnull' => 'true',
             'module' => 'Accounts',
@@ -412,10 +413,7 @@ if(is_file('modules/Products/Product.php')) {
     );
 }
 
-if ($GLOBALS['sugar_flavor'] != 'CE')
-    VardefManager::createVardef('Projects', 'Project', array('default', 'assignable', 'team_security'));
-else
-    VardefManager::createVardef('Projects', 'Project', array('default', 'assignable'));
+VardefManager::createVardef('Projects', 'Project', array('default', 'assignable'));
 
 global $dictionary;
 // CR1000336
@@ -426,15 +424,15 @@ if(is_file('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')){
         'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
         'relationship_role_column_value' => 'Projects'
     );
-    $dictionary['Project']['fields']['systemdeploymentreleases'] = array(
-        'name' => 'systemdeploymentreleases',
-        'type' => 'link',
-        'relationship' => 'project_systemdeploymentreleases',
-        'module' => 'SystemDeploymentReleases',
-        'bean_name' => 'SystemDeploymentRelease',
-        'source' => 'non-db',
-        'vname' => 'LBL_SYSTEMDEPLOYMENTRELEASES',
-    );
+//    $dictionary['Project']['fields']['systemdeploymentreleases'] = array(
+//        'name' => 'systemdeploymentreleases',
+//        'type' => 'link',
+//        'relationship' => 'project_systemdeploymentreleases',
+//        'module' => 'SystemDeploymentReleases',
+//        'bean_name' => 'SystemDeploymentRelease',
+//        'source' => 'non-db',
+//        'vname' => 'LBL_SYSTEMDEPLOYMENTRELEASES',
+//    );
 }
 
 if(is_file('modules/SalesDocs/SalesDoc.php')) {
