@@ -979,17 +979,23 @@ class Scheduler extends SugarBean {
 
         if ( empty( self::$job_strings )) {
 
-            global $job_strings;
+            global $job_strings, $current_language;
             include_once('modules/Schedulers/_AddJobsHere.php');
             $labels = !empty( $GLOBALS['mod_strings'] ) ? $GLOBALS['mod_strings'] : return_module_language($GLOBALS['current_language'], 'Schedulers');
+            // newer versions will retrieve labels from database
+            // merge default values to remain backword compatible on older systems
+            $syslabels = \LanguageManager::loadDatabaseLanguage((!empty($current_language) ? $current_language : $GLOBALS['sugar_config']['default_language']));
+            foreach($syslabels as $lbl => $lblData ){
+                $labels[$lbl] = $lblData['default'];
+            }
 
             // job functions
             self::$job_strings = array( 'url::' => $labels['LBL_URL_SPECIFIED'] );
             foreach( $job_strings as $k => $v ) {
                 self::$job_strings['function::' . $v] = empty( $labels['LBL_'.strtoupper($v)] ) ? 'LBL_'.strtoupper($v) : $labels['LBL_'.strtoupper($v)];
             }
-
         }
+
         return self::$job_strings;
     }
 } // end class definition
