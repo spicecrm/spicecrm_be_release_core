@@ -311,7 +311,7 @@ class SpiceFTSUtils
                     break;
                 case 'link':
                     $seed = \BeanFactory::getBean($pathRecordDetails[1]);
-                    if($seed->load_relationship($pathRecordDetails[2])){
+                    if($seed && $seed->load_relationship($pathRecordDetails[2])){
                         $module = $seed->{$pathRecordDetails[2]}->getRelatedModuleName();
                     }
                     break;
