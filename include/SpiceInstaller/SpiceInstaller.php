@@ -370,7 +370,7 @@ class SpiceInstaller
             'dbconfigoption' => $postData['dboptions'],
             'fts' => $postData['fts'],
             'site_url' => $postData['backendconfig']['backendUrl'],
-            'developerMode' => $postData['backendconfig']['developerMode'],
+            'developerMode' => (empty($postData['backendconfig']['developerMode']) || $postData['backendconfig']['developerMode'] == 'false' ? false : true),
             'cache_dir' => 'cache/',
             'log_dir' => '.',
             'log_file' => 'spicecrm.log',
