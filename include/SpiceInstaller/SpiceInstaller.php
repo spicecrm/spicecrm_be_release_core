@@ -412,7 +412,7 @@ class SpiceInstaller
             file_put_contents('config.php', '<?php' . PHP_EOL . ' // created: ' . date("Y-m-d h:i:s") . PHP_EOL . '$sugar_config=');
             write_array_to_file("sugar_config", $sugar_config, 'config.php');
             if (!file_exists('config_override.php')) {
-                $overrides = '$sugar_config' . "['acl']['controller']='modules/ACL/ACLController.php';" . PHP_EOL . '$sugar_config' . "['syslanguages']['spiceuisource']='db';";
+                $overrides = '$sugar_config' . "['syslanguages']['spiceuisource']='db';";
                 file_put_contents('config_override.php', '<?php' . PHP_EOL . '/***CONFIGURATOR***/' . PHP_EOL . $overrides . PHP_EOL . '/***CONFIGURATOR***/');
             }
         }
