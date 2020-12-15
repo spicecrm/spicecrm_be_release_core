@@ -89,6 +89,11 @@ class BeanFactory {
         $beanClass = self::getBeanName($module);
         if (empty($beanClass)) return false;
 
+        // autoload seems to fail. Load class if not loaded
+        if(!class_exists($beanClass) && file_exists($GLOBALS['beanFiles'][$beanClass])) {
+            @require_once $GLOBALS['beanFiles'][$beanClass];
+        }
+
         if(class_exists($beanClass)){
             $bean = new $beanClass();
         } else {
@@ -136,7 +141,6 @@ class BeanFactory {
     {
         global $beanList;
         if (empty($beanList[$module]))  return false;
-
         return $beanList[$module];
     }
 

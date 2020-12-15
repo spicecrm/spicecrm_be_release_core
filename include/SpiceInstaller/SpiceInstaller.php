@@ -385,8 +385,8 @@ class SpiceInstaller
             'verify_client_ip' => false,
             'krest' =>
                 array(
-                    'error_reporting' => '22517',
-                    'display_errors' => '1',
+                    'error_reporting' => 22517,
+                    'display_errors' => 0,
                 ),
             'languages' => [
                 $postData['language']['language_code'] => $postData['language']['language_name']
