@@ -663,4 +663,4 @@ if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
     ];
 }
 
-VardefManager::createVardef('Emails', 'Email', ['default', 'assignable']);
+VardefManager::createVardef('Emails', 'Email', ['default','assignable']);

@@ -3,5 +3,5 @@
 
 $sugar_version      = '2020.04.001';
 $sugar_build	    = '1';
-$sugar_timestamp    = '2020-12-11 12:00am';
+$sugar_timestamp    = '2020-12-15 2:00pm';
 

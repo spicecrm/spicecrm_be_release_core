@@ -70,6 +70,9 @@ class CampaignTasksKRESTController
             case 'Mail':
                 $status = 'sent';
                 break;
+            case 'Feedback':
+                $status = 'queued';
+                break;
         }
 
         // activate the campaigntask

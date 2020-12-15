@@ -107,14 +107,40 @@ class adminController
             throw (new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
         }
 
+        $diffArray = [];
+
         $postBody = $req->getParsedBody();
 
         if (!empty($postBody)) {
-            foreach ($postBody as $item) {
-                $query = "UPDATE config SET value = '{$item['value']}' WHERE name = '{$item['name']}'";
-                $db->query($query);
+            // handle sytem settings
+            foreach ($postBody['system'] as $itemname => $itemvalue) {
+                switch($itemname){
+                    case 'name':
+                        $sugar_config['system']['name'] = $itemvalue;
+                        $query = "UPDATE config SET value = '$itemvalue' WHERE categroy = 'system' AND name = '$itemname'";
+                        $db->query($query);
+                        break;
+                    default:
+                        $sugar_config[$itemname] = $itemvalue;
+                        $diffArray[$itemname] = $itemvalue;
+                }
+
             }
+
+            // handle advanced settings
+            foreach ($postBody['advanced'] as $itemname => $itemvalue) {
+                $sugar_config[$itemname] = $itemvalue;
+                $diffArray[$itemname] = $itemvalue;
+            }
+
+            // handle logger settings
+            $sugar_config['logger'] = $postBody['logger'];
+            $diffArray['logger'] = $postBody['logger'];
         }
+
+        $configurator = new \SpiceCRM\modules\Configurator\Configurator();
+        $configurator->handleOverrideFromArray($diffArray);
+
         return $res->withJson(array(
             'status' => boolval($query)
         ));
@@ -242,7 +268,7 @@ class adminController
         $this->rebuildMetadataRelationships();
 
         // rebuild relationship cache
-        $rel = new\Relationship();
+        $rel = new \Relationship();
         $rel->build_relationship_cache();
     }
 

@@ -20,8 +20,6 @@ $RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
 $RESTManager->excludeFromAuthentication('/');
 $RESTManager->excludeFromAuthentication('/sysinfo');
 $RESTManager->excludeFromAuthentication('/test');
-$RESTManager->excludeFromAuthentication('/shorturl/*');
-$RESTManager->excludeFromAuthentication('/landingpage/*');
 
 /**
  * register the extension

@@ -2138,8 +2138,8 @@ class KReporterRESTHandler
      */
     public function getConfig()
     {
-        require_once 'modules/Configurator/Configurator.php';
-        $configurator = new Configurator();
+
+        $configurator = new \SpiceCRM\modules\Configurator\Configurator();
         $configurator->loadConfig();
         $default_currency_symbol = $configurator->config['default_currency_symbol'];
         $kreporter_version = 'ce';

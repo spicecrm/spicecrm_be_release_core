@@ -17,6 +17,7 @@ return array(
     'SpiceCRM\\includes\\' => array($baseDir . '/include'),
     'SpiceCRM\\custom\\modules\\' => array($baseDir . '/custom/modules'),
     'SpiceCRM\\custom\\includes\\' => array($baseDir . '/custom/include'),
+    'SpiceCRM\\custom\\KREST\\' => array($baseDir . '/custom/KREST'),
     'SpiceCRM\\KREST\\' => array($baseDir . '/KREST'),
     'Slim\\' => array($vendorDir . '/slim/slim/Slim'),
     'SendGrid\\' => array($vendorDir . '/sendgrid/php-http-client/lib'),

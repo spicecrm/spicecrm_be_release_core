@@ -192,6 +192,44 @@ $dictionary['CampaignTask'] = array(
             'type' => 'varchar',
             'len' => 36,
             'comment' => 'the style id when an email is composed right in the campaigntask'
+        ],
+        'questionnaire_id' => [
+            'name'       => 'questionnaire_id',
+            'vname'      => 'LBL_QUESTIONNAIRE_ID',
+            'type'       => 'id',
+            'reportable' => true,
+            'comment'    => 'The ID of the questionnaire',
+            'required'   => false,
+        ],
+        'questionnaire_name' => [
+            'name'             => 'questionnaire_name',
+            'vname'            => 'LBL_QUESTIONNAIRE',
+            'type'             => 'relate',
+            'source'           => 'non-db',
+            'len'              => '255',
+            'id_name'          => 'questionnaire_id',
+            'rname'            => 'name',
+            'module'           => 'Questionnaires',
+            'link'             => 'questionnaire'
+        ],
+        'questionnaire' => [
+            'vname'        => 'LBL_QUESTIONNAIRES',
+            'name'         => 'questionnaire',
+            'type'         => 'link',
+            'module'       => 'Questionnaires',
+            'relationship' => 'campaigntasks_questionnaire',
+            'link_type'    => 'one',
+            'side'         => 'right',
+            'source'       => 'non-db',
+        ],
+        'servicefeedbacks' => [
+            'vname'        => 'LBL_SERVICEFEEDBACKS',
+            'name'         => 'servicefeedbacks',
+            'type'         => 'link',
+            'module'       => 'ServiceFeedbacks',
+            'relationship' => 'servicefeedbacks_campaigntasks',
+            'link_type'    => 'one',
+            'source'       => 'non-db'
         ]
     ),
     'relationships' => array(
@@ -220,6 +258,15 @@ $dictionary['CampaignTask'] = array(
             'rhs_module' => 'CampaignTasks',
             'rhs_table' => 'campaigntasks',
             'rhs_key' => 'email_template_id',
+            'relationship_type' => 'one-to-many'
+        ],
+        'campaigntasks_questionnaire' => [
+            'lhs_module' => 'Questionnaires',
+            'lhs_table' => 'questionnaires',
+            'lhs_key' => 'id',
+            'rhs_module' => 'CampaignTasks',
+            'rhs_table' => 'campaigntasks',
+            'rhs_key' => 'questionnaire_id',
             'relationship_type' => 'one-to-many'
         ]
     ),

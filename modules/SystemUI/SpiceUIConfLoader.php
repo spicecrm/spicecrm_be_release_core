@@ -83,7 +83,7 @@ class SpiceUIConfLoader
      */
     public function __construct($endpoint = null)
     {
-        global $current_user;
+        global $current_user, $dictionary;
         $this->loader = new SpiceUILoader($endpoint);
 
         // module dictionaries are unknown at that time
@@ -92,6 +92,7 @@ class SpiceUIConfLoader
         foreach($_SESSION['modules']['moduleList'] as $idx => $module){
             \VardefManager::loadVardef($module, $_SESSION['modules']['beanList'][$module]);
         }
+
     }
 
     public static function getDefaultRoutes(){
@@ -199,12 +200,21 @@ class SpiceUIConfLoader
      */
     public function loadDefaultConf($routeparams, $params, $checkopen = true)
     {
-        global $db;
+        global $db, $dictionary;
         $tables = [];
         $inserts = [];
         $errors = [];
 
         $db->transactionStart();
+
+        // make sure we have a full dictionary
+//        \SpiceCRM\includes\SugarObjects\SpiceModules::loadModules();
+//        foreach($_SESSION['modules']['beanFiles'] as $beanClass => $beanFile){
+//            if(file_exists($beanFile)){
+//                require_once $beanFile;
+//            }
+//        }
+        //file_put_contents('dict.log', 'dict EmailTemplate '.print_r($dictionary, true)."\n", FILE_APPEND);
 
         if ($checkopen && $this->loader->hasOpenChangeRequest()) {
             $errormsg = "Open Change Requests found! They would be erased...";
@@ -276,6 +286,9 @@ class SpiceUIConfLoader
                 }
 
                 //run insert
+//                if($tb == 'email_templates'){
+//                    file_put_contents('spicecrm.log', 'dict email_templates '.print_r($dictionary['EmailTemplate'], true)."\n", FILE_APPEND);
+//                }
                 if($dbRes = $db->insertQuery($tb, $decodeData, true)){
                     $tables[$tb]++;
                     $inserts[] = $dbRes;

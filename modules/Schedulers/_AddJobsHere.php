@@ -441,11 +441,22 @@ function sendEmailScheduleEmails(){
     return $emailSchedule->sendQueuedEmails();
 }
 
-
-if($scheduledtaskhandle = opendir('./modules/Schedulers/ScheduledTasks')) {
-    while (false !== ($scheduledtaskfile = readdir($scheduledtaskhandle))) {
-        if (preg_match('/\.php$/', $scheduledtaskfile)) {
-            include('modules/Schedulers/ScheduledTasks/' . $scheduledtaskfile);
+// check if we have extension in the local path
+$checkRootPaths = ['include', 'modules', 'custom/modules'];
+foreach ($checkRootPaths as $checkRootPath) {
+    $dirHandle = opendir("./$checkRootPath");
+    if ($dirHandle) {
+        while (($nextDir = readdir($dirHandle)) !== false) {
+            if ($nextDir != '.' && $nextDir != '..' && is_dir("./$checkRootPath/$nextDir") && file_exists("./$checkRootPath/$nextDir/ScheduledTasks")) {
+                $subDirHandle = opendir("./$checkRootPath/$nextDir/ScheduledTasks");
+                if ($subDirHandle) {
+                    while (false !== ($nextFile = readdir($subDirHandle))) {
+                        if (preg_match('/.php$/', $nextFile)) {
+                            require_once("./$checkRootPath/$nextDir/ScheduledTasks/$nextFile");
+                        }
+                    }
+                }
+            }
         }
     }
 }

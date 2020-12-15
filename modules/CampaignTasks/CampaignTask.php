@@ -151,8 +151,12 @@ class CampaignTask extends SugarBean
         return $testCount > 0 ? ['status' => 'success'] : ['status' => 'error', 'msg' => 'no targets found'] ;
     }
 
+    /**
+     * send queued emails for email campaign tasks thewre the log entry is set to queued
+     * @return bool
+     */
     function sendQueuedEmails(){
-        $queuedEmails = $this->db->query("SELECT id, target_type, target_id, campaigntask_id FROM campaign_log WHERE deleted = 0 AND activity_type = 'queued' AND campaigntask_id <> '' ORDER by activity_date DESC");
+        $queuedEmails = $this->db->query("SELECT campaign_log.id, target_type, target_id, campaigntask_id FROM campaign_log, campaigntasks WHERE campaign_log.deleted = 0 AND campaign_log.campaigntask_id = campaigntasks.id AND campaigntasks.campaigntask_type = 'Email' AND activity_type = 'queued' AND campaigntask_id <> '' ORDER by activity_date DESC");
         while($queuedEmail = $this->db->fetchByAssoc($queuedEmails)){
             /// load the campaign task if we have a new one
             if($queuedEmail['campaigntask_id'] != $this->id){
@@ -183,6 +187,14 @@ class CampaignTask extends SugarBean
         return true;
     }
 
+    /**
+     * sends the email
+     *
+     * @param $seed
+     * @param false $saveEmail
+     * @param false $test
+     * @return false|SugarBean
+     */
     function sendEmail($seed, $saveEmail = false, $test = false)
     {
 
@@ -225,5 +237,52 @@ class CampaignTask extends SugarBean
         return $email;
     }
 
+
+    /**
+     * send queued emails for email campaign tasks thewre the log entry is set to queued
+     * @return bool
+     */
+    function genereateServiceFeedbacks(){
+        $queuedFeedbacks = $this->db->query("SELECT campaign_log.id, target_type, target_id, campaigntask_id FROM campaign_log, campaigntasks WHERE campaign_log.deleted = 0 AND campaign_log.campaigntask_id = campaigntasks.id AND campaigntasks.campaigntask_type = 'Feedback' AND activity_type = 'queued' AND campaigntask_id <> '' ORDER by activity_date DESC");
+        while($queuedFeedback = $this->db->fetchByAssoc($queuedFeedbacks)){
+            /// load the campaign task if we have a new one
+            if($queuedFeedback['campaigntask_id'] != $this->id){
+                $this->retrieve($queuedFeedback['campaigntask_id']);
+            };
+
+            // check that the target is a contact
+            if($queuedFeedback['target_type'] != 'Contacts'){
+                $campaignLog = BeanFactory::getBean('CampaignLog', $queuedFeedback['id']);
+                $campaignLog->activity_type = 'error';
+                $campaignLog->save();
+                continue;
+            }
+
+
+                // load the bean and send the email
+            $seed = BeanFactory::getBean($queuedFeedback['target_type'], $queuedFeedback['target_id']);
+            if($seed){
+                $feedback = BeanFactory::getBean('ServiceFeedbacks');
+                $feedback->contact_id = $seed->id;
+                $feedback->servicefeedback_status = 'created';
+                $feedback->questionnaire_id = $this->questionnaire_id;
+                $feedback->parent_type = 'CampaignTasks';
+                $feedback->parent_id = $this->id;
+                $feedback->save();
+
+                $campaignLog = BeanFactory::getBean('CampaignLog', $queuedFeedback['id']);
+                $campaignLog->activity_type = $feedback->servicefeedback_status;
+                $campaignLog->related_id = $feedback->id;
+                $campaignLog->related_type = 'ServiceFeedbacks';
+                $campaignLog->save();
+
+            } else {
+                $campaignLog = BeanFactory::getBean('CampaignLog', $queuedFeedback['id']);
+                $campaignLog->activity_type = 'error';
+                $campaignLog->save();
+            }
+        }
+        return true;
+    }
 
 }

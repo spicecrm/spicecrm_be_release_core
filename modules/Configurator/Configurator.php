@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,6 +34,8 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\modules\Configurator;
+
 class Configurator {
 	var $config = '';
 	var $override = '';
@@ -57,19 +58,49 @@ class Configurator {
 
 	function handleOverride($fromParseLoggerSettings=false) {
 		global $sugar_config, $sugar_version;
-		$sc = SpiceConfig::getInstance();
+		$sc = \SpiceConfig::getInstance();
 		$overrideArray = $this->readOverride();
 		$this->previous_sugar_override_config_array = $overrideArray;
 		$diffArray = deepArrayDiff($this->config, $sugar_config);
 		$overrideArray = sugarArrayMergeRecursive($overrideArray, $diffArray);
 
 		// To remember checkbox state
-      if (!$this->useAuthenticationClass && !$fromParseLoggerSettings) {
-         if (isset($overrideArray['authenticationClass']) &&
-            $overrideArray['authenticationClass'] == 'SAMLAuthenticate') {
-      	  unset($overrideArray['authenticationClass']);
-      	}
-      }
+          if (!$this->useAuthenticationClass && !$fromParseLoggerSettings) {
+             if (isset($overrideArray['authenticationClass']) &&
+                $overrideArray['authenticationClass'] == 'SAMLAuthenticate') {
+              unset($overrideArray['authenticationClass']);
+            }
+          }
+
+		$overideString = "<?php\n/***CONFIGURATOR***/\n";
+
+		sugar_cache_put('sugar_config', $this->config);
+		$GLOBALS['sugar_config'] = $this->config;
+
+		foreach($overrideArray as $key => $val) {
+			if (in_array($key, $this->allow_undefined) || isset ($sugar_config[$key])) {
+				if (is_string($val) && strcmp($val, 'true') == 0) {
+					$val = true;
+					$this->config[$key] = $val;
+				}
+				if (is_string($val) && strcmp($val, 'false') == 0) {
+					$val = false;
+					$this->config[$key] = false;
+				}
+			}
+			$overideString .= override_value_to_string_recursive2('sugar_config', $key, $val);
+		}
+		$overideString .= '/***CONFIGURATOR***/';
+
+		$this->saveOverride($overideString);
+		if(isset($this->config['logger']['level']) && $this->logger) $this->logger->setLevel($this->config['logger']['level']);
+	}
+
+	function handleOverrideFromArray($diffArray) {
+		global $sugar_config, $sugar_version;
+		$overrideArray = $this->readOverride();
+		$this->previous_sugar_override_config_array = $overrideArray;
+		$overrideArray = sugarArrayMergeRecursive($overrideArray, $diffArray);
 
 		$overideString = "<?php\n/***CONFIGURATOR***/\n";
 

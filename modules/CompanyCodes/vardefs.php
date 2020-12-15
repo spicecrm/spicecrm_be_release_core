@@ -69,6 +69,12 @@ $dictionary['CompanyCode'] = array(
             'type' => 'varchar',
             'len' => 50
         ),
+        'www' => array(
+            'name' => 'www',
+            'vname' => 'LBL_WWW',
+            'type' => 'varchar',
+            'len' => 50
+        ),
         'bank_name' => array(
             'name' => 'bank_name',
             'vname' => 'LBL_BANK_NAME',

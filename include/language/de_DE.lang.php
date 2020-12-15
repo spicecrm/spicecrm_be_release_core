@@ -523,6 +523,7 @@ $app_list_strings = array(
         'Telesales' => 'Telesales',
         'Mail' => 'Mail',
         'Email' => 'Email',
+        'Feedback' => 'Umfrage',
         'Print' => 'Print',
         'Web' => 'Web',
         'Radio' => 'Radio',

@@ -595,7 +595,7 @@ EOQ;
     public function retrieve_user_id(
         $user_name
     ) {
-        $userFocus = new User;
+        $userFocus = BeanFactory::getBean('Users');
         $userFocus->retrieve_by_string_fields(array('user_name' => $user_name));
         if (empty($userFocus->id))
             return false;

@@ -86,8 +86,7 @@ class SugarAuthenticate {
         $_SESSION['hasExpiredPassword'] = '0';
         if ($this->userAuthenticate->loadUserOnLogin($username, $password, $fallback, $PARAMS)) {
 
-            require_once('modules/Users/password_utils.php');
-            if (hasPasswordExpired($username)) {
+            if ($this->hasPasswordExpired($username)) {
                 $_SESSION['hasExpiredPassword'] = '1';
             }
             // now that user is authenticated, reset loginfailed
@@ -275,7 +274,6 @@ class SugarAuthenticate {
     function logout() {
         session_destroy();
         ob_clean();
-        header('Location: index.php?module=Users&action=Login');
         sugar_cleanup(true);
     }
 
@@ -328,6 +326,63 @@ class SugarAuthenticate {
     public function redirectToLogin(SugarApplication $app) {
         $loginVars = $app->createLoginVars();
         $app->redirect('index.php?action=Login&module=Users' . $loginVars);
+    }
+
+
+    function  hasPasswordExpired($username){
+        $current_user= new user();
+        $usr_id=$current_user->retrieve_user_id($username);
+        $current_user->retrieve($usr_id);
+        $type = '';
+        if ($current_user->system_generated_password == '1'){
+            $type='syst';
+        }
+
+        if ($current_user->portal_only=='0'){
+            global $mod_strings, $timedate;
+            $res=$GLOBALS['sugar_config']['passwordsetting'];
+            if ($type != '') {
+                switch($res[$type.'expiration']){
+
+                    case '1':
+                        global $timedate;
+                        if ($current_user->pwd_last_changed == ''){
+                            $current_user->pwd_last_changed= $timedate->nowDb();
+                            $current_user->save();
+                        }
+
+                        $expireday = $res[$type.'expirationtype']*$res[$type.'expirationtime'];
+                        $expiretime = $timedate->fromUser($current_user->pwd_last_changed)->add(new DateInterval("P{$expireday}D"))->getTimeStamp();
+
+                        if ($timedate->getNow()->getTimeStamp() < $expiretime)
+                            return false;
+                        else{
+                            $_SESSION['expiration_type']= $mod_strings['LBL_PASSWORD_EXPIRATION_TIME'];
+                            return true;
+                        }
+                        break;
+
+
+                    case '2':
+                        $login=$current_user->getPreference('loginexpiration');
+                        $current_user->setPreference('loginexpiration',$login+1);
+                        $current_user->save();
+                        if ($login+1 >= $res[$type.'expirationlogin']){
+                            $_SESSION['expiration_type']= $mod_strings['LBL_PASSWORD_EXPIRATION_LOGIN'];
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                        break;
+
+                    case '0':
+                        return false;
+                        break;
+                }
+            }
+        }
     }
 
 }

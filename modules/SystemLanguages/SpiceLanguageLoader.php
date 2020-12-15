@@ -64,7 +64,7 @@ class SpiceLanguageLoader{
             if(!class_exists('Configurator', false)){
                 require_once 'modules/Configurator/Configurator.php';
             }
-            $configurator = new \Configurator();
+            $configurator = new \SpiceCRM\modules\Configurator\Configurator();
             $configurator->loadConfig();
             $configurator->config['syslanguages']['spiceuisource'] = 'db';
             $configurator->saveConfig();

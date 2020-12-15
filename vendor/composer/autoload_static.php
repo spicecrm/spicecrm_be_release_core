@@ -145,6 +145,10 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/../..' . '/KREST',
         ),
+        'SpiceCRM\\custom\\KREST\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/custom/KREST',
+        ),
         'Slim\\' => 
         array (
             0 => __DIR__ . '/..' . '/slim/slim/Slim',
