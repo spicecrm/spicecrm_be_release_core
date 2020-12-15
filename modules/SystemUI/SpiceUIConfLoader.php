@@ -85,6 +85,13 @@ class SpiceUIConfLoader
     {
         global $current_user;
         $this->loader = new SpiceUILoader($endpoint);
+
+        // module dictionaries are unknown at that time
+        // load them to make sure DBManager will have proper content in global $dictionary
+        \SpiceCRM\includes\SugarObjects\SpiceModules::loadModules();
+        foreach($_SESSION['modules']['moduleList'] as $idx => $module){
+            \VardefManager::loadVardef($module, $_SESSION['modules']['beanList'][$module]);
+        }
     }
 
     public static function getDefaultRoutes(){
