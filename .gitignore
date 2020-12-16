@@ -83,6 +83,7 @@ project.xml
 # nphpstorm #
 ###################
 .idea
+/.idea
 
 # sass #
 ###################
