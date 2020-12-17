@@ -398,8 +398,14 @@ class RESTManager
 
         if (!empty($session_id)) {
             if (!session_id()) {
+                // hack to keep data that was written to the session already
+                $sessionbackup = $_SESSION;
                 session_id($session_id);
                 session_start();
+                // add the backed up session data
+                foreach($sessionbackup as $key => $val){
+                    $_SESSION[$key] = $val;
+                }
             }
 
             if (!empty($_SESSION['authenticated_user_id'])) {
