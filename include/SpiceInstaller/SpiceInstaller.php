@@ -651,7 +651,11 @@ class SpiceInstaller
     private function retrieveCoreAndLanguages($db, $postData)
     {
         $confLoader = new SpiceUIConfLoader();
-        $confLoader->loadPackage('core');
+        // load some packages to enable a good start
+        $loadPackages = ['core', 'aclessentials', 'ftsreference'];
+        foreach($loadPackages as $loadPackage){
+            $confLoader->loadPackage($loadPackage);
+        }
 
         $lang = $postData['language']['language_code'];
         $languageLoader = new SpiceLanguageLoader();
