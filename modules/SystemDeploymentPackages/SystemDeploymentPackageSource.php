@@ -3,8 +3,8 @@ namespace SpiceCRM\modules\SystemDeploymentPackages;
 
 class SystemDeploymentPackageSource
 {
-//    public static $public_source = 'https://packages.spicecrm.io/';
-    public static $public_source = 'https://spicecrmreference.spicecrm.io/proxy/000/'; // for testing or dev
+    /** @var string used when no entry is set in sysuipackagerepositories table */
+    public static $public_source = 'https://spicecrmrelease.spicecrm.io/proxy/000/';
 
 
     /**
