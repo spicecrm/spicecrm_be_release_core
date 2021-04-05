@@ -2,7 +2,9 @@
 
 namespace SpiceCRM\modules\EmailSchedules\KREST\controllers;
 
-use function GuzzleHttp\Psr7\str;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class EmailSchedulesKRESTController {
 
@@ -12,10 +14,10 @@ class EmailSchedulesKRESTController {
      * @return string
      */
     private function saveBean($postBody) {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         // create a new bean
-        $emailschedule = \BeanFactory::getBean('EmailSchedules');
+        $emailschedule = BeanFactory::getBean('EmailSchedules');
 
         // if the id is in the body assign it
         if($postBody['id']) {
@@ -47,7 +49,7 @@ class EmailSchedulesKRESTController {
      */
     public function saveSchedule($req, $res, $args) {
 
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $postBody = $req->getParsedBody();
 
         $emailscheduleId = $this->saveBean($postBody);
@@ -63,10 +65,10 @@ class EmailSchedulesKRESTController {
             }
         }
 
-        return $res->withJson(array(
+        return $res->withJson([
             'status' => boolval($query),
             'emailscheduleid' => $emailscheduleId
-        ));
+        ]);
     }
 
     /**
@@ -80,10 +82,10 @@ class EmailSchedulesKRESTController {
         $beanid = $args['id'];
         $module = $args['module'];
         $linkedBeans = [];
-        $params = $req->getParams();
+        $params = $req->getQueryParams();
         $relatedModules = json_decode($params['modules']);
 
-        $bean = \BeanFactory::getBean($module, $beanid);
+        $bean = BeanFactory::getBean($module, $beanid);
         $bean->load_relationships();
         if(!empty($relatedModules)) {
             foreach($relatedModules as $related) {
@@ -91,11 +93,11 @@ class EmailSchedulesKRESTController {
             }
         }
 
-        return $res->withJson(array(
+        return $res->withJson([
             'status' => boolval($linkedBeans),
             'beanId' => $beanid,
             'linkedBeans' => $linkedBeans
-        ));
+        ]);
     }
 
     /**
@@ -106,12 +108,12 @@ class EmailSchedulesKRESTController {
      * @return mixed
      */
     public function saveScheduleFromRelated($req, $res, $args) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $postBody = $req->getParsedBody();
         $beanId = $postBody['beanId'];
         $module = $postBody['bean'];
         $links = $postBody['links'];
-        $bean = \BeanFactory::getBean($module, $beanId);
+        $bean = BeanFactory::getBean($module, $beanId);
         $bean->load_relationships();
         if(count($links) > 0) {
           foreach($links as $module) {
@@ -135,10 +137,10 @@ class EmailSchedulesKRESTController {
             }
         }
 
-        return $res->withJson(array(
+        return $res->withJson([
             'status' => boolval($relatedbeans),
             'emailschedule' => $emailscheduleId,
-        ));
+        ]);
     }
 
     /**
@@ -149,8 +151,8 @@ class EmailSchedulesKRESTController {
      * @return mixed
      */
     public function getOwnOpenSchedules($req, $res, $args) {
-        global $db;
-        global $current_user;
+        $db = DBManagerFactory::getInstance();
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $userid = $args['id'];
         $openSchedules = [];
@@ -162,9 +164,9 @@ class EmailSchedulesKRESTController {
             }
         }
 
-        return $res->withJson(array(
+        return $res->withJson([
             'status' => boolval($query),
             'openschedules' => $openSchedules
-        ));
+        ]);
     }
 }

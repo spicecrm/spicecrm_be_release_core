@@ -1,27 +1,27 @@
 <?php
 
-$dictionary['sysmailboxtransports'] = array(
+$dictionary['sysmailboxtransports'] = [
     'table' => 'sysmailboxtransports',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'label' => array(
+        ],
+        'label' => [
             'name' => 'label',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'component' => array(
+        ],
+        'component' => [
             'name' => 'component',
             'type' => 'varchar',
             'len' => 100
-        ),
+        ],
         'message_type' => [
             'name'     => 'message_type',
             'vname'    => 'LBL_MESSAGE_TYPE',
@@ -29,34 +29,34 @@ $dictionary['sysmailboxtransports'] = array(
             'options'  => 'mailbox_message_types',
             'required' => true,
         ],
-        'version' => array(
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysmailboxtransports',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];
 
-$dictionary['syscustommailboxtransports'] = array(
+$dictionary['syscustommailboxtransports'] = [
     'table' => 'syscustommailboxtransports',
     'fields' => $dictionary['sysmailboxtransports']['fields'],
-    'indices' => array(
-        array(
+    'indices' => [
+        [
             'name' => 'idx_syscustommailboxtransports',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];

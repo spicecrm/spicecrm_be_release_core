@@ -11,23 +11,24 @@
 * You can contact us at info@kreporter.org
 ******************************************************************************* */
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$kreportCustomFunctions = array(
+use SpiceCRM\includes\authentication\AuthenticationController;
+
+$kreportCustomFunctions = [
 	'getcurrentuserid' => 'current User ID',
         'interval1630' => 'Interval 16:30'
-);
+];
 
 if(!function_exists('getcurrentuserid'))
 {
 	function getcurrentuserid($whereConditionRecord)
 	{
-		global $current_user;
+		$current_user = AuthenticationController::getInstance()->getCurrentUser();
 		
-		return array(
+		return [
 		    'operator' => 'oneof',
 		    'value' => $current_user->id
-		);
+        ];
 	}
 }
 
@@ -35,15 +36,15 @@ if(!function_exists('interval1630'))
 {
 	function interval1630($whereConditionRecord)
 	{
-		global $current_user;
+		$current_user = AuthenticationController::getInstance()->getCurrentUser();
 		
-		return array(
+		return [
                     'operator' => 'between',
                     'value' => '',
 		    'valuekey' => date('Y-m-d', time()-86400) . ' 16:30:01', 
                     'valueto' => '',
-                    'valuetokey' => date('Y-m-d') . ' 16:30:00', 
-		);
+                    'valuetokey' => date('Y-m-d') . ' 16:30:00',
+        ];
 	}
 }
 

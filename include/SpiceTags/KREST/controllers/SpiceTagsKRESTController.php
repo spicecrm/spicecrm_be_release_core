@@ -2,6 +2,8 @@
 
 namespace SpiceCRM\includes\SpiceTags\KREST\controllers;
 
+use SpiceCRM\includes\SpiceFTSManager\ElasticHandler;
+
 class SpiceTagsKRESTController
 {
 
@@ -47,7 +49,7 @@ class SpiceTagsKRESTController
             ]
         ];
 
-        $handler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
+        $handler = new ElasticHandler();
         $response = json_decode($handler->query('POST', $handler->indexPrefix . '*/_search', [], $query), true);
 
         $suggestions = [];
@@ -66,7 +68,7 @@ class SpiceTagsKRESTController
             $suggestions[] = $key[0];
         }
 
-        return $res->write(json_encode($suggestions));
+        return $res->withJson($suggestions);
     }
 
     static function searchPostTags($req, $res, $args)
@@ -103,7 +105,7 @@ class SpiceTagsKRESTController
             ]
         ];
 
-        $handler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
+        $handler = new ElasticHandler();
         $response = json_decode($handler->query('POST', $handler->indexPrefix . '*/_search', [], $query), true);
 
         $suggestions = [];
@@ -122,7 +124,7 @@ class SpiceTagsKRESTController
             $suggestions[] = $key[0];
         }
 
-        return $res->write(json_encode($suggestions));
+        return $res->withJson($suggestions);
     }
 
 }

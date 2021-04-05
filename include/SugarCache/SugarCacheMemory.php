@@ -34,8 +34,7 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-
-require_once('include/SugarCache/SugarCacheAbstract.php');
+namespace SpiceCRM\includes\SugarCache;
 
 class SugarCacheMemory extends SugarCacheAbstract
 {

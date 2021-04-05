@@ -1,57 +1,58 @@
 <?php
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$dictionary['UserAbsence'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['UserAbsence'] = [
     'table' => 'userabsences',
     'comment' => 'UserAbsences Module',
     'audited' =>  false,
     'duplicate_merge' =>  false,
     'unified_search' =>  false,
 
-    'fields' => array(
-        'name' => array(
+    'fields' => [
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_NAME',
             'type' => 'varchar',
             'required' => false,
-        ),
-        'date_start' => array(
+        ],
+        'date_start' => [
             'name' => 'date_start',
             'vname' => 'LBL_DATE_START',
             'type' => 'date',
             'audited' => true,
             'required' => true,
-        ),
-        'date_end' => array(
+        ],
+        'date_end' => [
             'name' => 'date_end',
             'vname' => 'LBL_DATE_END',
             'type' => 'date',
             'audited' => true,
             'required' => true,
-        ),
-        'type' => array(
+        ],
+        'type' => [
             'name' => 'type',
             'vname' => 'LBL_TYPE',
             'type' => 'enum',
             'required' => true,
             'reportable' => false,
             'options' => 'userabsences_type_dom',
-        ),
-        'status' => array(
+        ],
+        'status' => [
             'name' => 'status',
             'vname' => 'LBL_STATUS',
             'type' => 'enum',
             'required' => true,
             'default' => 'created',
             'options' => 'userabsences_status_dom',
-        ),
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'vname' => 'LBL_USER_ID',
             'type' => 'id',
-        ),
-        'user_name' => array(
+        ],
+        'user_name' => [
             'name' => 'user_name',
             'rname' => 'name',
             'id_name' => 'user_id',
@@ -63,20 +64,20 @@ $dictionary['UserAbsence'] = array(
             'link' => 'users',
             'len' => 255,
             'source' => 'non-db'
-        ),
-        'users' => array(
+        ],
+        'users' => [
             'name' => 'users',
             'type' => 'link',
             'relationship' => 'users_userabsences',
             'source' => 'non-db',
             'module' => 'Users'
-        ),
-        'representative_id' => array(
+        ],
+        'representative_id' => [
             'name' => 'representative_id',
             'vname' => 'LBL_USER_ID',
             'type' => 'id',
-        ),
-        'representative_name' => array(
+        ],
+        'representative_name' => [
             'name' => 'representative_name',
             'rname' => 'name',
             'id_name' => 'representative_id',
@@ -88,22 +89,22 @@ $dictionary['UserAbsence'] = array(
             'link' => 'representative_link',
             'len' => 255,
             'source' => 'non-db'
-        ),
-        'representative_link' => array(
+        ],
+        'representative_link' => [
             'name' => 'representative_link',
             'type' => 'link',
             'relationship' => 'representatives_userabsences',
             'source' => 'non-db',
             'module' => 'Users'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_userabsences_userid',
             'type' => 'index',
-            'fields' => array('user_id')
-        )
-    )
-);
+            'fields' => ['user_id']
+        ]
+    ]
+];
 
-VardefManager::createVardef('UserAbsences', 'UserAbsence', array('default', 'assignable'));
+VardefManager::createVardef('UserAbsences', 'UserAbsence', ['default', 'assignable']);

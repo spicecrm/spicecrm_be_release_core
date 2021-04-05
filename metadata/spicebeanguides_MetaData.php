@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,246 +33,246 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['spicebeanguides'] = array(
+global $dictionary;
+$dictionary['spicebeanguides'] = [
     'table' => 'spicebeanguides',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        'status_field' => array(
+        ],
+        'status_field' => [
             'name' => 'status_field',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'build_language' => array(
+        ],
+        'build_language' => [
             'name' => 'build_language',
             'type' => 'text'
-        )
-    ),
-    'indices' => array(
-        array('name' => 'spicebeanguides_pk', 'type' => 'primary', 'fields' => array('id') ),
-        array('name' => 'idx_spicebeanguides_module', 'type' => 'index', 'fields' => array('module') ),
-    )
-);
-$dictionary['spicebeancustomguides'] = array(
+        ]
+    ],
+    'indices' => [
+        ['name' => 'spicebeanguides_pk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' => 'idx_spicebeanguides_module', 'type' => 'index', 'fields' => ['module']],
+    ]
+];
+$dictionary['spicebeancustomguides'] = [
     'table' => 'spicebeancustomguides',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'char',
             'len' => '36'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        'status_field' => array(
+        ],
+        'status_field' => [
             'name' => 'status_field',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'build_language' => array(
+        ],
+        'build_language' => [
             'name' => 'build_language',
             'type' => 'text'
-        )
-    ),
-    'indices' => array(
-        array('name' => 'spicebeancustomguides_pk', 'type' => 'primary', 'fields' => array('id') ),
-        array('name' => 'idx_spicebeancustomguides_module', 'type' => 'index', 'fields' => array('module') ),
-    )
-);
-$dictionary['spicebeanguidestages'] = array(
+        ]
+    ],
+    'indices' => [
+        ['name' => 'spicebeancustomguides_pk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' => 'idx_spicebeancustomguides_module', 'type' => 'index', 'fields' => ['module']],
+    ]
+];
+$dictionary['spicebeanguidestages'] = [
     'table' => 'spicebeanguidestages',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'spicebeanguide_id' => array(
+        ],
+        'spicebeanguide_id' => [
             'name' => 'spicebeanguide_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'stage' => array(
+        ],
+        'stage' => [
             'name' => 'stage',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'secondary_stage' => array(
+        ],
+        'secondary_stage' => [
             'name' => 'secondary_stage',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'stage_sequence' => array(
+        ],
+        'stage_sequence' => [
             'name' => 'stage_sequence',
             'type' => 'int'
-        ),
-        'stage_bucket' => array(
+        ],
+        'stage_bucket' => [
             'name' => 'stage_bucket',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'stage_color' => array(
+        ],
+        'stage_color' => [
             'name' => 'stage_color',
             'type' => 'varchar',
             'len' => '6'
-        ),
-        'stage_add_data' => array(
+        ],
+        'stage_add_data' => [
             'name' => 'stage_add_data',
             'type' => 'text'
-        ),
-        'stage_label' => array(
+        ],
+        'stage_label' => [
             'name' => 'stage_label',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'stage_componentset' => array(
+        ],
+        'stage_componentset' => [
             'name' => 'stage_componentset',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'not_in_kanban' => array(
+        ],
+        'not_in_kanban' => [
             'name' => 'not_in_kanban',
             'type' => 'bool'
-        ),
-        'spicebeanguide_status' => array(
+        ],
+        'spicebeanguide_status' => [
             'name' => 'spicebeanguide_status',
             'type' => 'varchar',
             'len' => 4,
             'comment' => 'vlaues are empty, won or lost, this influences the setup of the complete beanguide'
-        )
-    ),
-   'indices' => array(
-        array('name' => 'spicebeanguidestages_pk', 'type' => 'primary', 'fields' => array('id') ),
-        array('name' => 'idx_spicebeanguidestages_guideid', 'type' => 'index', 'fields' => array('spicebeanguide_id') ),
-    )
-);
+        ]
+    ],
+   'indices' => [
+        ['name' => 'spicebeanguidestages_pk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' => 'idx_spicebeanguidestages_guideid', 'type' => 'index', 'fields' => ['spicebeanguide_id']],
+   ]
+];
 
-$dictionary['spicebeanguidestages_texts'] = array(
+$dictionary['spicebeanguidestages_texts'] = [
     'table' => 'spicebeanguidestages_texts',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'stage_id' => array(
+        ],
+        'stage_id' => [
             'name' => 'stage_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'language' => array(
+        ],
+        'language' => [
             'name' => 'language',
             'type' => 'varchar',
             'len' => '5'
-        ),
-        'stage_name' => array(
+        ],
+        'stage_name' => [
             'name' => 'stage_name',
             'type' => 'varchar',
             'len' => '25'
-        ),
-        'stage_secondaryname' => array(
+        ],
+        'stage_secondaryname' => [
             'name' => 'stage_secondaryname',
             'type' => 'varchar',
             'len' => '25'
-        ),
-        'stage_description' => array(
+        ],
+        'stage_description' => [
             'name' => 'stage_description',
             'type' => 'text'
-        )
-    ),
-    'indices' => array(
-        array('name' => 'spicebeanguidestages_texts_pk', 'type' => 'primary', 'fields' => array('id') ),
-        array('name' => 'idx_spicebeanguidestagestexts_stageid', 'type' => 'index', 'fields' => array('stage_id') ),
-    )
-);
+        ]
+    ],
+    'indices' => [
+        ['name' => 'spicebeanguidestages_texts_pk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' => 'idx_spicebeanguidestagestexts_stageid', 'type' => 'index', 'fields' => ['stage_id']],
+    ]
+];
 
-$dictionary['spicebeanguidestages_checks'] = array(
+$dictionary['spicebeanguidestages_checks'] = [
     'table' => 'spicebeanguidestages_checks',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'spicebeanguide_id' => array(
+        ],
+        'spicebeanguide_id' => [
             'name' => 'spicebeanguide_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'stage_id' => array(
+        ],
+        'stage_id' => [
             'name' => 'stage_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'check_sequence' => array(
+        ],
+        'check_sequence' => [
             'name' => 'check_sequence',
             'type' => 'int'
-        ),
-        'check_include' => array(
+        ],
+        'check_include' => [
             'name' => 'check_include',
             'type' => 'varchar',
             'len' => '150'
-        ),
-        'check_class' => array(
+        ],
+        'check_class' => [
             'name' => 'check_class',
             'type' => 'varchar',
             'len' => '80'
-        ),
-        'check_method' => array(
+        ],
+        'check_method' => [
             'name' => 'check_method',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'check_label' => array(
+        ],
+        'check_label' => [
             'name' => 'check_label',
             'type' => 'varchar',
             'len' => 50
-        )
-    ),
-    'indices' => array(
-        array('name' => 'spicebeanguidestages_checks_pk', 'type' => 'primary', 'fields' => array('id') ),
-        array('name' => 'idx_spicebeanguidestageschecks_stageid', 'type' => 'index', 'fields' => array('stage_id') ),
-        array('name' => 'idx_spicebeanguidestageschecks_guideid', 'type' => 'index', 'fields' => array('spicebeanguide_id') ),
-    )
-);
+        ]
+    ],
+    'indices' => [
+        ['name' => 'spicebeanguidestages_checks_pk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' => 'idx_spicebeanguidestageschecks_stageid', 'type' => 'index', 'fields' => ['stage_id']],
+        ['name' => 'idx_spicebeanguidestageschecks_guideid', 'type' => 'index', 'fields' => ['spicebeanguide_id']],
+    ]
+];
 
-$dictionary['spicebeanguidestages_check_texts'] = array(
+$dictionary['spicebeanguidestages_check_texts'] = [
     'table' => 'spicebeanguidestages_check_texts',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'stage_check_id' => array(
+        ],
+        'stage_check_id' => [
             'name' => 'stage_check_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'language' => array(
+        ],
+        'language' => [
             'name' => 'language',
             'type' => 'varchar',
             'len' => '5'
-        ),
-        'text' => array(
+        ],
+        'text' => [
             'name' => 'text',
             'type' => 'varchar',
             'len' => '50'
-        )
-    ),
-    'indices' => array(
-        array('name' => 'spicebeanguidestages_check_texts_pk', 'type' => 'primary', 'fields' => array('id') ),
-        array('name' => 'idx_spicebeanguidestageschecktexts_stagecheckid', 'type' => 'index', 'fields' => array('stage_check_id') ),
-    )
-);
+        ]
+    ],
+    'indices' => [
+        ['name' => 'spicebeanguidestages_check_texts_pk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' => 'idx_spicebeanguidestageschecktexts_stagecheckid', 'type' => 'index', 'fields' => ['stage_check_id']],
+    ]
+];

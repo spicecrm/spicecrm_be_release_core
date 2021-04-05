@@ -1,6 +1,8 @@
 <?php
 namespace SpiceCRM\modules\OutputTemplates\handlers\pdf;
 
+use Pdfcrowd\HtmlToPdfClient;
+
 require_once('vendor/pdfcrowd/pdfcrowd.php');
 
 class PdfCrowdHandler extends ApiPdfHandler
@@ -14,7 +16,7 @@ class PdfCrowdHandler extends ApiPdfHandler
     {
         parent::process($html, $options);
 
-        $client = new \Pdfcrowd\HtmlToPdfClient($this->access_data['user_name'], $this->access_data['api_key']);
+        $client = new HtmlToPdfClient($this->access_data['user_name'], $this->access_data['api_key']);
         $client->setUseHttp(true);
         $this->content = $client->convertString($html);
         return true;

@@ -1,52 +1,52 @@
 <?php
 
-$dictionary['syststatusnetworks'] = array(
+$dictionary['syststatusnetworks'] = [
     'table' => 'syststatusnetworks',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'domain' => array(
+        ],
+        'domain' => [
             'name' => 'domain',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'status_from' => array(
+        ],
+        'status_from' => [
             'name' => 'status_from',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'status_to' => array(
+        ],
+        'status_to' => [
             'name' => 'status_to',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'status_priority' => array(
+        ],
+        'status_priority' => [
             'name' => 'status_priority',
             'type' => 'int'
-        ),
-        'action_label' => array(
+        ],
+        'action_label' => [
             'name' => 'action_label',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'status_component' => array(
+        ],
+        'status_component' => [
             'name' => 'status_component',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'prompt_label' => array(
+        ],
+        'prompt_label' => [
             'name' => 'prompt_label',
             'type' => 'varchar',
             'len' => 100
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_syststatusnetworks',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];

@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,57 +33,58 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+global $dictionary;
 
-$dictionary['dashboards_dashboardsets'] = array(
+$dictionary['dashboards_dashboardsets'] = [
     'table' => 'dashboards_dashboardsets',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'dashboard_id' => array(
+        ],
+        'dashboard_id' => [
             'name' => 'dashboard_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'dashboardset_id' => array(
+        ],
+        'dashboardset_id' => [
             'name' => 'dashboardset_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'dashboard_sequence' => array (
+        ],
+        'dashboard_sequence' => [
             'name' => 'dashboard_sequence',
             'vname' => 'LBL_SORT_SEQUENCE',
             'type' => 'int',
             'default' => 99
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'required' => false,
             'default' => '0'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_dashboards_dashboardsets_primary',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_dashboards_dashboardsets',
             'type' => 'alternate_key',
-            'fields' => array('dashboard_id', 'dashboardset_id')
-        )
-    ),
-    'relationships' => array(
-        'dashboards_dashboardsets' => array(
+            'fields' => ['dashboard_id', 'dashboardset_id']
+        ]
+    ],
+    'relationships' => [
+        'dashboards_dashboardsets' => [
             'lhs_module' => 'DashboardSets',
             'lhs_table' => 'dashboardsets',
             'lhs_key' => 'id',
@@ -95,6 +95,6 @@ $dictionary['dashboards_dashboardsets'] = array(
             'join_table' => 'events_contacts',
             'join_key_lhs' => 'dashboardset_id',
             'join_key_rhs' => 'dashboard_id'
-        )
-    )
-);
+        ]
+    ]
+];

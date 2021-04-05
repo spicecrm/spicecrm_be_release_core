@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
  * The contents of this file are subject to the SugarCRM Public License Version
  * 1.1.3 ("License"); You may not use this file except in compliance with the
@@ -28,10 +27,10 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * All Rights Reserved.
  * Contributor(s): ______________________________________..
  ********************************************************************************/
-$app_list_strings = array (
+$app_list_strings = [
     'language_pack_name'                               => 'Español',
 
-    'moduleList' => array(
+    'moduleList' => [
         'Home'                                             => 'Inicio',
         'Contacts'                                         => 'Contactos',
         'Accounts'                                         => 'Cuentas',
@@ -53,7 +52,6 @@ $app_list_strings = array (
         'ContractTypes'                                    => 'Tipos de Contrato',
         'Schedulers'                                       => 'Planificadores',
         'Project'                                          => 'Proyectos',
-        'ProjectTask'                                      => 'Tareas de Proyecto',
         'Campaigns'                                        => 'Campañas',
         'CampaignLog'                                      => 'Registro de Campañas',
         'Documents'                                        => 'Documentos',
@@ -90,10 +88,10 @@ $app_list_strings = array (
         'Library'                                          => 'Biblioteca',
         'EmailAddresses'                                   => 'E-Mail',
         'Sugar_Favorites'                                  => '',
-    ),
+    ],
 
 
-    'moduleListSingular' => array(
+    'moduleListSingular' => [
         'Home'                                             => 'Inicio',
         'Dashboard'                                        => 'Cuadro de Mando',
         'Contacts'                                         => 'Contacto',
@@ -112,7 +110,6 @@ $app_list_strings = array (
         'iFrames'                                          => 'Mis Sitios',
         'TimePeriods'                                      => 'Período de Tiempo',
         'Project'                                          => 'Proyecto',
-        'ProjectTask'                                      => 'Tarea de Proyecto',
         'Prospects'                                        => '',
         'Campaigns'                                        => 'Campaña',
         'Documents'                                        => 'Documento',
@@ -120,17 +117,17 @@ $app_list_strings = array (
         'Sync'                                             => 'Sincronización',
         'Users'                                            => 'Usuario',
         'SugarFavorites'                                   => 'SugarFavorites',
-    ),
+    ],
 
 
-    'checkbox_dom' => array(
+    'checkbox_dom' => [
         ' '                                               => '',
         '1'                                                => 'Sí',
         '2'                                                => 'No',
-    ),
+    ],
 
 
-    'account_type_dom' => array(
+    'account_type_dom' => [
         ' '                                               => '',
         'Analyst'                                          => 'Analista',
         'Competitor'                                       => 'Competidor',
@@ -142,10 +139,10 @@ $app_list_strings = array (
         'Prospect'                                         => 'Prospecto',
         'Reseller'                                         => 'Revendedor',
         'Other'                                            => 'Otro',
-    ),
+    ],
 
 
-    'industry_dom' => array(
+    'industry_dom' => [
         ' '                                               => '',
         'Apparel'                                          => 'Textil',
         'Banking'                                          => 'Banca',
@@ -177,11 +174,11 @@ $app_list_strings = array (
         'Transportation'                                   => 'Transporte',
         'Utilities'                                        => 'Servicios públicos',
         'Other'                                            => 'Otro',
-    ),
+    ],
     'lead_source_default_key'                          => 'Self Generated',
 
 
-    'lead_source_dom' => array(
+    'lead_source_dom' => [
         ' '                                               => '',
         'Cold Call'                                        => 'Llamada en Frío',
         'Existing Customer'                                => 'Cliente Existente',
@@ -197,26 +194,26 @@ $app_list_strings = array (
         'Email'                                            => 'Email',
         'Campaign'                                         => 'Campaña',
         'Other'                                            => 'Otro',
-    ),
+    ],
 
 
-    'opportunity_type_dom' => array(
+    'opportunity_type_dom' => [
         ' '                                               => '',
         'Existing Business'                                => 'Negocios Existentes',
         'New Business'                                     => 'Nuevos Negocios',
-    ),
+    ],
 
 
-    'roi_type_dom' => array(
+    'roi_type_dom' => [
         'Revenue'                                          => 'Ingresos',
         'Investment'                                       => 'Inversión',
         'Expected_Revenue'                                 => 'Ingresos Esperados',
         'Budget'                                           => 'Presupuesto',
-    ),
+    ],
     'opportunity_relationship_type_default_key'        => 'Primary Decision Maker',
 
 
-    'opportunity_relationship_type_dom' => array(
+    'opportunity_relationship_type_dom' => [
         ' '                                               => '',
         'Primary Decision Maker'                           => 'Tomador de Decisión Principal',
         'Business Decision Maker'                          => 'Tomador de Decisión de Negocio',
@@ -226,32 +223,32 @@ $app_list_strings = array (
         'Executive Sponsor'                                => 'Patrocinador Ejecutivo',
         'Influencer'                                       => 'Influenciador',
         'Other'                                            => 'Otro',
-    ),
+    ],
     'case_relationship_type_default_key'               => 'Primary Contact',
 
 
-    'case_relationship_type_dom' => array(
+    'case_relationship_type_dom' => [
         ' '                                               => '',
         'Primary Contact'                                  => 'Contacto Principal',
         'Alternate Contact'                                => 'Contacto Alternativo',
-    ),
+    ],
 
 
-    'payment_terms' => array(
+    'payment_terms' => [
         ' '                                               => '',
         'Net 15'                                           => 'Neto 15',
         'Net 30'                                           => 'Neto 30',
-    ),
+    ],
     'sales_stage_default_key'                          => 'Prospecting',
 
 
-    'fts_type' => array(
+    'fts_type' => [
         ' '                                               => '',
         'Elastic'                                          => '',
-    ),
+    ],
 
 
-    'sales_stage_dom' => array(
+    'sales_stage_dom' => [
 // CR1000302 adapt to match opportunity spicebeanguidestages
 //        'Prospecting'                                      => 'Prospecto',
         'Qualification'                                    => 'Calificación',
@@ -264,10 +261,10 @@ $app_list_strings = array (
         'Closed Won'                                       => 'Ganado',
         'Closed Lost'                                      => 'Perdido',
         'Closed Discontinued' => 'Abandonado'
-    ),
+    ],
 
 
-    'in_total_group_stages' => array(
+    'in_total_group_stages' => [
         'Draft'                                            => 'Borrador',
         'Negotiation'                                      => 'Negociación',
         'Delivered'                                        => 'Enviado',
@@ -276,10 +273,10 @@ $app_list_strings = array (
         'Closed Accepted'                                  => 'Cerrado Aceptado',
         'Closed Lost'                                      => 'Cerrado Perdido',
         'Closed Dead'                                      => 'Cerrado Muerto',
-    ),
+    ],
 
 
-    'sales_probability_dom' => array(
+    'sales_probability_dom' => [
         'Prospecting'                                      => '10',
         'Qualification'                                    => '20',
         'Needs Analysis'                                   => '25',
@@ -290,41 +287,41 @@ $app_list_strings = array (
         'Negotiation/Review'                               => '80',
         'Closed Won'                                       => '100',
         'Closed Lost'                                      => '0',
-    ),
+    ],
 
 
-    'activity_dom' => array(
+    'activity_dom' => [
         'Call'                                             => 'Llamada',
         'Meeting'                                          => 'Reunión',
         'Task'                                             => 'Tarea',
         'Email'                                            => 'Email',
         'Note'                                             => 'Nota',
-    ),
+    ],
 
 
-    'salutation_dom' => array(
+    'salutation_dom' => [
         ' '                                               => '',
         'Mr.'                                              => 'Sr.',
         'Ms.'                                              => 'Sra.',
         // 'Mrs.'                                             => 'Sra.',
         // 'Dr.'                                              => 'Dr.',
         // 'Prof.'                                            => 'Prof.',
-    ),
-    'uom_unit_dimensions_dom' => array(
+    ],
+    'uom_unit_dimensions_dom' => [
         '' => '',
         'none' => 'ningún',
         'weight' => 'peso',
         'volume' => 'volumen',
         'area' => 'área',
         'time' => 'tiempo',
-    ),
+    ],
 
 
 
     'reminder_max_time'                                => '3600',
 
 
-    'reminder_time_options' => array(
+    'reminder_time_options' => [
         -1 => 'no reminder',
         '60'                                               => '1 minuto antes',
         '300'                                              => '5 minutos antes',
@@ -336,62 +333,62 @@ $app_list_strings = array (
         '10800'                                            => '3 horas antes',
         '18000'                                            => '5 horas antes',
         '86400'                                            => '1 día antes',
-    ),
+    ],
     'task_priority_default'                            => 'Medium',
 
 
-    'task_priority_dom' => array(
+    'task_priority_dom' => [
         'High'                                             => 'Alta',
         'Medium'                                           => 'Media',
         'Low'                                              => 'Baja',
-    ),
+    ],
     'task_status_default'                              => 'Not Started',
 
 
-    'task_status_dom' => array(
+    'task_status_dom' => [
         'Not Started'                                      => 'No Iniciada',
         'In Progress'                                      => 'En Progreso',
         'Completed'                                        => 'Completada',
         'Pending Input'                                    => 'Pendiente de Información',
         'Deferred'                                         => 'Aplazada',
-    ),
+    ],
     'meeting_status_default'                           => 'Planned',
 
 
-    'meeting_status_dom' => array(
+    'meeting_status_dom' => [
         'Planned'                                          => 'Planificada',
         'Held'                                             => 'Realizada',
         'Not Held'                                         => 'No Realizada',
-    ),
+    ],
 
 
-    'extapi_meeting_password' => array(
+    'extapi_meeting_password' => [
         'WebEx'                                            => 'WebEx',
-    ),
+    ],
 
 
-    'meeting_type_dom' => array(
+    'meeting_type_dom' => [
         'Other'                                            => 'Otro',
         'Sugar'                                            => 'SugarCRM',
-    ),
+    ],
     'call_status_default'                              => 'Planned',
 
 
-    'call_status_dom' => array(
+    'call_status_dom' => [
         'Planned'                                          => 'Planificada',
         'Held'                                             => 'Realizada',
         'Not Held'                                         => 'No Realizada',
-    ),
+    ],
     'call_direction_default'                           => 'Outbound',
 
 
-    'call_direction_dom' => array(
+    'call_direction_dom' => [
         'Inbound'                                          => 'Entrante',
         'Outbound'                                         => 'Saliente',
-    ),
+    ],
 
 
-    'lead_status_dom' => array(
+    'lead_status_dom' => [
         ' '                                               => '',
         'New'                                              => 'Nuevo',
         'Assigned'                                         => 'Asignado',
@@ -399,111 +396,111 @@ $app_list_strings = array (
         'Converted'                                        => 'Convertido',
         'Recycled'                                         => 'Reciclado',
         'Dead'                                             => 'Muerto',
-    ),
+    ],
 
 
-    'gender_list' => array(
+    'gender_list' => [
         'male'                                             => 'Masculino',
         'female'                                           => 'Femenino',
-    ),
+    ],
     'case_status_default_key'                          => 'New',
 
 
-    'case_status_dom' => array(
+    'case_status_dom' => [
         'New'                                              => 'Nuevo',
         'Assigned'                                         => 'Asignado',
         'Closed'                                           => 'Cerrado',
         'Pending Input'                                    => 'Pendiente de Información',
         'Rejected'                                         => 'Rechazado',
         'Duplicate'                                        => 'Duplicado',
-    ),
+    ],
     'case_priority_default_key'                        => 'P2',
 
 
-    'case_priority_dom' => array(
+    'case_priority_dom' => [
         'P1'                                               => 'Alta',
         'P2'                                               => 'Media',
         'P3'                                               => 'Baja',
-    ),
+    ],
 
 
-    'user_type_dom' => array(
+    'user_type_dom' => [
         'RegularUser'                                      => '',
         'Administrator'                                    => '',
-    ),
+    ],
 
 
-    'user_status_dom' => array(
+    'user_status_dom' => [
         'Active'                                           => 'Activo',
         'Inactive'                                         => 'Inactivo',
-    ),
+    ],
 
 
-    'employee_status_dom' => array(
+    'employee_status_dom' => [
         'Active'                                           => 'Activo',
         'Terminated'                                       => 'Despedido',
         'Leave of Absence'                                 => 'Excedencia',
-    ),
+    ],
 
 
-    'messenger_type_dom' => array(
+    'messenger_type_dom' => [
         ' '                                               => '',
         'MSN'                                              => 'MSN',
         'Yahoo!'                                           => 'Yahoo!',
         'AOL'                                              => 'AOL',
-    ),
+    ],
 
 
-    'project_task_priority_options' => array(
+    'project_task_priority_options' => [
         'High'                                             => 'Alta',
         'Medium'                                           => 'Media',
         'Low'                                              => 'Baja',
-    ),
+    ],
     'project_task_priority_default'                    => 'Medium',
 
 
-    'project_task_status_options' => array(
+    'project_task_status_options' => [
         'Not Started'                                      => 'No Iniciada',
         'In Progress'                                      => 'En Progreso',
         'Completed'                                        => 'Completeda',
         'Pending Input'                                    => 'Pendiente de Información',
         'Deferred'                                         => 'Retrasada',
-    ),
+    ],
 
 
-    'project_task_utilization_options' => array(
+    'project_task_utilization_options' => [
         ' '                                               => '',
         '25'                                               => '25',
         '50'                                               => '50',
         '75'                                               => '75',
         '100'                                              => '100',
-    ),
+    ],
 
 
-    'project_status_dom' => array(
+    'project_status_dom' => [
         'Draft'                                            => 'Borrador',
         'In Review'                                        => 'En Revisión',
         'Published'                                        => 'Publicado',
-    ),
+    ],
     'project_status_default'                           => 'Draft',
 
 
-    'project_duration_units_dom' => array(
+    'project_duration_units_dom' => [
         'Days'                                             => 'Días',
         'Hours'                                            => 'Horas',
-    ),
+    ],
 
 
-    'project_priority_options' => array(
+    'project_priority_options' => [
         'High'                                             => 'Alta',
         'Medium'                                           => 'Media',
         'Low'                                              => 'Baja',
-    ),
+    ],
     'project_priority_default'                         => 'Medium',
     'record_type_default_key'                          => 'Accounts',
 
 
-    'record_type_display' => array(
+    'record_type_display' => [
         ' '                                               => '',
         'Accounts'                                         => 'Cuenta',
         'Opportunities'                                    => 'Oportunidad',
@@ -513,12 +510,11 @@ $app_list_strings = array (
         'Bugs'                                             => '',
         'Project'                                          => '',
         'Prospects'                                        => 'Público Objetivo',
-        'ProjectTask'                                      => '',
         'Tasks'                                            => 'Tarea',
-    ),
+    ],
 
 
-    'record_type_display_notes' => array(
+    'record_type_display_notes' => [
         'Accounts'                                         => 'Cuenta',
         'Contacts'                                         => 'Contacto',
         'Opportunities'                                    => 'Oportunidad',
@@ -526,16 +522,15 @@ $app_list_strings = array (
         'Emails'                                           => 'Email',
         'Bugs'                                             => 'Incidencia',
         'Project'                                          => 'Proyecto',
-        'ProjectTask'                                      => 'Tarea de Proyecto',
         'Prospects'                                        => 'Público Objetivo',
         'Cases'                                            => 'Caso',
         'Leads'                                            => 'Cliente Potencial',
         'Meetings'                                         => 'Reunión',
         'Calls'                                            => 'Llamada',
-    ),
+    ],
 
 
-    'parent_type_display' => array(
+    'parent_type_display' => [
         'Accounts'                                         => 'Cuenta',
         'Contacts'                                         => 'Contacto',
         'Tasks'                                            => 'Tarea',
@@ -544,52 +539,51 @@ $app_list_strings = array (
         'Cases'                                            => '',
         'Leads'                                            => 'Cliente Potencial',
         'Project'                                          => '',
-        'ProjectTask'                                      => '',
         'Prospects'                                        => '',
-    ),
+    ],
     'issue_priority_default_key'                       => 'Medium',
 
 
-    'issue_priority_dom' => array(
+    'issue_priority_dom' => [
         'Urgent'                                           => 'Urgente',
         'High'                                             => 'Alta',
         'Medium'                                           => 'Media',
         'Low'                                              => 'Baja',
-    ),
+    ],
     'issue_resolution_default_key'                     => '',
 
 
-    'issue_resolution_dom' => array(
+    'issue_resolution_dom' => [
         ' '                                               => '',
         'Accepted'                                         => 'Aceptado',
         'Duplicate'                                        => 'Duplicado',
         'Closed'                                           => 'Cerrado',
         'Out of Date'                                      => 'Caducado',
         'Invalid'                                          => 'No Válido',
-    ),
+    ],
     'issue_status_default_key'                         => 'New',
 
 
-    'issue_status_dom' => array(
+    'issue_status_dom' => [
         'New'                                              => 'Nuevo',
         'Assigned'                                         => 'Asignado',
         'Closed'                                           => 'Cerrado',
         'Pending'                                          => 'Pendiente',
         'Rejected'                                         => 'Rechazado',
-    ),
+    ],
     'bug_priority_default_key'                         => 'Medium',
 
 
-    'bug_priority_dom' => array(
+    'bug_priority_dom' => [
         'Urgent'                                           => 'Urgente',
         'High'                                             => 'Alta',
         'Medium'                                           => 'Normal',
         'Low'                                              => 'Baja',
-    ),
+    ],
     'bug_resolution_default_key'                       => '',
 
 
-    'bug_resolution_dom' => array(
+    'bug_resolution_dom' => [
         ' '                                               => '',
         'Accepted'                                         => 'Aceptado',
         'Duplicate'                                        => 'Duplicado',
@@ -597,45 +591,45 @@ $app_list_strings = array (
         'Out of Date'                                      => 'Caducado',
         'Invalid'                                          => 'No Válido',
         'Later'                                            => 'Pospuesto',
-    ),
+    ],
     'bug_status_default_key'                           => 'New',
 
 
-    'bug_status_dom' => array(
+    'bug_status_dom' => [
         'New'                                              => 'Nuevo',
         'Assigned'                                         => 'Asignado',
         'Closed'                                           => 'Cerrado',
         'Pending'                                          => 'Pendiente',
         'Rejected'                                         => 'Rechazado',
-    ),
+    ],
     'bug_type_default_key'                             => 'Bug',
 
 
-    'bug_type_dom' => array(
+    'bug_type_dom' => [
         'Defect'                                           => 'Defecto',
         'Feature'                                          => 'Característica',
-    ),
+    ],
 
 
-    'case_type_dom' => array(
+    'case_type_dom' => [
         'Administration'                                   => 'Administración',
         'Product'                                          => 'Producto',
         'User'                                             => 'Usuario',
-    ),
+    ],
     'source_default_key'                               => '',
 
 
-    'source_dom' => array(
+    'source_dom' => [
         ' '                                               => '',
         'Internal'                                         => 'Interno',
         'Forum'                                            => 'Foro',
         'Web'                                              => 'Web',
         'InboundEmail'                                     => 'Email',
-    ),
+    ],
     'product_category_default_key'                     => '',
 
 
-    'product_category_dom' => array(
+    'product_category_dom' => [
         ' '                                               => '',
         'Accounts'                                         => 'Cuentas',
         'Activities'                                       => 'Actividades',
@@ -665,10 +659,10 @@ $app_list_strings = array (
         'Studio'                                           => 'Estudio',
         'Upgrade'                                          => 'Actualización',
         'Users'                                            => 'Usuarios',
-    ),
+    ],
 
 
-    'campaign_status_dom' => array(
+    'campaign_status_dom' => [
         ' '                                               => '',
         'Planning'                                         => 'Planificación',
         'Active'                                           => 'Activa',
@@ -676,10 +670,10 @@ $app_list_strings = array (
         'Complete'                                         => 'Completa',
         'In Queue'                                         => 'En cola',
         'Sending'                                          => 'En envío',
-    ),
+    ],
 
 
-    'campaign_type_dom' => array(
+    'campaign_type_dom' => [
         ' '                                               => '',
         'Telesales'                                        => 'Televentas',
         'Mail'                                             => 'Correo',
@@ -689,24 +683,24 @@ $app_list_strings = array (
         'Radio'                                            => 'Radio',
         'Television'                                       => 'Television',
         'NewsLetter'                                       => 'Boletin',
-    ),
+    ],
 
 
-    'newsletter_frequency_dom' => array(
+    'newsletter_frequency_dom' => [
         ' '                                               => '',
         'Weekly'                                           => 'Semanal',
         'Monthly'                                          => 'Mensual',
         'Quarterly'                                        => 'Trimestral',
         'Annually'                                         => 'Anual',
-    ),
+    ],
 
 
-    'notifymail_sendtype' => array(
+    'notifymail_sendtype' => [
         'SMTP'                                             => 'SMTP',
-    ),
+    ],
 
 
-    'dom_cal_month_long' => array(
+    'dom_cal_month_long' => [
         ' '                                               => '',
         '1'                                                => 'Enero',
         '2'                                                => 'Febrero',
@@ -720,10 +714,10 @@ $app_list_strings = array (
         '10'                                               => 'Octubre',
         '11'                                               => 'Noviembre',
         '12'                                               => 'Diciembre',
-    ),
+    ],
 
 
-    'dom_cal_month_short' => array(
+    'dom_cal_month_short' => [
         ' '                                               => '',
         '1'                                                => 'Ene',
         '2'                                                => 'Feb',
@@ -737,10 +731,10 @@ $app_list_strings = array (
         '10'                                               => 'Oct',
         '11'                                               => 'Nov',
         '12'                                               => 'Dic',
-    ),
+    ],
 
 
-    'dom_cal_day_long' => array(
+    'dom_cal_day_long' => [
         ' '                                               => '',
         '1'                                                => 'Domingo',
         '2'                                                => 'Lunes',
@@ -749,10 +743,10 @@ $app_list_strings = array (
         '5'                                                => 'Jueves',
         '6'                                                => 'Viernes',
         '7'                                                => 'Sábado',
-    ),
+    ],
 
 
-    'dom_cal_day_short' => array(
+    'dom_cal_day_short' => [
         ' '                                               => '',
         '1'                                                => 'Dom',
         '2'                                                => 'Lun',
@@ -761,39 +755,39 @@ $app_list_strings = array (
         '5'                                                => 'Jue',
         '6'                                                => 'Vie',
         '7'                                                => 'Sáb',
-    ),
+    ],
 
 
-    'dom_meridiem_lowercase' => array(
+    'dom_meridiem_lowercase' => [
         'am'                                               => 'am',
         'pm'                                               => 'pm',
-    ),
+    ],
 
 
-    'dom_meridiem_uppercase' => array(
+    'dom_meridiem_uppercase' => [
         'AM'                                               => 'AM',
         'PM'                                               => 'PM',
-    ),
+    ],
 
 
-    'dom_report_types' => array(
+    'dom_report_types' => [
         'tabular'                                          => 'Filas y Columnas',
         'summary'                                          => 'Resumen',
         'detailed_summary'                                 => 'Resumen con detalles',
         'Matrix'                                           => 'Matriz',
-    ),
+    ],
 
 
-    'dom_email_types' => array(
+    'dom_email_types' => [
         'out'                                              => 'Enviado',
         'archived'                                         => 'Archivado',
         'draft'                                            => 'Borrador',
         'inbound'                                          => 'Entrante',
         'campaign'                                         => 'Campaña',
-    ),
+    ],
 
 
-    'dom_email_status' => array(
+    'dom_email_status' => [
         'archived'                                         => 'Archivado',
         'closed'                                           => 'Cerrado',
         'draft'                                            => 'Borrador',
@@ -802,10 +796,10 @@ $app_list_strings = array (
         'sent'                                             => 'Enviado',
         'send_error'                                       => 'Error de Envío',
         'unread'                                           => 'No leído',
-    ),
+    ],
 
 
-    'dom_textmessage_status' => array(
+    'dom_textmessage_status' => [
         'archived'                                         => 'Archivado',
         'closed'                                           => 'Cerrado',
         'draft'                                            => 'Borrador',
@@ -814,190 +808,190 @@ $app_list_strings = array (
         'sent'                                             => 'Enviado',
         'send_error'                                       => 'Error de Envío',
         'unread'                                           => 'No leído',
-    ),
+    ],
 
 
-    'dom_email_archived_status' => array(
+    'dom_email_archived_status' => [
         'archived'                                         => 'Archivado',
-    ),
+    ],
 
 
-    'dom_email_server_type' => array(
+    'dom_email_server_type' => [
         ' '                                               => '',
         'imap'                                             => 'IMAP',
-    ),
+    ],
 
 
-    'dom_mailbox_type' => array(
+    'dom_mailbox_type' => [
         'pick'                                             => '--Ninguno--',
         'createcase'                                       => 'Nuevo Caso',
         'bounce'                                           => 'Gestión de Rebotes',
-    ),
+    ],
 
 
-    'dom_email_distribution' => array(
+    'dom_email_distribution' => [
         ' '                                               => '',
         'direct'                                           => 'Asignación Directa',
         'roundRobin'                                       => 'Round-Robin',
         'leastBusy'                                        => 'Menos-Ocupado',
-    ),
+    ],
 
 
-    'dom_email_distribution_for_auto_create' => array(
+    'dom_email_distribution_for_auto_create' => [
         'roundRobin'                                       => 'Turno Rotatorio',
         'leastBusy'                                        => 'Menos Ocupado',
-    ),
+    ],
 
 
-    'dom_email_errors' => array(
+    'dom_email_errors' => [
         '1'                                                => 'Seleccione sólo un usuario cuando realice una Asignación Directa de elementos.',
         '2'                                                => 'Debe asignar Sólo Elementos Marcados cuando realice una Asignación Directa de elementos.',
-    ),
+    ],
 
 
-    'dom_email_bool' => array(
+    'dom_email_bool' => [
         'bool_true'                                        => 'Sí',
         'bool_false'                                       => 'No',
-    ),
+    ],
 
 
-    'dom_int_bool' => array(
+    'dom_int_bool' => [
         '1'                                                => 'Si',
         ' '                                               => '',
-    ),
+    ],
 
 
-    'dom_switch_bool' => array(
+    'dom_switch_bool' => [
         'on'                                               => 'Yes',
         'off'                                              => 'No',
         ' '                                               => '',
-    ),
+    ],
 
 
-    'dom_email_link_type' => array(
+    'dom_email_link_type' => [
         'sugar'                                            => 'Cliente de correo de Sugar',
         'mailto'                                           => 'Cliente de correo externo',
-    ),
+    ],
 
 
-    'dom_email_editor_option' => array(
+    'dom_email_editor_option' => [
         ' '                                               => '',
         'html'                                             => 'Correo HTML',
         'plain'                                            => 'Correo con texto plano',
-    ),
+    ],
 
 
-    'schedulers_times_dom' => array(
+    'schedulers_times_dom' => [
         'not run'                                          => 'Hora de Ejecución Pasada, No Ejecutado',
         'ready'                                            => 'Listo',
         'in progress'                                      => 'En Progreso',
         'failed'                                           => 'Fallado',
         'completed'                                        => 'Completado',
         'no curl'                                          => 'No ejecutado: cURL no está disponible',
-    ),
+    ],
 
 
-    'scheduler_status_dom' => array(
+    'scheduler_status_dom' => [
         'Active'                                           => 'Activo',
         'Inactive'                                         => 'Inactivo',
-    ),
+    ],
 
 
-    'scheduler_period_dom' => array(
+    'scheduler_period_dom' => [
         'min'                                              => 'Minutos',
         'hour'                                             => 'Horas',
-    ),
+    ],
 
 
-    'forecast_schedule_status_dom' => array(
+    'forecast_schedule_status_dom' => [
         'Active'                                           => 'Activo',
         'Inactive'                                         => 'Inactivo',
-    ),
+    ],
 
 
-    'forecast_type_dom' => array(
+    'forecast_type_dom' => [
         'Direct'                                           => 'Directo',
         'Rollup'                                           => 'Rollup',
-    ),
+    ],
 
 
-    'document_category_dom' => array(
+    'document_category_dom' => [
         ' '                                               => '',
         'Marketing'                                        => 'Marketing',
         'Knowledege Base'                                  => 'Base de Conocimiento',
         'Sales'                                            => 'Ventas',
-    ),
+    ],
 
 
-    'document_subcategory_dom' => array(
+    'document_subcategory_dom' => [
         ' '                                               => '',
         'Marketing Collateral'                             => 'Impresos de Marketing',
         'Product Brochures'                                => 'Folletos de Producto',
         'FAQ'                                              => 'FAQ',
-    ),
+    ],
 
 
-    'document_status_dom' => array(
+    'document_status_dom' => [
         'Active'                                           => 'Activo',
         'Draft'                                            => 'Borrador',
         'FAQ'                                              => 'FAQ',
         'Expired'                                          => 'Caducado',
         'Under Review'                                     => 'En Revisión',
         'Pending'                                          => 'Pendiente',
-    ),
+    ],
 
 
-    'document_template_type_dom' => array(
+    'document_template_type_dom' => [
         ' '                                               => '',
         'mailmerge'                                        => 'Combinar correspondencia',
         'eula'                                             => 'CLUF',
         'nda'                                              => 'ANR',
         'license'                                          => 'Contrato de Licencia',
-    ),
+    ],
 
 
-    'dom_meeting_accept_options' => array(
+    'dom_meeting_accept_options' => [
         'accept'                                           => 'Aceptar',
         'decline'                                          => 'Rechazar',
         'tentative'                                        => 'Tentativa',
-    ),
+    ],
 
 
-    'dom_meeting_accept_status' => array(
+    'dom_meeting_accept_status' => [
         'accept'                                           => 'Aceptado',
         'decline'                                          => 'Rechazado',
         'tentative'                                        => 'Tentativa',
         'none'                                             => 'Ninguno',
-    ),
+    ],
 
 
-    'duration_intervals' => array(
+    'duration_intervals' => [
         ' '                                               => '',
         '15'                                               => '15',
         '30'                                               => '30',
         '45'                                               => '45',
-    ),
+    ],
 
 
-    'repeat_type_dom' => array(
+    'repeat_type_dom' => [
         ' '                                               => '',
         'Daily'                                            => '',
         'Weekly'                                           => '',
         'Monthly'                                          => '',
         'Yearly'                                           => '',
-    ),
+    ],
 
 
-    'repeat_intervals' => array(
+    'repeat_intervals' => [
         ' '                                               => '',
         'Daily'                                            => '',
         'Weekly'                                           => '',
         'Monthly'                                          => '',
         'Yearly'                                           => '',
-    ),
+    ],
 
 
-    'duration_dom' => array(
+    'duration_dom' => [
         ' '                                               => '',
         '900'                                              => '',
         '1800'                                             => '',
@@ -1011,34 +1005,34 @@ $app_list_strings = array (
         '172800'                                           => '',
         '259200'                                           => '',
         '604800'                                           => '',
-    ),
+    ],
 
 
-    'prospect_list_type_dom' => array(
+    'prospect_list_type_dom' => [
         'default'                                          => 'Por Defecto',
         'seed'                                             => 'Cabeza de Serie',
         'exempt_domain'                                    => 'Lista de Exclusión - Por Dominio',
         'exempt_address'                                   => 'Lista de Exclusión - Por Dirección de Email',
         'exempt'                                           => 'Lista de Exclusión - Por Id',
         'test'                                             => 'Prueba',
-    ),
+    ],
 
 
-    'email_settings_num_dom' => array(
+    'email_settings_num_dom' => [
         '10'                                               => '10',
         '20'                                               => '20',
         '50'                                               => '50',
-    ),
+    ],
 
 
-    'email_marketing_status_dom' => array(
+    'email_marketing_status_dom' => [
         ' '                                               => '',
         'active'                                           => 'Activo',
         'inactive'                                         => 'Inactivo',
-    ),
+    ],
 
 
-    'campainglog_activity_type_dom' => array(
+    'campainglog_activity_type_dom' => [
         ' '                                               => '',
         'targeted'                                         => 'Mensaje Enviado/Intentado',
         'send error'                                       => 'Mensajes Rebotados,Otra causa',
@@ -1049,67 +1043,67 @@ $app_list_strings = array (
         'lead'                                             => 'Clientes Potenciales Creados',
         'contact'                                          => 'Contactos Creados',
         'blocked'                                          => 'Excluidos por dirección o dominio',
-    ),
+    ],
 
 
-    'campainglog_target_type_dom' => array(
+    'campainglog_target_type_dom' => [
         'Contacts'                                         => 'Contactos',
         'Users'                                            => 'Usuarios',
         'Prospects'                                        => 'Público Objetivo',
         'Leads'                                            => 'Clientes Potenciales',
         'Accounts'                                         => 'Cuentas',
-    ),
+    ],
 
 
-    'merge_operators_dom' => array(
+    'merge_operators_dom' => [
         'like'                                             => 'Contiene',
         'exact'                                            => 'Exactamente',
         'start'                                            => 'Comienza con',
-    ),
+    ],
 
 
-    'custom_fields_importable_dom' => array(
+    'custom_fields_importable_dom' => [
         'true'                                             => 'Sí',
         'false'                                            => 'No',
         'required'                                         => 'Requerido',
-    ),
+    ],
 
 
-    'Elastic_boost_options' => array(
+    'Elastic_boost_options' => [
         ' '                                               => '',
         '1'                                                => '',
         '2'                                                => '',
         '3'                                                => '',
-    ),
+    ],
 
 
-    'custom_fields_merge_dup_dom' => array(
+    'custom_fields_merge_dup_dom' => [
         ' '                                               => '',
         '1'                                                => 'Habilitado',
-    ),
+    ],
 
 
-    'navigation_paradigms' => array(
+    'navigation_paradigms' => [
         'm'                                                => 'Módulos',
         'gm'                                               => 'Módulos Agrupados',
-    ),
+    ],
 
 
-    'projects_priority_options' => array(
+    'projects_priority_options' => [
         'high'                                             => 'Alta',
         'medium'                                           => 'Media',
         'low'                                              => 'Baja',
-    ),
+    ],
 
 
-    'projects_status_options' => array(
+    'projects_status_options' => [
         'notstarted'                                       => 'No Iniciado',
         'inprogress'                                       => 'En Progreso',
         'completed'                                        => 'Completado',
-    ),
+    ],
 
 
-    'chart_strings' => array(
+    'chart_strings' => [
         'expandlegend'                                     => 'Expandir Leyenda',
         'collapselegend'                                   => 'Contraer Leyenda',
         'clickfordrilldown'                                => 'Clic para Profundizar',
@@ -1124,29 +1118,29 @@ $app_list_strings = array (
         'noData'                                           => 'Datos no disponibles',
         'print'                                            => 'Imprimir',
         'pieWedgeName'                                     => 'secciones',
-    ),
+    ],
 
 
-    'release_status_dom' => array(
+    'release_status_dom' => [
         'Active'                                           => 'Activo',
         'Inactive'                                         => 'Inactivo',
-    ),
+    ],
 
 
-    'email_settings_for_ssl' => array(
+    'email_settings_for_ssl' => [
         ' '                                               => '',
         '1'                                                => 'SSL',
         '2'                                                => 'TLS',
-    ),
+    ],
 
 
-    'import_enclosure_options' => array(
+    'import_enclosure_options' => [
         ' '                                               => '',
         'other'                                            => 'Otro:',
-    ),
+    ],
 
 
-    'import_delimeter_options' => array(
+    'import_delimeter_options' => [
         ','                                                => ',',
         ';'                                                => ';',
         '\t'                                               => '',
@@ -1154,36 +1148,36 @@ $app_list_strings = array (
         ':'                                                => ':',
         '|'                                                => '|',
         'other'                                            => 'Otro:',
-    ),
+    ],
 
 
-    'link_target_dom' => array(
+    'link_target_dom' => [
         '_blank'                                           => 'Nueva Ventana',
         '_self'                                            => 'Misma Ventana',
-    ),
+    ],
 
 
-    'dashlet_auto_refresh_options' => array(
+    'dashlet_auto_refresh_options' => [
         '-1'                                               => 'No Actualizar Automaticamente',
         '30'                                               => 'Cada 30 segundos',
         '60'                                               => 'Cada minuto',
         '180'                                              => 'Cada 3 minutos',
         '300'                                              => 'Cada 5 minutos',
         '600'                                              => 'Cada 10 minutos',
-    ),
+    ],
 
 
-    'dashlet_auto_refresh_options_admin' => array(
+    'dashlet_auto_refresh_options_admin' => [
         '-1'                                               => 'No',
         '30'                                               => 'Cada 30 segundos',
         '60'                                               => 'Cada minuto',
         '180'                                              => 'Cada 3 minutos',
         '300'                                              => 'Cada 5 minutos',
         '600'                                              => 'Cada 10 minutos',
-    ),
+    ],
 
 
-    'date_range_search_dom' => array(
+    'date_range_search_dom' => [
         '='                                                => 'Igual',
         'not_equal'                                        => 'No Igual',
         'greater_than'                                     => 'Despu�s',
@@ -1199,10 +1193,10 @@ $app_list_strings = array (
         'this_year'                                        => 'Este a�o',
         'next_year'                                        => 'el siguiente a�o',
         'between'                                          => 'Es entre',
-    ),
+    ],
 
 
-    'numeric_range_search_dom' => array(
+    'numeric_range_search_dom' => [
         '='                                                => 'Igual',
         'not_equal'                                        => 'No es igual',
         'greater_than'                                     => 'Mayor que',
@@ -1210,33 +1204,33 @@ $app_list_strings = array (
         'less_than'                                        => 'Menor que',
         'less_than_equals'                                 => 'Menor o igual a',
         'between'                                          => 'entre',
-    ),
+    ],
 
 
-    'lead_conv_activity_opt' => array(
+    'lead_conv_activity_opt' => [
         'copy'                                             => 'Copiar',
         'move'                                             => 'Mover',
         'donothing'                                        => 'No hacer nada',
-    ),
+    ],
 
 
-    'library_type' => array(
+    'library_type' => [
         'Books'                                            => 'Libro',
         'Music'                                            => 'Música',
         'DVD'                                              => 'DVD',
         'Magazines'                                        => 'Revistas',
-    ),
+    ],
 
 
-    'kbdocument_status_dom' => array(
+    'kbdocument_status_dom' => [
         'Draft'                                            => 'Borrador',
         'Expired'                                          => 'Caducado',
         'In Review'                                        => 'En Revisión',
         'Published'                                        => 'Publicado',
-    ),
+    ],
 
 
-    'kbadmin_actions_dom' => array(
+    'kbadmin_actions_dom' => [
         ' '                                               => '',
         'Create New Tag'                                   => 'Crear Nueva EtiquetaTag',
         'Delete Tag'                                       => 'Eliminar Etiqueta',
@@ -1244,19 +1238,19 @@ $app_list_strings = array (
         'Move Selected Articles'                           => 'Mover Artículos Seleccionados',
         'Apply Tags On Articles'                           => 'Aplicar Etiquetas a Artículos',
         'Delete Selected Articles'                         => 'Eliminar Artículos Seleccionados',
-    ),
+    ],
 
 
-    'kbdocument_attachment_option_dom' => array(
+    'kbdocument_attachment_option_dom' => [
         ' '                                               => '',
         'some'                                             => 'Tiene Adjuntos',
         'none'                                             => 'No Tiene',
         'mime'                                             => 'Especificar Tipo MIME',
         'name'                                             => 'Especificar Nombre',
-    ),
+    ],
 
 
-    'kbdocument_viewing_frequency_dom' => array(
+    'kbdocument_viewing_frequency_dom' => [
         ' '                                               => '',
         'Top_5'                                            => '5 Principales',
         'Top_10'                                           => '10 Principales',
@@ -1264,19 +1258,19 @@ $app_list_strings = array (
         'Bot_5'                                            => '5 Últimos',
         'Bot_10'                                           => '10 Últimos',
         'Bot_20'                                           => '20 Últimos',
-    ),
+    ],
 
 
-    'kbdocument_canned_search' => array(
+    'kbdocument_canned_search' => [
         'all'                                              => 'Todos',
         'added'                                            => 'Añadido en los Últimos 30 días',
         'pending'                                          => 'Pendiente de mi Aprobación',
         'updated'                                          => 'Actualizado en los Últimos 30 días',
         'faqs'                                             => 'FAQs',
-    ),
+    ],
 
 
-    'kbdocument_date_filter_options' => array(
+    'kbdocument_date_filter_options' => [
         ' '                                               => '',
         'on'                                               => 'En',
         'before'                                           => 'Antes de',
@@ -1293,10 +1287,10 @@ $app_list_strings = array (
         'this_year'                                        => 'Este Año',
         'next_year'                                        => 'Próximo Año',
         'isnull'                                           => 'Es Nulo',
-    ),
+    ],
 
 
-    'countries_dom' => array(
+    'countries_dom' => [
         ' '                                               => '',
         'ABU DHABI'                                        => 'ABU DHABI',
         'ADEN'                                             => 'ADEN',
@@ -1533,10 +1527,10 @@ $app_list_strings = array (
         'ZAIRE'                                            => 'ZAIRE',
         'ZAMBIA'                                           => 'ZAMBIA',
         'ZIMBABWE'                                         => 'ZIMBABWE',
-    ),
+    ],
 
 
-    'charset_dom' => array(
+    'charset_dom' => [
         'BIG-5'                                            => 'BIG-5 (Taiwan y Hong Kong)',
         'CP1251'                                           => 'CP1251 (Cirílico de MS)',
         'CP1252'                                           => 'CP1252 (Europa Occidental y EEUU de Ms)',
@@ -1563,10 +1557,10 @@ $app_list_strings = array (
         'KOI8-U'                                           => 'KOI8-U (Cirílico Ucraniano)',
         'SJIS'                                             => 'SJIS (Japonés de MS)',
         'UTF-8'                                            => 'UTF-8',
-    ),
+    ],
 
 
-    'timezone_dom' => array(
+    'timezone_dom' => [
         'Africa/Algiers'                                   => 'Africa/Algiers',
         'Africa/Luanda'                                    => 'Africa/Luanda',
         'Africa/Porto-Novo'                                => 'Africa/Porto-Novo',
@@ -1942,10 +1936,10 @@ $app_list_strings = array (
         'America/Port_of_Spain'                            => 'America/Port_of_Spain',
         'America/Montevideo'                               => 'America/Montevideo',
         'America/Caracas'                                  => 'America/Caracas',
-    ),
+    ],
 
 
-    'eapm_list' => array(
+    'eapm_list' => [
         'Sugar'                                            => 'Sugar',
         'WebEx'                                            => 'WebEx',
         'GoToMeeting'                                      => 'GoToMeeting',
@@ -1954,48 +1948,48 @@ $app_list_strings = array (
         'Box'                                              => 'Box.net',
         'Facebook'                                         => 'Facebook',
         'Twitter'                                          => 'Twitter',
-    ),
+    ],
 
 
-    'eapm_list_import' => array(
+    'eapm_list_import' => [
         'Google'                                           => 'Contacts Google',
-    ),
+    ],
 
 
-    'eapm_list_documents' => array(
+    'eapm_list_documents' => [
         'Google'                                           => 'Google Docs',
-    ),
+    ],
 
 
-    'token_status' => array(
+    'token_status' => [
         '1'                                                => 'Solicitud',
         '2'                                                => 'Acceso',
         '3'                                                => 'Incorrecto',
-    ),
+    ],
 
 
-    'emailTemplates_type_list' => array(
+    'emailTemplates_type_list' => [
         ' '                                               => '',
         'campaign'                                         => '',
         'email'                                            => '',
-    ),
+    ],
 
 
-    'emailTemplates_type_list_campaigns' => array(
+    'emailTemplates_type_list_campaigns' => [
         ' '                                               => '',
         'campaign'                                         => '',
-    ),
+    ],
 
 
-    'emailTemplates_type_list_no_workflow' => array(
+    'emailTemplates_type_list_no_workflow' => [
         ' '                                               => '',
         'campaign'                                         => '',
         'email'                                            => '',
-    ),
-);
+    ],
+];
 
 
-$app_strings= array (
+$app_strings= [
     'LBL_TOUR_NEXT'                                    => 'Siguiente',
     'LBL_TOUR_SKIP'                                    => 'Saltar',
     'LBL_TOUR_BACK'                                    => 'Atrás',
@@ -3000,7 +2994,7 @@ Esta operación no puede hacerse atrás.',
     'LBL_DASHLET_CONFIGURE_MY_ITEMS_ONLY'              => 'Sólo Mis Elementos',
     'LBL_DASHLET_CONFIGURE_TITLE'                      => 'Título',
     'LBL_DASHLET_CONFIGURE_DISPLAY_ROWS'               => 'Mostrar Filas',
-);
+];
 
 $app_list_strings['textmessage_direction'] = [
     'i' => 'Entrante',

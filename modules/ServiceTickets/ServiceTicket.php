@@ -26,7 +26,13 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\ServiceTickets;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\SpiceNumberRanges\SpiceNumberRanges;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class ServiceTicket extends SugarBean
 {
@@ -34,7 +40,7 @@ class ServiceTicket extends SugarBean
     public $object_name = 'ServiceTicket';
     public $table_name = 'servicetickets';
 
-    private $stageFields = array('assigned_user_id', 'serviceticket_status', 'serviceticket_class', 'servicequeue_id', 'sysservicecategory_id1', 'sysservicecategory_id2', 'sysservicecategory_id3', 'sysservicecategory_id4');
+    private $stageFields = ['assigned_user_id', 'serviceticket_status', 'serviceticket_class', 'servicequeue_id', 'sysservicecategory_id1', 'sysservicecategory_id2', 'sysservicecategory_id3', 'sysservicecategory_id4'];
 
     public $sysnumberranges = true; //entries in table sysnumberranges required!
 
@@ -83,10 +89,11 @@ class ServiceTicket extends SugarBean
 
     public function save($check_notify = false, $fts_index_bean = true)
     {
-        global $timedate, $current_user;
+        global $timedate;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
         //set serviceticket_number
         if (empty($this->serviceticket_number)) {
-            $this->serviceticket_number = str_pad(\SpiceCRM\includes\SpiceNumberRanges\SpiceNumberRanges::getNextNumberForField('ServiceTickets', 'serviceticket_number'), 10, '0', STR_PAD_LEFT);
+            $this->serviceticket_number = str_pad(SpiceNumberRanges::getNextNumberForField('ServiceTickets', 'serviceticket_number'), 10, '0', STR_PAD_LEFT);
         }
         //set date_closed
         if ($this->serviceticket_status == 'Closed' && empty($this->date_closed)) {
@@ -198,7 +205,7 @@ class ServiceTicket extends SugarBean
 
     function getUserQueuesTickets()
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         // get the users queues
         $current_user->load_relationship('servicequeues');
@@ -223,7 +230,7 @@ class ServiceTicket extends SugarBean
 
     function getUserOpenTickets()
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         // load the tickets
         $whereClauseArray = [];

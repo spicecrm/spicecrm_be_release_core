@@ -2,6 +2,7 @@
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
 use SpiceCRM\modules\GoogleOAuth\GoogleOAuthImpersonation;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class PersonalGmailHandler extends TransportHandler
 {
@@ -26,12 +27,12 @@ class PersonalGmailHandler extends TransportHandler
      * @return string
      */
     public function getMailboxName(){
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         return "GMail ({$current_user->user_name})";
     }
 
     protected function initTransportHandler() {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         // todo add other options
         $this->userName = $current_user->user_name;

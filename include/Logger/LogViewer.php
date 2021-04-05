@@ -1,6 +1,5 @@
 <?php
 namespace SpiceCRM\includes\Logger;
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -39,13 +38,16 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /**
  * Viewing/Selecting from database based SugarCRM Log
  */
+
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\ErrorHandlers\NotFoundException;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
-use SpiceConfig;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class LogViewer {
 
-    private static $levelMapping = array(
+    private static $levelMapping = [
         'debug'      => 100,
         'info'       => 70,
         'warn'       => 50,
@@ -54,7 +56,7 @@ class LogViewer {
         'error'      => 25,
         'fatal'      => 10,
         'security'   => 5
-    );
+    ];
 
     private $maxLength;
 
@@ -64,7 +66,7 @@ class LogViewer {
     public function __construct() {
 
         # Accessing the log file is allowed only for admins:
-        if ( !$GLOBALS['current_user']->isAdmin() )
+        if ( !AuthenticationController::getInstance()->getCurrentUser()->isAdmin() )
             throw ( new ForbiddenException('Forbidden to view the CRM log. Only for admins.'))->setErrorCode('noCRMlogView');
 
         $config = SpiceConfig::getInstance();
@@ -73,7 +75,7 @@ class LogViewer {
     }
 
     private function updateLevelValues() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         if ( $wert=$db->getOne('SELECT count(*) FROM '.$this->dbTableName.' WHERE level_value IS NULL')) {
             foreach ( self::$levelMapping as $level => $value ) {
                 $db->query( $s='UPDATE '.$this->dbTableName.' SET level_value = '.$value.' WHERE level_value IS NULL AND log_level = "'.$level.'"' );
@@ -82,7 +84,7 @@ class LogViewer {
     }
 
     public function getLines( $queryParams, $period = null ) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $response = [];
 
         $this->updateLevelValues();
@@ -99,17 +101,17 @@ class LogViewer {
         }
 
         $filter = [];
-        if ( isset( $queryParams['userId']{0} )) $filter[] = 'created_by = "'.$db->quote($queryParams['userId']).'"';
-        if ( isset( $queryParams['level']{0} )) $filter[] = 'level_value <= '.self::$levelMapping[$queryParams['level']];
-        if ( isset( $queryParams['processId']{0} )) $filter[] = 'pid = "'.$db->quote($queryParams['processId']).'"';
-        if ( isset( $queryParams['text']{0} )) $filter[] = 'description like "%'.$db->quote($queryParams['text']).'%"';
-        if ( isset( $queryParams['transactionId']{0} )) $filter[] = 'transaction_id = "'.$db->quote($queryParams['transactionId']).'"';
+        if ( isset( $queryParams['userId'][0])) $filter[] = 'created_by = "'.$db->quote($queryParams['userId']).'"';
+        if ( isset( $queryParams['level'][0])) $filter[] = 'level_value <= '.self::$levelMapping[$queryParams['level']];
+        if ( isset( $queryParams['processId'][0])) $filter[] = 'pid = "'.$db->quote($queryParams['processId']).'"';
+        if ( isset( $queryParams['text'][0])) $filter[] = 'description like "%'.$db->quote($queryParams['text']).'%"';
+        if ( isset( $queryParams['transactionId'][0])) $filter[] = 'transaction_id = "'.$db->quote($queryParams['transactionId']).'"';
         if ( count( $filter )) $whereClauseParts[] = implode( ' AND ', $filter );
 
         $whereClause = count( $whereClauseParts ) ? 'WHERE '.implode( ' AND ', $whereClauseParts ):'';
 
         $limitClause = '';
-        if ( isset( $queryParams['limit']{0} )) {
+        if ( isset( $queryParams['limit'][0])) {
             $queryParams['limit'] *= 1;
             $limitClause = 'LIMIT '.$queryParams['limit'];
         }
@@ -119,7 +121,7 @@ class LogViewer {
         $sqlResult = $db->query( $sql );
         while ( $row = $db->fetchByAssoc( $sqlResult )) {
             $row['txtTruncated'] = (boolean)$row['txtTruncated'];
-            $row['pid'] = isset( $row['pid']{0} ) ? (int)$row['pid']:null;
+            $row['pid'] = isset( $row['pid'][0]) ? (int)$row['pid']:null;
             $row['dtx'] = (float)$row['dtx'];
             $response[] = $row;
         }
@@ -128,7 +130,7 @@ class LogViewer {
     }
 
     public function getLinesOfPeriod( $begin, $end, $queryParams ) {
-        $period = array();
+        $period = [];
         $period['begin']['year'] = substr( $begin, 0, 4 );
         $period['begin']['month'] = substr( $begin, 4, 2 );
         $period['begin']['day'] = substr( $begin, 6, 2 );
@@ -141,7 +143,7 @@ class LogViewer {
     }
 
     function getFullLine( $lineId ) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $sql = 'SELECT id, pid, log_level as lev, description AS txt, created_by as uid, microtime as dtx, transaction_id as tid FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
 

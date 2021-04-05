@@ -1,6 +1,7 @@
 <?php
+namespace SpiceCRM\modules\ProspectListFilters;
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+use SpiceCRM\data\SugarBean;
 
 class ProspectListFilter extends SugarBean {
     public $module_dir = 'ProspectListFilters';

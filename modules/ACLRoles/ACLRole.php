@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,7 +33,13 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\ACLRoles;
 
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarCache\SugarCache;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\modules\ACLActions\ACLAction;
 
 class ACLRole extends SugarBean{
     var $module_dir = 'ACLRoles';
@@ -42,9 +47,9 @@ class ACLRole extends SugarBean{
     var $table_name = 'acl_roles';
     var $new_schema = true;
     var $disable_row_level_security = true;
-    var $relationship_fields = array(
+    var $relationship_fields = [
                                     'user_id'=>'users'
-                                );
+    ];
 
     var $created_by;
 
@@ -69,8 +74,8 @@ class ACLRole extends SugarBean{
  * @param int $access - the access level ACL_ALLOW_ALL ACL_ALLOW_NONE ACL_ALLOW_OWNER...
  */
 function setAction($role_id, $action_id, $access){
-    $relationship_data = array('role_id'=>$role_id, 'action_id'=>$action_id,);
-    $additional_data = array('access_override'=>$access);
+    $relationship_data = ['role_id'=>$role_id, 'action_id'=>$action_id,];
+    $additional_data = ['access_override'=>$access];
     $this->set_relationship('acl_roles_actions',$relationship_data,true, true,$additional_data);
 }
 
@@ -92,10 +97,10 @@ function getUserRoles($user_id, $getAsNameArray = true){
                 "AND acl_roles_users.role_id = acl_roles.id AND acl_roles_users.deleted = 0 ".
             "WHERE acl_roles.deleted=0 ";
 
-        $result = $GLOBALS['db']->query($query);
-        $user_roles = array();
+        $result = DBManagerFactory::getInstance()->query($query);
+        $user_roles = [];
 
-        while($row = $GLOBALS['db']->fetchByAssoc($result) ){
+        while($row = DBManagerFactory::getInstance()->fetchByAssoc($result) ){
             $role = new ACLRole();
             $role->populateFromRow($row);
             if($getAsNameArray)
@@ -116,7 +121,7 @@ function getUserRoles($user_id, $getAsNameArray = true){
  */
 function getUserRoleNames($user_id){
 
-        $user_roles = sugar_cache_retrieve("RoleMembershipNames_".$user_id);
+        $user_roles = SugarCache::sugar_cache_retrieve("RoleMembershipNames_".$user_id);
 
         if(!$user_roles){
             //if we don't have it loaded then lets check against the db
@@ -127,14 +132,14 @@ function getUserRoleNames($user_id){
                     "AND acl_roles_users.role_id = acl_roles.id AND acl_roles_users.deleted = 0 ".
                 "WHERE acl_roles.deleted=0 ";
 
-            $result = $GLOBALS['db']->query($query);
-            $user_roles = array();
+            $result = DBManagerFactory::getInstance()->query($query);
+            $user_roles = [];
 
-            while($row = $GLOBALS['db']->fetchByAssoc($result) ){
+            while($row = DBManagerFactory::getInstance()->fetchByAssoc($result) ){
                 $user_roles[] = $row['name'];
             }
 
-            sugar_cache_put("RoleMembershipNames_".$user_id, $user_roles);
+            SugarCache::sugar_cache_put("RoleMembershipNames_".$user_id, $user_roles);
         }
 
         return $user_roles;
@@ -153,7 +158,7 @@ function getAllRoles($returnAsArray = false){
                     WHERE acl_roles.deleted=0 ORDER BY name";
 
         $result = $db->query($query);
-        $roles = array();
+        $roles = [];
 
         while($row = $db->fetchByAssoc($result) ){
             $role = new ACLRole();
@@ -195,7 +200,7 @@ function getRoleActions($role_id, $type='module'){
         }
         $query .= " WHERE acl_actions.deleted=0 ORDER BY acl_actions.category, acl_actions.name";
         $result = $db->query($query);
-        $role_actions = array();
+        $role_actions = [];
 
         while($row = $db->fetchByAssoc($result) ){
             $action = new ACLAction();
@@ -213,7 +218,7 @@ function getRoleActions($role_id, $type='module'){
             //end
 
             if(!isset($role_actions[$action->category])){
-                $role_actions[$action->category] = array();
+                $role_actions[$action->category] = [];
             }
 
             $role_actions[$action->category][$action->acltype][$action->name] = $action->toArray();
@@ -246,7 +251,7 @@ function getRoleActions($role_id, $type='module'){
  */
 function mark_relationships_deleted($id){
         //we need to delete the actions relationship by hand (special case)
-        $date_modified = $GLOBALS['db']->convert("'".TimeDate::getInstance()->nowDb()."'", 'datetime');
+        $date_modified = DBManagerFactory::getInstance()->convert("'". TimeDate::getInstance()->nowDb()."'", 'datetime');
         $query =  "UPDATE acl_roles_actions SET deleted=1 , date_modified=$date_modified WHERE role_id = '$id' AND deleted=0";
         $this->db->query($query);
         parent::mark_relationships_deleted($id);
@@ -259,8 +264,8 @@ function mark_relationships_deleted($id){
     * @return array of fields with id, name, description
     */
     public function toArray($dbOnly = false, $stringOnly = false, $upperKeys = false){
-        $array_fields = array('id', 'name', 'description');
-        $arr = array();
+        $array_fields = ['id', 'name', 'description'];
+        $arr = [];
         foreach($array_fields as $field){
             if(isset($this->$field)){
                 $arr[$field] = $this->$field;

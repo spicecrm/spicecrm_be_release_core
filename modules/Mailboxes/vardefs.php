@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,6 +34,8 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['Mailbox'] = [
     'table' => 'mailboxes',
     'audited' => false,
@@ -192,6 +193,11 @@ $dictionary['Mailbox'] = [
             'len' => 1,
             'options' => 'mailboxes_log_levels',
         ],
+        'email_signature' => [
+            'vname' => 'LBL_EMAIL_SIGNATURE',
+            'name' => 'email_signature',
+            'type' => 'html',
+        ],
     ],
     'relationships' => [
         'mailboxes_emails_rel' => [
@@ -221,7 +227,7 @@ $dictionary['Mailbox'] = [
             'relationship' => 'mailboxes_users',
             'source' => 'non-db'
         ],
-        'mailboxes_mailbox_processors' => array(
+        'mailboxes_mailbox_processors' => [
             'lhs_module' => 'Mailboxes',
             'lhs_table' => 'mailboxes',
             'lhs_key' => 'id',
@@ -229,7 +235,7 @@ $dictionary['Mailbox'] = [
             'rhs_table' => 'mailbox_processors',
             'rhs_key' => 'mailbox_id',
             'relationship_type' => 'one-to-many'
-        ),
+        ],
 
     ],
     //This enables optimistic locking for Saves From EditView

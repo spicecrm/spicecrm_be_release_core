@@ -27,32 +27,42 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 use SpiceCRM\includes\RESTManager;
-use SpiceCRM\includes\SysTrashCan\SysTrashCan;
+use SpiceCRM\includes\SysTrashCan\KREST\controllers\SysTrashCanRecoveryController;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
 
-$RESTManager->app->group('/systrashcan', function () {
-    $this->get('', function () {
-        global $current_user;
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/systrashcan',
+        'class'       => SysTrashCanRecoveryController::class,
+        'function'    => 'getUserTrashRecords',
+        'description' => 'Logs inbound Mailgun messages',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/systrashcan/related/{transactionid}/{recordid}',
+        'class'       => SysTrashCanRecoveryController::class,
+        'function'    => 'getRelatedTrashRecords',
+        'description' => 'Logs inbound Mailgun messages',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/systrashcan/recover/{id}',
+        'class'       => SysTrashCanRecoveryController::class,
+        'function'    => 'getRecoveredTrashRecords',
+        'description' => 'Logs inbound Mailgun messages',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
 
-        echo json_encode(SysTrashCan::getRecords());
-    });
-    $this->get('/related/{transactionid}/{recordid}', function ($req, $res, $args) {
-        global $current_user;
-
-        echo json_encode(SysTrashCan::getRelated($args['transactionid'], $args['recordid']));
-    });
-    $this->post('/recover/{id}', function ($req, $res, $args)  {
-        global $current_user;
-
-        $requestData = $_GET;
-        $params = $req->getParams();
-
-        $recovery = SysTrashCan::recover($args['id'], $params['recoverrelated'] == '1' ? true : false);
-
-        return $res->withJson([
-            'status' => $recovery === true ? 'success' : 'error',
-            'message' => $recovery === true ? '' : $recovery
-        ]);
-    });
-});
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('systrashcan', '1.0', [], $routes);

@@ -2,11 +2,13 @@
 
 namespace SpiceCRM\modules\Mailboxes;
 
-use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachment;
-use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachmentHandler;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\modules\Emails\Email;
+use Exception;
+use SpiceCRM\data\BeanFactory;
 use SpiceCRM\modules\Mailboxes\processors\MailboxProcessor;
-
-require_once 'include/SpiceAttachments/SpiceAttachments.php';
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 
 /**
  * Class MailboxesRESTHandler
@@ -16,7 +18,7 @@ class MailboxesRESTHandler {
     private $db;
 
     function __construct() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $this->db = $db;
     }
 
@@ -49,7 +51,7 @@ class MailboxesRESTHandler {
         }
         $result = false;
 
-        $mailbox = \BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
+        $mailbox = BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
 
         if ($mailbox->initTransportHandler()) {
             $result = $mailbox->transport_handler->testConnection($params['test_email']);
@@ -67,7 +69,7 @@ class MailboxesRESTHandler {
      * @return array
      */
     public function getMailboxFolders(array $params) {
-        $mailbox = \BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
+        $mailbox = BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
         $mailbox->initTransportHandler();
 
         $result = $mailbox->transport_handler->getMailboxes();
@@ -98,7 +100,7 @@ class MailboxesRESTHandler {
      * @return array
      */
     public function fetchEmails($id) {
-        $mailbox = \BeanFactory::getBean('Mailboxes', $id);
+        $mailbox = BeanFactory::getBean('Mailboxes', $id);
 
         if ($mailbox->active == false) {
             return [
@@ -140,7 +142,7 @@ class MailboxesRESTHandler {
                 break;
         }
 
-        $mailboxes = \BeanFactory::getBean('Mailboxes')
+        $mailboxes = BeanFactory::getBean('Mailboxes')
             ->get_full_list(
                 'mailboxes.name',
                 $where
@@ -165,11 +167,11 @@ class MailboxesRESTHandler {
 
         foreach ($events as $event) {
             try {
-                $email = \Email::findByMessageId($event['smtp-id']);
+                $email = Email::findByMessageId($event['smtp-id']);
                 $email->status = $event['event'];
                 $email->save();
-            } catch (\Exception $e) {
-                $GLOBALS['log']->info($e->getMessage());
+            } catch (Exception $e) {
+                LoggerManager::getLogger()->info($e->getMessage());
             }
 
             /*switch ($event['event']) {
@@ -197,9 +199,9 @@ class MailboxesRESTHandler {
 
     public function setDefaultMailbox($params) {
         try {
-            $mailbox = \BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
+            $mailbox = BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
             return $mailbox->setAsDefault();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $e;
         }
 
@@ -238,17 +240,16 @@ class MailboxesRESTHandler {
         return $mailboxes;
     }
 
-    private function handleGmailAttachments(\Email $email, $attachments) {
+    private function handleGmailAttachments(Email $email, $attachments) {
         $result = [];
         foreach ($attachments as $attachment) {
-            //\SpiceAttachments::saveEmailAttachment('Emails', $email->id, $attachment);
-            $result[] = \SpiceAttachments::saveEmailAttachmentFromGmail('Emails', $email->message_id, $attachment);
+            $result[] = SpiceAttachments::saveEmailAttachmentFromGmail('Emails', $email->message_id, $attachment);
         }
         return $result;
     }
 
     private function emailBeanPairExists($email_id, $bean_id) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT 1 FROM emails_beans WHERE email_id = '" . $email_id . "' AND bean_id = '" . $bean_id . "' LIMIT 1";
         $result = $db->query($query);

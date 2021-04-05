@@ -447,7 +447,7 @@ class PHPExcel_Shared_OLE
 	{
 		$rawname = '';
 		for ($i = 0; $i < strlen($ascii); ++$i) {
-			$rawname .= $ascii{$i} . "\x00";
+			$rawname .= substr($ascii, $i, 1) . "\x00";
 		}
 		return $rawname;
 	}

@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,17 +34,19 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['Dashboard'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['Dashboard'] = [
     'table' => 'dashboards',
     'audited' => true,
     'fields' =>
-        array(
-            'global' => array(
+        [
+            'global' => [
                 'name' => 'global',
                 'type' => 'bool',
                 'vname' => 'LBL_GLOBAL'
-            ),
-            'dashboardcomponents' =>  array(
+            ],
+            'dashboardcomponents' =>  [
                 'name' => 'dashboardcomponents',
                 'type' => 'link',
                 'relationship' => 'dashboard_dashboardcomponents',
@@ -53,19 +54,19 @@ $dictionary['Dashboard'] = array(
                 'bean_name' => 'DashboardComponent',
                 'source' => 'non-db',
                 'vname' => 'LBL_DASHBOARDCOMPONENTS',
-            ),
-            'components' => array(
+            ],
+            'components' => [
                 'name' => 'components',
                 'type' => 'json',
                 'vname' => 'LBL_COMPONENTS',
                 'source' => 'non-db'
-            ),
-            'dashboardsets_dashboard_sequence' => array(
+            ],
+            'dashboardsets_dashboard_sequence' => [
                 'name' => 'dashboardsets_dashboard_sequence',
                 'vname' => 'LBL_SEQUENCE',
                 'type' => 'integer',
                 'source' => 'non-db'
-            ),
+            ],
             'dashboardsets' => [
                 'name' => 'dashboardsets',
                 'type' => 'link',
@@ -79,21 +80,21 @@ $dictionary['Dashboard'] = array(
                     ]
                 ]
             ],
-        ),
-    'relationships' => array(
-        'dashboard_dashboardcomponents' => array(
+        ],
+    'relationships' => [
+        'dashboard_dashboardcomponents' => [
             'lhs_module' => 'Dashboards',
             'lhs_table' => 'dashboards',
             'lhs_key' => 'id',
             'rhs_module' => 'DashboardComponents',
             'rhs_table' => 'dashboardcomponents',
             'rhs_key' => 'dashboard_id',
-            'relationship_type' => 'one-to-many')
+            'relationship_type' => 'one-to-many']
 
-    ),
+    ],
 
     //This enables optimistic locking for Saves From EditView
     'optimistic_locking' => true,
-);
+];
 
-VardefManager::createVardef('Dashboards', 'Dashboard', array('default', 'assignable'));
+VardefManager::createVardef('Dashboards', 'Dashboard', ['default', 'assignable']);

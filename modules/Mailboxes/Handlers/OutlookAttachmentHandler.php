@@ -1,6 +1,10 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
-use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+use DOMDocument;
+use DOMElement;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\modules\Emails\Email;
+use Exception;
 
 class OutlookAttachmentHandler
 {
@@ -9,15 +13,15 @@ class OutlookAttachmentHandler
     public $token;
     public $attachments = [];
 
-    public function __construct(\Email $email, $attachmentData) {
+    public function __construct(Email $email, $attachmentData) {
         if (!isset($attachmentData['attachmentToken']) || $attachmentData['attachmentToken'] == '') {
-            throw new \Exception('Outlook attachment token is missing!');
+            throw new Exception('Outlook attachment token is missing!');
         }
         if (!isset($attachmentData['ewsUrl']) || $attachmentData['ewsUrl'] == '') {
-            throw new \Exception('EWS URL is missing!');
+            throw new Exception('EWS URL is missing!');
         }
         if (!isset($email)) {
-            throw new \Exception('Email is missing!');
+            throw new Exception('Email is missing!');
         }
 
         $this->email  = $email;
@@ -31,7 +35,7 @@ class OutlookAttachmentHandler
     }
 
     public function saveAttachments() {
-        global $sugar_config;
+        
         $result = [];
 
         foreach ($this->attachments as $attachment) {
@@ -40,8 +44,8 @@ class OutlookAttachmentHandler
             // CR1000475 BWS compatibility: use another saveEmailAttachmentFromOutlook().
             // Mainly to create a Note instead of a SpiceAttachment
             $class = 'SpiceAttachments';
-            if(isset($sugar_config['SpiceCRMExchange']['saveEmailAttachmentFromOutlookClass'])){
-                $class = $sugar_config['SpiceCRMExchange']['saveEmailAttachmentFromOutlookClass'];
+            if(isset(SpiceConfig::getInstance()->config['SpiceCRMExchange']['saveEmailAttachmentFromOutlookClass'])){
+                $class = SpiceConfig::getInstance()->config['SpiceCRMExchange']['saveEmailAttachmentFromOutlookClass'];
             }
             $result[$attachment->id] = $class::saveEmailAttachmentFromOutlook($this->email, $attachment);        }
 
@@ -49,7 +53,7 @@ class OutlookAttachmentHandler
     }
 
     private function getAttachmentContent(OutlookAttachment $attachment) {
-        $soapAction = 'https://'.$GLOBALS['sugar_config']['SpiceCRMExchange']['host'].'/EWS/GetAttachment';
+        $soapAction = 'https://'. SpiceConfig::getInstance()->config['SpiceCRMExchange']['host'].'/EWS/GetAttachment';
         $soapString = $attachment->getSoap();
         $errors     = '';
 
@@ -71,11 +75,11 @@ class OutlookAttachmentHandler
         $response = curl_exec($curl);
 
         if (isset($response->error)) {
-            throw new \Exception($response->error->code . ': ' . $response->error->message);
+            throw new Exception($response->error->code . ': ' . $response->error->message);
         }
 
         if (!$response) {
-            throw new \Exception('SOAP XML Response is empty');
+            throw new Exception('SOAP XML Response is empty');
         }
 
         curl_close($curl);
@@ -92,7 +96,7 @@ class OutlookAttachmentHandler
         $results = [];
 
         if ($soapXml) {
-            $doc = new \DOMDocument();
+            $doc = new DOMDocument();
             $doc->loadXML($soapXml);
 
             $attachments = $doc->getElementsByTagName('FileAttachment');
@@ -100,7 +104,7 @@ class OutlookAttachmentHandler
             foreach ($attachments as $attachment) {
                 $attachmentArray = [];
                 foreach ($attachment->childNodes as $node) {
-                    if ($node instanceof \DOMElement) {
+                    if ($node instanceof DOMElement) {
                         if ($node->tagName == "t:AttachmentId") {
                             $attachmentArray[$node->localName] = $node->getAttribute('Id');
                         } else {
@@ -113,7 +117,7 @@ class OutlookAttachmentHandler
             }
         } else {
             $errors = libxml_get_errors();
-            throw new \Exception('Cannot parse SOAP XML: ' . $errors);
+            throw new Exception('Cannot parse SOAP XML: ' . $errors);
         }
 
         return $results;

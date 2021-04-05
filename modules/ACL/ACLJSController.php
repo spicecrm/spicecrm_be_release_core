@@ -1,5 +1,7 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\ACL;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
+
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -49,13 +51,13 @@ class ACLJSController
 	
 	function getJavascript(){
 		global $action;
-		if(!$GLOBALS['ACLController']->moduleSupportsACL($this->module)){
+		if(!SpiceACL::getInstance()->moduleSupportsACL($this->module)){
 			return '';
 		}
 		$script = "<SCRIPT>\n//BEGIN ACL JAVASCRIPT\n";
 
 		if($action == 'DetailView'){
-			if(!$GLOBALS['ACLController']->checkAccess($this->module,'edit', $this->is_owner)){
+			if(!SpiceACL::getInstance()->checkAccess($this->module,'edit', $this->is_owner)){
 			$script .= <<<EOQ
 						if(typeof(document.DetailView) != 'undefined'){
 							if(typeof(document.DetailView.elements['Edit']) != 'undefined'){
@@ -67,7 +69,7 @@ class ACLJSController
 						} 		
 EOQ;
 }
-			if(!$GLOBALS['ACLController']->checkAccess($this->module,'delete', $this->is_owner)){
+			if(!SpiceACL::getInstance()->checkAccess($this->module,'delete', $this->is_owner)){
 			$script .= <<<EOQ
 						if(typeof(document.DetailView) != 'undefined'){
 							if(typeof(document.DetailView.elements['Delete']) != 'undefined'){
@@ -109,7 +111,7 @@ EOQ;
 	}
 	
 	function getHTMLValues($def){
-		$return_array = array();
+		$return_array = [];
 		switch($def['display_option']){
 			case 'clear_link':
 				$return_array['href']= "#";
@@ -126,7 +128,7 @@ EOQ;
 	
 	function getFieldByIdScript($name, $def){
 		$script = '';
-		if(!$GLOBALS['ACLController']->checkAccess($def['module'], $def['action_option'], true)){
+		if(!SpiceACL::getInstance()->checkAccess($def['module'], $def['action_option'], true)){
 		foreach($this->getHTMLValues($def) as $key=>$value){
 			$script .=  "\nif(document.getElementById('$name'))document.getElementById('$name')." . $key . '="' .$value. '";'. "\n";
 		}
@@ -137,7 +139,7 @@ EOQ;
 	
 	function getFieldByNameScript($name, $def){
 		$script = '';
-		if(!$GLOBALS['ACLController']->checkAccess($def['module'], $def['action_option'], true)){
+		if(!SpiceACL::getInstance()->checkAccess($def['module'], $def['action_option'], true)){
 			
 		foreach($this->getHTMLValues($def) as $key=>$value){
 			$script .=  <<<EOQ
@@ -156,7 +158,7 @@ EOQ;
 		$script = '';
 
 
-		if(!$GLOBALS['ACLController']->checkAccess($def['module'], $def['action_option'], true)){
+		if(!SpiceACL::getInstance()->checkAccess($def['module'], $def['action_option'], true)){
 			foreach($this->getHTMLValues($def) as $key=>$value){
 				$script .= "\nif(typeof(document.$form.$name.$key) != 'undefined')\n document.$form.$name.".$key . '="' .$value. '";';
 			}

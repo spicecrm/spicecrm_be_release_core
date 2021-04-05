@@ -26,8 +26,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+namespace SpiceCRM\modules\SpiceImportTemplates;
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+use SpiceCRM\data\SugarBean;
 
 class SpiceImportTemplate extends SugarBean {
     public $module_dir = 'SpiceImportTemplates';
@@ -35,10 +36,10 @@ class SpiceImportTemplate extends SugarBean {
     public $table_name = 'spiceimporttemplates';
     public $new_schema = true;
     
-    public $additional_column_fields = Array();
+    public $additional_column_fields = [];
 
-    public $relationship_fields = Array(
-    );
+    public $relationship_fields = [
+    ];
 
 
     public function get_summary_text(){

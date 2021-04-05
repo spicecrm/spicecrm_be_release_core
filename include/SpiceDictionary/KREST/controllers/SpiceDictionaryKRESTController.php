@@ -29,7 +29,10 @@
 
 namespace SpiceCRM\includes\SpiceDictionary\KREST\controllers;
 
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\ErrorHandlers\UnauthorizedException;
+use SpiceCRM\includes\SpiceDictionary\SpiceDictionaryHandler;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 /**
  * handles the dictioonary elements
@@ -50,14 +53,14 @@ class SpiceDictionaryKRESTController
      */
     public function getDomains($req, $res, $args)
     {
-        $handler = new \SpiceCRM\includes\SpiceDictionary\SpiceDictionaryHandler();
+        $handler = new SpiceDictionaryHandler();
         $results = [
             'domaindefinitions' => $handler->getDomainDefinitions(),
             'domainfields' => $handler->getDomainFields(),
             'domainfieldvalidations' => $handler->getDomainFieldValidations(),
             'domainfieldvalidationvalues' => $handler->getDomainFieldValidationValues()
         ];
-        return $res->write(json_encode($results));
+        return $res->withJson($results);
     }
 
     /**
@@ -70,14 +73,14 @@ class SpiceDictionaryKRESTController
      */
     public function postDomains($req, $res, $args)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         // check that we are an admin
         if(!$current_user->is_admin){
             throw new UnauthorizedException('Admin Access Only');
         }
 
-        $handler = new \SpiceCRM\includes\SpiceDictionary\SpiceDictionaryHandler();
+        $handler = new SpiceDictionaryHandler();
 
         // get the body
         $body = $req->getParsedBody();
@@ -106,12 +109,12 @@ class SpiceDictionaryKRESTController
         unset($_SESSION['systemvardefs']['domains']);
 
         // return the response
-        return $res->write(json_encode($results));
+        return $res->withJson($results);
     }
 
     public function getDefinitions($req, $res, $args)
     {
-        $handler = new \SpiceCRM\includes\SpiceDictionary\SpiceDictionaryHandler();
+        $handler = new SpiceDictionaryHandler();
         $results = [
             'domaindefinitions' => $handler->getDomainDefinitions(),
             'domainfields' => $handler->getDomainFields(),
@@ -123,7 +126,7 @@ class SpiceDictionaryKRESTController
             'dictionaryindexes' => $handler->getDictionaryIndexes(),
             'dictionaryindexitems' => $handler->getDictionaryIndexItems()
         ];
-        return $res->write(json_encode($results));
+        return $res->withJson($results);
     }
 
 
@@ -137,14 +140,14 @@ class SpiceDictionaryKRESTController
      */
     public function postDefinitions($req, $res, $args)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         // check that we are an admin
         if(!$current_user->is_admin){
             throw new UnauthorizedException('Admin Access Only');
         }
 
-        $handler = new \SpiceCRM\includes\SpiceDictionary\SpiceDictionaryHandler();
+        $handler = new SpiceDictionaryHandler();
 
         // get the body
         $body = $req->getParsedBody();
@@ -168,11 +171,12 @@ class SpiceDictionaryKRESTController
             'dictionaryindexes' => $handler->getDictionaryIndexes(),
             'dictionaryindexitems' => $handler->getDictionaryIndexItems()
         ];
-        return $res->write(json_encode($results));
+        return $res->withJson($results);
     }
 
     public function getAppListStrings($req, $res, $args){
-        global $current_user, $db;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
 
         // check that we are an admin
         if(!$current_user->is_admin){
@@ -197,5 +201,7 @@ class SpiceDictionaryKRESTController
 
         return $res->withJson($retArray);
     }
+
+
 
 }

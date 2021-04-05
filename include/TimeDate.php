@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,7 +34,15 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-// require_once 'include/SugarDateTime.php';
+namespace SpiceCRM\includes;
+
+use DateTime;
+use DateTimeZone;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarCache\SugarCache;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\modules\Users\User;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 /**
   * New Time & Date handling class
@@ -64,7 +71,7 @@ class TimeDate
      * Regexp for matching format elements
      * @var array
      */
-    protected static $format_to_regexp = array(
+    protected static $format_to_regexp = [
     	'a' => '[ ]*[ap]m',
     	'A' => '[ ]*[AP]M',
     	'd' => '[0-9]{1,2}',
@@ -80,13 +87,13 @@ class TimeDate
         's' => '[0-9]{1,2}',
     	'F' => '\w+',
     	"M" => '[\w]{1,3}',
-    );
+    ];
 
     /**
      * Relation between date() and strftime() formats
      * @var array
      */
-    public static $format_to_str = array(
+    public static $format_to_str = [
 		// date
     	'Y' => '%Y',
 
@@ -108,7 +115,7 @@ class TimeDate
 
        	'i' => '%M',
        	's' => '%S',
-    );
+    ];
 
     /**
      * GMT timezone object
@@ -194,8 +201,8 @@ class TimeDate
                     $tz = "UTC"; // guess failed, switch to UTC
                 }
                 //BEGIN workaround SpiceLogger
-                if(isset($GLOBALS['log'])) {
-                    $GLOBALS['log']->fatal("Configuration variable date.timezone is not set, guessed timezone $tz. Please set date.timezone=\"$tz\" in php.ini!");
+                if(LoggerManager::getLogger()) {
+                    LoggerManager::getLogger()->fatal("Configuration variable date.timezone is not set, guessed timezone $tz. Please set date.timezone=\"$tz\" in php.ini!");
                 }
                 //file_put_contents("sugarcrm.log", "Configuration variable date.timezone is not set, guessed timezone $tz. Please set date.timezone=\"$tz\" in php.ini!\n", FILE_APPEND);
                 //END
@@ -217,7 +224,7 @@ class TimeDate
      */
     protected function _getUser(User $user = null)
     {
-        return $GLOBALS['current_user'];
+        return AuthenticationController::getInstance()->getCurrentUser();
     }
 
     /**
@@ -245,7 +252,7 @@ class TimeDate
         try {
             $tz = new DateTimeZone($usertimezone);
         } catch (Exception $e) {
-            $GLOBALS['log']->fatal('Unknown timezone: ' . $usertimezone);
+            LoggerManager::getLogger()->fatal('Unknown timezone: ' . $usertimezone);
             return self::$gmtTimezone;
         }
 
@@ -274,12 +281,12 @@ class TimeDate
         }
 
         $datef = $user->getPreference('datef');
-        if(empty($datef) && isset($GLOBALS['current_user']) && $GLOBALS['current_user'] !== $user) {
+        if(empty($datef) && AuthenticationController::getInstance()->getCurrentUser() && AuthenticationController::getInstance()->getCurrentUser() !== $user) {
             // if we got another user and it has no date format, try current user
-            $datef = $GLOBALS['current_user']->getPreference('datef');
+            $datef = AuthenticationController::getInstance()->getCurrentUser()->getPreference('datef');
         }
         if (empty($datef)) {
-            $datef = $GLOBALS['sugar_config']['default_date_format'];
+            $datef = SpiceConfig::getInstance()->config['default_date_format'];
         }
         if (empty($datef)) {
             $datef = '';
@@ -299,7 +306,7 @@ class TimeDate
     {
         if(is_bool($user) || func_num_args() > 1) {
             // BC dance - old signature was boolean, User
-            $GLOBALS['log']->fatal('TimeDate::get_time_format(): Deprecated API used, please update you code - get_time_format() now has one argument of type User');
+            LoggerManager::getLogger()->fatal('\SpiceCRM\includes\TimeDate::get_time_format(): Deprecated API used, please update you code - get_time_format() now has one argument of type User');
             if(func_num_args() > 1) {
                 $user = func_get_arg(1);
             } else {
@@ -313,12 +320,12 @@ class TimeDate
         }
 
         $timef = $user->getPreference('timef');
-        if(empty($timef) && isset($GLOBALS['current_user']) && $GLOBALS['current_user'] !== $user) {
+        if(empty($timef) && AuthenticationController::getInstance()->getCurrentUser() && AuthenticationController::getInstance()->getCurrentUser() !== $user) {
             // if we got another user and it has no time format, try current user
-            $timef = $GLOBALS['current_user']->getPreference('$timef');
+            $timef = AuthenticationController::getInstance()->getCurrentUser()->getPreference('$timef');
         }
         if (empty($timef)) {
-            $timef = $GLOBALS['sugar_config']['default_time_format'];
+            $timef = SpiceConfig::getInstance()->config['default_time_format'];
         }
         if (empty($timef)) {
             $timef = '';
@@ -347,7 +354,7 @@ class TimeDate
         }
 
         $cacheKey= $this->get_date_time_format_cache_key($user);
-        $cachedValue = sugar_cache_retrieve($cacheKey);
+        $cachedValue = SugarCache::sugar_cache_retrieve($cacheKey);
 
         if(!empty($cachedValue) )
         {
@@ -356,7 +363,7 @@ class TimeDate
         else
         {
             $value = $this->merge_date_time($this->get_date_format($user), $this->get_time_format($user));
-            sugar_cache_put($cacheKey,$value,0);
+            SugarCache::sugar_cache_put($cacheKey,$value,0);
             return $value;
         }
     }
@@ -495,7 +502,7 @@ class TimeDate
         try {
             return DateTime::createFromFormat(self::DB_DATETIME_FORMAT, $date, self::$gmtTimezone);
         } catch (Exception $e) {
-            $GLOBALS['log']->error("fromDb: Conversion of $date from DB format failed: {$e->getMessage()}");
+            LoggerManager::getLogger()->error("fromDb: Conversion of $date from DB format failed: {$e->getMessage()}");
             return null;
         }
     }
@@ -512,7 +519,7 @@ class TimeDate
         try {
             return DateTime::createFromFormat(self::DB_DATE_FORMAT, $date, self::$gmtTimezone);
         } catch (Exception $e) {
-            $GLOBALS['log']->error("fromDbDate: Conversion of $date from DB format failed: {$e->getMessage()}");
+            LoggerManager::getLogger()->error("fromDbDate: Conversion of $date from DB format failed: {$e->getMessage()}");
             return null;
         }
     }
@@ -531,7 +538,7 @@ class TimeDate
         try {
             return DateTime::createFromFormat($format, $date, self::$gmtTimezone);
         } catch (Exception $e) {
-            $GLOBALS['log']->error("fromDbFormat: Conversion of $date from DB format $format failed: {$e->getMessage()}");
+            LoggerManager::getLogger()->error("fromDbFormat: Conversion of $date from DB format $format failed: {$e->getMessage()}");
             return null;
         }
     }
@@ -549,11 +556,11 @@ class TimeDate
         try {
             $res = DateTime::createFromFormat($this->get_date_time_format($user), $date, $this->_getUserTZ($user));
         } catch (Exception $e) {
-            $GLOBALS['log']->error("fromUser: Conversion of $date exception: {$e->getMessage()}");
+            LoggerManager::getLogger()->error("fromUser: Conversion of $date exception: {$e->getMessage()}");
         }
         if(!($res instanceof DateTime)) {
             $uf = $this->get_date_time_format($user);
-            $GLOBALS['log']->error("fromUser: Conversion of $date from user format $uf failed");
+            LoggerManager::getLogger()->error("fromUser: Conversion of $date from user format $uf failed");
             return null;
         }
         return $res;
@@ -575,7 +582,7 @@ class TimeDate
         try {
             return new DateTime($date, $this->_getUserTZ($user));
         } catch (Exception $e) {
-            $GLOBALS['log']->error("fromString: Conversion of $date from string failed: {$e->getMessage()}");
+            LoggerManager::getLogger()->error("fromString: Conversion of $date from string failed: {$e->getMessage()}");
             return null;
         }
     }
@@ -607,7 +614,7 @@ class TimeDate
      * @param User $user
      * @return DateTime
      */
-    public function tzUser(DateTime $date, User $user = null)
+    public function tzUser(DateTime $date, $user = null)
     {
         return $date->setTimezone($this->_getUserTZ($user));
     }
@@ -649,7 +656,7 @@ class TimeDate
             }
             $phpdate = DateTime::createFromFormat($fromFormat, $date, $fromTZ);
             if ($phpdate == false) {
-                $GLOBALS['log']->error("convert: Conversion of $date from $fromFormat to $toFormat failed");
+                LoggerManager::getLogger()->error("convert: Conversion of $date from $fromFormat to $toFormat failed");
                 return '';
             }
             if ($fromTZ !== $toTZ && $toTZ != null) {
@@ -657,7 +664,7 @@ class TimeDate
             }
             return $phpdate->format($toFormat);
         } catch (Exception $e) {
-            $GLOBALS['log']->error("Conversion of $date from $fromFormat to $toFormat failed: {$e->getMessage()}");
+            LoggerManager::getLogger()->error("Conversion of $date from $fromFormat to $toFormat failed: {$e->getMessage()}");
             return '';
         }
     }
@@ -814,13 +821,13 @@ class TimeDate
 	    if(!is_numeric($userOffset)) {
 		    return '';
 	    }
-	    $defaultZones= array(
+	    $defaultZones= [
 	        'America/Anchorage', 'America/Los_Angeles', 'America/Phoenix', 'America/Chicago',
 	    	'America/New_York', 'America/Argentina/Buenos_Aires', 'America/Montevideo',
 	        'Europe/London', 'Europe/Amsterdam', 'Europe/Athens', 'Europe/Moscow',
 	        'Asia/Tbilisi', 'Asia/Omsk', 'Asia/Jakarta', 'Asia/Hong_Kong',
 	        'Asia/Tokyo', 'Pacific/Guam', 'Australia/Sydney', 'Australia/Perth',
-	    );
+        ];
 
 	    $now = new DateTime();
 	    $tzlist = timezone_identifiers_list();
@@ -907,12 +914,12 @@ class TimeDate
 	public static function getTimezoneList()
 	{
         $now = new DateTime();
-        $res_zones = $zones = array();
+        $res_zones = $zones = [];
 	    foreach(timezone_identifiers_list() as $zoneName) {
             $tz = new DateTimeZone($zoneName);
-	        $zones[$zoneName] = array($tz->getOffset($now), self::tzName($zoneName));
+	        $zones[$zoneName] = [$tz->getOffset($now), self::tzName($zoneName)];
 	    }
-	    uasort($zones, array('TimeDate', '_sortTz'));
+	    uasort($zones, ['TimeDate', '_sortTz']);
 	    foreach($zones as $name => $zonedef) {
 	        $res_zones[$name] = $zonedef[1];
 	    }
@@ -941,7 +948,7 @@ class TimeDate
     public static function get_regular_expression($format)
     {
         $newFormat = '';
-        $regPositions = array();
+        $regPositions = [];
         $ignoreNextChar = false;
         $count = 1;
         foreach (str_split($format) as $char) {
@@ -959,19 +966,19 @@ class TimeDate
             }
         }
 
-        return array('format' => $newFormat, 'positions' => $regPositions);
+        return ['format' => $newFormat, 'positions' => $regPositions];
     }
 
     // format - date expression ('' means now) for start and end of the range
-    protected $date_expressions = array(
-        'yesterday' =>    array("-1 day", "-1 day"),
-        'today' =>        array("", ""),
-        'tomorrow' =>     array("+1 day", "+1 day"),
-        'last_7_days' =>  array("-6 days", ""),
-        'next_7_days' =>  array("", "+6 days"),
-        'last_30_days' => array("-29 days", ""),
-        'next_30_days' => array("", "+29 days"),
-    );
+    protected $date_expressions = [
+        'yesterday' =>    ["-1 day", "-1 day"],
+        'today' =>        ["", ""],
+        'tomorrow' =>     ["+1 day", "+1 day"],
+        'last_7_days' =>  ["-6 days", ""],
+        'next_7_days' =>  ["", "+6 days"],
+        'last_30_days' => ["-29 days", ""],
+        'next_30_days' => ["", "+29 days"],
+    ];
 
     /**
      * Returns the offset from user's timezone to GMT

@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,6 +34,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\includes\Logger;
 /**
  * Generic logger
  * @api
@@ -44,12 +44,13 @@ interface LoggerTemplate
     /**
      * Main method for handling logging a message to the logger
      *
-     * @param string $level logging level for the message
+     * @param $method
      * @param string $message
+     * @param array $logparams
      */
     public function log(
         $method,
         $message,
-        $logparams = array()
+        $logparams = []
         );
 }

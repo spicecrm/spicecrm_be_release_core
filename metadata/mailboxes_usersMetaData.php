@@ -1,36 +1,36 @@
 <?php
-$dictionary['mailboxes_users'] = array(
+$dictionary['mailboxes_users'] = [
     'table' => 'mailboxes_users',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id',
             'len' => '36'
-        ),
-        'mailbox_id' => array(
+        ],
+        'mailbox_id' => [
             'name' => 'mailbox_id',
             'type' => 'id',
             'len' => '36'
-        ),
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'type' => 'id',
             'len' => '36'
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'default' => '0',
             'required' => false
-        )
-    ),
-    'relationships' => array(
-        'mailboxes_users' => array(
+        ]
+    ],
+    'relationships' => [
+        'mailboxes_users' => [
             'lhs_module'=> 'Mailboxes',
             'lhs_table'=> 'mailboxes',
             'lhs_key' => 'id',
@@ -41,18 +41,18 @@ $dictionary['mailboxes_users'] = array(
             'join_table'=> 'mailboxes_users',
             'join_key_lhs'=>'mailbox_id',
             'join_key_rhs'=>'user_id'
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'mailboxes_userspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_mailboxes_users',
             'type' => 'index',
-            'fields' => array('mailbox_id', 'user_id', 'deleted')
-        )
-    )
-);
+            'fields' => ['mailbox_id', 'user_id', 'deleted']
+        ]
+    ]
+];

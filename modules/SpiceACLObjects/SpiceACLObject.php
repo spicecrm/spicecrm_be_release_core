@@ -26,6 +26,14 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+namespace SpiceCRM\modules\SpiceACLObjects;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\modules\SpiceACL\SpiceACLUsers;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 /**
  * @property array authObjects
@@ -39,12 +47,12 @@ class SpiceACLObject extends SugarBean
     public $module_dir = 'SpiceACLObjects';
 
 
-    private $aclobjects = array();
+    private $aclobjects = [];
 
     /*
     public function __construct($id = '')
     {
-        global $db;
+        $db = \SpiceCRM\includes\database\DBManagerFactory::getInstance();
 
         if ($id != '') {
             $this->id = $id;
@@ -68,7 +76,8 @@ class SpiceACLObject extends SugarBean
 
     public function generateTypes()
     {
-        global $current_user, $beanList;
+        global $beanList;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
         $typeRecords = [];
         if (is_admin($current_user)) {
             foreach ($beanList as $module => $class) {
@@ -97,7 +106,7 @@ class SpiceACLObject extends SugarBean
 
     public function retrieve($id = -1, $encode = false, $deleted = true, $relationships = true)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         // $this->id = $id;
         $result = parent::retrieve($id, $encode, $deleted, $relationships);
 
@@ -193,7 +202,7 @@ class SpiceACLObject extends SugarBean
 
     public function getObjectTypeId()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $thisObj = $db->fetchByAssoc($db->query("SELECT ktm.korgobjecttype_id FROM korgobjecttypes_modules ktm INNER JOIN kauthtypes kat ON kat.bean = ktm.module WHERE kat.id='" . $this->objDetail['kauthtype_id'] . "'"));
         return $thisObj['korgobjecttype_id'];
     }
@@ -204,10 +213,12 @@ class SpiceACLObject extends SugarBean
     */
     public function getUserACLObjects($module = null)
     {
-        global $db, $current_user, $sugar_config, $timedate;
+        global  $timedate;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
-        if ($sugar_config['acl']['disable_cache'] || empty($_SESSION['spiceaclaccess']['aclobjects'])) {
-            $this->aclobjects = array();
+        if (SpiceConfig::getInstance()->config['acl']['disable_cache'] || empty($_SESSION['spiceaclaccess']['aclobjects'])) {
+            $this->aclobjects = [];
 
             $absences = BeanFactory::getBean('UserAbsences');
             $substituteIds = $absences->getSubstituteIDs();
@@ -247,10 +258,10 @@ class SpiceACLObject extends SugarBean
                 //read the field values
                 $objectValues = $db->query("SELECT spiceaclobjectvalues.*, spiceaclmodulefields.name FROM spiceaclobjectvalues INNER JOIN spiceaclmodulefields ON spiceaclmodulefields.id = spiceaclobjectvalues.spiceaclmodulefield_id WHERE spiceaclobject_id='{$aclobject['id']}'");
                 while ($thisObjectValue = $db->fetchByAssoc($objectValues))
-                    $this->authObjects[$aclobject['id']]['objectelementvalues'][$thisObjectValue['name']] = array(
+                    $this->authObjects[$aclobject['id']]['objectelementvalues'][$thisObjectValue['name']] = [
                         'operator' => $thisObjectValue['operator'],
                         'value1' => $thisObjectValue['value1'],
-                        'value2' => $thisObjectValue['value2']);
+                        'value2' => $thisObjectValue['value2']];
 
 
                 // get the field control
@@ -280,7 +291,7 @@ class SpiceACLObject extends SugarBean
      */
     public function matchBean2Object($bean, $activity = '', $objectData)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $territory = BeanFactory::getBean('SpiceACLTerritories');
 
@@ -299,9 +310,9 @@ class SpiceACLObject extends SugarBean
         }
 
         // check assigned user Or creator
-        if ((($objectData['spiceaclowner'] && !$objectData['spiceaclcreator']) && !\SpiceCRM\modules\SpiceACL\SpiceACLUsers::checkCurrentUserIsOwner($bean)) ||
-            ((!$objectData['spiceaclowner'] && $objectData['spiceaclcreator']) && !\SpiceCRM\modules\SpiceACL\SpiceACLUsers::checkCurrentUserIsCreator($bean)) ||
-            (($objectData['spiceaclowner'] && $objectData['spiceaclcreator']) && (!\SpiceCRM\modules\SpiceACL\SpiceACLUsers::checkCurrentUserIsOwner($bean) || !\SpiceCRM\modules\SpiceACL\SpiceACLUsers::checkCurrentUserIsCreator($bean))))
+        if ((($objectData['spiceaclowner'] && !$objectData['spiceaclcreator']) && !SpiceACLUsers::checkCurrentUserIsOwner($bean)) ||
+            ((!$objectData['spiceaclowner'] && $objectData['spiceaclcreator']) && !SpiceACLUsers::checkCurrentUserIsCreator($bean)) ||
+            (($objectData['spiceaclowner'] && $objectData['spiceaclcreator']) && (!SpiceACLUsers::checkCurrentUserIsOwner($bean) || !SpiceACLUsers::checkCurrentUserIsCreator($bean))))
             return false;
 
         // check that the territory matches
@@ -316,7 +327,7 @@ class SpiceACLObject extends SugarBean
      */
     public function getObjectActivities($bean, $objectData)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $territory = BeanFactory::getBean('SpiceACLTerritories');
 
@@ -331,9 +342,9 @@ class SpiceACLObject extends SugarBean
         }
 
         // check assigned user Or creator
-        if ((($objectData['spiceaclowner'] && !$objectData['spiceaclcreator']) && !\SpiceCRM\modules\SpiceACL\SpiceACLUsers::checkCurrentUserIsOwner($bean)) ||
-            ((!$objectData['spiceaclowner'] && $objectData['spiceaclcreator']) && !\SpiceCRM\modules\SpiceACL\SpiceACLUsers::checkCurrentUserIsCreator($bean)) ||
-            (($objectData['spiceaclowner'] && $objectData['spiceaclcreator']) && (!\SpiceCRM\modules\SpiceACL\SpiceACLUsers::checkCurrentUserIsOwner($bean) || !\SpiceCRM\modules\SpiceACL\SpiceACLUsers::checkCurrentUserIsCreator($bean))))
+        if ((($objectData['spiceaclowner'] && !$objectData['spiceaclcreator']) && !SpiceACLUsers::checkCurrentUserIsOwner($bean)) ||
+            ((!$objectData['spiceaclowner'] && $objectData['spiceaclcreator']) && !SpiceACLUsers::checkCurrentUserIsCreator($bean)) ||
+            (($objectData['spiceaclowner'] && $objectData['spiceaclcreator']) && (!SpiceACLUsers::checkCurrentUserIsOwner($bean) || !SpiceACLUsers::checkCurrentUserIsCreator($bean))))
             return [];
 
         // check that the territory matches
@@ -357,7 +368,7 @@ class SpiceACLObject extends SugarBean
      */
     public function getFTSObjectQuery()
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
 
         $filters = [];
@@ -370,52 +381,52 @@ class SpiceACLObject extends SugarBean
             $userIds = array_merge([$current_user->id], $substituteIds);
 
             if ($this->spiceaclowner && $this->spiceaclcreator) {
-                $filters['must'][] = array(
-                    'bool' => array(
-                        'should' => array(
-                            array(
-                                'terms' => array(
+                $filters['must'][] = [
+                    'bool' => [
+                        'should' => [
+                            [
+                                'terms' => [
                                     'assigned_user_id' => $userIds
-                                )
-                            ),
-                            array(
-                                'terms' => array(
+                                ]
+                            ],
+                            [
+                                'terms' => [
                                     'assigned_user_ids' => $userIds
-                                )
-                            ),
-                            array(
-                                'terms' => array(
+                                ]
+                            ],
+                            [
+                                'terms' => [
                                     'created_by' => $userIds
-                                )
-                            )
-                        ),
+                                ]
+                            ]
+                        ],
                         'minimum_should_match' => '1'
-                    )
-                );
+                    ]
+                ];
             } elseif ($this->spiceaclowner) {
-                $filters['must'][] = array(
-                    'bool' => array(
-                        'should' => array(
-                            array(
-                                'terms' => array(
+                $filters['must'][] = [
+                    'bool' => [
+                        'should' => [
+                            [
+                                'terms' => [
                                     'assigned_user_id' => $userIds
-                                )
-                            ),
-                            array(
-                                'terms' => array(
+                                ]
+                            ],
+                            [
+                                'terms' => [
                                     'assigned_user_ids' => $userIds
-                                )
-                            )
-                        ),
+                                ]
+                            ]
+                        ],
                         'minimum_should_match' => '1'
-                    )
-                );
+                    ]
+                ];
             } elseif ($this->spiceaclcreator) {
-                $filters['must'][] = array(
-                    'terms' => array(
+                $filters['must'][] = [
+                    'terms' => [
                         'created_by' => $userIds
-                    )
-                );
+                    ]
+                ];
             }
         }
 
@@ -424,94 +435,94 @@ class SpiceACLObject extends SugarBean
         while ($fieldvalue = $this->db->fetchByAssoc($fieldvalues)) {
             switch ($fieldvalue['operator']) {
                 case 'EQ':
-                    $filters['must'][] = array(
-                        'term' => array(
+                    $filters['must'][] = [
+                        'term' => [
                             $fieldvalue['name'] . '.raw' => $fieldvalue['value1']
-                        )
-                    );
+                        ]
+                    ];
                     break;
                 case 'ISNEMPTY':
-                    $filters['must'][] = array(
-                        'exits' => array(
+                    $filters['must'][] = [
+                        'exits' => [
                             'field' => $fieldvalue['name']
-                        )
-                    );
+                        ]
+                    ];
                     break;
                 case 'ISEMPTY':
-                    $filters['must_not'][] = array(
-                        'exits' => array(
+                    $filters['must_not'][] = [
+                        'exits' => [
                             'field' => $fieldvalue['name']
-                        )
-                    );
+                        ]
+                    ];
                     break;
                 case 'CU':
                     if (!empty($fieldvalue['value1'])) {
-                        $filters['must'][] = array(
-                            'term' => array(
+                        $filters['must'][] = [
+                            'term' => [
                                 $fieldvalue['name'] . '.raw' => $current_user->{$fieldvalue['value1']}
-                            )
-                        );
+                            ]
+                        ];
                     }
                     break;
                 case 'NE':
-                    $filters['must_not'][] = array(
-                        'term' => array(
+                    $filters['must_not'][] = [
+                        'term' => [
                             $fieldvalue['name'] . '.raw' => $fieldvalue['value1']
-                        )
-                    );
+                        ]
+                    ];
                     break;
                 case 'LK':
-                    $filters['must'][] = array(
-                        'wildcard' => array(
+                    $filters['must'][] = [
+                        'wildcard' => [
                             $fieldvalue['name'] => '*' . $fieldvalue['value1'] . '*'
-                        )
-                    );
+                        ]
+                    ];
                     break;
                 case 'SW':
-                    $filters['must'][] = array(
-                        'wildcard' => array(
+                    $filters['must'][] = [
+                        'wildcard' => [
                             $fieldvalue['name'] . '.raw' => $fieldvalue['value1'] . '*'
-                        )
-                    );
+                        ]
+                    ];
                     break;
                 case 'SN':
-                    $filters['must_not'][] = array(
-                        'wildcard' => array(
+                    $filters['must_not'][] = [
+                        'wildcard' => [
                             $fieldvalue['name'] . '.raw' => $fieldvalue['value1'] . '*'
-                        )
-                    );
+                        ]
+                    ];
                     break;
                 case 'GT':
                 case 'GTE':
                 case 'LT':
                 case 'LTE':
-                    $filters['must'][] = array(
-                        'range' => array(
-                            $fieldvalue['name'] => array(
+                    $filters['must'][] = [
+                        'range' => [
+                            $fieldvalue['name'] => [
                                 strtolower($fieldvalue['operator']) => $fieldvalue['value1']
-                            )
-                        )
-                    );
+                            ]
+                        ]
+                    ];
                     break;
                 case 'IN':
                     $valArray = explode(',', $fieldvalue['value1']);
                     foreach ($valArray as $valIndex => $valValue)
                         $valArray[$valIndex] = trim($valValue);
-                    $filters['must'][] = array(
-                        'terms' => array(
+                    $filters['must'][] = [
+                        'terms' => [
                             $fieldvalue['name'] . '.raw' => $valArray
-                        )
-                    );
+                        ]
+                    ];
                     break;
                 case 'NI':
                     $valArray = explode(',', $fieldvalue['value1']);
                     foreach ($valArray as $valIndex => $valValue)
                         $valArray[$valIndex] = trim($valValue);
-                    $filters['must_not'][] = array(
-                        'terms' => array(
+                    $filters['must_not'][] = [
+                        'terms' => [
                             $fieldvalue['name'] . '.raw' => $valArray
-                        )
-                    );
+                        ]
+                    ];
                     break;
             }
         }
@@ -523,17 +534,17 @@ class SpiceACLObject extends SugarBean
                 $hashes = $territory->getTerritoryHashesForObject($this->id, $this->sysmodule_id);
                 if ($hashes !== false) {
                     if (count($hashes) > 0) {
-                        $filters['must'][] = array(
-                            'terms' => array(
+                        $filters['must'][] = [
+                            'terms' => [
                                 'spiceacl_territories_hash' => $hashes
-                            )
-                        );
+                            ]
+                        ];
                     } else {
-                        $filters['must'][] = array(
-                            'term' => array(
+                        $filters['must'][] = [
+                            'term' => [
                                 'spiceacl_territories_hash' => 'nohashfound'
-                            )
-                        );
+                            ]
+                        ];
                     }
                 }
             }
@@ -542,9 +553,9 @@ class SpiceACLObject extends SugarBean
         //only one filter
         $retFilters = [];
         if (count($filters) > 0) {
-            $retFilters = array(
+            $retFilters = [
                 'bool' => $filters
-            );
+            ];
         }
 
         return $retFilters;
@@ -556,18 +567,18 @@ class SpiceACLObject extends SugarBean
      */
     public function getListObjectQuery($table_name, $bean)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $whereClauses = [];
 
         // owner Query
         if ($this->spiceaclowner || $this->spiceaclcreator) {
             if ($this->spiceaclowner && $this->spiceaclcreator) {
-                $whereClauses[] = "((" . \SpiceCRM\modules\SpiceACL\SpiceACLUsers::generateCurrentUserWhereClause($table_name, $bean) . ") OR (" . \SpiceCRM\modules\SpiceACL\SpiceACLUsers::generateCreatedByWhereClause($table_name, $bean) . "))";
+                $whereClauses[] = "((" . SpiceACLUsers::generateCurrentUserWhereClause($table_name, $bean) . ") OR (" . SpiceACLUsers::generateCreatedByWhereClause($table_name, $bean) . "))";
             } elseif ($this->spiceaclowner) {
-                $whereClauses[] = \SpiceCRM\modules\SpiceACL\SpiceACLUsers::generateCurrentUserWhereClause($table_name, $bean);
+                $whereClauses[] = SpiceACLUsers::generateCurrentUserWhereClause($table_name, $bean);
             } elseif ($this->spiceaclcreator) {
-                $whereClauses[] = \SpiceCRM\modules\SpiceACL\SpiceACLUsers::generateCreatedByWhereClause($table_name, $bean);
+                $whereClauses[] = SpiceACLUsers::generateCreatedByWhereClause($table_name, $bean);
             }
         }
 
@@ -652,7 +663,7 @@ class SpiceACLObject extends SugarBean
      */
     public function checkBeanObjectFieldAccess($bean, $objectelementvalues)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         //Coming from list view, bean is empty  and no territory_hash
         //therefore return true
@@ -660,7 +671,7 @@ class SpiceACLObject extends SugarBean
             return true;
 
         // if we have none ... return true
-        if (count($objectelementvalues) == 0) {
+        if (empty($objectelementvalues)) {
             return true;
         }
 
@@ -766,13 +777,14 @@ class SpiceACLObject extends SugarBean
     /*
     private function getKauthObjectRelationship()
     {
-        global $db, $beanList;
+        global $beanList;
+$db = \SpiceCRM\includes\database\DBManagerFactory::getInstance();
 
         if ($this->relationShip != '')
             return;
 
         $link = $db->fetchByAssoc($db->query("SELECT kom.* FROM korgobjecttypes_modules kom INNER JOIN kauthtypes kt ON kt.bean = kom.module WHERE kt.id='" . $this->objDetail['kauthtype_id'] . "'"));
-        $thisBean = BeanFactory::getBean(array_search($link['module'], $beanList));
+        $thisBean = \SpiceCRM\data\BeanFactory::getBean(array_search($link['module'], $beanList));
         $this->relationShip = $db->fetchByAssoc($db->query("SELECT * FROM relationships WHERE relationship_name ='" . $thisBean->field_name_map[$link['relatefrom']]['relationship'] . "'"));
 
 
@@ -789,7 +801,7 @@ class SpiceACLObject extends SugarBean
      */
     public function activate()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         // check if we have a profile that has no specific org objects assigned
         $objectValuesArray = [];
@@ -818,7 +830,7 @@ class SpiceACLObject extends SugarBean
             $this->save();
         }
 
-        return array('status' => 'success');
+        return ['status' => 'success'];
     }
 
     public function deactivate()
@@ -832,7 +844,7 @@ class SpiceACLObject extends SugarBean
         $this->status = 'd';
         $this->save();
 
-        return array('status' => 'success');
+        return ['status' => 'success'];
     }
 
 }

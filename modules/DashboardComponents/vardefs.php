@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,35 +34,37 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['DashboardComponent'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['DashboardComponent'] = [
     'table' => 'dashboardcomponents',
     'fields' =>
-        array(
-            'dashboard_id' => array(
+        [
+            'dashboard_id' => [
                 'name' => 'dashboard_id',
                 'type' => 'id'
-            ),
-            'dashlet_id' => array(
+            ],
+            'dashlet_id' => [
                 'name' => 'dashlet_id',
                 'type' => 'varchar',
                 'len' => 36
-            ),
-            'component' => array(
+            ],
+            'component' => [
                 'name' => 'component',
                 'type' => 'varchar',
                 'len' => 100
-            ),
-            'componentconfig' => array(
+            ],
+            'componentconfig' => [
                 'name' => 'componentconfig',
                 'type' => 'text'
-            ),
-            'position' => array(
+            ],
+            'position' => [
                 'name' => 'position',
                 'type' => 'text'
-            )
-        )
-);
+            ]
+        ]
+];
 
 
-VardefManager::createVardef('DashboardComponents', 'DashboardComponent', array('default'));
+VardefManager::createVardef('DashboardComponents', 'DashboardComponent', ['default']);
 

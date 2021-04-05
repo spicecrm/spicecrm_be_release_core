@@ -26,14 +26,29 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+
+use Slim\App;
 use SpiceCRM\includes\mjml\KREST\controllers\MJMLKRESTController;
 use SpiceCRM\includes\RESTManager;
+use Slim\Routing\RouteCollectorProxy;
 
-/** @var RESTManager $RESTManager */
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
-$RESTManager->registerExtension('mjml', '1.0');
 
-/** @var \Slim\App $app */
-$RESTManager->app->group('/mjml/parseJsonToHtml', function () {
-    $this->post('', [new MJMLKRESTController(), 'parseJsonToHtml']);
-});
+$routes = [
+    [
+        'method'      => 'post',
+        'route'       => '/mjml/parseJsonToHtml',
+        'class'       => MJMLKRESTController::class,
+        'function'    => 'parseJsonToHtml',
+        'description' => '',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
+
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('mjml', '1.0', [], $routes);

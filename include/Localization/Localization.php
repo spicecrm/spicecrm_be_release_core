@@ -1,5 +1,5 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,13 +35,21 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\includes\Localization;
+
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarCache\SugarCache;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 /**
  * Localization manager
  * @api
  */
 class Localization
 {
-	var $availableCharsets = array(
+	var $availableCharsets = [
 		'BIG-5',        //Taiwan and Hong Kong
 		/*'CP866'			  // ms-dos Cyrillic */
 		/*'CP949'			  //Microsoft Korean */
@@ -70,26 +78,26 @@ class Localization
 		'KOI8-U',       //Cyrillic Ukranian
 		'SJIS',         //MS Japanese
 		'UTF-8',        //UTF-8
-    );
+    ];
 	var $localeNameFormat;
 	var $localeNameFormatDefault;
 	var $default_export_charset = 'UTF-8';
 	var $default_email_charset = 'UTF-8';
-	var $currencies = array(); // array loaded with current currencies
+	var $currencies = []; // array loaded with current currencies
     var $invalidNameFormatUpgradeFilename = 'upgradeInvalidLocaleNameFormat.php';
     /* Charset mappings for iconv */
-    var $iconvCharsetMap = array(
+    var $iconvCharsetMap = [
         'KS_C_5601-1987' => 'CP949',
-        'ISO-8859-8-I' => 'ISO-8859-8'            
-    );
+        'ISO-8859-8-I' => 'ISO-8859-8'
+    ];
 
 	/**
 	 * sole constructor
 	 */
 	public function __construct()
     {
-		global $sugar_config;
-		$this->localeNameFormatDefault = empty( $sugar_config['default_locale_name_format'] ) ? 's f l' : $sugar_config['default_locale_name_format'];
+		
+		$this->localeNameFormatDefault = empty( SpiceConfig::getInstance()->config['default_locale_name_format'] ) ? 's f l' : SpiceConfig::getInstance()->config['default_locale_name_format'];
 		$this->loadCurrencies();
 	}
 
@@ -98,7 +106,7 @@ class Localization
 	 * @return array
 	 */
 	function getLocaleConfigDefaults() {
-		$coreDefaults = array(
+		$coreDefaults = [
 			'currency'								=> '',
 			'datef'									=> 'm/d/Y',
 			'timef'									=> 'H:i',
@@ -106,13 +114,13 @@ class Localization
 			'default_currency_symbol'				=> '$',
 			'default_export_charset'				=> $this->default_export_charset,
 			'default_locale_name_format'			=> 's f l',
-            'name_formats'                          => array('s f l' => 's f l', 'f l' => 'f l', 's l' => 's l', 'l, s f' => 'l, s f',
-                                                            'l, f' => 'l, f', 's l, f' => 's l, f', 'l s f' => 'l s f', 'l f s' => 'l f s'),
+            'name_formats'                          => ['s f l' => 's f l', 'f l' => 'f l', 's l' => 's l', 'l, s f' => 'l, s f',
+                                                            'l, f' => 'l, f', 's l, f' => 's l, f', 'l s f' => 'l s f', 'l f s' => 'l f s'],
 			'default_number_grouping_seperator'		=> ',',
 			'default_decimal_seperator'				=> '.',
 			'export_delimiter'						=> ',',
 			'default_email_charset'					=> $this->default_email_charset,
-		);
+        ];
 
 		return $coreDefaults;
 	}
@@ -124,8 +132,8 @@ class Localization
 	 * @return string pref Most significant preference
 	 */
 	function getPrecedentPreference($prefName, $user=null, $sugarConfigPrefName = '') {
-		global $current_user;
-		global $sugar_config;
+		$current_user = AuthenticationController::getInstance()->getCurrentUser();
+		
 
 		$userPref = '';
 		$coreDefaults = $this->getLocaleConfigDefaults();
@@ -152,12 +160,12 @@ class Localization
 		if(isset($this->$prefName)) {
 			$pref = $this->$prefName;
 		}
-		//rrs: 33086 - give the ability to pass in the preference name as stored in $sugar_config.
+		//rrs: 33086 - give the ability to pass in the preference name as stored in \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config.
 		if(!empty($sugarConfigPrefName)){
 			$prefName = $sugarConfigPrefName;
 		}
 		// cn: 9549 empty() call on a value of 0 (0 significant digits) resulted in a false-positive.  changing to "isset()"
-		$pref = (!isset($sugar_config[$prefName]) || (empty($sugar_config[$prefName]) && $sugar_config[$prefName] !== '0')) ? $pref : $sugar_config[$prefName];
+		$pref = (!isset(SpiceConfig::getInstance()->config[$prefName]) || (empty(SpiceConfig::getInstance()->config[$prefName]) && SpiceConfig::getInstance()->config[$prefName] !== '0')) ? $pref : SpiceConfig::getInstance()->config[$prefName];
 		$pref = (empty($userPref) && $userPref !== '0') ? $pref : $userPref;
 		return $pref;
 	}
@@ -169,34 +177,34 @@ class Localization
 	 */
 	function loadCurrencies() {
 		// doing it dirty here
-		global $db;
-		global $sugar_config;
+		$db = DBManagerFactory::getInstance();
+		
 
 		if(empty($db)) {
-			return array();
+			return [];
 		}
 
-        $load = sugar_cache_retrieve('currency_list');
+        $load = SugarCache::sugar_cache_retrieve('currency_list');
         if ( !is_array($load) ) {
 			// load default from config.php
-			$this->currencies['-99'] = array(
-				'name'		=> $sugar_config['currencies']['default_currency_name'],
-				'symbol'	=> $sugar_config['currencies']['default_currency_symbol'],
+			$this->currencies['-99'] = [
+				'name'		=> SpiceConfig::getInstance()->config['currencies']['default_currency_name'],
+				'symbol'	=> SpiceConfig::getInstance()->config['currencies']['default_currency_symbol'],
 				'conversion_rate' => 1
-				);
+            ];
 
             $q = "SELECT id, name, symbol, conversion_rate FROM currencies WHERE status = 'Active' and deleted = 0";
             $r = $db->query($q);
 
             while($a = $db->fetchByAssoc($r)) {
-                $load = array();
+                $load = [];
                 $load['name'] = $a['name'];
                 $load['symbol'] = $a['symbol'];
                 $load['conversion_rate'] = $a['conversion_rate'];
 
                 $this->currencies[$a['id']] = $load;
             }
-            sugar_cache_put('currency_list',$this->currencies);
+            SugarCache::sugar_cache_put('currency_list',$this->currencies);
         } else {
             $this->currencies = $load;
         }
@@ -217,53 +225,53 @@ class Localization
 	 * @return array ret Array of default currencies keyed by ISO4217 code
 	 */
 	function getDefaultCurrencies() {
-		$ret = array(
-			'AUD' => array(	'name'		=> 'Australian Dollars',
+		$ret = [
+			'AUD' => ['name'		=> 'Australian Dollars',
 							'iso4217'	=> 'AUD',
-							'symbol'	=> '$'),
-			'BRL' => array(	'name'		=> 'Brazilian Reais',
+							'symbol'	=> '$'],
+			'BRL' => ['name'		=> 'Brazilian Reais',
 							'iso4217'	=> 'BRL',
-							'symbol'	=> 'R$'),
-			'GBP' => array(	'name'		=> 'British Pounds',
+							'symbol'	=> 'R$'],
+			'GBP' => ['name'		=> 'British Pounds',
 							'iso4217'	=> 'GBP',
-							'symbol'	=> '£'),
-			'CAD' => array(	'name'		=> 'Canadian Dollars',
+							'symbol'	=> '£'],
+			'CAD' => ['name'		=> 'Canadian Dollars',
 							'iso4217'	=> 'CAD',
-							'symbol'	=> '$'),
-			'CNY' => array(	'name'		=> 'Chinese Yuan',
+							'symbol'	=> '$'],
+			'CNY' => ['name'		=> 'Chinese Yuan',
 							'iso4217'	=> 'CNY',
-							'symbol'	=> '￥'),
-			'EUR' => array(	'name'		=> 'Euro',
+							'symbol'	=> '￥'],
+			'EUR' => ['name'		=> 'Euro',
 							'iso4217'	=> 'EUR',
-							'symbol'	=> '€'),
-			'HKD' => array(	'name'		=> 'Hong Kong Dollars',
+							'symbol'	=> '€'],
+			'HKD' => ['name'		=> 'Hong Kong Dollars',
 							'iso4217'	=> 'HKD',
-							'symbol'	=> '$'),
-			'INR' => array(	'name'		=> 'Indian Rupees',
+							'symbol'	=> '$'],
+			'INR' => ['name'		=> 'Indian Rupees',
 							'iso4217'	=> 'INR',
-							'symbol'	=> '₨'),
-			'KRW' => array(	'name'		=> 'Korean Won',
+							'symbol'	=> '₨'],
+			'KRW' => ['name'		=> 'Korean Won',
 							'iso4217'	=> 'KRW',
-							'symbol'	=> '₩'),
-			'YEN' => array(	'name'		=> 'Japanese Yen',
+							'symbol'	=> '₩'],
+			'YEN' => ['name'		=> 'Japanese Yen',
 							'iso4217'	=> 'JPY',
-							'symbol'	=> '¥'),
-			'MXM' => array(	'name'		=> 'Mexican Pesos',
+							'symbol'	=> '¥'],
+			'MXM' => ['name'		=> 'Mexican Pesos',
 							'iso4217'	=> 'MXM',
-							'symbol'	=> '$'),
-			'SGD' => array(	'name'		=> 'Singaporean Dollars',
+							'symbol'	=> '$'],
+			'SGD' => ['name'		=> 'Singaporean Dollars',
 							'iso4217'	=> 'SGD',
-							'symbol'	=> '$'),
-			'CHF' => array(	'name'		=> 'Swiss Franc',
+							'symbol'	=> '$'],
+			'CHF' => ['name'		=> 'Swiss Franc',
 							'iso4217'	=> 'CHF',
-							'symbol'	=> 'SFr.'),
-			'THB' => array(	'name'		=> 'Thai Baht',
+							'symbol'	=> 'SFr.'],
+			'THB' => ['name'		=> 'Thai Baht',
 							'iso4217'	=> 'THB',
-							'symbol'	=> '฿'),
-			'USD' => array(	'name'		=> 'US Dollars',
+							'symbol'	=> '฿'],
+			'USD' => ['name'		=> 'US Dollars',
 							'iso4217'	=> 'USD',
-							'symbol'	=> '$'),
-		);
+							'symbol'	=> '$'],
+        ];
 
 		return $ret;
 	}
@@ -341,7 +349,7 @@ class Localization
 	 */
     function translateCharset($string, $fromCharset, $toCharset='UTF-8', $forceIconv = false)
     {
-        $GLOBALS['log']->debug("Localization: translating [{$string}] from {$fromCharset} into {$toCharset}");
+        LoggerManager::getLogger()->debug("Localization: translating [{$string}] from {$fromCharset} into {$toCharset}");
 
         // Bug #35413 Function has to use iconv if $fromCharset is not in mb_list_encodings
         $isMb = function_exists('mb_convert_encoding') && !$forceIconv;
@@ -371,12 +379,12 @@ class Localization
             $newFromCharset = $fromCharset;
             if (isset($this->iconvCharsetMap[$fromCharset])) {
                 $newFromCharset = $this->iconvCharsetMap[$fromCharset];
-                $GLOBALS['log']->debug("Localization: iconv using charset {$newFromCharset} instead of {$fromCharset}");
+                LoggerManager::getLogger()->debug("Localization: iconv using charset {$newFromCharset} instead of {$fromCharset}");
             }
             $newToCharset = $toCharset;
             if (isset($this->iconvCharsetMap[$toCharset])) {
                 $newToCharset = $this->iconvCharsetMap[$toCharset];
-                $GLOBALS['log']->debug("Localization: iconv using charset {$newToCharset} instead of {$toCharset}");
+                LoggerManager::getLogger()->debug("Localization: iconv using charset {$newToCharset} instead of {$toCharset}");
             }
             return iconv($newFromCharset, $newToCharset, $string);
         }
@@ -408,7 +416,7 @@ class Localization
 	function getCharsetSelect() {
     //jc:12293 - the "labels" or "human-readable" representations of the various charsets
     //should be translatable
-    $translated = array();
+    $translated = [];
     foreach($this->availableCharsets as $key)
     {
      	 //$translated[$key] = translate($value);
@@ -463,6 +471,7 @@ class Localization
 		return $dec;
 	}
 
+
 	/**
 	 * returns a number formatted by user preference or system default
 	 * @param string number Number to be formatted and returned
@@ -470,6 +479,7 @@ class Localization
 	 * @param bool is_currency Flag to also return the currency symbol
 	 * @return string Formatted number
 	 */
+
 	function getLocaleFormattedNumber($number, $currencySymbol='', $is_currency=true, $user=null) {
 		$fnum			= $number;
 		$majorDigits	= '';
@@ -486,7 +496,7 @@ class Localization
 				$offset = strlen($exNum[0]) % 3;
 				if($offset > 0) {
 					for($i=0; $i<$offset; $i++) {
-						$majorDigits .= $exNum[0]{$i};
+						$majorDigits .= $exNum[0][$i];
 					}
 				}
 
@@ -496,7 +506,7 @@ class Localization
 						$majorDigits .= $thou; // add separator
 					}
 
-					$majorDigits .= $exNum[0]{$i};
+					$majorDigits .= $exNum[0][$i];
 					$tic++;
 				}
 			} else {
@@ -518,6 +528,7 @@ class Localization
 		}
 		return $fnum;
 	}
+
 
 	/**
 	 * returns Javascript to format numbers and currency for ***DISPLAY***
@@ -624,7 +635,7 @@ eoq;
 	 * @return string formattedName
 	 */
 	function getLocaleFormattedName($firstName, $lastName, $salutationKey='', $title='', $format="", $user=null, $returnEmptyStringIfEmpty = false) {
-		global $current_user;
+		$current_user = AuthenticationController::getInstance()->getCurrentUser();
 		global $app_list_strings;
 
 		if ( $user == null ) {
@@ -638,7 +649,7 @@ eoq;
 
         //check to see if passed in variables are set, if so, then populate array with value,
         //if not, then populate array with blank ''
-		$names = array();
+		$names = [];
 		$names['f'] = (empty($firstName)	&& $firstName	!= 0) ? '' : $firstName;
 		$names['l'] = (empty($lastName)	&& $lastName	!= 0) ? '' : $lastName;
 		$names['s'] = (empty($salutation)	&& $salutation	!= 0) ? '' : $salutation;
@@ -666,7 +677,7 @@ eoq;
 		// parse localeNameFormat
 		$formattedName = '';
 		for($i=0; $i<strlen($this->localeNameFormat); $i++) {
-			$formattedName .= array_key_exists($this->localeNameFormat{$i}, $names) ? $names[$this->localeNameFormat{$i}] : $this->localeNameFormat{$i};
+			$formattedName .= array_key_exists($this->localeNameFormat[$i], $names) ? $names[$this->localeNameFormat[$i]] : $this->localeNameFormat[$i];
 		}
 
 		$formattedName = trim($formattedName);
@@ -774,10 +785,10 @@ eoq;
     public function getUsableLocaleNameOptions($options) {
         global $app_strings;
 
-        $examples = array('s' => $app_strings['LBL_LOCALE_NAME_EXAMPLE_SALUTATION'],
+        $examples = ['s' => $app_strings['LBL_LOCALE_NAME_EXAMPLE_SALUTATION'],
                         'f' => $app_strings['LBL_LOCALE_NAME_EXAMPLE_FIRST'],
-                        'l' => $app_strings['LBL_LOCALE_NAME_EXAMPLE_LAST']);
-        $newOpts = array();
+                        'l' => $app_strings['LBL_LOCALE_NAME_EXAMPLE_LAST']];
+        $newOpts = [];
         foreach ($options as $key => $val) {
             if ($this->isAllowedNameFormat($key) && $this->isAllowedNameFormat($val)) {
                 $newVal = '';
@@ -812,5 +823,3 @@ eoq;
         return false;
     }
 } // end class def
-
-?>

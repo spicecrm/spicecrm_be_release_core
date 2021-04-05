@@ -726,7 +726,7 @@ class PHPExcel_Worksheet_AutoFilter
 							);
 						} else {
 							//	Date based
-							if ($dynamicRuleType{0} == 'M' || $dynamicRuleType{0} == 'Q') {
+							if (substr($dynamicRuleType, 0, 1) == 'M' || substr($dynamicRuleType, 0, 1) == 'Q') {
 								//	Month or Quarter
 								sscanf($dynamicRuleType,'%[A-Z]%d', $periodType, $period);
 								if ($periodType == 'M') {

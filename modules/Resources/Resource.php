@@ -1,7 +1,7 @@
 <?php
-//namespace SpiceCRM\modules\Resources;
+namespace SpiceCRM\modules\Resources;
 //todo which package is it anyway
-use SugarBean;
+use SpiceCRM\data\SugarBean;
 
 
 /**

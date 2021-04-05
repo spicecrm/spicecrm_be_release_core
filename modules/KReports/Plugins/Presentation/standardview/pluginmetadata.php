@@ -14,19 +14,18 @@
 
 
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$pluginmetadata = array(
+$pluginmetadata = [
     'id' => 'standard', 
     'displayname' => 'LBL_STANDARDPLUGIN',
     'type' => 'presentation', 
     'phpinclude' => 'standardviewinclude.php',
     'pluginpanel' => 'SpiceCRM.KReporter.Designer.presentationplugins.standardviewpanel',
     'viewpanel' => 'SpiceCRM.KReporter.Viewer.plugins.StandardViewPanel',
-    'includes' => array(
+    'includes' => [
         'edit' =>  'standardviewpanel.js',
         'view' =>  'standardview.js'
-    )
-);
+    ]
+];
 
 

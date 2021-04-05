@@ -36,13 +36,18 @@
 
 namespace SpiceCRM\modules\Configurator;
 
+
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarCache\SugarCache;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 class Configurator {
 	var $config = '';
 	var $override = '';
-	var $allow_undefined = array ('stack_trace_errors', 'export_delimiter', 'use_real_names', 'developerMode', 'default_module_favicon', 'authenticationClass', 'SAML_loginurl', 'SAML_X509Cert', 'dashlet_auto_refresh_min', 'show_download_tab', 'enable_action_menu');
-	var $errors = array ('main' => '');
+	var $allow_undefined = ['stack_trace_errors', 'export_delimiter', 'use_real_names', 'developerMode', 'default_module_favicon', 'authenticationClass', 'SAML_loginurl', 'SAML_X509Cert', 'dashlet_auto_refresh_min', 'show_download_tab', 'enable_action_menu'];
+	var $errors = ['main' => ''];
 	var $logger = NULL;
-	var $previous_sugar_override_config_array = array();
+	var $previous_sugar_override_config_array = [];
 	var $useAuthenticationClass = false;
     protected $error = null;
 
@@ -51,17 +56,17 @@ class Configurator {
 	}
 
 	function loadConfig() {
-		$this->logger = \SpiceCRM\includes\Logger\LoggerManager::getLogger();
-		global $sugar_config;
-		$this->config = $sugar_config;
+		$this->logger = LoggerManager::getLogger();
+		
+		$this->config = SpiceConfig::getInstance()->config;
 	}
 
 	function handleOverride($fromParseLoggerSettings=false) {
-		global $sugar_config, $sugar_version;
-		$sc = \SpiceConfig::getInstance();
+		global  $sugar_version;
+		$sc = SpiceConfig::getInstance();
 		$overrideArray = $this->readOverride();
 		$this->previous_sugar_override_config_array = $overrideArray;
-		$diffArray = deepArrayDiff($this->config, $sugar_config);
+		$diffArray = deepArrayDiff($this->config, SpiceConfig::getInstance()->config);
 		$overrideArray = sugarArrayMergeRecursive($overrideArray, $diffArray);
 
 		// To remember checkbox state
@@ -74,11 +79,11 @@ class Configurator {
 
 		$overideString = "<?php\n/***CONFIGURATOR***/\n";
 
-		sugar_cache_put('sugar_config', $this->config);
-		$GLOBALS['sugar_config'] = $this->config;
+        SugarCache::sugar_cache_put('sugar_config', $this->config);
+		SpiceConfig::getInstance()->config = $this->config;
 
 		foreach($overrideArray as $key => $val) {
-			if (in_array($key, $this->allow_undefined) || isset ($sugar_config[$key])) {
+			if (in_array($key, $this->allow_undefined) || isset (SpiceConfig::getInstance()->config[$key])) {
 				if (is_string($val) && strcmp($val, 'true') == 0) {
 					$val = true;
 					$this->config[$key] = $val;
@@ -97,18 +102,18 @@ class Configurator {
 	}
 
 	function handleOverrideFromArray($diffArray) {
-		global $sugar_config, $sugar_version;
+		global  $sugar_version;
 		$overrideArray = $this->readOverride();
 		$this->previous_sugar_override_config_array = $overrideArray;
 		$overrideArray = sugarArrayMergeRecursive($overrideArray, $diffArray);
 
 		$overideString = "<?php\n/***CONFIGURATOR***/\n";
 
-		sugar_cache_put('sugar_config', $this->config);
-		$GLOBALS['sugar_config'] = $this->config;
+        SugarCache::sugar_cache_put('sugar_config', $this->config);
+		SpiceConfig::getInstance()->config = $this->config;
 
 		foreach($overrideArray as $key => $val) {
-			if (in_array($key, $this->allow_undefined) || isset ($sugar_config[$key])) {
+			if (in_array($key, $this->allow_undefined) || isset (SpiceConfig::getInstance()->config[$key])) {
 				if (is_string($val) && strcmp($val, 'true') == 0) {
 					$val = true;
 					$this->config[$key] = $val;
@@ -126,16 +131,14 @@ class Configurator {
 		if(isset($this->config['logger']['level']) && $this->logger) $this->logger->setLevel($this->config['logger']['level']);
 	}
 
-	//bug #27947 , if previous $sugar_config['stack_trace_errors'] is true and now we disable it , we should clear all the cache.
+	//bug #27947 , if previous \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['stack_trace_errors'] is true and now we disable it , we should clear all the cache.
 	function clearCache(){
-		global $sugar_config, $sugar_version;
+		global  $sugar_version;
 		$currentConfigArray = $this->readOverride();
 		foreach($currentConfigArray as $key => $val) {
-			if (in_array($key, $this->allow_undefined) || isset ($sugar_config[$key])) {
+			if (in_array($key, $this->allow_undefined) || isset (SpiceConfig::getInstance()->config[$key])) {
 				if (empty($val) ) {
 					if(!empty($this->previous_sugar_override_config_array['stack_trace_errors']) && $key == 'stack_trace_errors'){
-						require_once('include/TemplateHandler/TemplateHandler.php');
-						TemplateHandler::clearAll();
 						return;
 					}
 				}
@@ -149,25 +152,24 @@ class Configurator {
 	}
 
 	function readOverride() {
-		$sugar_config = array();
+		SpiceConfig::getInstance()->config = [];
 		if (file_exists('config_override.php')) {
 		    if ( !is_readable('config_override.php') ) {
-		        $GLOBALS['log']->fatal("Unable to read the config_override.php file. Check the file permissions");
+		        LoggerManager::getLogger()->fatal("Unable to read the config_override.php file. Check the file permissions");
 		    }
 	        else {
 	            include('config_override.php');
 	        }
 		}
-		return $sugar_config;
+		return SpiceConfig::getInstance()->config;
 	}
 	// CR100349 remove methods from install_utils.php that are required from classes in use
 	function saveOverride($override) {
-        require_once('include/utils.php');
 	    if ( !file_exists('config_override.php') ) {
 	    	touch('config_override.php');
 	    }
 	    if ( !($this->make_writable('config_override.php')) ||  !(is_writable('config_override.php')) ) {
-	        $GLOBALS['log']->fatal("Unable to write to the config_override.php file. Check the file permissions");
+	        LoggerManager::getLogger()->fatal("Unable to write to the config_override.php file. Check the file permissions");
 	        return;
 	    }
 		$fp = sugar_fopen('config_override.php', 'w');

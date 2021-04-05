@@ -1,9 +1,11 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\KREST\controllers;
 
-use BeanFactory;
+use Exception;
+use SpiceCRM\data\BeanFactory;
 use DateTime;
-use Email;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\modules\Emails\Email;
 
 class MailgunController
 {
@@ -41,8 +43,8 @@ class MailgunController
 
             try {
                 $email->save();
-            } catch (\Exception $e) {
-                $GLOBALS['log']->error('Could not save email: ' . $email->name);
+            } catch (Exception $e) {
+                LoggerManager::getLogger()->error('Could not save email: ' . $email->name);
                 return;
             }
 

@@ -2,7 +2,9 @@
 namespace SpiceCRM\includes\Evalanche\soap;
 
 
-class EvalancheSoapFault extends \SoapFault {
+use SoapFault;
+
+class EvalancheSoapFault extends SoapFault {
     public $faultcode;
     public $faultstring;
     public $detail;

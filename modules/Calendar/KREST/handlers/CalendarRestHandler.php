@@ -2,12 +2,18 @@
 
 namespace SpiceCRM\modules\Calendar\KREST\handlers;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler;
+use SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 class CalendarRestHandler
 {
     function getCalendarModules()
     {
         $result = [];
-        $modules = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getCalendarModules();
+        $modules = SpiceFTSUtils::getCalendarModules();
         foreach ($modules as $module => $data) {
             $dateStartFieldName = null;
             $dateEndFieldName = null;
@@ -30,22 +36,22 @@ class CalendarRestHandler
 
     function getUserCalendar($userId, $params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $start = $db->quote($params['start']);
         $end = $db->quote($params['end']);
-        return \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::loadCalendarEvents($start, $end, $userId);
+        return SpiceFTSActivityHandler::loadCalendarEvents($start, $end, $userId);
     }
 
     function getUsersCalendar($userId, $params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $start = $db->quote($params['start']);
         $end = $db->quote($params['end']);
-        return \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::loadCalendarEvents($start, $end, $userId, '', json_decode($params['users']));
+        return SpiceFTSActivityHandler::loadCalendarEvents($start, $end, $userId, '', json_decode($params['users']));
     }
 
     function getCalendars() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $retArray = [];
         $calendars = "SELECT id, name, icon FROM sysuicalendars WHERE `default` = 1";
         $calendars = $db->query($calendars);
@@ -57,7 +63,8 @@ class CalendarRestHandler
     }
 
     function getOtherCalendars($calendarId, $params) {
-        global $current_user, $db;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
         $retArray = [];
         $start = $db->quote($params['start']);
         $end = $db->quote($params['end']);
@@ -88,14 +95,14 @@ class CalendarRestHandler
                     if($seed->retrieve($reminder['bean_id'])){
                         $eventStart = new DateTime($reminder[$fieldEvent]);
                         $eventEnd = $eventStart;
-                        $retArray[] = array(
+                        $retArray[] = [
                             'id' => $reminder['bean_id'],
                             'module' => $reminder['bean'],
                             'type' => 'other',
                             'start' => $eventStart->format('Y-m-d H:i:s'),
                             'end' => $eventEnd->format('Y-m-d H:i:s'),
                             'data' => $krestModuleHandler->mapBeanToArray($reminder['bean'], $seed)
-                        );
+                        ];
                     }
                 }
             } else {
@@ -146,14 +153,14 @@ class CalendarRestHandler
                         $eventEnd = $eventStart;
                     }
 
-                    $retArray[] = array(
+                    $retArray[] = [
                         'id' => $seed->id,
                         'module' => $module,
                         'type' => 'other',
                         'start' => $eventStart->format('Y-m-d H:i:s'),
                         'end' => $eventEnd->format('Y-m-d H:i:s'),
                         'data' => $krestModuleHandler->mapBeanToArray($module, $seed)
-                    );
+                    ];
                 }
             }
         }

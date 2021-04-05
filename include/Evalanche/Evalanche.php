@@ -2,7 +2,11 @@
 
 namespace SpiceCRM\includes\Evalanche;
 
+use SoapFault;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\Evalanche\soap\EvalancheSoapClient;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 
 class Evalanche
@@ -15,18 +19,18 @@ class Evalanche
 
     public function __construct()
     {
-        global $sugar_config;
+        
         // connection
-        $this->wsdl = $sugar_config['evalanche']['wsdl'];
+        $this->wsdl = SpiceConfig::getInstance()->config['evalanche']['wsdl'];
 
         $this->options = [
-            'login' => $sugar_config['evalanche']['login'],
-            'password' => $sugar_config['evalanche']['password'],
+            'login' => SpiceConfig::getInstance()->config['evalanche']['login'],
+            'password' => SpiceConfig::getInstance()->config['evalanche']['password'],
             'trace' => 1];
 
         // pool id
-        $this->pool = $sugar_config['evalanche']['pool_id'];
-        $this->attribute = $sugar_config['evalanche']['attribute_id'];
+        $this->pool = SpiceConfig::getInstance()->config['evalanche']['pool_id'];
+        $this->attribute = SpiceConfig::getInstance()->config['evalanche']['attribute_id'];
 
     }
 
@@ -40,13 +44,13 @@ class Evalanche
     private function hashmapFromArray($data)
     {
         foreach ($data as $key => $value) {
-            $items[] = array(
+            $items[] = [
                 'key' => strval($key),
                 'value' => strval($value)
-            );
+            ];
         }
 
-        return array('items' => $items);
+        return ['items' => $items];
     }
 
     /**
@@ -63,7 +67,7 @@ class Evalanche
     {
         $curl = curl_init();
         $url = 'https://scnem3.com/report.php?format=json&from=' . $mailing_date . '&to=today-1second&customer_id=' . $customer_id . '&pool_id=' . $pool_id . '&table=' . $table;
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
@@ -90,9 +94,9 @@ class Evalanche
      */
     private function writeLog($bean_id, $bean_type, $method, $response, $soapfault, $evalanche_id = null)
     {
-        global $db;
-        global $sugar_config;
-        if ($sugar_config['evalanche']['log'] == 1) {
+        $db = DBManagerFactory::getInstance();
+        
+        if (SpiceConfig::getInstance()->config['evalanche']['log'] == 1) {
             $date = $db->now();
             $query = "INSERT INTO sysevalanchelog (id, bean_id, bean_type, method, evalanche_id, response, soapfault, request_date) VALUES (uuid(), '$bean_id', '$bean_type', '$method','$evalanche_id', '$response', '$soapfault','$date')";
             $db->query($query);
@@ -135,14 +139,15 @@ class Evalanche
      * if the online/Evalanche profile already exists, it updates it with the provided changes from the contact.
      * @param $id
      * @return boolean
-     * @throws \SoapFault
+     * @throws SoapFault
      */
     public function createProfileFromBean($id, $module)
     {
-        global $db, $sugar_config;
+        
+$db = DBManagerFactory::getInstance();
         $data = [];
 
-        $bean = \BeanFactory::getBean($module, $id);
+        $bean = BeanFactory::getBean($module, $id);
         if (!empty($bean)) {
             $query = "SELECT * FROM sysevalanche_fieldmapping WHERE module =" . "$module";
             $query = $db->query($query);
@@ -153,23 +158,23 @@ class Evalanche
             $str = str_replace("^", "", $str);
             $str = '|' . str_replace(',', '|', $str) . '|';
             $data['NEWSLETTER'] = $str;
-            $data['PERMISSION'] = $sugar_config['evalanche']['doi_permission'];
-            $data['LANGUAGE'] = $sugar_config['evalanche']['language'];
+            $data['PERMISSION'] = SpiceConfig::getInstance()->config['evalanche']['doi_permission'];
+            $data['LANGUAGE'] = SpiceConfig::getInstance()->config['evalanche']['language'];
             $items = $this->hashmapFromArray($data);
             try {
                 $this->soapClient = new EvalancheSoapClient($this->wsdl . '/profile', $this->options);
-                $contactsOnlineProfile = \BeanFactory::getBean('ContactsOnlineProfiles');
+                $contactsOnlineProfile = BeanFactory::getBean('ContactsOnlineProfiles');
                 if (!$contactsOnlineProfile->retrieve_by_string_fields(['name' => 'Evalanche', 'parent_type' => $bean->module_name, 'parent_id' => $bean->id])) {
-                    $response = $this->soapClient->__soapCall('create', array(['pool_id' => $this->pool, 'data' => $items]));
+                    $response = $this->soapClient->__soapCall('create', [['pool_id' => $this->pool, 'data' => $items]]);
                     $contactsOnlineProfile->name = 'Evalanche';
                     $contactsOnlineProfile->username = $response->createResult;
                     $contactsOnlineProfile->parent_type = 'Contacts';
                     $contactsOnlineProfile->parent_id = $bean->id;
                     $contactsOnlineProfile->save();
                 } else {
-                    $this->soapClient->__soapCall('updateById', array(['profile_id' => $contactsOnlineProfile->username, 'data' => $items]));
+                    $this->soapClient->__soapCall('updateById', [['profile_id' => $contactsOnlineProfile->username, 'data' => $items]]);
                 }
-            } catch (\SoapFault $e) {
+            } catch (SoapFault $e) {
                 $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
                 $this->writeLog($id, $bean->module_name, 'create', str_replace("'", '', $e->getMessage()), $soapfault, $contactsOnlineProfile->username);
             }
@@ -186,14 +191,14 @@ class Evalanche
      */
     public function deleteFromEvalanche($id, $module)
     {
-        $bean = \BeanFactory::getBean($module, $id);
-        $contactsOnlineProfile = \BeanFactory::getBean('ContactsOnlineProfiles');
+        $bean = BeanFactory::getBean($module, $id);
+        $contactsOnlineProfile = BeanFactory::getBean('ContactsOnlineProfiles');
         $contactToDelete = $contactsOnlineProfile->retrieve_by_string_fields(['name' => 'Evalanche', 'parent_type' => $bean->module_name, 'parent_id' => $bean->id]);
         if (!empty($contactToDelete)) {
             try {
                 $this->soapClient = new EvalancheSoapClient($this->wsdl . '/profile', $this->options);
-                $soapcall = $this->soapClient->__soapCall('delete', array(['profile_ids' => [$contactToDelete->username]]));
-            } catch (\SoapFault $e) {
+                $soapcall = $this->soapClient->__soapCall('delete', [['profile_ids' => [$contactToDelete->username]]]);
+            } catch (SoapFault $e) {
                 $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
                 $this->writeLog($id, $bean->module_name, 'delete', str_replace("'", '', $e->getMessage()), $soapfault, $contactToDelete->username);
             }
@@ -215,8 +220,8 @@ class Evalanche
     {
         try {
             $this->soapClient = new EvalancheSoapClient($this->wsdl . '/pool', $this->options);
-            $response = $this->soapClient->__soapCall('addAttributeOptions', array(['pool_id' => $this->pool, 'attribute_id' => $this->attribute, 'labels' => ['item' => $id]]));
-        } catch (\SoapFault $e) {
+            $response = $this->soapClient->__soapCall('addAttributeOptions', [['pool_id' => $this->pool, 'attribute_id' => $this->attribute, 'labels' => ['item' => $id]]]);
+        } catch (SoapFault $e) {
             $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
             $this->writeLog($id, 'ProspectLists', 'addAttributeOptions', str_replace("'", '', $e->getMessage()), $soapfault);
         }
@@ -240,8 +245,8 @@ class Evalanche
         $prospectListsEvalanche = [];
         try {
             $this->soapClient = new EvalancheSoapClient($this->wsdl . '/pool', $this->options);
-            $response = $this->soapClient->__soapCall('getAttributes', array(['pool_id' => $this->pool]));
-        } catch (\SoapFault $e) {
+            $response = $this->soapClient->__soapCall('getAttributes', [['pool_id' => $this->pool]]);
+        } catch (SoapFault $e) {
             $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
             $this->writeLog($id, 'ProspectLists', 'getAttributes', str_replace("'", '', $e->getMessage()), $soapfault);
         }
@@ -271,11 +276,11 @@ class Evalanche
      * creates a targetgroup given the id of the Spice prospectlist
      * @param $id
      * @return bool
-     * @throws \SoapFault
+     * @throws SoapFault
      */
     public function createTargetGroupFromProspectList($id)
     {
-        $prospectlist = \BeanFactory::getBean('ProspectLists', $id);
+        $prospectlist = BeanFactory::getBean('ProspectLists', $id);
         if ($this->checkIfAttributeOptionExists($id) != false) {
             $optionId = $this->checkIfAttributeOptionExists($id);
         } else {
@@ -284,8 +289,8 @@ class Evalanche
         try {
             $this->soapClient = new EvalancheSoapClient($this->wsdl . '/targetgroup', $this->options);
             $args = ['pool_id' => $this->pool, 'attribute_id' => $this->attribute, 'option_id' => $optionId, 'category_id' => 0, 'name' => $prospectlist->name];
-            $response = $this->soapClient->__soapCall('createByOption', array($args));
-        } catch (\SoapFault $e) {
+            $response = $this->soapClient->__soapCall('createByOption', [$args]);
+        } catch (SoapFault $e) {
             $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
             $this->writeLog($prospectlist->id, $$prospectlist->module_name, 'createByOption', str_replace("'", '', $e->getMessage()), $soapfault);
         }
@@ -305,26 +310,26 @@ class Evalanche
      * Retrieves all profiles of a given Evalanche Targetgroup
      * @param $ext_id
      * @return array
-     * @throws \SoapFault
+     * @throws SoapFault
      */
     private function getProfilesFromEvalanche($ext_id)
     {
         $evalancheProfiles = [];
         try {
             $this->soapClient = new EvalancheSoapClient($this->wsdl . '/profile', $this->options);
-            $jobInfoCall = $this->soapClient->__soapCall('getByTargetGroup', array(['targetgroup_id' => $ext_id, 'pool_attribute_list' => ['EXTERNALID']]));
+            $jobInfoCall = $this->soapClient->__soapCall('getByTargetGroup', [['targetgroup_id' => $ext_id, 'pool_attribute_list' => ['EXTERNALID']]]);
             $job_info = $jobInfoCall->getByTargetGroupResult;
             while ($job_info->status < 2) {
-                $jobInfoCall = $this->soapClient->__soapCall('getJobInformation', array(['job_id' => $job_info->id]));
+                $jobInfoCall = $this->soapClient->__soapCall('getJobInformation', [['job_id' => $job_info->id]]);
                 $job_info = $jobInfoCall->getJobInformationResult;
                 $jobId = $job_info->id;
             }
-        } catch (\SoapFault $e) {
+        } catch (SoapFault $e) {
             $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
             $this->writeLog('', 'Prospectlists', 'getByTargetGroup', str_replace("'", '', $e->getMessage()), $soapfault, $ext_id);
         }
 
-        $response = $this->soapClient->__soapCall('getResults', array(['job_id' => $jobId]));
+        $response = $this->soapClient->__soapCall('getResults', [['job_id' => $jobId]]);
         $result = $response->getResultsResult->result->item;
         foreach ($result as $item) {
             if (!empty($item->items->item->value)) {
@@ -344,7 +349,7 @@ class Evalanche
      */
     private function getLinkedSpiceProfiles($listID)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $list = [];
         $query = "SELECT contactsonlineprofiles.parent_id
@@ -370,7 +375,7 @@ class Evalanche
      */
     public function getProspectListStatistic($id)
     {
-        $prospectlist = \BeanFactory::getBean('ProspectLists', $id);
+        $prospectlist = BeanFactory::getBean('ProspectLists', $id);
         if (!empty($prospectlist->id)) {
             $spiceList = $this->getLinkedSpiceProfiles($prospectlist->id);
             if (empty($prospectlist->ext_id)) {
@@ -382,11 +387,11 @@ class Evalanche
 
         }
         // do something
-        return array(
+        return [
             'spice' => $spiceList,
             'evalanche' => $evalancheList,
             'difference' => array_values(array_diff($spiceList, $evalancheList))
-        );
+        ];
     }
 
     /**
@@ -394,13 +399,13 @@ class Evalanche
      * @param $listid string
      * @param $body array
      * @return bool
-     * @throws \SoapFault
+     * @throws SoapFault
      **/
     public function synchronizeTargetLists($listid, $body)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $prospectlist = \BeanFactory::getBean('ProspectLists', $listid);
+        $prospectlist = BeanFactory::getBean('ProspectLists', $listid);
         $prospects = $body->getParsedBody();
         $prospects = $prospects['prospects'];
         $query = "SELECT username from contactsonlineprofiles WHERE parent_id in ('" . implode("','", $prospects) . "')";
@@ -414,9 +419,9 @@ class Evalanche
             try {
                 $this->soapClient = new EvalancheSoapClient($this->wsdl . '/profile', $this->options);
                 foreach ($list as $profile) {
-                    $this->soapClient->__soapCall('mergeById', array(['profile_id' => $profile, 'data' => $items]));
+                    $this->soapClient->__soapCall('mergeById', [['profile_id' => $profile, 'data' => $items]]);
                 }
-            } catch (\SoapFault $e) {
+            } catch (SoapFault $e) {
                 $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
                 $this->writeLog($listid, $prospects->module_name, 'mergeById', str_replace("'", '', $e->getMessage()), $soapfault);
             }
@@ -437,15 +442,15 @@ class Evalanche
     {
         $templates = [];
         $targetlists = [];
-        $campaignTask = \BeanFactory::getBean('CampaignTasks', $id);
+        $campaignTask = BeanFactory::getBean('CampaignTasks', $id);
         $relatedTargetLists = $campaignTask->get_linked_beans('prospectlists', 'ProspectList');
         foreach ($relatedTargetLists as $list) {
             $targetlists[] = ['id' => $list->ext_id, 'name' => $list->name, 'selected' => false];
         }
         try {
             $this->soapClient = new EvalancheSoapClient($this->wsdl . '/mailingtemplate', $this->options);
-            $soapCall = $this->soapClient->__soapCall('getByCategory', array(['category_id' => 9720]));
-        } catch (\SoapFault $e) {
+            $soapCall = $this->soapClient->__soapCall('getByCategory', [['category_id' => 9720]]);
+        } catch (SoapFault $e) {
             $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
             $this->writeLog('', 'MailingTemplate', 'getAll', str_replace("'", '', $e->getMessage()), $soapfault);
         }
@@ -458,8 +463,8 @@ class Evalanche
             }
 
         }
-        return array('templates' => (array)$templates,
-            'targetlists' => $targetlists);
+        return ['templates' => (array)$templates,
+            'targetlists' => $targetlists];
     }
 
     /**
@@ -471,8 +476,8 @@ class Evalanche
         if (!empty($requestBody)) {
             try {
                 $this->soapClient = new EvalancheSoapClient($this->wsdl . '/mailing', $this->options);
-                $soapCall = $this->soapClient->__soapCall('createDraft', array($requestBody));
-            } catch (\SoapFault $e) {
+                $soapCall = $this->soapClient->__soapCall('createDraft', [$requestBody]);
+            } catch (SoapFault $e) {
                 $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
                 $this->writeLog('', 'CampaignTasks', 'createDraft', str_replace("'", '', $e->getMessage()), $soapfault);
             }
@@ -495,8 +500,8 @@ class Evalanche
         if (!empty($requestBody)) {
             try {
                 $this->soapClient = new EvalancheSoapClient($this->wsdl . '/mailing', $this->options);
-                $soapCall = $this->soapClient->__soapCall('setSubjects', array($requestBody));
-            } catch (\SoapFault $e) {
+                $soapCall = $this->soapClient->__soapCall('setSubjects', [$requestBody]);
+            } catch (SoapFault $e) {
                 $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
                 $this->writeLog('', 'CampaignTasks', 'setSubjects', str_replace("'", '', $e->getMessage()), $soapfault);
             }
@@ -512,7 +517,7 @@ class Evalanche
      */
     public function sendMailing($id, $body)
     {
-        $campaignTask = \BeanFactory::getBean('CampaignTasks', $id);
+        $campaignTask = BeanFactory::getBean('CampaignTasks', $id);
         $postData = $body->getParsedBody();
         if (!empty($postData)) {
             $requestBody = ['name' => $postData['name'], 'template_id' => $postData['template'], 'category_id' => 0];
@@ -524,8 +529,8 @@ class Evalanche
             if ($success == true) {
                 try {
                     $this->soapClient = new EvalancheSoapClient($this->wsdl . '/mailing', $this->options);
-                    $soapCall = $this->soapClient->__soapCall('sendToTargetgroup', array(['mailing_id' => $mailing_id, 'targetgroup_id' => 74910, 'send_time' => '', 'speed' => '']));
-                } catch (\SoapFault $e) {
+                    $soapCall = $this->soapClient->__soapCall('sendToTargetgroup', [['mailing_id' => $mailing_id, 'targetgroup_id' => 74910, 'send_time' => '', 'speed' => '']]);
+                } catch (SoapFault $e) {
                     $soapfault = '{"code": ' . $e->getCode() . ', "file": ' . $e->getFile() . ', "line": ' . $e->getLine() . '}';
                     $this->writeLog('', 'CampaignTasks', 'sendToTargetgroup', str_replace("'", '', $e->getMessage()), $soapfault);
                 }
@@ -539,8 +544,8 @@ class Evalanche
         } else {
             $outcome = false;
         }
-        return array('success' => $outcome,
-            'data' => $mailing_id);
+        return ['success' => $outcome,
+            'data' => $mailing_id];
     }
 
     /**
@@ -549,15 +554,16 @@ class Evalanche
      */
     public function getMailingStats($id)
     {
-        global $db, $sugar_config;
-        $campaignTask = \BeanFactory::getBean('CampaignTasks', $id);
+        
+$db = DBManagerFactory::getInstance();
+        $campaignTask = BeanFactory::getBean('CampaignTasks', $id);
         $query = "SELECT id FROM campaign_log WHERE campaigntask_id = '" . $campaignTask->id . "'";
         $query = $db->query($query);
         while ($row = $db->fetchByAssoc($query)) {
             $campaignLogIds[] = $row['id'];
         }
         if (!empty($campaignTask) and $campaignTask->activated == 1) {
-            $report = $this->reportingCall($sugar_config['evalanche']['login'], $sugar_config['evalanche']['password'], $campaignTask->start_date, $sugar_config['evalanche']['customer_id'], $this->pool, 'trackinghistory');
+            $report = $this->reportingCall(SpiceConfig::getInstance()->config['evalanche']['login'], SpiceConfig::getInstance()->config['evalanche']['password'], $campaignTask->start_date, SpiceConfig::getInstance()->config['evalanche']['customer_id'], $this->pool, 'trackinghistory');
             $mailing_report = [];
             foreach ($report as $singlentry) {
                 if ($singlentry->resource_id == $campaignTask->mailing_id) {
@@ -573,7 +579,7 @@ class Evalanche
 
                 }
             }
-            $bounces = $this->reportingCall($sugar_config['evalanche']['login'], $sugar_config['evalanche']['password'], $campaignTask->start_date, $sugar_config['evalanche']['customer_id'], $this->pool, 'newslettersendlogs');
+            $bounces = $this->reportingCall(SpiceConfig::getInstance()->config['evalanche']['login'], SpiceConfig::getInstance()->config['evalanche']['password'], $campaignTask->start_date, SpiceConfig::getInstance()->config['evalanche']['customer_id'], $this->pool, 'newslettersendlogs');
             foreach ($bounces as $entry) {
                 if ($entry->state == 2 or $entry->state == 3) {
                     $mailing_report['bounced'][] = $entry->profile_id;

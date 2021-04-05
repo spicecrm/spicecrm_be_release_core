@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,113 +34,103 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['Document'] = array('table' => 'documents',
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['Document'] = ['table' => 'documents',
     'audited' => true,
-    'fields' => array(
-        'document_name' => array(
-            'name' => 'document_name',
-            'vname' => 'LBL_NAME',
-            'type' => 'varchar',
-            'len' => '255',
-            'required' => true,
-            'importable' => 'required',
-            'unified_search' => true,
-            'full_text_search' => array('boost' => 3),
-        ),
-        'file_name' => array(
+    'fields' => [
+        'file_name' => [
             'name' => 'file_name',
             'vname' => 'LBL_FILENAME',
             'type' => 'file',
             'dbType' => 'varchar',
-            'required' => true,
             'len' => '255'
-        ),
-        'file_ext' => array(
+        ],
+        'file_ext' => [
             'name' => 'file_ext',
             'vname' => 'LBL_FILE_EXTENSION',
             'type' => 'varchar',
             'len' => 100,
-        ),
-        'file_mime_type' => array(
+        ],
+        'file_mime_type' => [
             'name' => 'file_mime_type',
             'vname' => 'LBL_MIME',
             'type' => 'varchar',
             'len' => '100',
-        ),
-        'file_md5' => array(
+        ],
+        'file_md5' => [
             'name' => 'file_md5',
             'vname' => 'LBL_FILE_MD5',
             'type' => 'char',
             'len' => '32',
-        ),
-        'revision' => array(
+        ],
+        'revision' => [
             'name' => 'revision',
             'vname' => 'LBL_REVISION',
             'type' => 'int',
             'len' => 5
-        ),
-        'revision_date' => array(
+        ],
+        'revision_date' => [
             'name' => 'revision_date',
             'vname' => 'LBL_REVISION_DATE',
             'type' => 'datetime'
-        ),
-        'active_date' => array(
+        ],
+        'active_date' => [
             'name' => 'active_date',
             'vname' => 'LBL_ACTIVE_DATE',
             'type' => 'date',
-            'required' => false
-        ),
-        'exp_date' => array(
+        ],
+        'exp_date' => [
             'name' => 'exp_date',
             'vname' => 'LBL_EXP_DATE',
             'type' => 'date',
-        ),
-        'category_id' => array(
+        ],
+        'category_id' => [
             'name' => 'category_id',
             'vname' => 'LBL_CATEGORY',
             'type' => 'enum',
             'len' => 100,
             'options' => 'document_category_dom',
             'reportable' => true,
-        ),
-        'subcategory_id' => array(
+        ],
+        'subcategory_id' => [
             'name' => 'subcategory_id',
             'vname' => 'LBL_SUBCATEGORY',
             'type' => 'enum',
             'len' => 100,
             'options' => 'document_subcategory_dom',
             'reportable' => true,
-        ),
-        'status_id' => array(
+        ],
+        'status_id' => [
             'name' => 'status_id',
             'vname' => 'LBL_STATUS',
             'type' => 'enum',
             'len' => 100,
             'options' => 'document_status_dom',
             'reportable' => false,
-        ),
-        'status' => array(
+        ],
+        'status' => [
             'name' => 'status',
             'vname' => 'LBL_STATUS',
             'type' => 'varchar',
             'source' => 'non-db',
             'comment' => 'Document status for Meta-Data framework',
-        ),
-        'document_revision_id' => array(
+        ],
+        'document_revision_id' => [
             'name' => 'document_revision_id',
             'vname' => 'LBL_LATEST_REVISION_ID',
             'type' => 'varchar',
             'len' => '36',
             'reportable' => false,
-        ),
-        'revisions' => array(
+        ],
+        'revisions' => [
             'name' => 'revisions',
             'type' => 'link',
             'relationship' => 'document_revisions',
             'source' => 'non-db',
             'vname' => 'LBL_REVISIONS',
-        ),
-        'documentrevisions' => array(
+        ],
+        'documentrevisions' => [
             'name' => 'documentrevisions',
             'type' => 'link',
             'relationship' => 'document_revisions',
@@ -149,60 +138,60 @@ $dictionary['Document'] = array('table' => 'documents',
             'module' => 'DocumentRevisions',
             'side' => 'left',
             'vname' => 'LBL_REVISIONS',
-        ),
-        'contracts' => array(
+        ],
+        'contracts' => [
             'name' => 'contracts',
             'type' => 'link',
             'relationship' => 'contracts_documents',
             'source' => 'non-db',
             'vname' => 'LBL_CONTRACTS',
-        ),
+        ],
         //todo remove
-        'leads' => array(
+        'leads' => [
             'name' => 'leads',
             'type' => 'link',
             'relationship' => 'leads_documents',
             'source' => 'non-db',
             'vname' => 'LBL_LEADS',
-        ),
-        'accounts' => array(
+        ],
+        'accounts' => [
             'name' => 'accounts',
             'type' => 'link',
             'relationship' => 'documents_accounts',
             'source' => 'non-db',
             'vname' => 'LBL_ACCOUNTS_SUBPANEL_TITLE',
-        ),
-        'contacts' => array(
+        ],
+        'contacts' => [
             'name' => 'contacts',
             'type' => 'link',
             'relationship' => 'documents_contacts',
             'source' => 'non-db',
             'vname' => 'LBL_CONTACTS_SUBPANEL_TITLE',
-        ),
-        'opportunities' => array(
+        ],
+        'opportunities' => [
             'name' => 'opportunities',
             'type' => 'link',
             'relationship' => 'documents_opportunities',
             'source' => 'non-db',
             'vname' => 'LBL_OPPORTUNITIES_SUBPANEL_TITLE',
-        ),
-        'projects' => array(
+        ],
+        'projects' => [
             'name' => 'projects',
             'type' => 'link',
             'relationship' => 'documents_projects',
             'source' => 'non-db',
             'module' => 'Projects',
             'vname' => 'LBL_PROJECTS',
-        ),
-        'related_doc_id' => array(
+        ],
+        'related_doc_id' => [
             'name' => 'related_doc_id',
             'vname' => 'LBL_RELATED_DOCUMENT_ID',
             'reportable' => false,
             'dbType' => 'id',
             'type' => 'varchar',
             'len' => '36',
-        ),
-        'related_doc_name' => array(
+        ],
+        'related_doc_name' => [
             'name' => 'related_doc_name',
             'vname' => 'LBL_DET_RELATED_DOCUMENT',
             'type' => 'relate',
@@ -211,99 +200,121 @@ $dictionary['Document'] = array('table' => 'documents',
             'module' => 'Documents',
             'source' => 'non-db',
             'comment' => 'The related document name for Meta-Data framework',
-        ),
-        'related_doc_rev_id' => array(
+        ],
+        'related_doc_rev_id' => [
             'name' => 'related_doc_rev_id',
             'vname' => 'LBL_RELATED_DOCUMENT_REVISION_ID',
             'reportable' => false,
             'dbType' => 'id',
             'type' => 'varchar',
             'len' => '36',
-        ),
-        'related_doc_rev_number' => array(
+        ],
+        'related_doc_rev_number' => [
             'name' => 'related_doc_rev_number',
             'vname' => 'LBL_DET_RELATED_DOCUMENT_VERSION',
             'type' => 'varchar',
             'source' => 'non-db',
             'comment' => 'The related document version number for Meta-Data framework',
-        ),
-        'is_template' => array(
+        ],
+        'is_template' => [
             'name' => 'is_template',
             'vname' => 'LBL_IS_TEMPLATE',
             'type' => 'bool',
             'default' => 0,
             'reportable' => false,
-        ),
-        'template_type' => array(
+        ],
+        'template_type' => [
             'name' => 'template_type',
             'vname' => 'LBL_TEMPLATE_TYPE',
             'type' => 'enum',
             'len' => 100,
             'options' => 'document_template_type_dom',
             'reportable' => false,
-        ),
-        'latest_revision_name' => array(
+        ],
+        'latest_revision_name' => [
             'name' => 'latest_revision_name',
             'vname' => 'LBL_LASTEST_REVISION_NAME',
             'type' => 'varchar',
             'reportable' => false,
             'source' => 'non-db'
-        ),
-        'selected_revision_name' => array(
+        ],
+        'selected_revision_name' => [
             'name' => 'selected_revision_name',
             'vname' => 'LBL_SELECTED_REVISION_NAME',
             'type' => 'varchar',
             'reportable' => false,
             'source' => 'non-db'
-        ),
-        'contract_status' => array(
+        ],
+        'contract_status' => [
             'name' => 'contract_status',
             'vname' => 'LBL_CONTRACT_STATUS',
             'type' => 'varchar',
             'reportable' => false,
             'source' => 'non-db'
-        ),
-        'contract_name' => array(
+        ],
+        'contract_name' => [
             'name' => 'contract_name',
             'vname' => 'LBL_CONTRACT_NAME',
             'type' => 'varchar',
             'reportable' => false,
             'source' => 'non-db'
-        ),
-        'linked_id' => array(
+        ],
+        'linked_id' => [
             'name' => 'linked_id',
             'vname' => 'LBL_LINKED_ID',
             'type' => 'varchar',
             'reportable' => false,
             'source' => 'non-db'
-        ),
-        'selected_revision_id' => array(
+        ],
+        'selected_revision_id' => [
             'name' => 'selected_revision_id',
             'vname' => 'LBL_SELECTED_REVISION_ID',
             'type' => 'varchar',
             'reportable' => false,
             'source' => 'non-db'
-        ),
-        'latest_revision_id' => array(
+        ],
+        'latest_revision_id' => [
             'name' => 'latest_revision_id',
             'vname' => 'LBL_LATEST_REVISION_ID',
             'type' => 'varchar',
             'reportable' => false,
             'source' => 'non-db'
-        ),
-        'selected_revision_filename' => array(
+        ],
+        'selected_revision_filename' => [
             'name' => 'selected_revision_filename',
             'vname' => 'LBL_SELECTED_REVISION_FILENAME',
             'type' => 'varchar',
             'reportable' => false,
             'source' => 'non-db'
-        ),
-    ),
-    'indices' => array(
-        array('name' => 'idx_doc_cat', 'type' => 'index', 'fields' => array('category_id', 'subcategory_id')),
-    ),
-    'relationships' => array(
-        'document_revisions' => array(
+        ],
+        'parent_id' => [
+            'name'       => 'parent_id',
+            'vname'      => 'LBL_PARENT_ID',
+            'type'       => 'id'
+        ],
+        'parent_type' => [
+            'name'     => 'parent_type',
+            'vname'    => 'LBL_PARENT_TYPE',
+            'type'     => 'parent_type',
+            'dbType'   => 'varchar',
+            'required' => false,
+            'options'  => 'parent_type_display',
+            'len'      => 255,
+        ],
+        'parent_name' => [
+            'name'        => 'parent_name',
+            'type_name'   => 'parent_type',
+            'id_name'     => 'parent_id',
+            'vname'       => 'LBL_RELATED_TO',
+            'type'        => 'parent',
+            'source'      => 'non-db'
+        ],
+    ],
+    'indices' => [
+        ['name' => 'idx_doc_cat', 'type' => 'index', 'fields' => ['category_id', 'subcategory_id']],
+    ],
+    'relationships' => [
+        'document_revisions' => [
             'lhs_module' => 'Documents',
             'lhs_table' => 'documents',
             'lhs_key' => 'id',
@@ -311,8 +322,8 @@ $dictionary['Document'] = array('table' => 'documents',
             'rhs_table' => 'document_revisions',
             'rhs_key' => 'document_id',
             'relationship_type' => 'one-to-many'
-        ),
-        'documents_modified_user' => array(
+        ],
+        'documents_modified_user' => [
             'lhs_module' => 'Users',
             'lhs_table' => 'users',
             'lhs_key' => 'id',
@@ -320,8 +331,8 @@ $dictionary['Document'] = array('table' => 'documents',
             'rhs_table' => 'documents',
             'rhs_key' => 'modified_user_id',
             'relationship_type' => 'one-to-many'
-        ),
-        'documents_created_by' => array(
+        ],
+        'documents_created_by' => [
             'lhs_module' => 'Users',
             'lhs_table' => 'users',
             'lhs_key' => 'id',
@@ -329,8 +340,8 @@ $dictionary['Document'] = array('table' => 'documents',
             'rhs_table' => 'documents',
             'rhs_key' => 'created_by',
             'relationship_type' => 'one-to-many'
-        )
-    )
-);
+        ]
+    ]
+];
 
-VardefManager::createVardef('Documents', 'Document', array('default', 'assignable'));
+VardefManager::createVardef('Documents', 'Document', ['default', 'assignable']);

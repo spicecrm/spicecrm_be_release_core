@@ -2,14 +2,20 @@
 
 namespace SpiceCRM\modules\Meetings\KREST\controllers;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class MeetingsKRESTController
 {
 
     static function setStatus($req, $res, $args)
     {
-        global $db, $current_user, $timedate;
+        global $timedate;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
         // acl check if user can edit - must be adming or current user
         if (!$current_user->is_admin && $current_user->id != $args['userid'])
@@ -19,9 +25,8 @@ class MeetingsKRESTController
         $db->query("UPDATE meetings_users SET accept_status='{$args['status']}', date_modified='{$timedate->nowDb()}' WHERE deleted = 0 AND meeting_id='{$args['id']}' AND user_id='{$args['userid']}'");
 
         // CR1000356 re-index meeting
-        if($bean = \BeanFactory::getBean('Meetings', $args['id'], ['encode' => false])){
-            $spiceFTSHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
-            $spiceFTSHandler->indexBean($bean);
+        if($bean = BeanFactory::getBean('Meetings', $args['id'], ['encode' => false])){
+            SpiceFTSHandler::getInstance()->indexBean($bean);
 
 // for exchange: send status to exchange => setInvitationStatusOnExchange() doesn't work... access denied...
 // No documentation found to make it work.... Removed for now

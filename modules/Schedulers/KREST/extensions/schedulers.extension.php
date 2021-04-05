@@ -26,37 +26,44 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-require_once('include/SugarQueue/SugarJobQueue.php');
-use Scheduler;
-use BeanFactory;
-use SugarJobQueue;
-use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
 use SpiceCRM\includes\RESTManager;
+use SpiceCRM\modules\Schedulers\KREST\controllers\SchedulerController;
+
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
 
-$RESTManager->app->get('/module/Schedulers/jobslist', function ($req, $res, $args) {
-    return $res->withJson(Scheduler::getJobsList());
-});
-$RESTManager->app->post('/module/Schedulers/{sid}/runjob', function ($req, $res, $args) {
-    global $current_user;
-    if (!$current_user->is_admin) throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
-    $scheduler = BeanFactory::getBean('Schedulers', $args['sid']);
-    $job = $scheduler->createJob();
-    ob_start();
-    $jobStatus = $job->runJob(false);
-    $job->completeJob($jobStatus);
-    $result = ob_get_clean();
-    echo(json_encode(array('results' => $result)));
-});
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('schedulers', '1.0');
 
-$RESTManager->app->post('/module/Schedulers/{sid}/schedulejob', function ($req, $res, $args) {
-    global $current_user, $timedate;
-    if (!$current_user->is_admin) throw ( new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/module/Schedulers/jobslist',
+        'class'       => SchedulerController::class,
+        'function'    => 'ScheduleReturnJobList',
+        'description' => 'returns a joblist',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/module/Schedulers/{sid}/runjob',
+        'class'       => SchedulerController::class,
+        'function'    => 'ScheduleCompleteJob',
+        'description' => '',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/module/Schedulers/{sid}/schedulejob',
+        'class'       => SchedulerController::class,
+        'function'    => 'ScheduleSubmitJob',
+        'description' => 'creates and submits a job',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
 
-    $sugarJobQueue = new SugarJobQueue();
-    $scheduler = BeanFactory::getBean('Schedulers', $args['sid']);
-    $scheduler->last_run = $timedate->nowDb();
-    $scheduler->save();
-    $job = $scheduler->createJob();
-    return $res->withJson($sugarJobQueue->submitJob($job));
-});
+$RESTManager->registerRoutes($routes);

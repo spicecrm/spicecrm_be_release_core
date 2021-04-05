@@ -1,51 +1,75 @@
 <?php
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\utils\KREST\controllers\RESTUtilsController;
 
-/*
- * This File is part of KREST is a Restful service extension for SugarCRM
- * 
- * Copyright (C) 2015 AAC SERVICES K.S., DOSTOJEVSKÉHO RAD 5, 811 09 BRATISLAVA, SLOVAKIA
- * 
- * you can contat us at info@spicecrm.io
- *
- * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+/**
+ * get a Rest Manager Instance
  */
+$RESTManager = RESTManager::getInstance();
 
-$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
-$RESTManager->registerExtension('utils', '1.0');
-$restapp = $RESTManager->app;
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/pdf/toImage/base64data/{filepath}',
+        'class'       => RESTUtilsController::class,
+        'function'    => 'RestPDFToBaseImage',
+        'description' => 'convert a pdf to a base64 image',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/pdf/toImageurl/{filepath}',
+        'class'       => RESTUtilsController::class,
+        'function'    => 'RestPDFToUrlImage',
+        'description' => 'converts a pdf to Url image',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/pdf/upload/tmp',
+        'class'       => RESTUtilsController::class,
+        'function'    => 'PutToTmpPdfPath',
+        'description' => '',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/pdf/upload/uploadsDir',
+        'class'       => RESTUtilsController::class,
+        'function'    => 'PutToUpPath',
+        'description' => 'puts the content to an upload path',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
 
-$restapp->group('/pdf', function () {
-    $this->group('/toImage', function () {
-        $this->get('/base64data/{filepath}', function($req, $res, $args) {
-            $RESTUtilsHandler = new \SpiceCRM\includes\utils\controllers\RESTUtilsController();
-            $data = $RESTUtilsHandler->pdfToBase64Image($args['filepath']);
-            return $res->withJson($data);
-        });
-        $this->get('/url/{filepath}', function($req, $res, $args) {
-            $RESTUtilsHandler = new \SpiceCRM\includes\utils\controllers\RESTUtilsController();
-            $urls = $RESTUtilsHandler->pdfToUrlImage($args['filepath']);
-            return $res->withJson($urls);
-        });
-    });
-    $this->group('/upload', function () {
-        $this->post('/tmp', function ($req, $res, $args) {
-            $postBody = $req->getParsedBody();
-            $temppath = sys_get_temp_dir();
-            $filename = create_guid() . '.pdf';
-            file_put_contents($temppath . '/' . $filename, base64_decode($postBody));
-            echo $temppath . '/' . $filename;
-        });
-        $this->post('/uploadsDir', function ($req, $res, $args) {
-            global $sugar_config;
-            $postBody = $req->getParsedBody();
-            $filename = create_guid() . '.pdf';
-            file_put_contents($sugar_config['upload_dir'] . $filename, base64_decode($postBody));
-            echo $sugar_config['upload_dir'] . $filename;
-        });
-    });
-});
-
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('utils', '1.0', [], $routes);

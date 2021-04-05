@@ -1,19 +1,84 @@
 <?php
-
 namespace SpiceCRM\modules\Currencies\KREST\controllers;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use Psr\Http\Message\RequestInterface;
+use SpiceCRM\includes\SpiceSlim\SpiceResponse;
+use Slim\Routing\RouteCollectorProxy;
+use SpiceCRM\modules\Currencies\Currency;
+
 
 class CurrenciesKRESTcontroller{
 
-    function getCurrencies(){
-        global $db;
-        $currency = \BeanFactory::getBean('Currencies');
-        $retArray = [array(
+    /**
+     * gets the default currency
+     * @ToDo  temporary changed to null, because the spiceuiloadtaskcontroller -> executeloadTask calls an method without arguments, and slim expects arguments
+     * @param null $req
+     * @param null $res
+     * @param null $args
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getDefaultCurrency($req = null ,$res = null,$args = null){
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
+        $currency = BeanFactory::getBean('Currencies');
+
+        $retArray = [[
             'id' => '-99',
             'name' => $currency->getDefaultCurrencyName(),
             'iso4217' =>  $currency->getDefaultISO4217(),
             'symbol' => $currency->getDefaultCurrencySymbol(),
             'conversion_rate' => 1
-        )];
+        ]];
+
+        $dbCurrencies = $db->query("SELECT * FROM currencies");
+        while($dbCurrency = $db->fetchByAssoc($dbCurrencies)){
+            $retArray[] = $dbCurrency;
+        }
+
+        return $res->withJson($retArray);
+    }
+
+
+    /**
+     * @return array[]
+     * @throws \Exception
+     */
+
+    public function getCurrencies($req,$res ,$args ){
+        $db = DBManagerFactory::getInstance();
+        $currency = new Currency();
+        $retArray = [[
+            'id' => '-99',
+            'name' => $currency->getDefaultCurrencyName(),
+            'iso4217' =>  $currency->getDefaultISO4217(),
+            'symbol' => $currency->getDefaultCurrencySymbol(),
+            'conversion_rate' => 1
+        ]];
+        $dbCurrencies = $db->query("SELECT * FROM currencies");
+        while($dbCurrency = $db->fetchByAssoc($dbCurrencies)){
+            $retArray[] = $dbCurrency;
+        }
+        #res = RESTManager::getInstance()->app->getResponseFactory()->createResponse();
+        return $res->withJson($retArray);
+        #return $retArray;
+    }
+
+    /* @ToDo  just a temporary fix, changed the database entry to that method */
+    public function getCurrenciesLoadTask(){
+        $db = DBManagerFactory::getInstance();
+        $currency = BeanFactory::getBean('Currencies');
+        $retArray = [[
+            'id' => '-99',
+            'name' => $currency->getDefaultCurrencyName(),
+            'iso4217' =>  $currency->getDefaultISO4217(),
+            'symbol' => $currency->getDefaultCurrencySymbol(),
+            'conversion_rate' => 1
+        ]];
         $dbCurrencies = $db->query("SELECT * FROM currencies");
         while($dbCurrency = $db->fetchByAssoc($dbCurrencies)){
             $retArray[] = $dbCurrency;
@@ -21,9 +86,17 @@ class CurrenciesKRESTcontroller{
         return $retArray;
     }
 
+    /**
+     * adds a currency to a user
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     */
+
     public function addCurrency($req, $res, $args) {
-        global $current_user;
-        $currency = \BeanFactory::getBean('Currencies');
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $currency = BeanFactory::getBean('Currencies');
         $postBody = $req->getParsedBody();
 
         $currency->name = $postBody['name'];
@@ -38,7 +111,7 @@ class CurrenciesKRESTcontroller{
             $outcome = true;
         }
 
-        return $res->withJson(array('status' => $outcome));
+        return $res->withJson(['status' => $outcome]);
     }
 
 

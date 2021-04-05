@@ -34,8 +34,9 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\includes\SugarCache;
 
-require_once('include/SugarCache/SugarCacheAbstract.php');
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 class SugarCacheFile extends SugarCacheAbstract
 {
@@ -62,7 +63,7 @@ class SugarCacheFile extends SugarCacheAbstract
         if ( !parent::useBackend() )
             return false;
 
-        if ( !empty($GLOBALS['sugar_config']['external_cache_enabled_file']) )
+        if ( !empty(SpiceConfig::getInstance()->config['external_cache_enabled_file']) )
             return true;
 
         return false;
@@ -78,8 +79,8 @@ class SugarCacheFile extends SugarCacheAbstract
     {
         parent::__construct();
 
-        if ( isset($GLOBALS['sugar_config']['external_cache_filename']) )
-            $this->_cacheFileName = $GLOBALS['sugar_config']['external_cache_filename'];
+        if ( isset(SpiceConfig::getInstance()->config['external_cache_filename']) )
+            $this->_cacheFileName = SpiceConfig::getInstance()->config['external_cache_filename'];
     }
 
     /**

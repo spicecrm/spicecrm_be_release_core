@@ -68,15 +68,15 @@ class SugarWebServiceImplv2_1 extends SugarWebServiceImpl
 		    return null;
 		}
 		$relationshipList = $result['relationship_list'];
-		$returnRelationshipList = array();
+		$returnRelationshipList = [];
 		foreach($relationshipList as $rel){
-			$link_output = array();
+			$link_output = [];
 			foreach($rel as $row){
-				$rowArray = array();
+				$rowArray = [];
 				foreach($row['records'] as $record){
 					$rowArray[]['link_value'] = $record;
 				}
-				$link_output[] = array('name' => $row['name'], 'records' => $rowArray);
+				$link_output[] = ['name' => $row['name'], 'records' => $rowArray];
 			}
 			$returnRelationshipList[]['link_list'] = $link_output;
 		}

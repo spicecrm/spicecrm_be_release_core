@@ -1,6 +1,9 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\processors;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+
 class TicketProcessor extends Processor
 {
     private $contact;
@@ -26,7 +29,7 @@ class TicketProcessor extends Processor
      * Creates a new ticket and assigns it to the email
      */
     private function createTicket() {
-        $this->ticket = \BeanFactory::newBean('ServiceTickets');
+        $this->ticket = BeanFactory::newBean('ServiceTickets');
         $this->ticket->serviceticket_status = 'New';
         $this->ticket->name                 = $this->email->name;
         $this->ticket->description          = $this->email->body;
@@ -42,7 +45,7 @@ class TicketProcessor extends Processor
      * Updates the status of the ticket
      */
     private function updateTicket() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         // todo check if that ticket actually exists
 
@@ -60,14 +63,14 @@ class TicketProcessor extends Processor
      * @return bool
      */
     private function hasContact() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT * FROM emails_beans WHERE email_id='" . $this->email->id . "' AND bean_module='Contacts'";
 
         $q = $db->query($query);
 
         while ($contact = $db->fetchByAssoc($q)) {
-            $this->contact = \BeanFactory::getBean('Contacts', $contact['id']);
+            $this->contact = BeanFactory::getBean('Contacts', $contact['id']);
 
             return true;
         }
@@ -102,7 +105,7 @@ class TicketProcessor extends Processor
      * @return null|string
      */
     private function getAccountId() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT * FROM emails_beans WHERE email_id='" . $this->email->id . "' AND bean_module='Accounts'";
         $q = $db->query($query);

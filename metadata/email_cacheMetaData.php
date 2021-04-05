@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -45,143 +44,143 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /**
  * Relationship table linking emails with 1 or more SugarBeans
  */
-$dictionary['email_cache'] = array(
+$dictionary['email_cache'] = [
 	'table' => 'email_cache',
-	'fields' => array(
-		'ie_id' => array(
+	'fields' => [
+		'ie_id' => [
 			'name'		=> 'ie_id',
 			'type'		=> 'id',
-		),
-		'mbox' => array(
+        ],
+		'mbox' => [
 			'name'		=> 'mbox',
 			'type'		=> 'varchar',
 			'len'		=> 60,
 			'required'	=> true,
-		),
-		'subject' => array(
+        ],
+		'subject' => [
 			'name'		=> 'subject',
 			'type'		=> 'varchar',
 			'len'		=> 255,
 			'required'	=> false,
-		),
-		'fromaddr' => array(
+        ],
+		'fromaddr' => [
 			'name'		=> 'fromaddr',
 			'type'		=> 'varchar',
 			'len'		=> 100,
 			'required'	=> false,
-		),
-		'toaddr' => array(
+        ],
+		'toaddr' => [
 			'name'		=> 'toaddr',
 			'type'		=> 'varchar',
 			'len'		=> 255,
 			'required'	=> false,
-		),
-		'senddate' => array(
+        ],
+		'senddate' => [
 			'name'		=> 'senddate',
 			'type'		=> 'datetime',
 			'required'	=> false,
-		),
-		'message_id' => array(
+        ],
+		'message_id' => [
 			'name'		=> 'message_id',
 			'type'		=> 'varchar',
 			'len'		=> 255,
 			'required'	=> false,
-		),
-		'mailsize' => array(
+        ],
+		'mailsize' => [
 			'name'		=> 'mailsize',
 			'type'		=> 'uint',
 			'len'		=> 16,
 			'required'	=> true,
-		),
-		'imap_uid' => array(
+        ],
+		'imap_uid' => [
 			'name'		=> 'imap_uid',
 			'type'		=> 'uint',
 			'len'		=> 32,
 			'required'	=> true,
-		),
-		'msgno' => array(
+        ],
+		'msgno' => [
 			'name'		=> 'msgno',
 			'type'		=> 'uint',
 			'len'		=> 32,
 			'required'	=> false,
-		),
-		'recent' => array(
+        ],
+		'recent' => [
 			'name'		=> 'recent',
 			'type'		=> 'tinyint',
 			'len'		=> 1,
 			'required'	=> true,
-		),
-		'flagged' => array(
+        ],
+		'flagged' => [
 			'name'		=> 'flagged',
 			'type'		=> 'tinyint',
 			'len'		=> 1,
 			'required'	=> true,
-		),
-		'answered' => array(
+        ],
+		'answered' => [
 			'name'		=> 'answered',
 			'type'		=> 'tinyint',
 			'len'		=> 1,
 			'required'	=> true,
-		),
-		'deleted' => array(
+        ],
+		'deleted' => [
 			'name'		=> 'deleted',
 			'type'		=> 'tinyint',
 			'len'		=> 1,
 			'required'	=> false,
-		),
-		'seen' => array(
+        ],
+		'seen' => [
 			'name'		=> 'seen',
 			'type'		=> 'tinyint',
 			'len'		=> 1,
 			'required'	=> true,
-		),
-		'draft' => array(
+        ],
+		'draft' => [
 			'name'		=> 'draft',
 			'type'		=> 'tinyint',
 			'len'		=> 1,
 			'required'	=> true,
-		),
-	),
-	'indices' => array(
-		array(
+        ],
+    ],
+	'indices' => [
+		[
 			'name'			=> 'idx_ie_id',
 			'type'			=> 'index',
-			'fields'		=> array(
+			'fields'		=> [
 				'ie_id',
-			),
-		),
-		array(
+            ],
+        ],
+		[
 			'name'			=> 'idx_mail_date',
 			'type'			=> 'index',
-			'fields'		=> array(
+			'fields'		=> [
 				'ie_id',
 				'mbox',
 				'senddate',
-			)
-		),
-		array(
+            ]
+        ],
+		[
 			'name'			=> 'idx_mail_from',
 			'type'			=> 'index',
-			'fields'		=> array(
+			'fields'		=> [
 				'ie_id',
 				'mbox',
 				'fromaddr',
-			)
-		),
-		array(
+            ]
+        ],
+		[
 			'name'			=> 'idx_mail_subj',
 			'type'			=> 'index',
-			'fields'		=> array(
+			'fields'		=> [
 				'subject',
-			)
-		),
-		array(
+            ]
+        ],
+		[
 			'name'			=> 'idx_mail_to',
 			'type'			=> 'index',
-			'fields'		=> array(
+			'fields'		=> [
 				'toaddr',
-			)
-		),
+            ]
+        ],
 
-	),
-);
+    ],
+];

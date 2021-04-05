@@ -1,7 +1,13 @@
 <?php
+namespace SpiceCRM\modules\Notes;
+
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\modules\Emails\Email;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
 use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachment;
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -45,12 +51,6 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * Contributor(s): ______________________________________..
  ********************************************************************************/
 
-
-
-
-
-require_once('include/upload_file.php');
-
 // Note is used to store customer information.
 class Note extends SugarBean {
 
@@ -63,7 +63,7 @@ class Note extends SugarBean {
 	}
 
 	function safeAttachmentName() {
-		global $sugar_config;
+
 
 		//get position of last "." in file name
 		$file_ext_beg = strrpos($this->filename, ".");
@@ -75,7 +75,7 @@ class Note extends SugarBean {
 		}
 
 		//check to see if this is a file with extension located in "badext"
-		foreach($sugar_config['upload_badext'] as $badExt) {
+		foreach(SpiceConfig::getInstance()->config['upload_badext'] as $badExt) {
 			if(strtolower($file_ext) == strtolower($badExt)) {
 				//if found, then append with .txt and break out of lookup
 				$this->name = $this->name . ".txt";
@@ -91,7 +91,7 @@ class Note extends SugarBean {
      * @param Email $email
      * @param OutlookAttachment $attachment
      */
-    public static function saveEmailAttachmentFromOutlook(\Email $email, OutlookAttachment $attachment) {
+    public static function saveEmailAttachmentFromOutlook(Email $email, OutlookAttachment $attachment) {
         $attachment_id = create_guid();
         $filepath = 'upload://' . $attachment_id;
         touch($filepath);
@@ -119,14 +119,14 @@ class Note extends SugarBean {
 	 * @param string id ID
 	 */
 	function mark_deleted($id) {
-		global $sugar_config;
+
 
 		if($this->parent_type == 'Emails') {
-			if(isset($sugar_config['email_default_delete_attachments']) && $sugar_config['email_default_delete_attachments'] == true) {
+			if(isset(SpiceConfig::getInstance()->config['email_default_delete_attachments']) && SpiceConfig::getInstance()->config['email_default_delete_attachments'] == true) {
 				$removeFile = "upload://$id";
 				if(file_exists($removeFile)) {
 					if(!unlink($removeFile)) {
-						$GLOBALS['log']->error("*** Could not unlink() file: [ {$removeFile} ]");
+						LoggerManager::getLogger()->error("*** Could not unlink() file: [ {$removeFile} ]");
 					}
 				}
 			}
@@ -146,7 +146,7 @@ class Note extends SugarBean {
 
 		if(file_exists($removeFile)) {
 			if(!unlink($removeFile)) {
-				$GLOBALS['log']->error("*** Could not unlink() file: [ {$removeFile} ]");
+				LoggerManager::getLogger()->error("*** Could not unlink() file: [ {$removeFile} ]");
 			}else{
 				$this->filename = '';
 				$this->file_mime_type = '';
@@ -173,19 +173,18 @@ class Note extends SugarBean {
 	function fill_in_additional_detail_fields() {
 		parent::fill_in_additional_detail_fields();
 		//TODO:  Seems odd we need to clear out these values so that list views don't show the previous rows value if current value is blank
-		$this->getRelatedFields('Contacts', $this->contact_id, array('name'=>'contact_name', 'phone_work'=>'contact_phone') );
+		$this->getRelatedFields('Contacts', $this->contact_id, ['name'=>'contact_name', 'phone_work'=>'contact_phone']);
 		if(!empty($this->contact_name)){
 
-			$emailAddress = new SugarEmailAddress();
+			$emailAddress = BeanFactory::getBean('EmailAddresses');
 			$this->contact_email = $emailAddress->getPrimaryAddress(false, $this->contact_id, 'Contacts');
 		}
 
 		if(isset($this->contact_id) && $this->contact_id != '') {
-		    $contact = new Contact();
-		    $contact->retrieve($this->contact_id);
-		    if(isset($contact->id)) {
-		        $this->contact_name = $contact->full_name;
-		    }
+            $contact = BeanFactory::getBean('Contacts', $this->contact_id);
+            if($contact) {
+                $this->contact_name = $contact->full_name;
+            }
 		}
 	}
 

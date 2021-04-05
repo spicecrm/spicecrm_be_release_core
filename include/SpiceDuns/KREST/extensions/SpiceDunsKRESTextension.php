@@ -28,10 +28,26 @@
 ********************************************************************************/
 use SpiceCRM\includes\RESTManager;
 use SpiceCRM\includes\SpiceDuns\KREST\controllers\SpiceDunsKRESTController;
-
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
-$RESTManager->registerExtension('duns', '1.0');
 
-$RESTManager->app->group('/SpiceDuns', function () {
-    $this->get('', 'SpiceCRM\includes\SpiceDuns\KREST\controllers\SpiceDunsKRESTController::getDuns');
-});
+/**
+ * routes
+ */
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/SpiceDuns',
+        'class'       => SpiceDunsKRESTController::class,
+        'function'    => 'getDuns',
+        'description' => 'get DUNS',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
+
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('duns', '1.0', [], $routes);

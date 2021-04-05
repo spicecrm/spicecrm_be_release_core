@@ -1,73 +1,73 @@
 <?php
-$dictionary['systrashcan'] = array(
+$dictionary['systrashcan'] = [
     'table' => 'systrashcan',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'transactionid' => array(
+        ],
+        'transactionid' => [
             'name' => 'transactionid',
             'type' => 'id'
-        ),
-        'date_deleted' => array(
+        ],
+        'date_deleted' => [
             'name' => 'date_deleted',
             'type' => 'datetime'
-        ),
-        'user_deleted' => array(
+        ],
+        'user_deleted' => [
             'name' => 'user_deleted',
             'type' => 'id'
-        ),
-        'recordtype' => array(
+        ],
+        'recordtype' => [
             'name' => 'recordtype',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'recordmodule' => array(
+        ],
+        'recordmodule' => [
             'name' => 'recordmodule',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'recordid' => array(
+        ],
+        'recordid' => [
             'name' => 'recordid',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'recordname' => array(
+        ],
+        'recordname' => [
             'name' => 'recordname',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'linkname' => array(
+        ],
+        'linkname' => [
             'name' => 'linkname',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'linkmodule' => array(
+        ],
+        'linkmodule' => [
             'name' => 'linkmodule',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'linkid' => array(
+        ],
+        'linkid' => [
             'name' => 'linkid',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'recorddata' => array(
+        ],
+        'recorddata' => [
             'name' => 'recorddata',
             'type' => 'text'
-        ),
-        'recovered' => array(
+        ],
+        'recovered' => [
             'name' => 'recovered',
             'type' => 'bool',
             'default' => 0
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_systrashcan',
             'type' => 'index',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 

@@ -14,7 +14,6 @@
 
 
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 $customFunctionInclude = 'modules/KReports/KReportCustomFunctions.php';
 
@@ -23,5 +22,5 @@ $kreportEmailSubject = 'K Reporter';
 $kreportEmailBody = 'This is your scheduled Report';
 
 // exculde Modules from Selection in Reports
-$excludedModules = array('Schedulers', 'Administration');
+$excludedModules = ['Schedulers', 'Administration'];
 

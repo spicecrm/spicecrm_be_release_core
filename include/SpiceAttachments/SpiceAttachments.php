@@ -2,20 +2,25 @@
 
 namespace SpiceCRM\includes\SpiceAttachments;
 
-use Hfig\MAPI\Message\Attachment;
-use Ramsey\Uuid\Uuid;
-use Slim\Http\UploadedFile;
-use SpiceCRM\modules\Mailboxes\Handlers\EwsAttachment;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\modules\Emails\Email;
+use Exception;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\ErrorHandlers\NotFoundException;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
 use SpiceCRM\modules\Mailboxes\Handlers\GSuiteAttachment;
-use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachment;
+use SpiceCRM\includes\UploadFile;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class SpiceAttachments {
     const UPLOAD_DESTINATION = 'upload://';
 
     public static function getAttachmentsForBean($beanName, $beanId, $lastN = 25, $json_encode = true) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $attachments = array();
+        $attachments = [];
 
         $attachmentsRes = $db->limitQuery("SELECT qn.*,u.user_name FROM spiceattachments AS qn
             LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}'
@@ -54,7 +59,8 @@ class SpiceAttachments {
      * @param $toId
      */
     static function cloneAtatchmentsForBean($beanName, $beanId, $fromBeanName, $fromBeanId){
-        global $db, $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
 
         $clonedAttachments = [];
         $attachments = self::getAttachmentsForBean($fromBeanName, $fromBeanId, 100, false);
@@ -68,7 +74,7 @@ class SpiceAttachments {
     }
 
     public static function getAttachmentsCount($beanName, $beanId){
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $res = $db->fetchByAssoc($db->query("SELECT count(id) attachmentcount FROM spiceattachments WHERE bean_id='{$beanId}' AND bean_type='{$beanName}' AND deleted = 0"));
         return (int) $res['attachmentcount'];
     }
@@ -77,19 +83,21 @@ class SpiceAttachments {
      * @deprecated
      */
     public static function getAttachmentsForBeanHashFiles($beanName, $beanId, $lastN = 10) {
-        global $current_user, $db, $beanFiles, $beanList;
-        $attachments = array();
+        global  $beanFiles, $beanList;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
+        $attachments = [];
 
-        if ($GLOBALS['db']->dbType == 'mssql') {
+        if (DBManagerFactory::getInstance()->dbType == 'mssql') {
             $attachmentsRes = $db->query("SELECT TOP $lastN qn.*,u.user_name FROM spiceattachments AS qn LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}' AND qn.deleted = 0 ORDER BY qn.trdate DESC");
         } else {
             $attachmentsRes = $db->limitQuery("SELECT qn.*,u.user_name FROM spiceattachments AS qn LEFT JOIN users AS u ON u.id=qn.user_id WHERE qn.bean_id='{$beanId}' AND qn.bean_type='{$beanName}' AND qn.deleted = 0 ORDER BY qn.trdate DESC", 0, $lastN);
         }
 
-        if ($GLOBALS['db']->dbType == 'mssql' || $db->getRowCount($attachmentsRes) > 0) {
+        if (DBManagerFactory::getInstance()->dbType == 'mssql' || $db->getRowCount($attachmentsRes) > 0) {
             while ($thisAttachment = $db->fetchByAssoc($attachmentsRes)) {
                 $file = base64_encode(file_get_contents(self::UPLOAD_DESTINATION . $thisAttachment['id']));
-                $attachments[] = array(
+                $attachments[] = [
                     'id' => $thisAttachment['id'],
                     'user_id' => $thisAttachment['user_id'],
                     'user_name' => $thisAttachment['user_name'],
@@ -101,7 +109,7 @@ class SpiceAttachments {
                     'display_name' => $thisAttachment['display_name'],
                     'category_ids' => $thisAttachment['category_ids'],
                     'file' => $file
-                );
+                ];
             }
         }
 
@@ -117,7 +125,8 @@ class SpiceAttachments {
      */
     /*
     public static function getAttachmentsCount($lastN = 10) {
-        global $current_user, $db;
+        $current_user = \SpiceCRM\includes\authentication\AuthenticationController::getInstance()->getCurrentUser();
+$db = \SpiceCRM\includes\database\DBManagerFactory::getInstance();
         $attachmentsRec = $db->fetchByAssoc($db->query("SELECT count(*) AS noteCount FROM spiceattachments WHERE bean_id='{$_REQUEST['record']}' AND bean_type='{$_REQUEST['module']}'  AND deleted = 0"));
 
         return $attachmentsRec['noteCount'];
@@ -125,11 +134,11 @@ class SpiceAttachments {
     */
 
     public static function saveAttachment($beanName, $beanId, $post) {
-        global $current_user, $db;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
         $guid = create_guid();
 
-        require_once('include/upload_file.php');
-        $upload_file = new \UploadFile('file');
+        $upload_file = new UploadFile('file');
         if (isset($_FILES['file']) && $upload_file->confirm_upload()) {
             $filename = $upload_file->get_stored_file_name();
             $file_mime_type = $upload_file->mime_type;
@@ -143,7 +152,7 @@ class SpiceAttachments {
         $thumbnail = self::createThumbnail($filemd5, $file_mime_type);
 
         $db->query("INSERT INTO spiceattachments (id, bean_type, bean_id, user_id, trdate, filename, filesize, filemd5, text, thumbnail, deleted, file_mime_type) VALUES ('{$guid}', '{$beanName}', '{$beanId}', '" . $current_user->id . "', '" . gmdate('Y-m-d H:i:s') . "', '{$filename}', '{$filesize}', '{$filemd5}', '{$_POST['text']}', '{$thumbnail}', 0, '{$file_mime_type}')");
-        $attachments[] = array(
+        $attachments[] = [
             'id' => $guid,
             'user_id' => $current_user->id,
             'user_name' => $current_user->user_name,
@@ -154,7 +163,7 @@ class SpiceAttachments {
             'file_mime_type' => $file_mime_type,
             'thumbnail' => $thumbnail,
             'url' => "index.php?module=SpiceThemeController&action=attachment_download&id=" . $guid
-        );
+        ];
         return json_encode($attachments);
     }
 
@@ -167,19 +176,19 @@ class SpiceAttachments {
      * @return mixed
      */
     public static function saveAttachmentHashFiles($beanName, $beanId, $file) {
-        global $current_user, $db, $sugar_config;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
 
         $guid = create_guid();
 
-        require_once('include/upload_file.php');
-        $upload_file = new \UploadFile('file');
+        $upload_file = new UploadFile('file');
 
         $decodedFile = base64_decode($file['file']);
         $upload_file->set_for_soap($file['filename'], $decodedFile);
 
         $ext_pos = strrpos($upload_file->stored_file_name, ".");
         $upload_file->file_ext = substr($upload_file->stored_file_name, $ext_pos + 1);
-        if (in_array($upload_file->file_ext, $sugar_config['upload_badext'])) {
+        if (in_array($upload_file->file_ext, isset(SpiceConfig::getInstance()->config['upload_badext'])?: [])) {
             $upload_file->stored_file_name .= ".txt";
             $upload_file->file_ext = "txt";
         }
@@ -223,7 +232,7 @@ class SpiceAttachments {
      * @param $bean_id {string} the id of the bean
      * @param array $file = [name, path, mime_type, file_size, file_md5]
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public static function saveAttachmentLocalFile($module_name, $bean_id, array $file) {
 
@@ -238,7 +247,8 @@ class SpiceAttachments {
     }
 
     public static function saveEmailAttachment($beanName, $beanId, $payload) {
-        global $current_user, $db;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
         $guid = create_guid();
 
         // if we have an image create a thumbnail
@@ -251,7 +261,7 @@ class SpiceAttachments {
         return true;
     }
 
-    public static function saveEmailAttachmentFromGSuite(\Email $email, GSuiteAttachment $attachment) {
+    public static function saveEmailAttachmentFromGSuite(Email $email, GSuiteAttachment $attachment) {
         $filepath = 'upload://' . $attachment->fileMd5;
         touch($filepath);
 
@@ -279,10 +289,21 @@ class SpiceAttachments {
      * @return bool[]
      */
     public static function deleteAttachment($attachmentId) {
-        global $current_user, $db;
-        $db->query("UPDATE spiceattachments SET deleted = 1 WHERE id='{$attachmentId}'" . (!$current_user->is_admin ? " AND user_id='" . $current_user->id . "'" : ""));
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
+        $result = $db->query("UPDATE spiceattachments SET deleted = 1 WHERE id='{$attachmentId}'" . (!$current_user->is_admin ? " AND user_id='" . $current_user->id . "'" : ""));
 
-        return ['success' => true];
+        if ( $db->getAffectedRowCount( $result )) return ['success' => true];
+        else {
+            $attachment = $db->fetchOne( $sql=sprintf( 'SELECT * FROM spiceattachments WHERE deleted = 0 AND id = "%s"', $db->quote( $attachmentId )));
+            if ( $attachment === false ) {
+                throw ( new NotFoundException('Attachment not found.'))->setLookedFor(['id' => $attachmentId])->setErrorCode('notFound');
+            } elseif (( $current_user->id !== $attachment['user_id'] ) and !$current_user->is_admin ) {
+                throw ( new ForbiddenException('Forbidden to delete the attachment. Belongs to user with ID '.$attachment['user_id'].'.'))->setErrorCode('noDelete');
+            } else {
+                throw new \SpiceCRM\includes\ErrorHandlers\Exception('Unknown error deleting the attachment.');
+            }
+        }
 
         // todo: delete also file if MD5 is no longer used anywhere
     }
@@ -293,7 +314,7 @@ class SpiceAttachments {
      * @param $data
      */
     public static function updateAttachmentData($attachmentId, $data) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $text = $db->quote($data['text']);
         $displayName = $db->quote($data['display_name']);
         $category_ids = $db->quote($data['category_ids']);
@@ -307,7 +328,7 @@ class SpiceAttachments {
      * @param $module
      */
     public static function getAttachmentCategories($module) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $module = $db->quote($module);
         $res = $db->query("SELECT * FROM spiceattachments_categories WHERE module = '$module' OR module = '*' ORDER BY name");
         $categories = [];
@@ -324,13 +345,13 @@ class SpiceAttachments {
      * @return false|string
      */
     public static function getAttachment($attachmentId, $json_encode = true) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $thisAttachment = $db->fetchByAssoc($db->query("SELECT * FROM spiceattachments WHERE id = '$attachmentId'"));
 
         // check if we found the attachment oand the file is here
         if(!$thisAttachment || !file_exists(self::UPLOAD_DESTINATION . ($thisAttachment['filemd5'] ?: $thisAttachment['id']))){
-            throw new \SpiceCRM\includes\ErrorHandlers\NotFoundException('attachment not found');
+            throw new NotFoundException('attachment not found');
         }
 
         $file = base64_encode(file_get_contents(self::UPLOAD_DESTINATION . ($thisAttachment['filemd5'] ?: $thisAttachment['id'])));
@@ -350,7 +371,7 @@ class SpiceAttachments {
         return $json_encode ? json_encode($attachment) : $attachment;
     }
 
-    public static function createThumbnail($filename, $mime_type) {
+    public static function createThumbnail($filename, $mime_type, $thumbSize = 300) {
         $supportedimagetypes = ['jpeg', 'png', 'gif'];
         $filetypearray = explode('/', $mime_type);
 
@@ -359,24 +380,19 @@ class SpiceAttachments {
 
         if (count($filetypearray) == 2
             && strtolower($filetypearray[0]) == 'image'
-            && array_search(strtolower($filetypearray[1]), $supportedimagetypes) >= 0) {
+            && array_search(strtolower($filetypearray[1]), $supportedimagetypes) !== false) {
             if (list($width, $height) = getimagesize(self::UPLOAD_DESTINATION . $filename)) {
-                if ($width > $height) {
-                    $newwidth = 30;
-                    $newheight = round(30 * $height / $width);
-                } else {
-                    $newwidth = round(30 * $width / $height);
-                    $newheight = 30;
-                }
 
-                $thumb = imagecreatetruecolor($newwidth, $newheight);
+                $limitingDim = $height > $width ? $width : $height;
+
+                $thumb = imagecreatetruecolor($thumbSize, $thumbSize);
 
                 // create
                 $createfunction = 'imagecreatefrom' . strtolower($filetypearray[1]);
                 $source = $createfunction(self::UPLOAD_DESTINATION . $filename);
 
                 if ($source) {
-                    imagecopyresized($thumb, $source, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+                    imagecopyresized($thumb, $source, 0, 0, ($width - $limitingDim) / 2, ($height - $limitingDim) / 2, $thumbSize, $thumbSize, $limitingDim, $limitingDim);
                     ob_start();
                     imagejpeg($thumb);
                     $thumbnail = base64_encode(ob_get_contents());
@@ -385,7 +401,7 @@ class SpiceAttachments {
 
                     return $thumbnail;
                 } else {
-                    $GLOBALS['log']->fatal('Cannot create attachment image for: ' . $filename);
+                    LoggerManager::getLogger()->fatal('Cannot create attachment image for: ' . $filename);
                 }
             }
         }
@@ -399,13 +415,14 @@ class SpiceAttachments {
      * @return array
      */
     public static function getAnalysis(){
-        global $db, $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
         $analysis = [];
         if($current_user->is_admin) {
             $modules = $db->query("SELECT DISTINCT bean_type module FROM spiceattachments WHERE deleted = 0");
             while ($module = $db->fetchByAssoc($modules)) {
                 if (!empty($module['module'])) {
-                    $seed = \BeanFactory::getBean($module['module']);
+                    $seed = BeanFactory::getBean($module['module']);
                     if ($seed) {
                         $count = $db->fetchByAssoc($db->query("SELECT count(a.id) attachmentcount FROM spiceattachments a WHERE a.bean_type='{$module['module']}' AND a.deleted = 0 AND NOT EXISTS (SELECT id FROM {$seed->table_name} s where s.deleted = 0 and a.bean_id = s.id)"));
                         $analysis[$module['module']] = $count['attachmentcount'] ?: 0;
@@ -428,12 +445,13 @@ class SpiceAttachments {
      * @return bool
      */
     public static function cleanErroneous(){
-        global $db, $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
         if($current_user->is_admin) {
             $modules = $db->query("SELECT DISTINCT bean_type module FROM spiceattachments WHERE deleted = 0");
             while ($module = $db->fetchByAssoc($modules)) {
                 if (!empty($module['module'])) {
-                    $seed = \BeanFactory::getBean($module['module']);
+                    $seed = BeanFactory::getBean($module['module']);
                     if ($seed) {
                         $db->query("UPDATE spiceattachments SET deleted = 1 WHERE bean_type = '{$module['module']}' AND id IN (SELECT id FROM spiceattachments a WHERE a.bean_type='{$module['module']}' AND a.deleted = 0 AND NOT EXISTS (SELECT id FROM {$seed->table_name} s where s.deleted = 0 and a.bean_id = s.id))");
                     } else {

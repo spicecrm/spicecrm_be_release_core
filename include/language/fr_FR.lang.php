@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
  * SugarCRM is a customer relationship management program developed by
  * SugarCRM, Inc. Copyright (C) 2004-2010 SugarCRM Inc.
@@ -30,9 +29,9 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * or at email address contact@synolia.com.
  ********************************************************************************/
 
-$app_list_strings = array(
+$app_list_strings = [
     'language_pack_name' => 'français',
-    'account_type_dom' => array(
+    'account_type_dom' => [
         '' => '',
         'Prospect' => 'Prospect',
         'Analyst' => 'Analyste',
@@ -44,32 +43,32 @@ $app_list_strings = array(
         'Press' => 'Presse',
         'Reseller' => 'Revendeur',
         'Other' => 'Autre',
-    ),
-    'account_user_roles_dom' => array(
+    ],
+    'account_user_roles_dom' => [
         '' => '',
         'am' => 'Employé Ventes',
         'se' => 'Employé Support',
         'es' => 'Executive Sponsor'
-    ),
-    'events_account_roles_dom' => array(
+    ],
+    'events_account_roles_dom' => [
         '' => '',
         'organizer' => 'Organisateur',
         'sponsor' => 'Sponsor',
         'caterer' => 'Caterer'
-    ),
-    'events_contact_roles_dom' => array(
+    ],
+    'events_contact_roles_dom' => [
         '' => '',
         'organizer' => 'Organisateur',
         'speaker' => 'Intervenant',
         'moderator' => 'Animateur',
-    ),
-    'userabsences_type_dom' => array(
+    ],
+    'userabsences_type_dom' => [
         '' => '',
         'Krankenstand' => 'Maladie',
         'Urlaub' => 'Congé',
-    ),
+    ],
     'industry_dom' =>
-        array(
+        [
             '' => '',
             'Government' => 'Administration',
             'Insurance' => 'Assurance',
@@ -101,10 +100,10 @@ $app_list_strings = array(
             'Apparel' => 'Textile',
             'Transportation' => 'Voyage-hôtellerie',
             'Other' => 'Autre',
-        ),
+        ],
     'lead_source_default_key' => 'généré automatiquement',
     'lead_source_dom' =>
-        array(
+        [
             '' => '',
             'Campaign' => 'Campagne',
             'Cold Call' => 'Appel entrant',
@@ -121,23 +120,23 @@ $app_list_strings = array(
             'Trade Show' => 'Salon',
             'Web Site' => 'Site web',
             'Word of mouth' => 'Recommandé',
-        ),
+        ],
     'opportunity_type_dom' =>
-        array(
+        [
             '' => '',
             'Existing Business' => 'Récurrent',
             'New Business' => 'Nouvelle Opportunité',
-        ),
+        ],
     'roi_type_dom' =>
-        array(
+        [
             'Budget' => 'Budget',
             'Revenue' => 'Revenu',
             'Investment' => 'Investissement',
             'Expected_Revenue' => 'Revenu attendu',
-        ),
+        ],
     'opportunity_relationship_type_default_key' => 'Décideur principal',
     'opportunity_relationship_type_dom' =>
-        array(
+        [
             '' => '',
             'Primary Decision Maker' => 'Décideur Principal',
             'Business Decision Maker' => 'Acheteur',
@@ -147,26 +146,26 @@ $app_list_strings = array(
             'Executive Sponsor' => 'Sponsor',
             'Influencer' => 'Influenceur',
             'Other' => 'Autre',
-        ),
+        ],
     'case_relationship_type_default_key' => 'Contact Principal',
     'case_relationship_type_dom' =>
-        array(
+        [
             '' => '',
             'Primary Contact' => 'Contact Principal',
             'Alternate Contact' => 'Contact Alternatif',
-        ),
+        ],
     'payment_terms' =>
-        array(
+        [
             '' => '',
             'Net 15' => 'Net 15',
             'Net 30' => 'Net 30',
-        ),
-    'fts_type' => array(
+        ],
+    'fts_type' => [
         '' => '',
         'Elastic' => 'elasticsearch'
-    ),
+    ],
     'sales_stage_dom' =>
-        array(
+        [
 // CR1000302 adapt to match opportunity spicebeanguidestages
 //          'Prospecting' => 'Prospection',
             'Qualification' => 'Qualification',
@@ -179,20 +178,20 @@ $app_list_strings = array(
             'Closed Won' => 'Gagné',
             'Closed Lost' => 'Perdu',
             'Closed Discontinued' => 'Abandonné',
-        ),
-    'opportunityrevenuesplit_dom' => array(
+        ],
+    'opportunityrevenuesplit_dom' => [
         'none' => 'aucun',
         'split' => 'Répartition',
         'rampup' => 'Rampup'
-    ),
-    'opportunity_relationship_buying_center_dom' => array(
+    ],
+    'opportunity_relationship_buying_center_dom' => [
         '++' => 'très positif',
         '+' => 'positif',
         'o' => 'neutre',
         '-' => 'negatif',
         '--' => 'très negatif'
-    ),
-    'in_total_group_stages' => array(
+    ],
+    'in_total_group_stages' => [
         'Draft' => 'Brouillon',
         'Negotiation' => 'Negociation',
         'Delivered' => 'Livré',
@@ -201,10 +200,10 @@ $app_list_strings = array(
         'Closed Accepted' => 'Terminé Accepté',
         'Closed Lost' => 'Terminé Perdu',
         'Closed Dead' => 'Terminé Mort',
-    ),
+    ],
 
     'sales_probability_dom' =>
-        array(
+        [
             'Prospecting' => '10',
             'Qualification' => '20',
             'Needs Analysis' => '25',
@@ -215,48 +214,48 @@ $app_list_strings = array(
             'Negotiation/Review' => '80',
             'Closed Won' => '100',
             'Closed Lost' => '',
-        ),
+        ],
 
 
     'activity_dom' =>
-        array(
+        [
             'Call' => 'Call',
             'Meeting' => 'Meeting',
             'Task' => 'Task',
             'Email' => 'Email',
             'Note' => 'Note',
-        ),
+        ],
     'salutation_dom' =>
-        array(
+        [
             '' => '',
             // 'Dr.' => 'Dr.',
             // 'Prof.' => 'Prof.',
             'Mr.' => 'M.',
             'Ms.' => 'Mlle',
             // 'Mrs.' => 'Mme',
-        ),
-    'salutation_letter_dom' => array(
+        ],
+    'salutation_letter_dom' => [
         '' => '',
         'Mr.' => 'Monsieur',
         'Ms.' => 'Madame',
         //'Mrs.' => 'Frau',
         //'Dr.' => 'Dr.',
         //'Prof.' => 'Prof.',
-    ),
-    'gdpr_marketing_agreement_dom' => array(
+    ],
+    'gdpr_marketing_agreement_dom' => [
         '' => '',
         'r' => 'refusé',
         'g' => 'accepté'
-    ),
-    'uom_unit_dimensions_dom' => array(
+    ],
+    'uom_unit_dimensions_dom' => [
         '' => '',
         'none' => 'aucun',
         'weight' => 'Poids',
         'volume' => 'Volume',
         'area' => 'Surface',
         'time' => 'Temps',
-    ),
-    'personalinterests_dom' => array(
+    ],
+    'personalinterests_dom' => [
         'sports' => 'Sport',
         'food' => 'Alimentation',
         'wine' => 'Vin',
@@ -269,27 +268,28 @@ $app_list_strings = array(
         'fashion' => 'Mode',
         'music' => 'Musique',
         'fitness' => 'Fitness'
-    ),
-    'questionstypes_dom' => array(
+    ],
+    'questionstypes_dom' => [
         'rating' => 'Evaluation',
+        'ratinggroup' => 'Groupe d\'évaluations',
         'binary' => 'Un de deux',
         'single' => 'Sélection unique',
         'multi' => 'Sélection multiple',
         'text' => 'Entrée de texte',
         'ist' => 'IST',
         'nps' => 'NPS (Net Promoter Score)'
-    ),
-    'evaluationtypes_dom' => array(
+    ],
+    'evaluationtypes_dom' => [
         'default' => 'Standard',
         'avg_core' => 'Average',
         'spiderweb' => 'Toile',
-    ),
-    'evaluationsorting_dom' => array(
+    ],
+    'evaluationsorting_dom' => [
         'categories' => 'par catégorie (ordre alphabétique)',
         'points asc' => 'par nom de points, ascendant',
         'points desc' => 'par nom de points, descendant'
-    ),
-    'contacts_title_dom' => array(
+    ],
+    'contacts_title_dom' => [
         '' => '',
         'ceo' => 'CEO',
         'cfo' => 'CFO',
@@ -307,11 +307,11 @@ $app_list_strings = array(
         'procurement' => 'Procurement',
         'finance' => 'Finance',
         'marketing' => 'Marketing'
-    ),
+    ],
     //time is in seconds; the greater the time the longer it takes;
 
     'reminder_max_time' => 90000,
-    'reminder_time_options' => array(
+    'reminder_time_options' => [
         -1 => 'pas de rappel',
         60 => '1 minute avant',
         300 => '5 minutes avant',
@@ -323,57 +323,57 @@ $app_list_strings = array(
         10800 => '3 heures avant',
         18000 => '5 heures avant',
         86400 => '1 jour avant',
-    ),
+    ],
     'task_priority_default' => 'Moyenne',
     'task_priority_dom' =>
-        array(
+        [
             'High' => 'Haute',
             'Medium' => 'Moyenne',
             'Low' => 'Basse',
-        ),
+        ],
     'task_status_default' => 'Non démarrée',
     'task_status_dom' =>
-        array(
+        [
             'Not Started' => 'Non démarrée',
             'In Progress' => 'En cours',
             'Completed' => 'Réalisée',
             'Pending Input' => 'En attente',
             'Deferred' => 'Reportée',
-        ),
+        ],
     'meeting_status_default' => 'Planifiée',
     'meeting_status_dom' =>
-        array(
+        [
             'Planned' => 'Planifiée',
             'Held' => 'Tenue',
             'Not Held' => 'Annulée',
-        ),
+        ],
 
     'extapi_meeting_password' =>
-        array(
+        [
             'GoToMeeting' => 'GoToMeeting',
             'WebEx' => 'WebEx',
-        ),
+        ],
     'meeting_type_dom' =>
-        array(
+        [
             'Other' => 'Autre',
             'Sugar' => 'SugarCRM',
-        ),
+        ],
     'call_status_default' => 'Planifié',
     'call_status_dom' =>
-        array(
+        [
             'Planned' => 'Planifié',
             'Held' => 'Terminé',
             'Not Held' => 'Annulé',
-        ),
+        ],
     'call_direction_default' => 'Sortant',
     'call_direction_dom' =>
-        array(
+        [
             'Inbound' => 'Entrant',
             'Outbound' => 'Sortant',
-        ),
+        ],
 
     'lead_status_dom' =>
-        array(
+        [
             '' => '',
             'New' => 'Nouveau',
             'Assigned' => 'Assigné',
@@ -381,35 +381,36 @@ $app_list_strings = array(
             'Converted' => 'Converti',
             'Recycled' => 'Réactivé',
             'Dead' => 'Mort',
-        ),
+        ],
     'lead_classification_dom' =>
-        array(
+        [
             'cold' => 'froid',
             'warm' => 'tiède',
             'hot' => 'chaud'
-        ),
-    'gender_list' => array(
+        ],
+    'gender_list' => [
         'male' => 'masculin',
         'female' => 'féminin',
-    ),
+    ],
 
     'messenger_type_dom' =>
-        array(
+        [
             '' => '',
             'MSN' => 'MSN',
             'Yahoo!' => 'Yahoo!',
             'AOL' => 'AOL',
-        ),
-    'project_task_utilization_options' =>
-        array(
+        ],
+    'project_t
+    ask_utilization_options' =>
+        [
             '0' => 'aucun',
             '25' => '25',
             '50' => '50',
             '75' => '75',
             '100' => '100',
-        ),
+        ],
     'record_type_display' =>
-        array(
+        [
             '' => '',
             'Leads' => 'Lead',
             'Contacts' => 'Contacts',
@@ -421,11 +422,10 @@ $app_list_strings = array(
             'Quotes' => 'Devis',
             'Project' => 'Projet',
             'Prospects' => 'Suspect',
-            'ProjectTask' => 'Tâche Projet',
             'Tasks' => 'Tâche',
-        ),
+        ],
     'record_type_display_notes' =>
-        array(
+        [
             'Contacts' => 'Contact',
             'Emails' => 'Email',
             'Bugs' => 'Bug',
@@ -438,14 +438,13 @@ $app_list_strings = array(
             'Products' => 'Produit',
             'Contracts' => 'Contrat',
             'Project' => 'Projet',
-            'ProjectTask' => 'Tâche Projet',
             'Prospects' => 'Suspect',
             'Cases' => 'Ticket',
             'Meetings' => 'Réunion',
             'Calls' => 'Appels',
-        ),
+        ],
     'parent_type_display' =>
-        array(
+        [
             'Contacts' => 'Contact',
             'Leads' => 'Lead',
             'Accounts' => 'Compte',
@@ -456,16 +455,15 @@ $app_list_strings = array(
             'Bugs' => 'Suivi Bug',
             'Cases' => 'Ticket',
             'Project' => 'Projets',
-            'ProjectTask' => 'Tâche Projet',
             'Prospects' => 'Suspect',
-        ),
+        ],
     'tax_class_dom' =>
-        array(
+        [
             'Taxable' => 'Taxable',
             'Non-Taxable' => 'Non-Taxable',
-        ),
+        ],
     'quote_relationship_type_dom' =>
-        array(
+        [
             '' => '',
             'Primary Decision Maker' => 'Décideur Principal',
             'Business Decision Maker' => 'Décideur métier',
@@ -475,32 +473,32 @@ $app_list_strings = array(
             'Executive Sponsor' => 'Sponsor',
             'Influencer' => 'Influenceur',
             'Other' => 'Autre',
-        ),
+        ],
     'issue_priority_dom' =>
-        array(
+        [
             'Urgent' => 'Urgent',
             'High' => 'Haute',
             'Medium' => 'Moyenne',
             'Low' => 'Basse',
-        ),
+        ],
     'issue_resolution_dom' =>
-        array(
+        [
             '' => '',
             'Accepted' => 'Accepté',
             'Duplicate' => 'Doublon',
             'Closed' => 'Fermé',
             'Out of Date' => 'Périmé',
             'Invalid' => 'Invalide',
-        ),
+        ],
     'bug_priority_dom' =>
-        array(
+        [
             'Urgent' => 'Urgent',
             'High' => 'Haute',
             'Medium' => 'Moyenne',
             'Low' => 'Basse',
-        ),
+        ],
     'bug_resolution_dom' =>
-        array(
+        [
             '' => '',
             'Accepted' => 'Accepté',
             'Duplicate' => 'Doublon',
@@ -508,23 +506,23 @@ $app_list_strings = array(
             'Out of Date' => 'Périmé',
             'Invalid' => 'Invalide',
             'Later' => 'Reporté',
-        ),
+        ],
     'case_type_dom' =>
-        array(
+        [
             'Administration' => 'Administration',
             'Product' => 'Produit',
             'User' => 'Utilisateur',
-        ),
+        ],
     'source_dom' =>
-        array(
+        [
             '' => '',
             'Forum' => 'Forum',
             'Web' => 'Web',
             'Internal' => 'Interne',
             'InboundEmail' => 'Email Entrant',
-        ),
+        ],
     'product_category_dom' =>
-        array(
+        [
             '' => '',
             'Contacts' => 'Contacts',
             'Documents' => 'Documents',
@@ -556,9 +554,9 @@ $app_list_strings = array(
             'RSS' => 'Flux RSS',
             'Upgrade' => 'Mise à Jour',
             'Users' => 'Utilisateurs',
-        ),
+        ],
     'campaign_status_dom' =>
-        array(
+        [
             '' => '',
             'Planning' => 'Planifiée',
             'Active' => 'En cours',
@@ -566,9 +564,9 @@ $app_list_strings = array(
             'Complete' => 'Terminée',
             'In Queue' => 'Dans la file d attente',
             'Sending' => 'Envoi en cours',
-        ),
+        ],
     'campaign_type_dom' =>
-        array(
+        [
             '' => '',
             'Email' => 'Email',
             'Web' => 'Web',
@@ -578,21 +576,21 @@ $app_list_strings = array(
             'Mail' => 'Courrier',
             'Print' => 'Impression',
             'Television' => 'Télévision',
-        ),
+        ],
     'newsletter_frequency_dom' =>
-        array(
+        [
             '' => '',
             'Weekly' => 'Hebdomadaire',
             'Monthly' => 'Mensuelle',
             'Quarterly' => 'Trimestrielle',
             'Annually' => 'Annuelle',
-        ),
+        ],
     'notifymail_sendtype' =>
-        array(
+        [
             'SMTP' => 'SMTP',
-        ),
+        ],
     'dom_cal_month_short' =>
-        array(
+        [
             '0' => '',
             '1' => 'Jan',
             '2' => 'Fev',
@@ -606,82 +604,82 @@ $app_list_strings = array(
             '10' => 'Oct',
             '11' => 'Nov',
             '12' => 'Déc',
-        ),
+        ],
     'dom_meridiem_lowercase' =>
-        array(
+        [
             'am' => 'am',
             'pm' => 'pm',
-        ),
+        ],
     'dom_meridiem_uppercase' =>
-        array(
+        [
             'AM' => 'AM',
             'PM' => 'PM',
-        ),
+        ],
     'dom_email_server_type' =>
-        array(
+        [
             '' => '--Aucun(e)--',
             'imap' => 'IMAP',
-        ),
+        ],
     'dom_email_distribution' =>
-        array(
+        [
             '' => '--Aucun(e)--',
             'direct' => 'Assignation directe',
             'roundRobin' => 'Round-Robin',
             'leastBusy' => 'Moins chargé',
-        ),
+        ],
     'dom_email_distribution_for_auto_create' =>
-        array(
+        [
             'roundRobin' => 'Round-Robin',
             'leastBusy' => 'Moins chargé',
-        ),
+        ],
     'scheduler_period_dom' =>
-        array(
+        [
             'min' => 'Minutes',
             'hour' => 'Heures',
-        ),
+        ],
     'forecast_type_dom' =>
-        array(
+        [
             'Direct' => 'Direct',
             'Rollup' => 'Remontée info',
-        ),
+        ],
     'document_category_dom' =>
-        array(
+        [
             '' => '',
             'Marketing' => 'Marketing',
             'Knowledege Base' => 'Base de connaissance',
             'Sales' => 'Ventes',
-        ),
+        ],
     'document_subcategory_dom' =>
-        array(
+        [
             '' => '',
             'FAQ' => 'FAQ',
             'Marketing Collateral' => 'Marketing Secondaire',
             'Product Brochures' => 'Brochures Produits',
-        ),
+        ],
     'document_status_dom' =>
-        array(
+        [
             'FAQ' => 'FAQ',
             'Active' => 'Actif',
             'Draft' => 'Brouillon',
             'Expired' => 'Périmé',
             'Under Review' => 'En cours de révision',
             'Pending' => 'En attente',
-        ),
+        ],
     'document_template_type_dom' =>
-        array(
+        [
             '' => '',
             'eula' => 'EULA',
             'nda' => 'NDA',
             'mailmerge' => 'Publipostage',
             'license' => 'Termes de Licence',
-        ),
+        ],
     'width_type_dom' =>
-        array(
+        [
             'px' => 'Pixels (px)',
             '%' => 'Pourcentage (%)',
-        ),
+        ],
     'query_groupby_qualifier_qty_dom' =>
-        array(
+        [
             1 => '1',
             2 => '2',
             3 => '3',
@@ -695,9 +693,9 @@ $app_list_strings = array(
             12 => '12',
             18 => '18',
             24 => '24',
-        ),
+        ],
     'query_groupby_qualifier_start_dom' =>
-        array(
+        [
             '0' => 'Now',
             '-1' => '-1',
             '-2' => '-2',
@@ -712,79 +710,79 @@ $app_list_strings = array(
             '12' => '-12',
             '-18' => '-18',
             '-24' => '-24',
-        ),
+        ],
     'query_calc_type_dom' =>
-        array(
+        [
             'Standard' => 'Standard',
             'Math' => 'Calcul Math',
-        ),
+        ],
     'query_calc_oper_dom' =>
-        array(
+        [
             '+' => '(+) Plus',
             '-' => '(-) Moins',
             '*' => '(X) Multiplié par',
             '/' => '(/) Divisé par',
-        ),
+        ],
     'dataset_att_display_type_dom' =>
-        array(
+        [
             'Normal' => 'Normal',
             'Scalar' => 'Scalaire',
-        ),
+        ],
     'dataset_att_format_type_dom' =>
-        array(
+        [
             'Date' => 'Date',
             'Text' => 'Texte',
             'Accounting' => 'Numérique',
             'Datetime' => 'DateHeure',
-        ),
+        ],
     'dataset_style_dom' =>
-        array(
+        [
             'normal' => 'Normal',
             'bold' => 'Gras',
             'italic' => 'Italique',
-        ),
+        ],
     'wflow_alert_type_dom' =>
-        array(
+        [
             'Email' => 'Email',
             'Invite' => 'Invite JavaScript',
-        ),
+        ],
     'wflow_address_type_dom' =>
-        array(
+        [
             'cc' => 'CC:',
             'to' => 'A:',
             'bcc' => 'CCI:',
-        ),
+        ],
     'wflow_address_type_invite_dom' =>
-        array(
+        [
             'cc' => 'CC:',
             'to' => 'A:',
             'bcc' => 'CCI:',
             'invite_only' => '(Invite JavaScript Seulement)',
-        ),
+        ],
     'duration_intervals' =>
-        array(
+        [
             0 => '00',
             15 => '15',
             30 => '30',
             45 => '45',
-        ),
+        ],
     'repeat_type_dom' =>
-        array(
+        [
             '' => 'None',
             'Daily' => 'Quotidien',
             'Weekly' => 'Hebdomadaire',
             'Monthly' => 'Mensuel',
             'Yearly' => 'Annuel',
-        ),
-    'repeat_intervals' => array(
+        ],
+    'repeat_intervals' => [
         '' => '',
         'Daily' => 'jour(s)',
         'Weekly' => 'semaine(s)',
         'Monthly' => 'mois',
         'Yearly' => 'année(s)',
-    ),
+    ],
 
-    'duration_dom' => array(
+    'duration_dom' => [
         '' => 'None',
         '900' => '15 minutes',
         '1800' => '30 minutes',
@@ -798,30 +796,30 @@ $app_list_strings = array(
         '172800' => '2 jours',
         '259200' => '3 jours',
         '604800' => '1 semaine',
-    ),
+    ],
     'prospect_list_type_dom' =>
-        array(
+        [
             'test' => 'Test',
             'default' => 'Cibles suivies',
             'seed' => 'Cibles non suivies',
             'exempt_domain' => 'Liste d&#39;exclusion de domaine',
             'exempt_address' => 'Liste d&#39;exclusion d&#39;emails',
             'exempt' => 'Exclusion',
-        ),
+        ],
     'email_settings_num_dom' =>
-        array(
+        [
             10 => '10',
             20 => '20',
             50 => '50',
-        ),
+        ],
     'email_marketing_status_dom' =>
-        array(
+        [
             '' => '',
             'active' => 'Actif',
             'inactive' => 'Inactif',
-        ),
+        ],
     'campainglog_activity_type_dom' =>
-        array(
+        [
             '' => '',
             'targeted' => 'Messages envoyés/tentés',
             'send error' => 'Bounces, Autre',
@@ -832,28 +830,28 @@ $app_list_strings = array(
             'lead' => 'Leads créés',
             'contact' => 'Contacts créés',
             'blocked' => 'Messages non envoyés',
-        ),
+        ],
     'campainglog_target_type_dom' =>
-        array(
+        [
             'Contacts' => 'Contacts',
             'Leads' => 'Leads',
             'Users' => 'Utilisateurs',
             'Prospects' => 'Suspects',
             'Accounts' => 'Comptes',
-        ),
+        ],
     'navigation_paradigms' =>
-        array(
+        [
             'm' => 'Modules',
             'gm' => 'Modules Groupés',
-        ),
+        ],
     'oc_status_dom' =>
-        array(
+        [
             '' => '',
             'Active' => 'Actif',
             'Inactive' => 'Inactif',
-        ),
+        ],
     'chart_strings' =>
-        array(
+        [
             'pieWedgeName' => 'sections',
             'expandlegend' => 'Afficher la légende',
             'collapselegend' => 'Cacher la légende',
@@ -868,22 +866,22 @@ $app_list_strings = array(
             'linechart' => 'Graphique courbe',
             'noData' => 'Aucune donnée',
             'print' => 'Imprimer',
-        ),
+        ],
     'email_settings_for_ssl' =>
-        array(
+        [
             '0' => '',
             '1' => 'SSL',
             '2' => 'TLS',
-        ),
+        ],
     'import_enclosure_options' =>
-        array(
+        [
             '' => 'Aucun',
             '"' => 'Guillemets (")',
             '\'' => 'Apostrophe (&#39;)',
             'other' => 'Autre:',
-        ),
+        ],
     'import_delimeter_options' =>
-        array(
+        [
             ',' => ',',
             ';' => ';',
             '\t' => '\t',
@@ -891,24 +889,24 @@ $app_list_strings = array(
             ':' => ':',
             '|' => '|',
             'other' => 'Autre:',
-        ),
+        ],
     'library_type' =>
-        array(
+        [
             'DVD' => 'DVD',
             'Magazines' => 'Magazines',
             'Books' => 'Livre',
             'Music' => 'Musique',
-        ),
+        ],
     'kbdocument_attachment_option_dom' =>
-        array(
+        [
             '' => '',
             'some' => 'Avec Pièce(s) Jointe(s)',
             'none' => 'Sans Pièce Jointe',
             'mime' => 'Spécifier un Type Mime',
             'name' => 'Spécifier un Nom',
-        ),
+        ],
     'kbdocument_viewing_frequency_dom' =>
-        array(
+        [
             '' => '',
             'Top_5' => 'Top 5',
             'Top_10' => 'Top 10',
@@ -916,17 +914,17 @@ $app_list_strings = array(
             'Bot_5' => 'Flop 5',
             'Bot_10' => 'Flop 10',
             'Bot_20' => 'Flop 20',
-        ),
+        ],
     'kbdocument_canned_search' =>
-        array(
+        [
             'faqs' => 'FAQs',
             'all' => 'Tout',
             'added' => 'Ajouts dans les 30 derniers jours',
             'pending' => 'En attente de validation',
             'updated' => 'Mis à jour dans les 30 derniers jours',
-        ),
+        ],
     'kbdocument_date_filter_options' =>
-        array(
+        [
             '' => '',
             'on' => 'Sur',
             'before' => 'Avant',
@@ -943,9 +941,9 @@ $app_list_strings = array(
             'this_year' => 'Cette année',
             'next_year' => 'L&#39;année prochaine',
             'isnull' => 'Vide',
-        ),
+        ],
     'countries_dom' =>
-        array(
+        [
             '' => '',
             'ABU DHABI' => 'ABU DHABI',
             'ADEN' => 'ADEN',
@@ -1182,9 +1180,9 @@ $app_list_strings = array(
             'WESTERN SAHARA' => 'SAHARA OCCIDENTAL',
             'YEMEN' => 'YÉMEN',
             'ZAMBIA' => 'ZAMBIE',
-        ),
+        ],
     'charset_dom' =>
-        array(
+        [
             'BIG-5' => 'BIG-5 (Taiwan and Hong Kong)',
             /*'CP866'     => 'CP866', // ms-dos Cyrillic */
             /*'CP949'     => 'CP949 (Microsoft Korean)', */
@@ -1213,9 +1211,9 @@ $app_list_strings = array(
             'KOI8-U' => 'KOI8-U (Cyrillic Ukranian)',
             'SJIS' => 'SJIS (MS Japanese)',
             'UTF-8' => 'UTF-8',
-        ),
+        ],
     'timezone_dom' =>
-        array(
+        [
             'Africa/Algiers' => 'Africa/Algiers',
             'Africa/Luanda' => 'Africa/Luanda',
             'Africa/Porto-Novo' => 'Africa/Porto-Novo',
@@ -1591,9 +1589,9 @@ $app_list_strings = array(
             'America/Port_of_Spain' => 'America/Port_of_Spain',
             'America/Montevideo' => 'America/Montevideo',
             'America/Caracas' => 'America/Caracas',
-        ),
+        ],
     'eapm_list' =>
-        array(
+        [
             'Box' => 'Box.net',
             'Facebook' => 'Facebook',
             'GoToMeeting' => 'GoToMeeting',
@@ -1602,24 +1600,24 @@ $app_list_strings = array(
             'Sugar' => 'Sugar',
             'Twitter' => 'Twitter',
             'WebEx' => 'WebEx',
-        ),
+        ],
     'eapm_list_import' =>
-        array(
+        [
             'Google' => 'Google Contacts',
-        ),
+        ],
     'eapm_list_documents' =>
-        array(
+        [
             'Google' => 'Google Docs',
-        ),
+        ],
     'token_status' =>
-        array(
+        [
             1 => 'Request',
             2 => 'Access',
             3 => 'Invalid',
-        ),
+        ],
     'product_status_quote_key' => 'Quotes',
     'in_total_group_stages' =>
-        array(
+        [
             'Draft' => 'Brouillon',
             'Negotiation' => 'Négociation',
             'Delivered' => 'Délivré',
@@ -1628,125 +1626,125 @@ $app_list_strings = array(
             'Closed Accepted' => 'Clos Accepté',
             'Closed Lost' => 'Perdu',
             'Closed Dead' => 'Clos Abandonné',
-        ),
+        ],
 
     'call_status_dom' =>
-        array(
+        [
             'Planned' => 'Planifié',
             'Held' => 'Terminé',
             'Not Held' => 'Annulé',
-        ),
+        ],
     'call_direction_dom' =>
-        array(
+        [
             'Inbound' => 'Entrant',
             'Outbound' => 'Sortant',
-        ),
+        ],
     'gender_list' =>
-        array(
+        [
             'male' => 'Homme',
             'female' => 'Femme',
-        ),
+        ],
     'case_status_dom' =>
-        array(
+        [
             'New' => 'Nouveau',
             'Assigned' => 'Assigné',
             'Closed' => 'Fermé',
             'Pending Input' => 'En attente',
             'Rejected' => 'Rejeté',
             'Duplicate' => 'Doublon',
-        ),
+        ],
     'case_priority_dom' =>
-        array(
+        [
             'P1' => 'Haute',
             'P2' => 'Moyenne',
             'P3' => 'Basse',
-        ),
+        ],
     'user_type_dom' =>
-        array(
+        [
             'RegularUser' => 'Utilisateur normal',
             'Administrator' => 'Administrateur',
-        ),
+        ],
     'user_status_dom' =>
-        array(
+        [
             'Active' => 'Actif',
             'Inactive' => 'Inactif',
-        ),
+        ],
 
-    'knowledge_status_dom' => array(
+    'knowledge_status_dom' => [
         'Draft' => 'Brouillon',
         'Released' => 'Publié',
         'Retired' => 'Retiré',
-    ),
+    ],
     'employee_status_dom' =>
-        array(
+        [
             'Active' => 'Actif',
             'Terminated' => 'Inactif',
             'Leave of Absence' => 'Absence temporaire',
-        ),
+        ],
     'project_task_priority_default' => 'Moyenne',
     'project_task_priority_options' =>
-        array(
+        [
             'High' => 'Haute',
             'Medium' => 'Moyenne',
             'Low' => 'Basse',
-        ),
+        ],
     'project_task_status_options' =>
-        array(
+        [
             'Not Started' => 'Non démarrée',
             'In Progress' => 'En cours',
             'Completed' => 'Terminée',
             'Pending Input' => 'En attente',
             'Deferred' => 'Reportée',
-        ),
+        ],
     'project_status_dom' =>
-        array(
+        [
             'Draft' => 'Brouillon',
             'In Review' => 'En relecture',
             'Published' => 'Publié',
-        ),
+        ],
     'project_duration_units_dom' =>
-        array(
+        [
             'Days' => 'Jours',
             'Hours' => 'Heures',
-        ),
+        ],
     'project_priority_options' =>
-        array(
+        [
             'High' => 'Haute',
             'Medium' => 'Moyen',
             'Low' => 'Bas',
-        ),
+        ],
     'product_status_dom' =>
-        array(
+        [
             'Quotes' => 'Devis fait',
             'Orders' => 'Commandé',
             'Ship' => 'Livré',
-        ),
+        ],
     'pricing_formula_dom' =>
-        array(
+        [
             'Fixed' => 'Prix Fixe',
             'ProfitMargin' => 'Marge sur Prix Final',
             'PercentageMarkup' => 'Marge sur le Prix de Revient',
             'PercentageDiscount' => 'Remise sur Prix Public',
             'IsList' => 'Même que Prix Public',
-        ),
+        ],
     'product_template_status_dom' =>
-        array(
+        [
             'Available' => 'En Stock',
             'Unavailable' => 'Hors Stock',
-        ),
+        ],
     'support_term_dom' =>
-        array(
+        [
             '+6 months' => '6 mois',
             '+1 year' => '1 an',
             '+2 years' => '2 ans',
-        ),
+        ],
     'quote_type_dom' =>
-        array(
+        [
             'Quotes' => 'Devis Fait',
             'Orders' => 'Commande',
-        ),
+        ],
     'quote_stage_dom' =>
-        array(
+        [
             'Draft' => 'Brouillon',
             'Negotiation' => 'Négociation',
             'Delivered' => 'Délivré',
@@ -1755,44 +1753,44 @@ $app_list_strings = array(
             'Closed Accepted' => 'Clos Accepté',
             'Closed Lost' => 'Perdu',
             'Closed Dead' => 'Clos Abandonné',
-        ),
+        ],
     'order_stage_dom' =>
-        array(
+        [
             'Pending' => 'En attente',
             'Confirmed' => 'Confirmé',
             'On Hold' => 'Suspendu',
             'Shipped' => 'Livré',
             'Cancelled' => 'Annulé',
-        ),
+        ],
     'layouts_dom' =>
-        array(
+        [
             'Standard' => 'Devis',
             'Invoice' => 'Facture',
             'Terms' => 'Selon Conditions',
-        ),
+        ],
     'issue_status_dom' =>
-        array(
+        [
             'New' => 'Nouveau',
             'Assigned' => 'Assigné',
             'Closed' => 'Fermé',
             'Pending' => 'En attente',
             'Rejected' => 'Rejeté',
-        ),
+        ],
     'bug_status_dom' =>
-        array(
+        [
             'New' => 'Nouveau',
             'Assigned' => 'Assigné',
             'Closed' => 'Fermé',
             'Pending' => 'En attente',
             'Rejected' => 'Rejeté',
-        ),
+        ],
     'bug_type_dom' =>
-        array(
+        [
             'Defect' => 'Défaut',
             'Feature' => 'Fonctionnalité',
-        ),
+        ],
     'dom_cal_month_long' =>
-        array(
+        [
             0 => '',
             1 => 'Janvier',
             2 => 'Février',
@@ -1806,9 +1804,9 @@ $app_list_strings = array(
             10 => 'Octobre',
             11 => 'Novembre',
             12 => 'Décembre',
-        ),
+        ],
     'dom_cal_day_long' =>
-        array(
+        [
             0 => '',
             1 => 'Dimanche',
             2 => 'Lundi',
@@ -1817,9 +1815,9 @@ $app_list_strings = array(
             5 => 'Jeudi',
             6 => 'Vendredi',
             7 => 'Samedi',
-        ),
+        ],
     'dom_cal_day_short' =>
-        array(
+        [
             0 => '',
             1 => 'Dim',
             2 => 'Lun',
@@ -1828,24 +1826,24 @@ $app_list_strings = array(
             5 => 'Jeu',
             6 => 'Ven',
             7 => 'Sam',
-        ),
+        ],
     'dom_report_types' =>
-        array(
+        [
             'tabular' => 'Standard',
             'summary' => 'Consolidé',
             'detailed_summary' => 'Consolidé avec détails',
             'Matrix' => 'Matrice',
-        ),
+        ],
     'dom_email_types' =>
-        array(
+        [
             'out' => 'Envoyé',
             'archived' => 'Archivé',
             'draft' => 'Brouillon',
             'inbound' => 'Entrant',
             'campaign' => 'Campagne',
-        ),
+        ],
     'dom_email_status' =>
-        array(
+        [
             'archived' => 'Archivé',
             'closed' => 'Fermé',
             'draft' => 'Brouillon',
@@ -1854,93 +1852,93 @@ $app_list_strings = array(
             'sent' => 'Envoyé',
             'send_error' => 'Erreur Envoi',
             'unread' => 'Non Lu',
-        ),
+        ],
     'dom_email_archived_status' =>
-        array(
+        [
             'archived' => 'Archivé',
-        ),
+        ],
     'dom_mailbox_type' =>
-        array(
+        [
             'pick' => '-- Aucun --',
             'createcase' => 'Créer un Ticket',
             'bounce' => 'Gestion des Bounces',
-        ),
+        ],
     'dom_email_errors' =>
-        array(
+        [
             1 => 'Sélectionner 1 seul utilisateur quand vous assignez des éléments directement.',
             2 => 'Vous pouvez seulement assigner des éléments cochés lorsque vous souhaitez assigner directement des éléments.',
-        ),
+        ],
     'dom_email_bool' =>
-        array(
+        [
             'bool_true' => 'Oui',
             'bool_false' => 'Non',
-        ),
+        ],
     'dom_int_bool' =>
-        array(
+        [
             1 => 'Oui',
-        ),
+        ],
     'dom_switch_bool' =>
-        array(
+        [
             'on' => 'Oui',
             'off' => 'Non',
             '' => 'Non',
-        ),
+        ],
     'dom_email_link_type' =>
-        array(
+        [
             'sugar' => 'Client Mail SugarCRM',
             'mailto' => 'Client Mail Externe',
-        ),
+        ],
     'dom_email_editor_option' =>
-        array(
+        [
             '' => 'Format email par défaut',
             'html' => 'Email HTML',
             'plain' => 'Email Texte Brut',
-        ),
+        ],
     'schedulers_times_dom' =>
-        array(
+        [
             'not run' => 'Temps d&#39;execution dépassé, Non Executé',
             'ready' => 'Prêt',
             'in progress' => 'En cours',
             'failed' => 'Echec',
             'completed' => 'Réalisée',
             'no curl' => 'Non exécuté: cURL non disponible',
-        ),
+        ],
     'scheduler_status_dom' =>
-        array(
+        [
             'Active' => 'Actif',
             'Inactive' => 'Inactif',
-        ),
+        ],
     'forecast_schedule_status_dom' =>
-        array(
+        [
             'Active' => 'Actif',
             'Inactive' => 'Inactif',
-        ),
+        ],
     'dom_meeting_accept_options' =>
-        array(
+        [
             'accept' => 'Accepter',
             'decline' => 'Décliner',
             'tentative' => 'Incertain',
-        ),
+        ],
     'dom_meeting_accept_status' =>
-        array(
+        [
             'accept' => 'Accepté',
             'decline' => 'Décliné',
             'tentative' => 'Incertain',
             'none' => 'Indéfini',
-        ),
+        ],
     'report_maker_status_dom' =>
-        array(
+        [
             'Single Module' => 'Module Simple',
             'Multi Module' => 'Multi-Module',
-        ),
+        ],
     'report_align_dom' =>
-        array(
+        [
             'left' => 'Gauche',
             'center' => 'Centre',
             'right' => 'Droite',
-        ),
+        ],
     'report_color_dom' =>
-        array(
+        [
             '' => 'Defaut',
             'black' => 'Noir',
             'green' => 'Vert',
@@ -1951,9 +1949,9 @@ $app_list_strings = array(
             'LightGray' => 'Gris clair',
             'DodgerBlue' => 'Bleu',
             'LightBlue' => 'Bleu clair',
-        ),
+        ],
     'font_size_dom' =>
-        array(
+        [
             -5 => 'Plus petit (-5)',
             -4 => 'Plus petit (-4)',
             -3 => 'Plus petit (-3)',
@@ -1965,50 +1963,50 @@ $app_list_strings = array(
             3 => 'Plus grand (+3)',
             4 => 'Plus grand (+4)',
             5 => 'Plus grand (+5)',
-        ),
+        ],
     'query_type_dom' =>
-        array(
+        [
             'Main Query' => 'Requête principale',
-        ),
+        ],
     'query_column_type_dom' =>
-        array(
+        [
             'Display' => 'Affichage',
             'Calculation' => 'Calcul',
-        ),
+        ],
     'query_display_type_dom' =>
-        array(
+        [
             'Default' => 'Defaut',
             'Custom' => 'Personnalisé',
             'Hidden' => 'Caché',
-        ),
+        ],
     'query_groupby_qualifier_dom' =>
-        array(
+        [
             'Day' => 'Jour',
             'Week' => 'Semaine',
             'Month' => 'Mois',
             'Quarter' => 'Trimestre',
             'Year' => 'Année',
-        ),
+        ],
     'query_groupby_calc_type_dom' =>
-        array(
+        [
             'SUM' => 'SOMME',
             'AVG' => 'MOYENNE',
             'COUNT' => 'COMPTEUR',
             'STDDEV' => 'ECART-TYPE',
             'VARIANCE' => 'VARIANCE',
-        ),
+        ],
     'query_groupby_type_dom' =>
-        array(
+        [
             'Field' => 'Champ Standard',
             'Time' => 'Intervalle de Temps',
-        ),
+        ],
     'query_groupby_axis_dom' =>
-        array(
+        [
             'Rows' => 'Lignes (Y-Axis)',
             'Columns' => 'Colonnes (X-Axis)',
-        ),
+        ],
     'query_calc_calc_type_dom' =>
-        array(
+        [
             'SUM' => 'SOMME',
             'AVG' => 'MOYENNE',
             'MAX' => 'MAXIMUM',
@@ -2016,68 +2014,68 @@ $app_list_strings = array(
             'COUNT' => 'COMPTEUR',
             'STDDEV' => 'ECART-TYPE',
             'VARIANCE' => 'VARIANCE',
-        ),
+        ],
     'query_calc_leftright_type_dom' =>
-        array(
+        [
             'Field' => 'Champ',
             'Value' => 'Valeur',
             'Group' => 'Groupe',
-        ),
+        ],
     'dataset_layout_type_dom' =>
-        array(
+        [
             'Column' => 'Colonne',
-        ),
+        ],
     'custom_layout_dom' =>
-        array(
+        [
             'Disabled' => 'Désactivé',
             'Enabled' => 'Activé',
-        ),
+        ],
     'dataset_att_format_type_scalar_dom' =>
-        array(
+        [
             'Year' => 'Année',
             'Quarter' => 'Trimestre',
             'Month' => 'Mois',
             'Week' => 'Semaine',
             'Day' => 'Jour',
-        ),
+        ],
     'wflow_type_dom' =>
-        array(
+        [
             'Normal' => 'Quand enregistrement sauvegardé',
             'Time' => 'Aprés un délai dépassé',
-        ),
+        ],
     'mselect_type_dom' =>
-        array(
+        [
             'Equals' => 'Est',
             'in' => 'Contient',
-        ),
+        ],
     'mselect_multi_type_dom' =>
-        array(
+        [
             'in' => 'Fait partie de',
             'not_in' => 'Ne fait pas partie de',
-        ),
+        ],
     'cselect_type_dom' =>
-        array(
+        [
             'Equals' => 'Egal',
             'Does not Equal' => 'Différent de',
-        ),
+        ],
     'dselect_type_dom' =>
-        array(
+        [
             'Equals' => 'Egal',
             'Less Than' => 'Inférieur à',
             'More Than' => 'Supérieur à',
             'Does not Equal' => 'Différent de',
-        ),
+        ],
     'bselect_type_dom' =>
-        array(
+        [
             'bool_true' => 'Oui',
             'bool_false' => 'Non',
-        ),
+        ],
     'bopselect_type_dom' =>
-        array(
+        [
             'Equals' => 'Egal',
-        ),
+        ],
     'tselect_type_dom' =>
-        array(
+        [
             '0' => '0 heure',
             '14440' => '4 heures',
             '28800' => '8 heures',
@@ -2096,136 +2094,136 @@ $app_list_strings = array(
             '10368000' => '120 jours',
             '12960000' => '150 jours',
             '15552000' => '180 jours',
-        ),
+        ],
     'dtselect_type_dom' =>
-        array(
+        [
             'More Than' => 'est supérieur à',
             'Less Than' => 'est inférieur à',
-        ),
+        ],
     'wflow_source_type_dom' =>
-        array(
+        [
             'Normal Message' => 'Message Normal',
             'Custom Template' => 'Modèle personnalisé',
             'System Default' => 'Systéme par Default',
-        ),
+        ],
     'wflow_user_type_dom' =>
-        array(
+        [
             'current_user' => 'Utilisateurs actuels',
             'rel_user' => 'Utilisateurs rattachés',
             'rel_user_custom' => 'Utilisateur personnalisé rattaché',
             'specific_team' => 'Equipe spécifique',
             'specific_role' => 'Rôle spécifique',
             'specific_user' => 'Utilisateur spécifique',
-        ),
+        ],
     'wflow_array_type_dom' =>
-        array(
+        [
             'future' => 'Nouvelle valeur',
             'past' => 'Ancienne valeur',
-        ),
+        ],
     'wflow_relate_type_dom' =>
-        array(
+        [
             'Self' => 'Assigné à',
             'Manager' => 'Responsable de l&#39;utilisateur',
-        ),
+        ],
     'wflow_address_type_to_only_dom' =>
-        array(
+        [
             'to' => 'A:',
-        ),
+        ],
     'wflow_action_type_dom' =>
-        array(
+        [
             'update' => 'Mise à jour de l&#39;enregistrement',
             'update_rel' => 'Mise à jour de l&#39;enregistrement associé',
             'new' => 'Nouvel enregistrement',
-        ),
+        ],
     'wflow_action_datetime_type_dom' =>
-        array(
+        [
             'Triggered Date' => 'Date déclenchée',
             'Existing Value' => 'Valeur existante',
-        ),
+        ],
     'wflow_set_type_dom' =>
-        array(
+        [
             'Basic' => 'Options de base',
             'Advanced' => 'Options avancées',
-        ),
+        ],
     'wflow_adv_user_type_dom' =>
-        array(
+        [
             'assigned_user_id' => 'Utilisateur assigné à l&#39;enregistrement déclenché',
             'modified_user_id' => 'Utilisateur qui a, en dernier, modifié l&#39;enregistrement déclenché',
             'created_by' => 'Utilisateur qui a créé l&#39;enregistrement déclenché',
             'current_user' => 'Utilisateur connecté',
-        ),
+        ],
     'wflow_adv_team_type_dom' =>
-        array(
+        [
             'team_id' => 'Equipe actuelle de l&#39;enregistrement déclenché',
             'current_team' => 'Equipe de l&#39;utilisateur connecté',
-        ),
+        ],
     'wflow_adv_enum_type_dom' =>
-        array(
+        [
             'retreat' => 'Remonter dans la liste déroulante de',
             'advance' => 'Descendre dans la liste déroulante de',
-        ),
+        ],
     'wflow_record_type_dom' =>
-        array(
+        [
             'All' => 'Enregistrements nouveaux et existants',
             'New' => 'Nouveaux enregistrements seulement',
             'Update' => 'Enregistrements existant seulement',
-        ),
+        ],
     'wflow_rel_type_dom' =>
-        array(
+        [
             'all' => 'Toutes les associations',
             'filter' => 'Filtrage par champ pour: ',
-        ),
+        ],
     'wflow_relfilter_type_dom' =>
-        array(
+        [
             'all' => 'Toute liaison au module',
             'any' => 'n&#39;importe quelle liaison au module',
-        ),
+        ],
     'wflow_fire_order_dom' =>
-        array(
+        [
             'alerts_actions' => 'Alertes puis Actions',
             'actions_alerts' => 'Actions puis Alertes',
-        ),
+        ],
     'merge_operators_dom' =>
-        array(
+        [
             'like' => 'contient',
             'exact' => 'est exactement',
             'start' => 'commence par',
-        ),
+        ],
     'custom_fields_importable_dom' =>
-        array(
+        [
             'true' => 'Oui',
             'false' => 'Non',
             'required' => 'Requis',
-        ),
-    'Elastic_boost_options' => array(
+        ],
+    'Elastic_boost_options' => [
         '0' => 'Désactivé',
         '1' => 'Boost faible',
         '2' => 'Boost moyen',
         '3' => 'Boost élevé',
-    ),
+    ],
     'custom_fields_merge_dup_dom' =>
-        array(
+        [
             0 => 'Désactivé',
             1 => 'Uniquement Fusionnable',
             2 => 'Utilisable dans la recherche de doublons et Fusionnable',
             3 => 'Utilisable dans la recherche de doublons (séléctionné par défaut) et Fusionnable',
             4 => 'Utilisable dans la recherche de doublons mais NON Fusionnable',
-        ),
+        ],
     'contract_status_dom' =>
-        array(
+        [
             'notstarted' => 'Non démarré',
             'inprogress' => 'En cours',
             'signed' => 'Signé',
-        ),
+        ],
     'contract_payment_frequency_dom' =>
-        array(
+        [
             'monthly' => 'Mensuel',
             'quarterly' => 'Trimestriel',
             'halfyearly' => '6 mois',
             'yearly' => 'Annuel',
-        ),
+        ],
     'contract_expiration_notice_dom' =>
-        array(
+        [
             1 => '1 Jour',
             3 => '3 Jours',
             5 => '5 Jours',
@@ -2233,54 +2231,54 @@ $app_list_strings = array(
             14 => '2 Semaines',
             21 => '3 Semaines',
             31 => '1 Mois',
-        ),
+        ],
     'projects_priority_options' =>
-        array(
+        [
             'high' => 'Haut',
             'medium' => 'Moyen',
             'low' => 'Bas',
-        ),
+        ],
     'projects_status_options' =>
-        array(
+        [
             'notstarted' => 'Non démarré',
             'inprogress' => 'En Cours',
             'completed' => 'Terminé',
-        ),
+        ],
     'pipeline_chart_dom' =>
-        array(
+        [
             'fun' => 'Entonnoir',
             'hbar' => 'Barre Horizontale',
-        ),
+        ],
     'release_status_dom' =>
-        array(
+        [
             'Active' => 'Actif',
             'Inactive' => 'Inactif',
-        ),
+        ],
     'link_target_dom' =>
-        array(
+        [
             '_blank' => 'Nouvelle fenêtre',
             '_self' => 'Fenêtre courante',
-        ),
+        ],
     'dashlet_auto_refresh_options' =>
-        array(
+        [
             -1 => 'Manuellement',
             30 => '30 secondes',
             60 => '1 minute',
             180 => '3 minutes',
             300 => '5 minutes',
             600 => '10 minutes',
-        ),
+        ],
     'dashlet_auto_refresh_options_admin' =>
-        array(
+        [
             -1 => 'Jamais',
             30 => 'Toutes les 30 secondes',
             60 => 'Toutes les 1 minute',
             180 => 'Toutes les 3 minutes',
             300 => 'Toutes les 5 minutes',
             600 => 'Toutes les 10 minutes',
-        ),
+        ],
     'date_range_search_dom' =>
-        array(
+        [
             '=' => 'Le',
             'not_equal' => 'Différent du',
             'greater_than' => 'Après le',
@@ -2296,9 +2294,9 @@ $app_list_strings = array(
             'this_year' => 'Cette année',
             'next_year' => 'L&#39;année prochaine',
             'between' => 'Entre',
-        ),
+        ],
     'numeric_range_search_dom' =>
-        array(
+        [
             '=' => 'Egal',
             'not_equal' => 'Différent de',
             'greater_than' => 'Supérieur à',
@@ -2306,30 +2304,30 @@ $app_list_strings = array(
             'less_than' => 'Inférieur à',
             'less_than_equals' => 'Inférieur ou égal à',
             'between' => 'Entre',
-        ),
+        ],
     'lead_conv_activity_opt' =>
-        array(
+        [
             'copy' => 'Copier',
             'move' => 'Déplacer',
             'donothing' => 'Ne rien faire',
-        ),
+        ],
 
-    'salesdoc_doccategories' => array(
+    'salesdoc_doccategories' => [
         'QT' => 'Offre',
         'OR' => 'Commande',
         'IV' => 'Facture',
         'CT' => 'Contrat'
-    ),
+    ],
 
     'kbdocument_status_dom' =>
-        array(
+        [
             'Draft' => 'Brouillon',
             'Expired' => 'Obsolète',
             'In Review' => 'En validation',
             'Published' => 'Publié',
-        ),
+        ],
     'kbadmin_actions_dom' =>
-        array(
+        [
             '' => '-- Actions --',
             'Create New Tag' => 'Créé un nouveau Tag',
             'Delete Tag' => 'Supprimer un Tag',
@@ -2337,64 +2335,64 @@ $app_list_strings = array(
             'Move Selected Articles' => 'Déplacer les articles sélectionnés',
             'Apply Tags On Articles' => 'Appliquer les Tags aux articles sélectionnés',
             'Delete Selected Articles' => 'Supprimer les articles sélectionnés',
-        ),
+        ],
     'commit_stage_binary_dom' =>
-        array(
+        [
             'exclude' => 'Exclue',
             'include' => 'Incluse',
-        ),
+        ],
     'commit_stage_custom_dom' =>
-        array(
+        [
             'include' => 'Incluse',
             'customRange0' => 'Perso 1',
             'customRange1' => 'Perso 2',
             'customRange2' => 'Perso 3',
             'exclude' => 'Exclue',
-        ),
+        ],
     'commit_stage_dom' =>
-        array(
+        [
             'include' => 'Incluse',
             'exclude' => 'Exclue',
             'upside' => 'A côté',
-        ),
+        ],
     'forecasts_chart_options_dataset' =>
-        array(
+        [
             'likely' => 'Réaliste',
             'best' => 'Meilleur',
             'worst' => 'Pire',
-        ),
+        ],
     'forecasts_chart_options_group' =>
-        array(
+        [
             'forecast' => 'Prévisions incluses',
             'sales_stage' => 'Phase de vente',
             'probability' => 'Probabilité',
-        ),
+        ],
     'forecasts_config_ranges_options_dom' =>
-        array(
+        [
             'show_binary' => '2 intervalles',
             'show_buckets' => '3 intervalles',
-        ),
+        ],
     'forecasts_timeperiod_options_dom' =>
-        array(
+        [
             'Annual' => 'Annuel (sous-périodes trimestrielles)',
             'Quarter' => 'Trimestriel (sous-périodes mensuelles)',
-        ),
+        ],
     'forecasts_timeperiod_types_dom' =>
-        array(
+        [
             'chronological' => 'Par année',
-        ),
+        ],
     'oauth_client_type_dom' =>
-        array(
+        [
             'support_portal' => 'Portail de support',
             'user' => 'Utilisateur Sugar',
-        ),
+        ],
     'oauth_type_dom' =>
-        array(
+        [
             'oauth1' => 'OAuth 1.0',
             'oauth2' => 'OAuth 2.0',
-        ),
+        ],
     'state_dom' =>
-        array(
+        [
             'AK' => 'Alaska',
             'AL' => 'Alabama',
             'AR' => 'Arkansas',
@@ -2446,81 +2444,81 @@ $app_list_strings = array(
             'WI' => 'Wisconsin',
             'WV' => 'West Virginia',
             'WY' => 'Wyoming',
-        ),
-);
-$app_list_strings ['emailTemplates_type_list'] = array(
+        ],
+];
+$app_list_strings ['emailTemplates_type_list'] = [
     '' => '',
     'campaign' => 'Campagne',
     'email' => 'Email',
     'workflow' => 'Workflow',
-);
+];
 
-$app_list_strings ['emailTemplates_type_list_campaigns'] = array(
+$app_list_strings ['emailTemplates_type_list_campaigns'] = [
     '' => '',
     'campaign' => 'Campagne',
-);
+];
 
-$app_list_strings ['emailTemplates_type_list_no_workflow'] = array(
+$app_list_strings ['emailTemplates_type_list_no_workflow'] = [
     '' => '',
     'campaign' => 'Campagne',
     'email' => 'Email',
-);
-$app_strings ['documentation'] = array(
+];
+$app_strings ['documentation'] = [
     'LBL_DOCS' => 'Documentation',
     'ULT' => '02_Sugar_Ultimate',
     'ENT' => '02_Sugar_Enterprise',
     'CORP' => '03_Sugar_Corporate',
     'PRO' => '04_Sugar_Professional',
     'COM' => '05_Sugar_Community_Edition',
-);
+];
 
 
 //EventRegistrations module
-$app_list_strings['eventregistration_status_dom'] = array(
+$app_list_strings['eventregistration_status_dom'] = [
     'interested' => 'indisponible',
     'tentative' => 'peut-être',
     'registered' => 'inscrit',
     'unregistered' => 'désinscrit',
     'attended' => 'a participé',
     'notattended' => 'n\' pas participé'
-);
+];
 
 //ProjectWBSs module
-$app_list_strings['wbs_status_dom'] = array(
+$app_list_strings['wbs_status_dom'] = [
     '0' => 'créé',
     '1' => 'commencé',
     '2' => 'terminé'
-);
+];
 
 //ProductAttributes
-$app_list_strings['productattributedatatypes_dom'] = array(
+$app_list_strings['productattributedatatypes_dom'] = [
     'di' => 'Dropdown',
     'f' => 'Checkbox',
     'n' => 'nombre',
     's' => 'Sélection multiple',
     'vc' => 'Texte'
-);
-$app_list_strings['productattribute_usage_dom'] = array(
+];
+$app_list_strings['productattribute_usage_dom'] = [
     'required' => 'obligatoire',
     'optional' => 'optionnel',
     'none' => 'aucun',
     'hidden' => 'caché'
-);
+];
 
 //AccountCCDetails
-$app_list_strings['abccategory_dom'] = array(
+$app_list_strings['abccategory_dom'] = [
     '' => '',
     'A' => 'A',
     'B' => 'B',
     'C' => 'C',
-);
+];
 
-$app_list_strings['logicoperators_dom'] = array(
+$app_list_strings['logicoperators_dom'] = [
     'and' => 'et',
     'or' => 'ou',
-);
+];
 
-$app_list_strings['comparators_dom'] = array(
+$app_list_strings['comparators_dom'] = [
     'equal' => 'égale à',
     'unequal' => 'non égale à',
     'greater' => 'supérieur à ',
@@ -2533,72 +2531,71 @@ $app_list_strings['comparators_dom'] = array(
     'nempty' => 'non vide',
     'regex' => 'matches regex',
     'notregex' => 'does not match regex'
-);
+];
 
 $app_list_strings['moduleList']['AccountKPIs'] = 'Key Performance Indicators';
 
 if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
-    $app_list_strings['serviceorder_status_dom'] = array(
+    $app_list_strings['serviceorder_status_dom'] = [
         'new' => 'Nouvelle',
         'planned' => 'Planifiée',
         'completed' => 'Terminée',
         'cancelled' => 'Annulée',
         'signed' => 'Signée',
-    );
+    ];
     $app_list_strings['parent_type_display']['ServiceOrders'] = 'Service Commandes';
     $app_list_strings['record_type_display']['ServiceOrders'] = 'Service Commandes';
     $app_list_strings['record_type_display_notes']['ServiceOrders'] = 'Service Commandes';
 }
 if (file_exists('modules/ServiceTickets/ServiceTicket.php')) {
-    $app_list_strings['serviceticket_status_dom'] = array(
+    $app_list_strings['serviceticket_status_dom'] = [
         'New' => 'Nouveau',
         'Assigned' => 'Assigné',
         'Closed' => 'Terminé',
         'Pending Input' => 'Réponse en attente',
         'Rejected' => 'Refusé',
         'Duplicate' => 'Dublon',
-    );
+    ];
 
-    $app_list_strings['serviceticket_class_dom'] = array(
+    $app_list_strings['serviceticket_class_dom'] = [
         'P1' => 'haute',
         'P2' => 'moyenne',
         'P3' => 'basse',
-    );
-    $app_list_strings['serviceticket_resaction_dom'] = array(
+    ];
+    $app_list_strings['serviceticket_resaction_dom'] = [
         '' => '',
         'credit' => 'Créer un avoir',
         'replace' => 'Remplacer',
         'return' => 'Article va être renvoyé'
-    );
+    ];
     $app_list_strings['parent_type_display']['ServiceTickets'] = 'Service Tickets';
     $app_list_strings['record_type_display']['ServiceTickets'] = 'Service Tickets';
     $app_list_strings['record_type_display_notes']['ServiceTickets'] = 'Service Tickets';
 }
 
 if (file_exists('modules/ServiceFeedbacks/ServiceFeedback.php')) {
-    $app_list_strings['service_satisfaction_scale_dom'] = array(
+    $app_list_strings['service_satisfaction_scale_dom'] = [
         1 => '1 - insatisfait',
         2 => '2',
         3 => '3',
         4 => '4',
         5 => '5 - très satisfait',
-    );
-    $app_list_strings['servicefeedback_status_dom'] = array(
+    ];
+    $app_list_strings['servicefeedback_status_dom'] = [
         'sent' => 'envoyé',
         'completed' => 'complété',
-    );
-    $app_list_strings['servicefeedback_parent_type_display'] = array(
+    ];
+    $app_list_strings['servicefeedback_parent_type_display'] = [
         'ServiceTickets' => 'Service Tickets',
         'ServiceOrders' => 'Service Commandes',
         'ServiceCalls' => 'Service Appels',
-    );
-    $app_list_strings['record_type_display'] = array(
+    ];
+    $app_list_strings['record_type_display'] = [
         'ServiceTickets' => 'Service Tickets',
         'ServiceOrders' => 'Service Commandes',
         'ServiceCalls' => 'Service Appels',
-    );
+    ];
 }
-include('include/SpiceBeanGuides/SpiceBeanGuideLanguage.php');
 
 $app_list_strings['mailboxes_transport_dom'] = [
     'imap' => 'IMAP/SMTP',

@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,89 +33,89 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['users_password_link'] = array(
+global $dictionary;
+$dictionary['users_password_link'] = [
     'table' => 'users_password_link',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'vname' => 'LBL_ID',
             'type' => 'id',
             'required' => true,
-        ) ,
-        'username' => array(
+        ],
+        'username' => [
             'name' => 'username',
             'vname' => 'LBL_USERNAME',
             'type' => 'varchar',
             'len' => 36,
-        ) ,
-        'date_generated' => array(
+        ],
+        'date_generated' => [
             'name' => 'date_generated',
             'vname' => 'LBL_DATE_ENTERED',
             'type' => 'datetime',
-        ) ,
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'vname' => 'LBL_DELETED',
             'type' => 'bool',
             'required' => false,
             'reportable' => false,
-        ) ,
-    ) ,
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'users_password_link_pk',
             'type' => 'primary',
-            'fields' => array(
+            'fields' => [
                 'id'
-            )
-        ) ,
-        array(
+            ]
+        ],
+        [
             'name' => 'idx_username',
             'type' => 'index',
-            'fields' => array(
+            'fields' => [
                 'username'
-            )
-        )
-    ) ,
-);
+            ]
+        ]
+    ],
+];
 
-$dictionary['users_password_tokens'] = array(
+$dictionary['users_password_tokens'] = [
     'table' => 'users_password_tokens',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'vname' => 'LBL_ID',
             'type' => 'id',
             'required' => true,
-        ) ,
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'vname' => 'LBL_USERNAME',
             'type' => 'varchar',
             'len' => 36,
-        ) ,
-        'date_generated' => array(
+        ],
+        'date_generated' => [
             'name' => 'date_generated',
             'vname' => 'LBL_DATE_ENTERED',
             'type' => 'datetime',
-        ) ,
-    ) ,
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'users_password_tokens_pk',
             'type' => 'primary',
-            'fields' => array(
+            'fields' => [
                 'id'
-            )
-        ) ,
-        array(
+            ]
+        ],
+        [
             'name' => 'idx_user_id',
             'type' => 'index',
-            'fields' => array(
+            'fields' => [
                 'user_id'
-            )
-        )
-    ) ,
-);
+            ]
+        ]
+    ],
+];
 ?>

@@ -6,8 +6,8 @@
  */
 class PHPSQLParser
 {
-		var $reserved = array();
-		var $functions = array();
+		var $reserved = [];
+		var $functions = [];
 		function __construct($sql = false) {
 			#LOAD THE LIST OF RESERVED WORDS
 			$this->load_reserved_words();
@@ -25,7 +25,7 @@ class PHPSQLParser
 			$skip_until = false;
 
 			#this is the output tree which is being parsed
-			$out = array();
+			$out = [];
 
 			#This is the last type of union used (UNION or UNION ALL)
 			#indicates a) presence of at least one union in this query
@@ -34,7 +34,7 @@ class PHPSQLParser
 
 			#Sometimes a "query" consists of more than one query (like a UNION query)
 			#this array holds all the queries
-			$queries=array();
+			$queries=[];
 
 			#This is the highest level lexical analysis.  This is the part of the
 			#code which finds UNION and UNION ALL query parts
@@ -66,7 +66,7 @@ class PHPSQLParser
 					}
 
 					$queries[$union][] = $out;
-					$out = array();
+					$out = [];
 
 				} else {
 					$out[]=$token;
@@ -92,7 +92,7 @@ class PHPSQLParser
 			is supported in each UNION block.  (select)(select)union(select) is not legal.
 			The extra queries will be silently ignored.
 			*/
-			$union_types = array('UNION','UNION ALL');
+			$union_types = ['UNION','UNION ALL'];
 			foreach($union_types as $union_type) {
 				if(!empty($queries[$union_type])) {
 					foreach($queries[$union_type] as $i => $tok_list) {
@@ -130,10 +130,10 @@ class PHPSQLParser
 
 		#This function counts open and close parenthesis and
 		#returns their location.  This might be faster as a regex
-		private function count_paren($token,$chars=array('(',')')) {
+		private function count_paren($token,$chars= ['(',')']) {
 			$len = strlen($token);
-			$open=array();
-			$close=array();
+			$open=[];
+			$close=[];
 			for($i=0;$i<$len;++$i){
 				if($token[$i] == $chars[0]) {
 					$open[] = $i;
@@ -142,7 +142,7 @@ class PHPSQLParser
 				}
 
 			}
-			return array('open' => $open, 'close' => $close, 'balanced' =>( count($close) - count($open)));
+			return ['open' => $open, 'close' => $close, 'balanced' =>( count($close) - count($open))];
 		}
 
 		#This function counts open and close parenthesis and
@@ -165,7 +165,7 @@ class PHPSQLParser
 				    return false;
 				}
 
-				$sql = str_replace(array('\\\'','\\"',"\r\n","\n","()"),array("''",'""'," "," "," "), $sql);
+				$sql = str_replace(['\\\'','\\"',"\r\n","\n","()"], ["''",'""'," "," "," "], $sql);
 	                        $regex=<<<EOREGEX
 /(`(?:[^`]|``)`|[@A-Za-z0-9_.`-]+(?:\(\s*\)){0,1})
 |(\+|-|\*|\/|!=|>=|<=|<>|>|<|&&|\|\||=|\^)
@@ -599,7 +599,7 @@ EOREGEX
 				if($token == '=') continue;
 
 				if($token == ',') {
-					$expr[] = array('column' => trim($column), 'expr' => trim($expression));
+					$expr[] = ['column' => trim($column), 'expr' => trim($expression)];
 					$expression = $column = "";
 					continue;
 				}
@@ -607,7 +607,7 @@ EOREGEX
 				$expression .= $token;
 			}
 			if($expression) {
-				$expr[] = array('column' => trim($column), 'expr' => trim($expression));
+				$expr[] = ['column' => trim($column), 'expr' => trim($expression)];
 			}
 
 			return $expr;
@@ -641,7 +641,7 @@ EOREGEX
 				}
 			}
 
-			return array('start' => $start, 'end' => $end);
+			return ['start' => $start, 'end' => $end];
 		}
 
 		/* This function processes the SELECT section.  It splits the clauses at the commas.
@@ -652,7 +652,7 @@ EOREGEX
 		*/
 		private function process_select(&$tokens) {
 			$expression = "";
-			$expr = array();
+			$expr = [];
 			foreach($tokens as $token) {
 				if($token == ',') {
 					$expr[] = $this->process_select_expr(trim($expression));
@@ -694,7 +694,7 @@ EOREGEX
 			The tokens after (and including) the AS are removed.
 			*/
 			$base_expr = "";
-			$stripped=array();
+			$stripped=[];
 			$capture=false;
 			$alias = "";
 			$processed=false;
@@ -770,7 +770,7 @@ EOREGEX
 				$processed = false;
 			}
 
-			return array('expr_type'=>$type,'alias' => $alias, 'base_expr' => $base_expr, 'sub_tree' => $processed);
+			return ['expr_type'=>$type,'alias' => $alias, 'base_expr' => $base_expr, 'sub_tree' => $processed];
 
 		}
 
@@ -787,7 +787,7 @@ EOREGEX
 		private function process_from(&$tokens) {
 
 			$expression = "";
-			$expr = array();
+			$expr = [];
 			$token_count=0;
 			$table = "";
 			$alias = "";
@@ -931,7 +931,7 @@ EOREGEX
 
 
 						if($join_type == "") $join_type='JOIN';
-						$expr[] = array('table'=>$table, 'alias'=>$alias,'join_type'=>$join_type,'ref_type'=> $ref_type,'ref_clause'=>$this->trimSubquery($ref_expr), 'base_expr' => $base_expr, 'sub_tree' => $sub_tree);
+						$expr[] = ['table'=>$table, 'alias'=>$alias,'join_type'=>$join_type,'ref_type'=> $ref_type,'ref_clause'=>$this->trimSubquery($ref_expr), 'base_expr' => $base_expr, 'sub_tree' => $sub_tree];
 						$modifier = "";
 						#$join_type=$saved_join_type;
 
@@ -969,7 +969,7 @@ EOREGEX
 			}
 			if($join_type == "") $saved_join_type='JOIN';
 
-			$expr[] = array('table'=>$table, 'alias'=>$alias,'join_type'=>$saved_join_type,'ref_type'=> $ref_type,'ref_clause'=> $this->trimSubquery($ref_expr), 'base_expr' => $base_expr, 'sub_tree' => $sub_tree);
+			$expr[] = ['table'=>$table, 'alias'=>$alias,'join_type'=>$saved_join_type,'ref_type'=> $ref_type,'ref_clause'=> $this->trimSubquery($ref_expr), 'base_expr' => $base_expr, 'sub_tree' => $sub_tree];
 
 
 			return $expr;
@@ -977,7 +977,7 @@ EOREGEX
 
 		private function process_group(&$tokens, &$select) {
 
-			$out=array();
+			$out=[];
 			$expression = "";
 			$direction="ASC";
 		        $type = "expression";
@@ -1008,7 +1008,7 @@ EOREGEX
 							if(!$type) $type = "expression";
 						}
 
-						$out[]=array('type'=>$type,'base_expr'=>$expression,'direction'=>$direction);
+						$out[]= ['type'=>$type,'base_expr'=>$expression,'direction'=>$direction];
 						$escaped = "";
 						$expression = "";
 						$direction = "ASC";
@@ -1056,11 +1056,11 @@ EOREGEX
 						if(!$type) $type = "expression";
 					}
 
-					$out[]=array('type'=>$type,'base_expr'=>$expression,'direction'=>$direction);
+					$out[]= ['type'=>$type,'base_expr'=>$expression,'direction'=>$direction];
 			}
 			foreach($out as &$term) {
 			    if(!empty($term['base_expr'])) {
-			        $term['sub_tree'] = array($this->process_select_expr($term['base_expr']));
+			        $term['sub_tree'] = [$this->process_select_expr($term['base_expr'])];
 			    }
 			}
 
@@ -1071,13 +1071,13 @@ EOREGEX
 	           processes these sections.  Recursive.
 		*/
 		private function process_expr_list($tokens) {
-			$expr = array();
+			$expr = [];
 			$type = "";
 			$prev_token = "";
 			$skip_next = false;
 			$sub_expr = "";
 
-			$in_lists = array();
+			$in_lists = [];
 			foreach($tokens as $key => $token) {
 
 				if(strlen(trim($token))==0) continue;
@@ -1103,7 +1103,7 @@ EOREGEX
 					if($prev_token == 'IN') {
 						$type = "in-list";
 						$processed = $this->split_sql(substr($token,1,-1));
-						$list = array();
+						$list = [];
 						foreach($processed as $v) {
 							if($v == ',') continue;
 							$list[]=$v;
@@ -1118,7 +1118,7 @@ EOREGEX
 	                                       $list = $this->split_sql(substr($token,1,-1));
 	                                       if(count($list) > 1){
 	                                               $match_mode = implode('',array_slice($list,1));
-	                                               $processed = array($list[0], $match_mode);
+	                                               $processed = [$list[0], $match_mode];
 	                                       }
 	                                       else
 	                                               $processed = $list[0];
@@ -1253,7 +1253,7 @@ EOREGEX
 				$sub_expr=trim($sub_expr);
 				$sub_expr = "";
 
-				$expr[] = array( 'expr_type' => $type, 'base_expr' => $token, 'sub_tree' => $processed);
+				$expr[] = ['expr_type' => $type, 'base_expr' => $token, 'sub_tree' => $processed];
 				$prev_token = $upper;
 				$expr_type = "";
 				$type = "";
@@ -1267,7 +1267,7 @@ EOREGEX
 			}
 
 			if($expr_type) {
-				$expr[] = array( 'expr_type' => $type, 'base_expr' => $token, 'sub_tree' => $processed);
+				$expr[] = ['expr_type' => $type, 'base_expr' => $token, 'sub_tree' => $processed];
 			}
 			$mod = false;
 
@@ -1299,7 +1299,7 @@ EOREGEX
 		}
 
 		private function process_delete($tokens) {
-			$tables = array();
+			$tables = [];
 			$del = $tokens['DELETE'];
 
 			foreach($tokens['DELETE'] as $expression) {
@@ -1314,7 +1314,7 @@ EOREGEX
 				}
 			}
 
-			$tokens['DELETE'] = array('TABLES' => $tables);
+			$tokens['DELETE'] = ['TABLES' => $tables];
 
 			return $tokens;
 		}
@@ -1339,7 +1339,7 @@ EOREGEX
 				$cols = explode(",", $this->trimSubquery($cols));
 			}
 			unset($tokens['INTO']);
-			$tokens[$token_category] =  array('table'=>$table, 'cols'=>$cols);
+			$tokens[$token_category] =  ['table'=>$table, 'cols'=>$cols];
 			return $tokens;
 
 		}
@@ -1347,7 +1347,7 @@ EOREGEX
 
 		private function load_reserved_words() {
 
-		    $this->functions = array(
+		    $this->functions = [
 		        'abs',
 		        'acos',
 		        'adddate',
@@ -1544,10 +1544,10 @@ EOREGEX
 		        'weekday',
 		        'weekofyear',
 		        'year',
-		        'yearweek');
+		        'yearweek'];
 
 		/* includes functions */
-		$this->reserved = array(
+		$this->reserved = [
 			'abs',
 			'acos',
 			'adddate',
@@ -1973,7 +1973,7 @@ EOREGEX
 			'xor',
 			'year_month',
 			'zerofill'
-			);
+        ];
 
 			for($i=0;$i<count($this->reserved);++$i) {
 				$this->reserved[$i]=strtoupper($this->reserved[$i]);

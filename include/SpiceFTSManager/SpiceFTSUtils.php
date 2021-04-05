@@ -1,74 +1,105 @@
 <?php
-
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
 namespace SpiceCRM\includes\SpiceFTSManager;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 class SpiceFTSUtils
 {
-    static $standardFields = array(
-        'id' => array(
+    static $standardFields = [
+        'id' => [
             'type' => 'keyword',
             'index' => true
-        ),
-        'summary_text' => array(
+        ],
+        'summary_text' => [
             'type' => 'text'
-        ),
-        'related_ids' => array(
+        ],
+        'related_ids' => [
             'type' => 'keyword',
             'index' => true
-        ),
+        ],
         /**
          * for the parent ids .. especiallly used for the ativities but can be used for other related searches as well
          */
-        'parent_ids' => array(
+        'parent_ids' => [
             'type' => 'keyword',
             'index' => true
-        ),
-        'assigned_user_name' => array(
+        ],
+        'assigned_user_name' => [
             'type' => 'text'
-        ),
-        'assigned_user_id' => array(
+        ],
+        'assigned_user_id' => [
             'type' => 'keyword',
             'index' => true
-        ),
-        'modified_by_name' => array(
+        ],
+        'modified_by_name' => [
             'type' => 'text'
-        ),
-        'modified_user_id' => array(
+        ],
+        'modified_user_id' => [
             'type' => 'keyword',
             'index' => true
-        ),
-        'created_by_name' => array(
+        ],
+        'created_by_name' => [
             'type' => 'text'
-        ),
-        'created_by' => array(
+        ],
+        'created_by' => [
             'type' => 'keyword',
             'index' => true
-        ),
-        'date_entered' => array(
+        ],
+        'date_entered' => [
             'type' => 'date',
             'index' => false,
             'format' => 'yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis'
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'type' => 'date',
             'index' => false,
             'format' => 'yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis'
-        ),
-        'tags' => array(
+        ],
+        'tags' => [
             'type' => 'text',
             'index' => true,
             'aggregate' => true,
             'suggest' => true,
             'search'=> true,
             'analyzer' => 'spice_ngram'
-        ),
-        '_location' => array(
+        ],
+        '_location' => [
             'type' => 'geo_point'
-        )
-    );
+        ]
+    ];
 
     static function checkElastic(){
-        $handler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
+        $handler = new ElasticHandler();
         $response = $handler->query('GET', '');
         return json_decode($response);
     }
@@ -82,7 +113,7 @@ class SpiceFTSUtils
      */
     static function getBeanIndexProperties($module, $overrideCache = false)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         //catch installation process and abort. table sysfts will not exist at the point during installation
         if (!empty($GLOBALS['installing']))
             return false;
@@ -95,17 +126,17 @@ class SpiceFTSUtils
             $moduleProperties = $db->fetchByAssoc($db->query("SELECT * FROM sysfts WHERE module = '$module'"));
             if ($moduleProperties) {
                 $modulePropertiesarray = json_decode(html_entity_decode($moduleProperties['ftsfields']), true);
-                $seed = \BeanFactory::getBean($module);
+                $seed = BeanFactory::getBean($module);
                 foreach ($modulePropertiesarray as $modulePropertyIndex => $moduleProperty) {
                     $modulePropertiesarray[$modulePropertyIndex]['indexfieldname'] = isset($moduleProperty['indexedname']) ? $moduleProperty['indexedname'] : SpiceFTSUtils::getFieldIndexName($seed, $moduleProperty['path']);
                     $modulePropertiesarray[$modulePropertyIndex]['metadata'] = SpiceFTSUtils::getFieldIndexParams($seed, $moduleProperty['path']);
                 }
 
-                $seed = \BeanFactory::getBean($module);
+                $seed = BeanFactory::getBean($module);
                 if (method_exists($seed, 'add_fts_metadata')) {
                     $addFields = $seed->add_fts_metadata();
                     foreach ($addFields as $addFieldName => $addField) {
-                        $modulePropertiesarray[] = array(
+                        $modulePropertiesarray[] = [
                             'fieldid' => create_guid(),
                             'fieldname' => $addFieldName,
                             'indexfieldname' => $addFieldName,
@@ -113,7 +144,7 @@ class SpiceFTSUtils
                             'indextype' => $addField['type'] == 'string' ? 'text' : $addField['type'],
                             'aggregate' => $addField['aggregate'],
                             'aggregatesize' => $addField['aggregatesize']
-                        );
+                        ];
                     }
                 }
 
@@ -164,7 +195,7 @@ class SpiceFTSUtils
             return false;
         }
         //END
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         if (isset($_SESSION['SpiceFTS']['indexes'][$module]['settings'])) {
             return $_SESSION['SpiceFTS']['indexes'][$module]['settings'];
@@ -195,9 +226,9 @@ class SpiceFTSUtils
                     $fieldName = !empty($fieldName) ? $fieldName . '->' . $pathRecordDetails[2] : $pathRecordDetails[2];
                     if ($valueBean) {
                         if($valueBean->load_relationship($pathRecordDetails[2])){
-                            $valueBean = \BeanFactory::getBean($valueBean->{$pathRecordDetails[2]}->getRelatedModuleName());
+                            $valueBean = BeanFactory::getBean($valueBean->{$pathRecordDetails[2]}->getRelatedModuleName());
                         } else {
-                            $GLOBALS['log']->fatal(__CLASS__. '::'.__FUNCTION__.'() Could not load '.$pathRecordDetails[2]. ' for '.get_class($valueBean));
+                            LoggerManager::getLogger()->fatal(__CLASS__. '::'.__FUNCTION__.'() Could not load '.$pathRecordDetails[2]. ' for '.get_class($valueBean));
                         }
                     }
                     break;
@@ -213,22 +244,22 @@ class SpiceFTSUtils
     {
         $pathRecords = explode('::', $path);
         $valueBean = null;
-        $fieldData = array();
+        $fieldData = [];
         foreach ($pathRecords as $pathRecord) {
             $pathRecordDetails = explode(':', $pathRecord);
             switch ($pathRecordDetails[0]) {
                 case 'root':
                     if (!$bean)
-                        $valueBean = \BeanFactory::getBean($pathRecordDetails[1]);
+                        $valueBean = BeanFactory::getBean($pathRecordDetails[1]);
                     else
                         $valueBean = $bean;
                     break;
                 case 'link':
-                    if($valueBean->load_relationship($pathRecordDetails[2])){
-                        $valueBean = \BeanFactory::getBean($valueBean->{$pathRecordDetails[2]}->getRelatedModuleName());
+                    if($valueBean && $valueBean->load_relationship($pathRecordDetails[2])){
+                        $valueBean = BeanFactory::getBean($valueBean->{$pathRecordDetails[2]}->getRelatedModuleName());
                     }
                     else {
-                        $GLOBALS['log']->fatal(__CLASS__. '::'.__FUNCTION__.'() Could not load '.$pathRecordDetails[2]. ' for '.get_class($valueBean));
+                        LoggerManager::getLogger()->fatal(__CLASS__. '::'.__FUNCTION__.'() Could not load '.$pathRecordDetails[2]. ' for '.get_class($valueBean));
                     }
                     break;
                 case 'field':
@@ -242,7 +273,8 @@ class SpiceFTSUtils
     static function getActivitiyModules($scope = 'Activities')
     {
 
-        global $db, $moduleList;
+        global $moduleList;
+        $db = DBManagerFactory::getInstance();
         $modules = [];
 
         $moduleProperties = $db->query("SELECT * FROM sysfts");
@@ -263,7 +295,7 @@ class SpiceFTSUtils
     }
     static function getCalendarModules()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $modules = [];
 
         $moduleProperties = $db->query("SELECT * FROM sysfts");
@@ -282,8 +314,8 @@ class SpiceFTSUtils
 
     static function getIndexNameForModule($module)
     {
-        global $sugar_config;
-        $indexPrefix = $sugar_config['fts']['prefix'];
+        $handler = new ElasticHandler();
+        $indexPrefix = $handler->indexPrefix;
         return $indexPrefix . strtolower($module);
     }
 
@@ -310,7 +342,7 @@ class SpiceFTSUtils
                     $module = $pathRecordDetails[1];
                     break;
                 case 'link':
-                    $seed = \BeanFactory::getBean($pathRecordDetails[1]);
+                    $seed = BeanFactory::getBean($pathRecordDetails[1]);
                     if($seed && $seed->load_relationship($pathRecordDetails[2])){
                         $module = $seed->{$pathRecordDetails[2]}->getRelatedModuleName();
                     }

@@ -3,31 +3,34 @@
 
 namespace SpiceCRM\includes\mjml\KREST\controllers;
 
+use Exception;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 class MJMLKRESTController
 {
     /**
-     * loaded from $sugar_config['mjml']['url']
+     * loaded from \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['mjml']['url']
      * @var string
      */
     protected $url = "https://api.mjml.io/v1/render";
     /**
-     * loaded from $sugar_config['mjml']['appId']
+     * loaded from \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['mjml']['appId']
      * @var string
      */
     protected $appId = "16612633-1d7b-4aec-a102-4fd4dd0ee9da";
     /**
-     * loaded from $sugar_config['mjml']['secretKey']
+     * loaded from \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['mjml']['secretKey']
      * @var string
      */
     protected $secretKey = "551a8c83-78a0-420b-b0ad-a41e7bf4a563";
 
     public function __construct()
     {
-        global $sugar_config;
-        if (!$sugar_config['mjml'] || empty($sugar_config['mjml'])) return;
-        $this->url = $sugar_config['mjml']['url'];
-        $this->appId = $sugar_config['mjml']['appId'];
-        $this->secretKey = $sugar_config['mjml']['secretKey'];
+        
+        if (!SpiceConfig::getInstance()->config['mjml'] || empty(SpiceConfig::getInstance()->config['mjml'])) return;
+        $this->url = SpiceConfig::getInstance()->config['mjml']['url'];
+        $this->appId = SpiceConfig::getInstance()->config['mjml']['appId'];
+        $this->secretKey = SpiceConfig::getInstance()->config['mjml']['secretKey'];
     }
 
     /**
@@ -41,7 +44,7 @@ class MJMLKRESTController
     {
         $json = $req->getParsedBody()['json'];
         if (!$json) {
-            throw new \Exception('Json format is incorrect', '400');
+            throw new Exception('Json format is incorrect', '400');
         }
         $xml = addslashes($this->json2xml($json));
         return $res->withJson($this->xmlToHtml($xml));

@@ -81,7 +81,7 @@ class PHPExcel_Shared_ZipStreamWrapper {
      */
     public function stream_open($path, $mode, $options, &$opened_path) {
         // Check for mode
-        if ($mode{0} != 'r') {
+        if (substr($mode, 0, 1) != 'r') {
             throw new PHPExcel_Reader_Exception('Mode ' . $mode . ' is not supported. Only read mode is supported.');
         }
 

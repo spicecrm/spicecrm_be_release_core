@@ -1,95 +1,97 @@
 <?php
 
-$dictionary ['SpiceACLObject'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary ['SpiceACLObject'] = [
     'table' => 'spiceaclobjects',
-    'fields' => array(
-        'sysmodule_id' => array(
+    'fields' => [
+        'sysmodule_id' => [
             'name' => 'sysmodule_id',
             'vname' => 'LBL_SYSMODULE_ID',
             'required' => true,
             'type' => 'varchar',
             'len' => 60
-        ),
-        'spiceacltype_module' => array(
+        ],
+        'spiceacltype_module' => [
             'name' => 'spiceacltype_module',
             'type' => 'varchar',
             'len' => 60,
             'source' => 'non-db'
-        ),
-        'spiceaclobjecttype' => array(
+        ],
+        'spiceaclobjecttype' => [
             'name' => 'spiceaclobjecttype',
             'vname' => 'LBL_SPICEACLOBJECTTYPE',
             'type' => 'enum',
             'len' => 1,
             'options' => 'spiceaclobjects_types_dom'
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'vname' => 'LBL_DESCRIPTION',
-            'type' => 'text'),
-        'status' => array(
+            'type' => 'text'],
+        'status' => [
             'name' => 'status',
             'vname' => 'LBL_STATUS',
             'type' => 'enum',
             'len' => 1,
-            'options' => 'kauthprofiles_status'),
-        'spiceaclorgassignment' => array(
+            'options' => 'kauthprofiles_status'],
+        'spiceaclorgassignment' => [
             'name' => 'spiceaclorgassignment',
             'vname' => 'LBL_SPICEACLORGASSIGNMENT',
             'type' => 'varchar',
             'len' => 2
-        ),
-        'spiceaclowner' => array(
+        ],
+        'spiceaclowner' => [
             'name' => 'spiceaclowner',
             'vname' => 'LBL_SPICEACLOWNER',
             'type' => 'bool',
             'default' => false
-        ),
-        'spiceaclcreator' => array(
+        ],
+        'spiceaclcreator' => [
             'name' => 'spiceaclcreator',
             'vname' => 'LBL_SPICEACLCREATOR',
             'type' => 'bool',
             'default' => false
-        ),
-        'allorgobjects' => array(
+        ],
+        'allorgobjects' => [
             'name' => 'allorgobjects',
             'vname' => 'LBL_ALLORGOBJECTS',
             'type' => 'bool',
             'default' => false
-        ),
-        'activity' => array(
+        ],
+        'activity' => [
             'name' => 'activity',
             'vname' => 'LBL_ACTIVITY',
             'type' => 'varchar',
-            'len' => 36),
-        'customsql' => array(
+            'len' => 36],
+        'customsql' => [
             'name' => 'customsql',
             'vname' => 'LBL_CUSTOMSQL',
             'type' => 'base64',
             'dbType' => 'text'
-        ),
-        'fieldvalues' => array(
+        ],
+        'fieldvalues' => [
             'name' => 'fieldvalues',
             'type' => 'json',
             'source' => 'non-db'
-        ),
-        'fieldcontrols' => array(
+        ],
+        'fieldcontrols' => [
             'name' => 'fieldcontrols',
             'type' => 'json',
             'source' => 'non-db'
-        ),
-        'objectactions' => array(
+        ],
+        'objectactions' => [
             'name' => 'objectactions',
             'type' => 'json',
             'source' => 'non-db'
-        ),
-        'territoryelementvalues' => array(
+        ],
+        'territoryelementvalues' => [
             'name' => 'territoryelementvalues',
             'type' => 'json',
             'source' => 'non-db'
-        )
-    )
-);
+        ]
+    ]
+];
 
-VardefManager::createVardef('SpiceACLObjects', 'SpiceACLObject', array('default'));
+VardefManager::createVardef('SpiceACLObjects', 'SpiceACLObject', ['default']);
 

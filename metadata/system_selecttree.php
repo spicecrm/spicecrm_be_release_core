@@ -1,75 +1,75 @@
 <?php
-$dictionary['sysselecttree_fields'] = array(
+$dictionary['sysselecttree_fields'] = [
     'table' => 'sysselecttree_fields',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
-        ),
-        'keyname' => array(
+        ],
+        'keyname' => [
             'name' => 'keyname',
             'type' => 'varchar',
             'len' => 32
-        ),
-        'selectable' => array(
+        ],
+        'selectable' => [
             'name' => 'selectable',
             'type' => 'bool',
-        ),
-        'favorite' => array(
+        ],
+        'favorite' => [
             'name' => 'favorite',
             'type' => 'bool'
-        ),
-        'parent_id' => array(
+        ],
+        'parent_id' => [
             'name' => 'parent_id',
             'type' => 'id',
             'comment' => 'id of a record located in this table'
-        ),
-        'tree' => array(
+        ],
+        'tree' => [
             'name' => 'tree',
             'type' => 'id'
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'sysselecttree_fieldspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_sysselecttree_fieldsparent',
             'type' => 'index',
-            'fields' => array('parent_id')
-        ),
-        array(
+            'fields' => ['parent_id']
+        ],
+        [
             'name' => 'idx_sysselecttree_fieldstree',
             'type' => 'index',
-            'fields' => array('tree')
-        ),
-    )
-);
+            'fields' => ['tree']
+        ],
+    ]
+];
 
 
-$dictionary['sysselecttree_tree'] = array(
+$dictionary['sysselecttree_tree'] = [
     'table' => 'sysselecttree_tree',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'sysselecttree_treepk',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    )
-);
+            'fields' => ['id']
+        ]
+    ]
+];

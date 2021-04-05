@@ -3,52 +3,54 @@
 /**
  * determine if we have a lgnauge specific filter set to be applied
  */
-global $sugar_config;
+
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 $languagefilter = [];
-if($sugar_config['fts']['languagefilter']){
-    $languagefilter[] = $sugar_config['fts']['languagefilter'];
+if(SpiceConfig::getInstance()->config['fts']['languagefilter']){
+    $languagefilter[] = SpiceConfig::getInstance()->config['fts']['languagefilter'];
 }
 
-$elasticAnalyzers = array(
-    "spice_standard" => array(
+$elasticAnalyzers = [
+    "spice_standard" => [
         "type" => "custom",
         "tokenizer" => "standard",
         "filter" => $languagefilter
-    ),
-    "spice_standard_all" => array(
+    ],
+    "spice_standard_all" => [
         "type" => "custom",
         "tokenizer" => "spice_standard_all",
         "filter" => $languagefilter
-    ),
-    "spice_ngram" => array(
+    ],
+    "spice_ngram" => [
         "type" => "custom",
         "tokenizer" => "spice_ngram",
         "filter" => array_merge(["lowercase"],$languagefilter)
-    ),
-    "spice_ngram_all" => array(
+    ],
+    "spice_ngram_all" => [
         "type" => "custom",
         "tokenizer" => "spice_ngram_all",
         "filter" => array_merge(["lowercase"],$languagefilter)
-    ),
-    "spice_ngram_all_search" => array(
+    ],
+    "spice_ngram_all_search" => [
         "type" => "custom",
         "tokenizer" => "spice_ngram_all_search",
         "filter" => array_merge(["lowercase"],$languagefilter)
-    ),
-    "spice_html" => array(
+    ],
+    "spice_html" => [
         "type" => "custom",
         "tokenizer" => "spice_ngram",
         "filter" => array_merge(["lowercase"],$languagefilter),
         "char_filter" => ["html_strip"]
-    ),
-    "spice_edgengram" => array(
+    ],
+    "spice_edgengram" => [
         "type" => "custom",
         "tokenizer" => "spice_edgengram",
         "filter" => array_merge(["lowercase"],$languagefilter)
-    ),
-    "spice_email" => array(
+    ],
+    "spice_email" => [
         "type" => "custom",
         "tokenizer" => "spice_email",
         "filter" => ["lowercase"]
-    )
-);
+    ]
+];

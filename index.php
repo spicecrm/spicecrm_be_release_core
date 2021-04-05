@@ -28,75 +28,140 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 
-//session_start();
+// require the autoloader
+require_once 'vendor/autoload.php';
 
-error_reporting(1);
+use Slim\Factory\AppFactory;
+use DI\Container;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\UploadStream;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceModules;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SpiceDictionary\SpiceDictionaryHandler;
+use SpiceCRM\includes\SpiceSlim\SpiceResponseFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\Administration\Administration;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
+
+require_once('include/utils.php');
+require_once('sugar_version.php'); // provides $sugar_version, $sugar_db_version
+
+
+//set some basic php settings ensure they are proper if not set in the php.ini as it shoudl have been
+error_reporting(E_ERROR);
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 ini_set('session.use_cookies', '0');
+date_default_timezone_set('UTC');
 
 // header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: *');
 header('Content-Type: application/json');
 
-// initialize SLIM Framework
-require_once 'vendor/autoload.php';
-require_once 'vendor/slim/slim/Slim/App.php';
 
-//Check on function getallheaders! Not all PHP distributions have this function
-//Example: Nginx, PHP-FPM or any other FastCGI method of running PHP
-if (!function_exists('getallheaders')) {
-    function getallheaders()
-    {
-        $headers = [];
-        foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) == 'HTTP_') {
-                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-            }
-        }
-        return $headers;
+$RESTManager = SpiceCRM\includes\RESTManager::getInstance();
+
+try {
+    $slimContainer = new Container();
+    AppFactory::setContainer($slimContainer);
+    $app = AppFactory::create(new SpiceResponseFactory());
+
+    $app->addBodyParsingMiddleware();
+    $app->mode = 'production';
+
+    //determine base path
+    $appBasePath = \SpiceCRM\includes\utils\SpiceUtils::determineAppBasePath();
+    if ($appBasePath !== null) {
+        $app->setBasePath($appBasePath);
+    } else {
+        throw new \Exception("Unable to determine App Base Path");
     }
-}
 
-$GLOBALS['isREST'] = true;
-$GLOBALS['guidRegex'] = '[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}'; // this simple form (no grouping) is required by SLIM
+    if (SpiceConfig::getInstance()->configExists()) {
 
-/**
- * SETTINGs
- */
-$config = [
-    'displayErrorDetails' => true,
-    'determineRouteBeforeAppMiddleware' => true
-    /*'logger' => [
-        'name' => 'slim-app',
-        //'level' => Monolog\Logger::DEBUG,
-        'path' => __DIR__ . '/app.log',
-    ],*/
-];
-$app = new \Slim\App(['settings' => $config]);
-$app->mode = 'production';
-define('sugarEntry', 'SLIM');
+        //enable error output when in developer mode
+        if (SpiceConfig::getInstance()->config['developerMode'] == true) {
+            ini_set('display_errors', 1);
+        }
+        SpiceConfig::getInstance()->loadConfigFromDB();
+
+        // load the core dictionary files
+        SpiceDictionaryHandler::loadMetaDataFiles();
+
+        $GLOBALS['timedate'] = TimeDate::getInstance();
+        $RESTManager->authenticate();
+
+        // register the upload stream handler
+        UploadStream::register();
+
+        // load the modules first
+        SpiceModules::loadModules();
+
+        // load the metadata from the database
+        SpiceDictionaryHandler::loadMetaDataDefinitions();
+
+        if (!empty(SpiceConfig::getInstance()->config['session_dir'])) {
+            session_save_path(SpiceConfig::getInstance()->config['session_dir']);
+        }
 
 
-if (!file_exists('config.php')) {
-    require "include/SpiceInstaller/REST/extensions/SpiceInstallerKRESTextension.php";
 
-    $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($req, $res) {
-        $handler = $this->notFoundHandler; // handle using the default Slim page not found handler
-        return $handler($req, $res);
-    });
+        $system_config = new Administration();
+        $system_config->retrieveSettings();
 
-    $app->run();
-} else {
-    // initialize the Rest Manager and make available globally
-    require('include/entryPoint.php');
-    $RESTManager = SpiceCRM\includes\RESTManager::getInstance();
-    $RESTManager->intialize($app);
 
-    // run the request
-    //$app->contentType('application/json');
-    $app->run();
+        $RESTManager->initialize($app);
 
-    // cleanup
-    $RESTManager->cleanup();
+        // run the request
+        $RESTManager->app->run();
+
+        // cleanup
+        AuthenticationController::getInstance()->cleanup();
+    } else {
+        $RESTManager->app=$app;
+        $app->addRoutingMiddleware();
+        //no config, fire spiceinstaller
+        require "include/SpiceInstaller/REST/extensions/SpiceInstallerKRESTextension.php";
+
+        $errorHandler = function (
+            \Psr\Http\Message\ServerRequestInterface $request,
+            \Throwable $exception,
+            bool $displayErrorDetails,
+            bool $logErrors,
+            bool $logErrorDetails
+        ) use ($app) {
+            $response = $app->getResponseFactory()->createResponse();
+
+            if ($exception instanceof \Slim\Exception\HttpNotFoundException) {
+                $message = 'not found';
+                $code = 404;
+            } elseif ($exception instanceof \Slim\Exception\HttpMethodNotAllowedException) {
+                $message = 'not allowed';
+                $code = 403;
+            } else {
+                $message = $exception->getMessage();
+                $code = $exception->getCode();
+            }
+
+            $response->getBody()->write($message);
+            return $response->withStatus($code);
+        };
+
+
+//        $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($req) {
+//            $handler = $this->notFoundHandler; // handle using the default Slim page not found handler
+//            return $handler->handle($req);
+//        });
+
+        $errorMiddleware = $app->addErrorMiddleware(true, true, true);
+        $errorMiddleware->setDefaultErrorHandler($errorHandler);
+        $RESTManager->initRoutes();
+        $app->run();
+        die();
+    }
+} catch (Exception $e) {
+    $RESTManager->outputError($e);
 }

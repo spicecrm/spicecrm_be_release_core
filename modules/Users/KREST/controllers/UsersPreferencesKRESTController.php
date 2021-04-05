@@ -2,12 +2,16 @@
 
 namespace SpiceCRM\modules\Users\KREST\controllers;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
+use SpiceCRM\modules\UserPreferences\UserPreference;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
 use SpiceCRM\includes\ErrorHandlers\NotFoundException;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class UsersPreferencesKRESTController
 {
-
     /**
      * called from the settings in the taskloaderitems. So no paramaters are expected and the reonse is an array.
      * The rest is handled by the REST extension there.
@@ -16,13 +20,13 @@ class UsersPreferencesKRESTController
      */
     public function getGlobalPreferences()
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         return $this->get_all_user_preferences('global', $current_user->id );
     }
 
     public function getPreferences($req, $res, $args)
     {
-        $names = $req->getParam('names');
+        $names = $req->getQueryParams()['names'];
         if (!isset($names)) {
             return $res->withJson($this->get_all_user_preferences( $args['category'], $args['userId'] ));
         } else {
@@ -37,12 +41,12 @@ class UsersPreferencesKRESTController
 
     public function get_all_user_preferences( $category, $userId )
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         if ( $current_user->id === $userId ) $user = $current_user;
         else {
          if ( $this->editingEnabled() ) {
-                $user = new \User();
+                $user = BeanFactory::getBean('Users');
                 $user->retrieve( $userId );
                 if ( empty( $user->id )) throw ( new NotFoundException('User not found.'))->setLookedFor([ 'id'=>$userId, 'module'=>'Users' ]);
             } else {
@@ -50,10 +54,9 @@ class UsersPreferencesKRESTController
             }
         }
 
-        require_once 'modules/UserPreferences/UserPreference.php';
-        $userPreference = new \UserPreference( $user );
+        $userPreference = new UserPreference( $user );
 
-        $prefArray = array();
+        $prefArray = [];
 
         $userPreference->loadPreferences($category);
 
@@ -62,12 +65,12 @@ class UsersPreferencesKRESTController
 
     public function get_user_preferences( $category, $names, $userId ) {
 
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         if ( $current_user->id === $userId ) $user = $current_user;
         else {
             if ( $this->editingEnabled() ) {
-                $user = new \User();
+                $user = BeanFactory::getBean('Users');
                 $user->retrieve( $userId );
                 if ( empty( $user->id )) throw ( new NotFoundException( 'User not found.' ) )->setLookedFor( [ 'id' => $userId, 'module' => 'Users' ] );
             } else {
@@ -75,10 +78,9 @@ class UsersPreferencesKRESTController
             }
         }
 
-        require_once 'modules/UserPreferences/UserPreference.php';
-        $userPreference = new \UserPreference( $user );
+        $userPreference = new UserPreference( $user );
 
-        $prefArray = array();
+        $prefArray = [];
 
         $namesArray = json_decode($names);
         if (!is_array($namesArray))
@@ -102,7 +104,7 @@ class UsersPreferencesKRESTController
      */
     public function set_user_preferences($req, $res, $args)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $category = $args['category'];
         $userId = $args['userId'];
@@ -113,7 +115,7 @@ class UsersPreferencesKRESTController
         if ( $current_user->id === $userId ) $user = $current_user;
         else {
             if ( $this->editingEnabled() ) {
-                $user = new \User();
+                $user = BeanFactory::getBean('Users');
                 $user->retrieve( $userId );
                 $setPreferenceFunction = "setPreferenceForUser";
                 $getPreferenceFunction = "getPreferenceForUser";
@@ -123,9 +125,8 @@ class UsersPreferencesKRESTController
             }
         }
 
-        require_once 'modules/UserPreferences/UserPreference.php';
-        $userPreference = new \UserPreference( $user );
-        $retData = array();
+        $userPreference = new UserPreference( $user );
+        $retData = [];
         // do the magic
         foreach ($preferences as $name => $value) {
             if ($value === null) $userPreference->deletePreference($name, $category);
@@ -133,12 +134,17 @@ class UsersPreferencesKRESTController
             if (($memmy = $userPreference->{$getPreferenceFunction}($name, $category)) !== null) $retData[$name] = $memmy;
         }
 
+        if ($current_user->id === $userId) {
+            // save the preferences
+            $userPreference->savePreferencesToDB();
+        }
+
         return $res->withJson($retData);
     }
 
     public function getDefaultPreferences()
     {
-        return $GLOBALS['sugar_config']['default_preferences'] ?: [];
+        return SpiceConfig::getInstance()->config['default_preferences'] ?: [];
     }
 
 
@@ -148,14 +154,14 @@ class UsersPreferencesKRESTController
      * @return bool
      */
     public function editingEnabled(){
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $editEnabled = false;
-        if($GLOBALS['sugar_config']['acl']['controller'] && !preg_match('/SpiceACL/', $GLOBALS['sugar_config']['acl']['controller'])){
-            if ( $current_user->is_admin and $GLOBALS['sugar_config']['enableSettingUserPrefsByAdmin'] ){
+        if(SpiceConfig::getInstance()->config['acl']['controller'] && !preg_match('/SpiceACL/', SpiceConfig::getInstance()->config['acl']['controller'])){
+            if ( $current_user->is_admin and SpiceConfig::getInstance()->config['enableSettingUserPrefsByAdmin'] ){
                 $editEnabled = true;
             }
         } else{
-            if($GLOBALS['ACLController']->checkAccess('UserPreferences', 'edit')){
+            if(SpiceACL::getInstance()->checkAccess('UserPreferences', 'edit')){
                 $editEnabled = true;
             }
         }

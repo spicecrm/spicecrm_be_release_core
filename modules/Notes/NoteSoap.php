@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,9 +34,8 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-require_once('include/upload_file.php');
-
-require_once('include/upload_file.php');
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\UploadFile;
 
 class NoteSoap
 {
@@ -50,7 +48,7 @@ class NoteSoap
 
     function saveFile($note, $portal = false)
     {
-        global $sugar_config;
+        
 
         $focus = new Note();
 
@@ -71,7 +69,7 @@ class NoteSoap
 
                 $ext_pos = strrpos($this->upload_file->stored_file_name, ".");
                 $this->upload_file->file_ext = substr($this->upload_file->stored_file_name, $ext_pos + 1);
-                if (in_array($this->upload_file->file_ext, $sugar_config['upload_badext'])) {
+                if (in_array($this->upload_file->file_ext, SpiceConfig::getInstance()->config['upload_badext'])) {
                         $this->upload_file->stored_file_name .= ".txt";
                         $this->upload_file->file_ext = "txt";
                 }
@@ -89,7 +87,7 @@ class NoteSoap
     }
 
     function newSaveFile($note, $portal = false){
-        global $sugar_config;
+        
 
         $focus = new Note();
 
@@ -109,7 +107,7 @@ class NoteSoap
 
             $ext_pos = strrpos($this->upload_file->stored_file_name, ".");
             $this->upload_file->file_ext = substr($this->upload_file->stored_file_name, $ext_pos + 1);
-            if (in_array($this->upload_file->file_ext, $sugar_config['upload_badext'])) {
+            if (in_array($this->upload_file->file_ext, SpiceConfig::getInstance()->config['upload_badext'])) {
                     $this->upload_file->stored_file_name .= ".txt";
                     $this->upload_file->file_ext = "txt";
             }

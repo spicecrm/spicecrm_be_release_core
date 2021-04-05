@@ -1,14 +1,18 @@
 <?php
 namespace SpiceCRM\modules\EmailAddresses;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\KREST\handlers\ModuleHandler;
+
 // require_once('KREST/handlers/ModuleHandler.php');
 
 class EmailAddressRestHandler
 {
     public static function searchBeans($params) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $moduleHandler = new ModuleHandler();
 
         $results = [];
 
@@ -34,7 +38,7 @@ class EmailAddressRestHandler
             $query = $db->query($sql);
             while ($row = $db->fetchByAssoc($query)) {
 
-                $seed = \BeanFactory::getBean($row['bean_module'], $row['bean_id']);
+                $seed = BeanFactory::getBean($row['bean_module'], $row['bean_id']);
 
                 $results[$row['bean_id']] = [
                     'selected' => false,
@@ -65,7 +69,7 @@ class EmailAddressRestHandler
         */
 
         foreach ($results as $bean_id => $result) {
-            $bean = \BeanFactory::getBean($result['module'], $bean_id);
+            $bean = BeanFactory::getBean($result['module'], $bean_id);
             if($bean) {
                 $results[$bean_id]['summary_text'] = $bean->get_summary_text();
             } else {

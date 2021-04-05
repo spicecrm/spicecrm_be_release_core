@@ -2,18 +2,19 @@
 
 namespace SpiceCRM\modules\Activities\KREST\controllers;
 
-use SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils;
-use SpiceCRM\includes\SpiceFTSManager\SpiceFTSBeanHandler;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
 
 class ActivitiesKRESTController
 {
     public function loadHistory($req, $res, $args) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array();
+        $retArray = [];
 
-        $getParams = $_GET;
+        $getParams = $req->getQueryParams();
         $start = $getParams['start'] ?: 0;
         $limit = $getParams['limit'] ?: 5;
 
@@ -31,8 +32,8 @@ class ActivitiesKRESTController
             }
 
             // get the query
-            $seed = \BeanFactory::getBean($module);
-            if($seed && $GLOBALS['ACLController']->checkAccess($module, 'list') && method_exists($seed, 'get_activities_query')){
+            $seed = BeanFactory::getBean($module);
+            if($seed && SpiceACL::getInstance()->checkAccess($module, 'list') && method_exists($seed, 'get_activities_query')){
                 $query = $seed->get_activities_query($args['parentmodule'], $args['parentid'], $getParams['own']);
                 if(is_array($query)){
                     $queryArray = array_merge($queryArray, $query);
@@ -49,7 +50,7 @@ class ActivitiesKRESTController
 
         while ($object = $db->fetchByAssoc($objects)) {
 
-            $bean = \BeanFactory::getBean($object['module'], $object['id']);
+            $bean = BeanFactory::getBean($object['module'], $object['id']);
 
             if($bean && !empty($bean->id)) {
                 foreach ($bean->field_defs as $fieldname => $fielddata) {
@@ -72,10 +73,10 @@ class ActivitiesKRESTController
             $count = $historyCount['itemcount'];
         }
 
-        echo json_encode(array(
+        return $res->withJson([
                 'items' => array_reverse($retArray),
                 'count' => $count
-            )
+            ]
         );
 
     }
@@ -84,9 +85,10 @@ class ActivitiesKRESTController
     {
         $postBody = $req->getParsedBody();
 
-        $results = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSActivityHandler::loadActivities('Activities', $args['parentid'], $postBody['start'], $postBody['limit'], $postBody['searchterm'], $postBody['own'], json_decode($postBody['objects'], true));
+        $activitiyHandler = new SpiceFTSActivityHandler();
+        $results = $activitiyHandler->loadActivities('Activities', $args['parentid'], $postBody['start'], $postBody['limit'], $postBody['searchterm'], $postBody['own'], json_decode($postBody['objects'], true));
 
-        return $res->write(json_encode($results));
+        return $res->withJson($results);
     }
 
 }

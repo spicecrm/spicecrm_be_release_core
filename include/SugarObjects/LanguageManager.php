@@ -34,6 +34,10 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\includes\SugarObjects;
+
+use SpiceCRM\includes\database\DBManagerFactory;
+
 /**
  * Language files management
  * @api
@@ -47,7 +51,7 @@ class LanguageManager
      * @return array
      */
 	public static function getLanguages($sysonly = false){
-	    global $db;
+	    $db = DBManagerFactory::getInstance();
 
 	    $retArray =[
 	        'available' => [],
@@ -76,7 +80,7 @@ class LanguageManager
      * @return array
      */
 	public static function loadDatabaseLanguage($syslang){
-        $retArray = array();
+        $retArray = [];
 
         // get default Labels
         $q = "SELECT syslanguagetranslations.*, syslanguagelabels.name label
@@ -85,14 +89,14 @@ class LanguageManager
           AND syslanguagetranslations.syslanguage = '".$syslang."'
         ORDER BY label ASC";
 
-        if($res = $GLOBALS['db']->query($q)) {
-            while ($row = $GLOBALS['db']->fetchByAssoc($res)) {
-                $retArray[$row['label']] = array(
+        if($res = DBManagerFactory::getInstance()->query($q)) {
+            while ($row = DBManagerFactory::getInstance()->fetchByAssoc($res)) {
+                $retArray[$row['label']] = [
                     'label' => $row['label'],
                     'default' => $row['translation_default'],
                     'short' => $row['translation_short'],
                     'long' => $row['translation_long'],
-                );
+                ];
             }
         }
 
@@ -101,14 +105,14 @@ class LanguageManager
         FROM syslanguagecustomtranslations, syslanguagelabels
         WHERE (syslanguagecustomtranslations.syslanguagelabel_id = syslanguagelabels.id )
           AND syslanguagecustomtranslations.syslanguage = '".$syslang."' ORDER BY label ASC";
-        if($res = $GLOBALS['db']->query($q)) {
-            while ($row = $GLOBALS['db']->fetchByAssoc($res)) {
-                $retArray[$row['label']] = array(
+        if($res = DBManagerFactory::getInstance()->query($q)) {
+            while ($row = DBManagerFactory::getInstance()->fetchByAssoc($res)) {
+                $retArray[$row['label']] = [
                     'label' => $row['label'],
                     'default' => $row['translation_default'],
                     'short' => $row['translation_short'],
                     'long' => $row['translation_long'],
-                );
+                ];
             }
         }
 
@@ -117,112 +121,25 @@ class LanguageManager
         FROM syslanguagecustomtranslations, syslanguagecustomlabels
         WHERE syslanguagecustomtranslations.syslanguagelabel_id = syslanguagecustomlabels.id
           AND syslanguagecustomtranslations.syslanguage = '".$syslang."' ORDER BY label ASC";
-        if($res = $GLOBALS['db']->query($q)) {
-            while ($row = $GLOBALS['db']->fetchByAssoc($res)) {
-                $retArray[$row['label']] = array(
+        if($res = DBManagerFactory::getInstance()->query($q)) {
+            while ($row = DBManagerFactory::getInstance()->fetchByAssoc($res)) {
+                $retArray[$row['label']] = [
                     'label' => $row['label'],
                     'default' => $row['translation_default'],
                     'short' => $row['translation_short'],
                     'long' => $row['translation_long'],
-                );
+                ];
             }
         }
 
         /*
         no exception handling wanted...
-        elseif($GLOBALS['db']->last_error){
-            throw new Exception($GLOBALS['db']->last_error);
+        elseif(\SpiceCRM\includes\database\DBManagerFactory::getInstance()->last_error){
+            throw new Exception(\SpiceCRM\includes\database\DBManagerFactory::getInstance()->last_error);
         }
         */
         return $retArray;
     }
 
-
-    /**
-     * @deprectaed
-     *
-     * @todo : check if we shoudl add caching for retrieved results
-     *
-     * @param $module
-     * @param $lang
-     * @param $loaded_mod_strings
-     * @param array $additonal_objects
-     */
-	public static function saveCache($module,$lang, $loaded_mod_strings, $additonal_objects= array()){
-
-	    if($module != 'Administration') return;
-
-	    if(empty($lang))
-			$lang = $GLOBALS['sugar_config']['default_language'];
-
-		$file = create_cache_directory('modules/' . $module . '/language/'.$lang.'.lang.php');
-		write_array_to_file('mod_strings',$loaded_mod_strings, $file);
-		include($file);
-
-		// put the item in the sugar cache.
-		$key = self::getLanguageCacheKey($module,$lang);
-		sugar_cache_put($key,$loaded_mod_strings);
-	}
-
-	/**
-	 * clear out the language cache.
-	 * @param string module_dir the module_dir to clear, if not specified then clear
-	 *                      clear language cache for all modules.
-	 * @param string lang the name of the object we are clearing this is for sugar_cache
-	 */
-	public static function clearLanguageCache($module_dir = '', $lang = ''){
-		if(empty($lang)) {
-			$languages = array_keys($GLOBALS['sugar_config']['languages']);
-		} else {
-			$languages = array($lang);
-		}
-		//if we have a module name specified then just remove that language file
-		//otherwise go through each module and clean up the language
-		if(!empty($module_dir)) {
-			foreach($languages as $clean_lang) {
-				LanguageManager::_clearCache($module_dir, $clean_lang);
-			}
-		} else {
-			$cache_dir = sugar_cached('modules/');
-			if(file_exists($cache_dir) && $dir = @opendir($cache_dir)) {
-				while(($entry = readdir($dir)) !== false) {
-					if ($entry == "." || $entry == "..") continue;
-						foreach($languages as $clean_lang) {
-							LanguageManager::_clearCache($entry, $clean_lang);
-						}
-				}
-				closedir($dir);
-			}
-		}
-	}
-
-	/**
-	 * PRIVATE function used within clearLanguageCache so we do not repeat logic
-	 * @param string module_dir the module_dir to clear
-	 * @param string lang the name of the language file we are clearing this is for sugar_cache
-	 */
-	function _clearCache($module_dir = '', $lang){
-		if(!empty($module_dir) && !empty($lang)){
-			$file = sugar_cached('modules/').$module_dir.'/language/'.$lang.'.lang.php';
-			if(file_exists($file)){
-				unlink($file);
-				$key = self::getLanguageCacheKey($module_dir,$lang);
-				sugar_cache_clear($key);
-			}
-		}
-	}
-
-    /**
-     * Return the cache key for the module language definition
-     *
-     * @static
-     * @param  $module
-     * @param  $lang
-     * @return string
-     */
-    public static function getLanguageCacheKey($module, $lang)
-	{
-         return "LanguageManager.$module.$lang";
-	}
 
 }

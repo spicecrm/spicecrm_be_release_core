@@ -1,6 +1,43 @@
 <?php
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
 
 namespace SpiceCRM\includes\SpiceTemplateCompiler;
+
+use DateInterval;
+use DateTime;
+use DateTimeZone;
+use DOMDocument;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\SysModuleFilters\SysModuleFilters;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
+// CR1000360
 
 /*
  * a class to compile templates. used in EmailTemplates and OutputTemplates...
@@ -30,7 +67,7 @@ namespace SpiceCRM\includes\SpiceTemplateCompiler;
  *
  */
 
-use SpiceCRM\includes\SysModuleFilters\SysModuleFilters; // CR1000360
+
 
 class Compiler
 {
@@ -45,16 +82,16 @@ class Compiler
     }
 
     private function initialize(){
-        $this->doc = new \DOMDocument('1.0');
+        $this->doc = new DOMDocument('1.0');
         $this->root = $this->doc->appendChild( $this->doc->createElement('html') );
     }
 
-    public function compile($txt, \SugarBean $bean = null, $lang = 'de_DE', array $additionalValues = null)
+    public function compile($txt, $bean = null, $lang = 'de_DE', array $additionalValues = null)
     {
         $this->additionalValues = $additionalValues;
         $this->lang = $lang;
 
-        $dom = new \DOMDocument();
+        $dom = new DOMDocument();
         $html = preg_replace("/\n|\r|\t/", "", html_entity_decode($txt, ENT_QUOTES));
         $dom->loadHTML('<?xml encoding="utf-8"?>' . $html );
 
@@ -83,7 +120,7 @@ class Compiler
                     // check if we have embedded HTML that is returned from the replaceing functions
                     // ToDo: check if there is not a nice way to do this
                     if(strip_tags($elementcontent) != $elementcontent) {
-                        $elementdom = new \DOMDocument();
+                        $elementdom = new DOMDocument();
                         $elementhtml = preg_replace("/\n|\r|\t/", "", html_entity_decode($elementcontent, ENT_QUOTES));
                         $elementdom->loadHTML('<?xml encoding="utf-8"?><embedded>'.$elementhtml.'</embedded>');
                         $embeddednode = $elementdom->getElementsByTagName('embedded');
@@ -324,7 +361,7 @@ class Compiler
                         }
                         break;
                     case 'relate':
-                        $next_bean = \BeanFactory::getBean($obj->field_defs[$part]['module'], $obj->{$obj->field_defs[$part]['id_name']});
+                        $next_bean = BeanFactory::getBean($obj->field_defs[$part]['module'], $obj->{$obj->field_defs[$part]['id_name']});
                         if ($next_bean) {
                             $level++;
                             return $loopThroughParts($next_bean, $level);
@@ -367,7 +404,7 @@ class Compiler
 
         switch ($object) {
             case 'current_user':
-                $obj = $GLOBALS['current_user'];
+                $obj = AuthenticationController::getInstance()->getCurrentUser();
                 break;
             case 'system':
                 $obj = new System();
@@ -384,7 +421,8 @@ class Compiler
 
     public function compileblock($txt, $beans = [], $lang = 'de_DE', array $additionalValues = null)
     {
-        global $current_user, $current_language, $app_list_strings;
+        global $current_language, $app_list_strings;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
         // overwrite the current app_list_strings to the language of the template...
         $app_list_strings = return_app_list_strings_language($lang);
 
@@ -445,13 +483,13 @@ class Compiler
                             case 'date':
                                 if(!empty($obj->{$part})){
                                     //set to user preferences format
-                                    $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
-                                    $gmtTimezone = new \DateTimeZone('GMT');
-                                    $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                    $userTimezone = new DateTimeZone(AuthenticationController::getInstance()->getCurrentUser()->getPreference("timezone"));
+                                    $gmtTimezone = new DateTimeZone('GMT');
+                                    $myDateTime = new DateTime($obj->{$part}, $gmtTimezone);
                                     $offset = $userTimezone->getOffset($myDateTime);
-                                    $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                    $myInterval = DateInterval::createFromDateString((string)$offset . 'seconds');
                                     $myDateTime->add($myInterval);
-                                    $value = $myDateTime->format($GLOBALS['current_user']->getPreference("datef"));
+                                    $value = $myDateTime->format(AuthenticationController::getInstance()->getCurrentUser()->getPreference("datef"));
                                 } else {
                                     $value = '';
                                 }
@@ -460,13 +498,13 @@ class Compiler
                             case 'datetimecombo':
                                 if(!empty($obj->{$part})){
                                     //set to user preferences format
-                                    $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
-                                    $gmtTimezone = new \DateTimeZone('GMT');
-                                    $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                    $userTimezone = new DateTimeZone(AuthenticationController::getInstance()->getCurrentUser()->getPreference("timezone"));
+                                    $gmtTimezone = new DateTimeZone('GMT');
+                                    $myDateTime = new DateTime($obj->{$part}, $gmtTimezone);
                                     $offset = $userTimezone->getOffset($myDateTime);
-                                    $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                    $myInterval = DateInterval::createFromDateString((string)$offset . 'seconds');
                                     $myDateTime->add($myInterval);
-                                    $value = $myDateTime->format($GLOBALS['current_user']->getPreference("datef")." ".$GLOBALS['current_user']->getPreference("timef"));
+                                    $value = $myDateTime->format(AuthenticationController::getInstance()->getCurrentUser()->getPreference("datef")." ". AuthenticationController::getInstance()->getCurrentUser()->getPreference("timef"));
                                 } else {
                                     $value = '';
                                 }
@@ -474,19 +512,19 @@ class Compiler
                             case 'time':
                                 if(!empty($obj->{$part})){
                                     //set to user preferences format
-                                    $userTimezone = new \DateTimeZone($GLOBALS['current_user']->getPreference("timezone"));
-                                    $gmtTimezone = new \DateTimeZone('GMT');
-                                    $myDateTime = new \DateTime($obj->{$part}, $gmtTimezone);
+                                    $userTimezone = new DateTimeZone(AuthenticationController::getInstance()->getCurrentUser()->getPreference("timezone"));
+                                    $gmtTimezone = new DateTimeZone('GMT');
+                                    $myDateTime = new DateTime($obj->{$part}, $gmtTimezone);
                                     $offset = $userTimezone->getOffset($myDateTime);
-                                    $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                                    $myInterval = DateInterval::createFromDateString((string)$offset . 'seconds');
                                     $myDateTime->add($myInterval);
-                                    $value = $myDateTime->format($GLOBALS['current_user']->getPreference("timef"));
+                                    $value = $myDateTime->format(AuthenticationController::getInstance()->getCurrentUser()->getPreference("timef"));
                                 } else {
                                     $value = '';
                                 }
                                 break;
                             case 'currency':
-                                // $currency = \BeanFactory::getBean('Currencies');
+                                // $currency = \SpiceCRM\data\BeanFactory::getBean('Currencies');
                                 $value = currency_format_number($obj->{$part}, ['symbol_space' => true] );
                                 break;
                             case 'html':

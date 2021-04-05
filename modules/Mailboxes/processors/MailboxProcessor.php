@@ -1,6 +1,8 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\processors;
 
+use SpiceCRM\includes\database\DBManagerFactory;
+
 class MailboxProcessor {
     public $id;
     public $mailbox_id;
@@ -58,7 +60,7 @@ class MailboxProcessor {
     }
 
     private function update() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         return $db->updateQuery(
             $this->table,
@@ -68,7 +70,7 @@ class MailboxProcessor {
     }
 
     private function insert() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         return $db->insertQuery(
             $this->table,
@@ -77,7 +79,7 @@ class MailboxProcessor {
     }
 
     public function delete() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $q = "DELETE FROM " . $this->table . " WHERE id = '" . $this->id . "'";
         $result = $db->query($q);
@@ -162,7 +164,7 @@ class MailboxProcessor {
     }
 
     private function exists() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT id FROM " . $this->table
             . " WHERE id = '" . $this->id . "'"

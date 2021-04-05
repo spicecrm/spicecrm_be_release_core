@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,6 +34,11 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\modules\Trackers;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 class BreadCrumbStack
 {
@@ -68,10 +72,10 @@ class BreadCrumbStack
     */
    public function __construct($user_id, $modules='')
    {
-      $this->stack = array();
-      $this->stackMap = array();
+      $this->stack = [];
+      $this->stackMap = [];
       
-      $admin = new Administration();
+      $admin = BeanFactory::getBean('Administration');
 	  $admin->retrieveSettings('tracker');      
  
       $this->deleteInvisible = !empty($admin->settings['tracker_Tracker']);
@@ -82,12 +86,12 @@ class BreadCrumbStack
       	 $history_max_viewed = 10;
          $module_query = is_array($modules) ? ' AND module_name IN (\'' . implode("','" , $modules) . '\')' :  ' AND module_name = \'' . $modules . '\'';
       } else {
-      	 $history_max_viewed = (!empty($GLOBALS['sugar_config']['history_max_viewed']))? $GLOBALS['sugar_config']['history_max_viewed'] : 50;
+      	 $history_max_viewed = (!empty(SpiceConfig::getInstance()->config['history_max_viewed']))? SpiceConfig::getInstance()->config['history_max_viewed'] : 50;
       }         
       
       $query = 'SELECT distinct item_id AS item_id, id, item_summary, module_name, monitor_id, date_modified FROM tracker WHERE user_id = \'' . $user_id . '\' AND deleted = 0 AND visible = 1 ' . $module_query . ' ORDER BY date_modified DESC';	
       $result = $db->limitQuery($query, 0, $history_max_viewed);
-      $items = array();
+      $items = [];
       while(($row = $db->fetchByAssoc($result))) {	     
       		$items[] = $row;
       }
@@ -131,7 +135,7 @@ class BreadCrumbStack
 	   	  	$this->popItem($item['item_id']);
 	   	  }
 	   	  //If we reach the max count, shift the first element off the stack
-	   	  $history_max_viewed = (!empty($GLOBALS['sugar_config']['history_max_viewed']))? $GLOBALS['sugar_config']['history_max_viewed'] : 50;
+	   	  $history_max_viewed = (!empty(SpiceConfig::getInstance()->config['history_max_viewed']))? SpiceConfig::getInstance()->config['history_max_viewed'] : 50;
 
 	   	  if($this->length() >= $history_max_viewed) {
 	   	  	$this->pop();
@@ -164,7 +168,7 @@ class BreadCrumbStack
    	    } else {
    		  $query = "UPDATE tracker SET visible = 0 WHERE id = '{$id}'";
    	    }
-        $GLOBALS['db']->query($query, true);
+        DBManagerFactory::getInstance()->query($query, true);
    }
    
    /**
@@ -199,8 +203,8 @@ class BreadCrumbStack
     */
    private function heal(){
    		$vals = array_values($this->stack);
-   		$this->stack = array();
-   		$this->stackMap = array();
+   		$this->stack = [];
+   		$this->stackMap = [];
    		foreach($vals as $key => $val){
    			$this->addItem($val);
    		}
@@ -222,7 +226,7 @@ class BreadCrumbStack
     */
    public function getBreadCrumbList($filter_module='', $count = 10) {
    	  if(!empty($filter_module)) {
-   	  	 $s2 = array();
+   	  	 $s2 = [];
    	  	 if(is_array($filter_module)) {
    	  	 	 foreach($this->stack as $entry) {
 	   	  	    if(in_array($entry['module_name'], $filter_module)) {
@@ -252,5 +256,3 @@ class BreadCrumbStack
       return $s;
    }
 }
-
-?>

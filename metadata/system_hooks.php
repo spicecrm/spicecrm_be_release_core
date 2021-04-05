@@ -1,130 +1,130 @@
 <?php
-$dictionary['syshooks'] = array(
+$dictionary['syshooks'] = [
     'table' => 'syshooks',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'event' => array(
+        ],
+        'event' => [
             'name' => 'event',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'hook_index' => array(
+        ],
+        'hook_index' => [
             'name' => 'hook_index',
             'type' => 'int',
-        ),
-        'hook_include' => array(
+        ],
+        'hook_include' => [
             'name' => 'hook_include',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'hook_class' => array(
+        ],
+        'hook_class' => [
             'name' => 'hook_class',
             'type' => 'varchar',
             'len' =>  100
-        ),
-        'hook_method' => array(
+        ],
+        'hook_method' => [
             'name' => 'hook_method',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'hook_active' => array(
+        ],
+        'hook_active' => [
             'name' => 'hook_active',
             'type' => 'bool',
             'default' => 0
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'syshookspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_syshooks_module',
             'type' => 'index',
-            'fields' => array('module')
-        )
-    )
-);
+            'fields' => ['module']
+        ]
+    ]
+];
 
-$dictionary['syscustomhooks'] = array(
+$dictionary['syscustomhooks'] = [
     'table' => 'syscustomhooks',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'event' => array(
+        ],
+        'event' => [
             'name' => 'event',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'hook_index' => array(
+        ],
+        'hook_index' => [
             'name' => 'hook_index',
             'type' => 'int',
-        ),
-        'hook_include' => array(
+        ],
+        'hook_include' => [
             'name' => 'hook_include',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'hook_class' => array(
+        ],
+        'hook_class' => [
             'name' => 'hook_class',
             'type' => 'varchar',
             'len' =>  100
-        ),
-        'hook_method' => array(
+        ],
+        'hook_method' => [
             'name' => 'hook_method',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'hook_active' => array(
+        ],
+        'hook_active' => [
             'name' => 'hook_active',
             'type' => 'bool',
             'default' => 0
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'syshookspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_syscustomhooks_module',
             'type' => 'index',
-            'fields' => array('module')
-        )
-    )
-);
+            'fields' => ['module']
+        ]
+    ]
+];

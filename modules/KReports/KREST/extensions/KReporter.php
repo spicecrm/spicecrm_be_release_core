@@ -1,140 +1,165 @@
 <?php
 
-// require_once('modules/KReports/KReport.php');
-require_once('modules/KReports/KReport.php');
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\modules\KReports\KReport;
+use SpiceCRM\modules\KReports\KReportPluginManager;
+use SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController;
+use Slim\Routing\RouteCollectorProxy;
+
 require_once('modules/KReports/KReportVisualizationManager.php');
 require_once('modules/KReports/KReportPresentationManager.php');
 require_once('modules/KReports/KReportRESTHandler.php');
-use SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController;
-use SpiceCRM\includes\RESTManager;
+
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
+
+/**
+ * register the Extension
+ */
 $RESTManager->registerExtension('reporting', '1.0');
+
+/**
+ * restrict routes to authenticated users
+ */
+if(!SpiceCRM\includes\authentication\AuthenticationController::getInstance()->isAuthenticated()) return;
 
 $KReportRestHandler = new KReporterRESTHandler();
 
-$RESTManager->app->group('/KReporter', function () use ($RESTManager, $KReportRestHandler) {
-    $this->group('/core', function () use ($RESTManager, $KReportRestHandler) {
-        $this->get('/whereinitialize', function () use ($RESTManager) {
+$RESTManager->app->group('/KReporter', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+    $group->group('/core', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+        $group->get('/whereinitialize', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            echo json_encode($restHandler->whereInitialize());
+            return $res->withJson($restHandler->whereInitialize());
         });
-        $this->get('/whereoperators', function () use ($RESTManager) {
+        $group->get('/whereoperators', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getWhereOperators($getParams['path'], $getParams['grouping'], $getParams['designer']));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getWhereOperators($getParams['path'], $getParams['grouping'], $getParams['designer']));
         });
-        $this->get('/whereoperators/all', function () use ($RESTManager) {
+        $group->get('/whereoperators/all', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getAllWhereOperators());
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getAllWhereOperators());
         });
-        $this->get('/enumoptions', function () use ($RESTManager) {
+        $group->get('/enumoptions', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getEnumOptions($getParams['path'], $getParams['grouping'], json_decode(html_entity_decode($getParams['operators']), true)));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getEnumOptions($getParams['path'], $getParams['grouping'], json_decode(html_entity_decode($getParams['operators']), true)));
         });
-        $this->get('/nodes', function () use ($RESTManager) {
+        $group->get('/nodes', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getNodes($getParams['nodeid']));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getNodes($getParams['nodeid']));
         });
-        $this->get('/fields', function () use ($RESTManager) {
+        $group->get('/fields', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getFields($getParams['nodeid']));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getFields($getParams['nodeid']));
         });
-        $this->get('/buckets', function () use ($RESTManager) {
+        $group->get('/buckets', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getBuckets());
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getBuckets());
         });
-        $this->get('/modulefields', function () use ($RESTManager) {
+        $group->get('/modulefields', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getModuleFields($getParams['module']));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getModuleFields($getParams['module']));
         });
-        $this->get('/wherefunctions', function () use ($RESTManager) {
+        $group->get('/wherefunctions', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            echo json_encode($restHandler->getWhereFunctions());
+            return $res->withJson($restHandler->getWhereFunctions());
         });
-        $this->get('/autocompletevalues', function () use ($RESTManager) {
+        $group->get('/autocompletevalues', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->geAutoCompletevalues($getParams['path'], $getParams['query'], $getParams['start'], $getParams['limit']));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->geAutoCompletevalues($getParams['path'], $getParams['query'], $getParams['start'], $getParams['limit']));
         });
-        $this->get('/layouts', function () use ($RESTManager) {
+        $group->get('/layouts', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            echo json_encode($restHandler->getLayouts());
+            return $res->withJson($restHandler->getLayouts());
         });
 
-        $this->get('/vizcolors', function () use ($RESTManager) {
+        $group->get('/vizcolors', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            echo json_encode($restHandler->getVizColors());
+            return $res->withJson($restHandler->getVizColors());
         });
-        $this->group('/savelayout', function () use ($RESTManager, $KReportRestHandler) {
-            $this->post('', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->group('/savelayout', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+            $group->post('', function ($req, $res, $args) use ($KReportRestHandler) {
                 $postBody = $req->getParsedBody();
-                echo json_encode($KReportRestHandler->saveStandardLayout($postBody['record'], $postBody['layout']));
+                return $res->withJson($KReportRestHandler->saveStandardLayout($postBody['record'], $postBody['layout']));
             });
-            $this->post('/{report_id}', function ($req, $res, $args) use ($KReportRestHandler) {
+            $group->post('/{report_id}', function ($req, $res, $args) use ($KReportRestHandler) {
                 $postBody = $req->getParsedBody();
-                echo json_encode($KReportRestHandler->saveStandardLayout($args['report_id'], $postBody['layout']));
+                return $res->withJson($KReportRestHandler->saveStandardLayout($args['report_id'], $postBody['layout']));
             });
         });
-        $this->get('/config', function () use ($RESTManager) {
+        $group->get('/config', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            echo json_encode($restHandler->getConfig());
+            return $res->withJson($restHandler->getConfig());
         });
-        $this->get('/labels', function () use ( $RESTManager) {
+        $group->get('/labels', function ($req, $res, $args) use ( $RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            echo json_encode($restHandler->getLabels());
+            return $res->withJson($restHandler->getLabels());
         });
-        $this->get('/currencies', function () use ($KReportRestHandler) {
-            echo json_encode($KReportRestHandler->getCurrencies());
+        $group->get('/currencies', function ($req, $res, $args) use ($KReportRestHandler) {
+            return $res->withJson($KReportRestHandler->getCurrencies());
         });
     });
-
-// Old implementation. Keeping in it in case needed in future KReporter 5.x releases
-//    $app->group('/securitygroups', function () use ($app, $KRESTManager, $KReportRestHandler) {
-//        $app->post('/save', function ($req, $res, $args) use ($app, $KReportRestHandler) {
-//            $postBody = $req->getParsedBody();
-//            echo json_encode($KReportRestHandler->saveSecurityGroups($postBody));
-//        });
-//        $app->get('/get/{report_id}', function($req, $res, $args) use ($app, $KRESTManager, $KReportRestHandler) {
-//            $restHandler = new KReporterRESTHandler();
-//            echo json_encode($restHandler->getSecurityGroups($args['report_id']));
-//        });
-//    });
-
-
-
-    $this->group('/user', function () use ($RESTManager, $KReportRestHandler) {
-        $this->get('/datetimeformat', function () use ($RESTManager) {
+    $group->group('/user', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+        $group->get('/datetimeformat', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            echo json_encode($restHandler->get_user_datetime_format());
+            return $res->withJson($restHandler->get_user_datetime_format());
         });
-        $this->get('/userprefs', function () use ($RESTManager) {
+        $group->get('/userprefs', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            echo json_encode($restHandler->get_user_prefs());
+            return $res->withJson($restHandler->get_user_prefs());
         });
-        $this->get('/getlist', function () use ($RESTManager) {
+        $group->get('/getlist', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $params = $_GET;
-            echo json_encode($restHandler->get_users_list($params));
+            $params = $req->getQueryParams();
+            return $res->withJson($restHandler->get_users_list($params));
         });
-
     });
-
-
-
-    $this->group('/plugins', function () use ($KReportRestHandler) {
-        $this->get('', function ($req, $res, $args) use ($KReportRestHandler) {
+    $group->group('/plugins', function (RouteCollectorProxy $group) use ($KReportRestHandler) {
+        $group->get('', function ($req, $res, $args) use ($KReportRestHandler) {
             $pluginManager = new KReportPluginManager();
 
-            $params = $_GET;
+            $params = $req->getQueryParams();
             $pluginData = $pluginManager->getPlugins($params['report']);
 
-            $addDataArray = array();
+            $addDataArray = [];
             if ($params['addData']) {
                 $addData = json_decode(html_entity_decode($params['addData']), true);
                 foreach ($addData as $addDataEntry) {
@@ -151,209 +176,160 @@ $RESTManager->app->group('/KReporter', function () use ($RESTManager, $KReportRe
 
             $pluginData['addData'] = $addDataArray;
 
-            echo json_encode($pluginData);
+            return $res->withJson($pluginData);
         });
-
-        $this->group('/action/{plugin}/{action}', function() {
-            $this->post('', function($req, $res, $args) {
+        $group->group('/action/{plugin}/{action}', function(RouteCollectorProxy $group) {
+            $group->post('', function($req, $res, $args) {
                 $pluginManager = new KReportPluginManager();
-                $getParams = $_GET;
-
-                //BEGIN BEFORE slim update
-                //$formBody = $_POST;
-                //$postBody = json_decode($formBody, true);
-                //if(!$postBody && $formBody != ''){
-                //    parse_str($_POST, $postBody);
-                //}
-                //END
-
-                //BEGINAFTER slim update
-                $formBody = $req->getParsedBody();
-                $postBody = $formBody;
-                if(!$postBody && $formBody != ''){
-                    parse_str($req->getParsedBody(), $postBody);
-                }
-                //END
-
-                if(!$postBody) $postBody = array();
+                $getParams = $req->getQueryParams();
+                $postBody = $req->getParsedBody();
+                if(!$postBody) $postBody = [];
 
                 //Only return if not null! In case of empty we get a null line in exports (csv, xlsx) and excel can't open file properly
                 //echo json_encode($pluginManager->processPluginAction($args['plugin'], 'action_' . $args['action'], array_merge($getParams,$postBody)));
                 $resultsPluginAction = $pluginManager->processPluginAction($args['plugin'], 'action_' . $args['action'], array_merge($getParams,$postBody));
-                if(!empty($resultsPluginAction))
-                    echo json_encode($resultsPluginAction);
+                if(!empty($resultsPluginAction)){
+                    $res->getBody()->write($resultsPluginAction);
+                    return $res->withStatus(200);
+                }
             });
-            $this->get('', function($req, $res, $args) {
+            $group->get('', function($req, $res, $args) {
                 $pluginManager = new KReportPluginManager();
-                $getParams = $_GET;
-                echo json_encode($pluginManager->processPluginAction($args['plugin'], 'action_' . $args['action'], $getParams));
+                $getParams = $req->getQueryParams();
+                return $res->withJson($pluginManager->processPluginAction($args['plugin'], 'action_' . $args['action'], $getParams));
             });
         });
     });
 
-
-    $this->group('/{reportId}', function () use ($RESTManager, $KReportRestHandler) {
-        $this->get('', function ($req, $res, $args) use ($RESTManager) {
+    $group->group('/{reportId}', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+        $group->get('', function ($req, $res, $args) use ($RESTManager) {
             $thisReport = BeanFactory::getBean('KReports', $args['reportId']);
             $vizData = json_decode(html_entity_decode($thisReport->visualization_params, ENT_QUOTES, 'UTF-8'), true);
             $pluginManager = new KReportPluginManager();
             $vizObject = $pluginManager->getVisualizationObject('googlecharts');
-            echo json_encode($vizObject->getItem('', $thisReport, $vizData[1]['googlecharts']));
+            return $res->withJson($vizObject->getItem('', $thisReport, $vizData[1]['googlecharts']));
         });
-        $this->group('/snapshot', function () use ($RESTManager) {
-            $this->get('', function ($req, $res, $args) use ($RESTManager) {
+        $group->group('/snapshot', function (RouteCollectorProxy $group) use ($RESTManager) {
+            $group->get('', function ($req, $res, $args) use ($RESTManager) {
                 $thisReport = new KReport();
                 $thisReport->retrieve($args['reportId']);
-                $requestParams = $_GET;
-                echo json_encode($thisReport->getSnapshots($requestParams['withoutActual']));
+                $requestParams = $req->getQueryParams();
+                return $res->withJson($thisReport->getSnapshots($requestParams['withoutActual']));
             });
-            $this->group('/{snapshotId}', function () use ($RESTManager) {
-                $this->delete('', function ($req, $res, $args) use ($RESTManager) {
+            $group->group('/{snapshotId}', function (RouteCollectorProxy $group) use ($RESTManager) {
+                $group->delete('', function ($req, $res, $args) use ($RESTManager) {
                     $thisReport = new KReport();
                     $thisReport->retrieve($args['reportId']);
                     $thisReport->deleteSnapshot($args['snapshotId']);
                 });
-                $this->get('/whereconditions', function ($req, $res, $args) use ($RESTManager) {
-                    echo json_encode(KReport::getSnapshotWhereClause($args['snapshotId']));
+                $group->get('/whereconditions', function ($req, $res, $args) use ($RESTManager) {
+                    return $res->withJson(KReport::getSnapshotWhereClause($args['snapshotId']));
                 });
             });
         });
 
         if (class_exists('SpiceCRM\modules\KReports\KREST\controllers\KReportsPluginSavedFiltersController')) {
-            $this->group('/savedfilter', function () use ($RESTManager, $KReportRestHandler) {
-                $this->get('', [new KReportsPluginSavedFiltersController(), 'getSavedFilters']);
-                $this->get('/assigneduserid/{assignedUserId}', [new KReportsPluginSavedFiltersController(), 'getSavedFilters']);
+            $group->group('/savedfilter', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+                $group->get('', [new KReportsPluginSavedFiltersController(), 'getSavedFilters']);
+                $group->get('/assigneduserid/{assignedUserId}', [new KReportsPluginSavedFiltersController(), 'getSavedFilters']);
 
-                $this->group('/{savedFilterId}', function () use ($RESTManager, $KReportRestHandler) {
-                    $this->post('', [new KReportsPluginSavedFiltersController(), 'saveFilter']);
-                    $this->delete('', [new KReportsPluginSavedFiltersController(), 'deleteFilter']);
+                $group->group('/{savedFilterId}', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+                    $group->post('', [new KReportsPluginSavedFiltersController(), 'saveFilter']);
+                    $group->delete('', [new KReportsPluginSavedFiltersController(), 'deleteFilter']);
                 });
             });
         }
 
-        $this->get('/layout', function($req, $res, $args) use ($RESTManager) {
-            $layout = array();
+        $group->get('/layout', function($req, $res, $args) use ($RESTManager) {
+            $layout = [];
             $thisReport = BeanFactory::getBean('KReports', $args['reportId']);
             $vizData = json_decode(html_entity_decode($thisReport->visualization_params, ENT_QUOTES, 'UTF-8'), true);
             echo(json_encode($vizData));
             $vizManager = new KReportVisualizationManager();
 
             for ($i = 0; $i < count($vizManager->layouts[$vizData['layout']]['items']); $i++) {
-                $layout[] = array(
+                $layout[] = [
                     "top" => $vizManager->layouts[$vizData['layout']]['items'][$i]['top'],
                     "left" => $vizManager->layouts[$vizData['layout']]['items'][$i]['left'],
                     "height" => $vizManager->layouts[$vizData['layout']]['items'][$i]['height'],
                     "width" => $vizManager->layouts[$vizData['layout']]['items'][$i]['width']
-                );
+                ];
             }
             // echo json_encode($layout);
         });
-//        $app->get('/visualization', function ($args['reportId']) use ($app, $KReportRestHandler) {
-//            echo json_encode($KReportRestHandler->getVisualization($args['reportId'], $_GET));
-//        });
-//        $app->get('/presentation', function ($args['reportId']) use ($app, $KReportRestHandler) {
-//            echo json_encode($KReportRestHandler->getPresentation($args['reportId'], $_GET));
-//        });
 
-        $this->group('/visualization', function () use ($RESTManager, $KReportRestHandler) {
-            $this->post('', function($req, $res, $args) use ($KReportRestHandler) {
-                $requestParams = $_GET;
+        $group->group('/visualization', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+            $group->post('', function($req, $res, $args) use ($KReportRestHandler) {
+                $requestParams = $req->getQueryParams();
                 $postBody = json_decode($req->getParsedBody(), true);
                 if(!is_array($requestParams))
-                    $requestParams = array();
+                    $requestParams = [];
                 if(is_array($postBody))
                     $requestParams = array_merge($requestParams, $postBody);
-                echo json_encode($KReportRestHandler->getVisualization($args['reportId'], $requestParams));
+                return $res->withJson($KReportRestHandler->getVisualization($args['reportId'], $requestParams));
             });
-            $this->get('', function($req, $res, $args) use ($KReportRestHandler) {
-                echo json_encode($KReportRestHandler->getVisualization($args['reportId'], $_GET));
+            $group->get('', function($req, $res, $args) use ($KReportRestHandler) {
+                return $res->withJson($KReportRestHandler->getVisualization($args['reportId'], $req->getQueryParams()));
             });
-//            $app->group('/dynamicoptions/:dynamicoptions', function ($args['reportId'], $dynamicoptions) use ($app, $KRESTManager, $KReportRestHandler) {
-//                $app->get('', function ($args['reportId'], $dynamicoptions) use ($app, $KRESTManager, $KReportRestHandler) {
-//
-//                    $requestParams = $_GET;
-//                    $requestParams['dynamicoptions'] = $dynamicoptions;
-//                    echo json_encode($KReportRestHandler->getVisualization($args['reportId'], $requestParams));
-//                });
-//            });
             //passing dynamicoptions in url may generate a far too long url and trigger a http 400 bad request
             //pass dynamicoptions to post
-            $this->group('/dynamicoptions', function () use ($RESTManager, $KReportRestHandler) {
-                $this->post('', function($req, $res, $args) use ($RESTManager, $KReportRestHandler) {
-                    $requestParams = $_GET;
+            $group->group('/dynamicoptions', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+                $group->post('', function($req, $res, $args) use ($RESTManager, $KReportRestHandler) {
+                    $requestParams = $req->getQueryParams();
                     $postBody = $req->getParsedBody();
                     if(!is_array($requestParams))
-                        $requestParams = array();
+                        $requestParams = [];
                     if(is_array($postBody))
                         $requestParams = array_merge($requestParams, $postBody);
-//                    if(isset($postBody['dynamicoptions']))
-//                        $requestParams['dynamicoptions'] = $postBody['dynamicoptions'];
-//                    if(isset($postBody['whereConditions']))
-//                        $requestParams['whereConditions'] = $postBody['whereConditions'];
-                    echo json_encode($KReportRestHandler->getVisualization($args['reportId'], $requestParams));
+                    return $res->withJson($KReportRestHandler->getVisualization($args['reportId'], $requestParams));
                 });
                 //keep a get for UI and Sugar7....
-                $this->get('', function($req, $res, $args) use ($RESTManager, $KReportRestHandler) {
-                    $requestParams = $_GET;
+                $group->get('', function($req, $res, $args) use ($RESTManager, $KReportRestHandler) {
+                    $requestParams = $req->getQueryParams();
                     $postBody = $req->getParsedBody();
-//                    if(isset($postBody['dynamicoptions']))
-//                        $requestParams['dynamicoptions'] = $postBody['dynamicoptions'];
-//                    if(isset($postBody['whereConditions']))
-//                        $requestParams['whereConditions'] = $postBody['whereConditions'];
                     if(!is_array($requestParams))
-                        $requestParams = array();
+                        $requestParams = [];
                     if(is_array($postBody))
                         $requestParams = array_merge($requestParams, $postBody);
-                    echo json_encode($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
+                    return $res->withJson($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
                 });
             });
         });
 
-        $this->group('/presentation', function () use ($RESTManager, $KReportRestHandler) {
-            $this->post('', function($req, $res, $args) use ($KReportRestHandler) {
-                $requestParams = $_GET;
+        $group->group('/presentation', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+            $group->post('', function($req, $res, $args) use ($KReportRestHandler) {
+                $requestParams = $req->getQueryParams();
                 $postBody = $req->getParsedBody();
                 if(!is_array($requestParams))
-                    $requestParams = array();
+                    $requestParams = [];
                 if(is_array($postBody))
                     $requestParams = array_merge($requestParams, $postBody);
-                echo json_encode($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
+                return $res->withJson($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
             });
-            $this->get('', function($req, $res, $args) use ($KReportRestHandler) {
-                echo json_encode($KReportRestHandler->getPresentation($args['reportId'], $_GET));
+            $group->get('', function($req, $res, $args) use ($KReportRestHandler) {
+                return $res->withJson($KReportRestHandler->getPresentation($args['reportId'], $req->getQueryParams()));
             });
-//            $app->group('/dynamicoptions/:dynamicoptions', function ($args['reportId'], $dynamicoptions) use ($app, $KRESTManager, $KReportRestHandler) {
-//                $app->get('', function ($args['reportId'], $dynamicoptions) use ($app, $KRESTManager, $KReportRestHandler) {
-//                    $requestParams = $_GET;
-//                    $requestParams['dynamicoptions'] = $dynamicoptions;
-//                    echo json_encode($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
-//                });
-//            });
             //passing dynamicoptions in url may generate a far too long url and trigger a http 400 bad request
             //pass dynamicoptions to post
-            $this->group('/dynamicoptions', function () use ($RESTManager, $KReportRestHandler) {
-                $this->post('', function($req, $res, $args) use ($RESTManager, $KReportRestHandler) {
-                    $requestParams = $_GET;
+            $group->group('/dynamicoptions', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+                $group->post('', function($req, $res, $args) use ($RESTManager, $KReportRestHandler) {
+                    $requestParams = $req->getQueryParams();
                     $postBody = $req->getParsedBody();
-//                    if(isset($postBody['dynamicoptions']))
-//                        $requestParams['dynamicoptions'] = $postBody['dynamicoptions'];
-//                    if(isset($postBody['whereConditions']))
-//                        $requestParams['whereConditions'] = $postBody['whereConditions'];
                     if(!is_array($requestParams))
-                        $requestParams = array();
+                        $requestParams = [];
                     if(is_array($postBody))
                         $requestParams = array_merge($requestParams, $postBody);
-                    echo json_encode($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
+                    return $res->withJson($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
                 });
                 //keep a get for UI and Sugar7....
-                $this->get('', function($req, $res, $args) use ($RESTManager, $KReportRestHandler) {
-                    $requestParams = $_GET;
+                $group->get('', function($req, $res, $args) use ($RESTManager, $KReportRestHandler) {
+                    $requestParams = $req->getQueryParams();
                     $postBody = $req->getParsedBody();
                     if(!is_array($requestParams))
-                        $requestParams = array();
+                        $requestParams = [];
                     if(is_array($postBody))
                         $requestParams = array_merge($requestParams, $postBody);
-                    echo json_encode($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
+                    return $res->withJson($KReportRestHandler->getPresentation($args['reportId'], $requestParams));
                 });
             });
 
@@ -362,98 +338,96 @@ $RESTManager->app->group('/KReporter', function () use ($RESTManager, $KReportRe
     });
 
 
-    $this->group('/bucketmanager', function () use ($RESTManager, $KReportRestHandler) {
-        $this->get('/enumfields', function () use ($RESTManager) {
+    $group->group('/bucketmanager', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+        $group->get('/enumfields', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getEnumfields($getParams['modulename']));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getEnumfields($getParams['modulename']));
         });
-        $this->get('/enumfieldvalues', function () use ($RESTManager) {
+        $group->get('/enumfieldvalues', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getEnumfieldvalues($getParams));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getEnumfieldvalues($getParams));
         });
-        $this->get('/groupings', function () use ($RESTManager) {
+        $group->get('/groupings', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getGroupings());
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getGroupings());
         });
 
-        $this->post('/savenewgrouping', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/savenewgrouping', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->saveNewGrouping($postBody));
+            return $res->withJson($KReportRestHandler->saveNewGrouping($postBody));
         });
-        $this->post('/updateGrouping', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/updateGrouping', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->updateGrouping($postBody));
+            return $res->withJson($KReportRestHandler->updateGrouping($postBody));
         });
-        $this->post('/deleteGrouping', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/deleteGrouping', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->deleteGrouping($postBody));
+            return $res->withJson($KReportRestHandler->deleteGrouping($postBody));
         });
     });
 
-    $this->group('/dlistmanager', function () use ($RESTManager, $KReportRestHandler) {
-        $this->get('/dlists', function () use ($RESTManager) {
+    $group->group('/dlistmanager', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+        $group->get('/dlists', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getDLists());
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getDLists());
         });
-        $this->get('/users', function () use ($RESTManager) {
+        $group->get('/users', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getUsers($getParams));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getUsers($getParams));
         });
-        $this->get('/contacts', function () use ($RESTManager) {
+        $group->get('/contacts', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getContacts($getParams));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getContacts($getParams));
         });
-        $this->get('/kreports', function () use ($RESTManager) {
+        $group->get('/kreports', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getKReports($getParams));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getKReports($getParams));
         });
 
-        $this->post('/savenewdlist', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/savenewdlist', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->saveNewDList($postBody));
+            return $res->withJson($KReportRestHandler->saveNewDList($postBody));
         });
-        $this->post('/updatedlist', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/updatedlist', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->updateDList($postBody));
+            return $res->withJson($KReportRestHandler->updateDList($postBody));
         });
-        $this->post('/deletedlist', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/deletedlist', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->deleteDList($postBody));
+            return $res->withJson($KReportRestHandler->deleteDList($postBody));
         });
     });
 
     //KReporter Cockpit VIew
-    $this->group('/categoriesmanager', function () use ($RESTManager, $KReportRestHandler) {
-        $this->get('/categories', function () use ($RESTManager) {
+    $group->group('/categoriesmanager', function (RouteCollectorProxy $group) use ($RESTManager, $KReportRestHandler) {
+        $group->get('/categories', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getCategories($getParams));
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getCategories($getParams));
         });
-        $this->get('/cockpit', function () use ($RESTManager) {
+        $group->get('/cockpit', function ($req, $res, $args) use ($RESTManager) {
             $restHandler = new KReporterRESTHandler();
-            $getParams = $_GET;
-            echo json_encode($restHandler->getCockpit());
+            $getParams = $req->getQueryParams();
+            return $res->withJson($restHandler->getCockpit());
         });
-        $this->post('/savenewcategory', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/savenewcategory', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->saveNewCategory($postBody));
+            return $res->withJson($KReportRestHandler->saveNewCategory($postBody));
         });
-        $this->post('/updatecategory', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/updatecategory', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->updateCategory($postBody));
+            return $res->withJson($KReportRestHandler->updateCategory($postBody));
         });
-        $this->post('/deletecategory', function ($req, $res, $args) use ($KReportRestHandler) {
+        $group->post('/deletecategory', function ($req, $res, $args) use ($KReportRestHandler) {
             $postBody = $req->getParsedBody();
-            echo json_encode($KReportRestHandler->deleteCategory($postBody));
+            return $res->withJson($KReportRestHandler->deleteCategory($postBody));
         });
     });
-
-
 });

@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,7 +33,11 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarCache\SugarCache;
+use SpiceCRM\includes\SugarObjects\LanguageManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class RepairAndClear
 {
@@ -84,7 +87,6 @@ class RepairAndClear
                 $this->clearUniSearchCache();
                 $this->rebuildExtensions();
                 $this->rebuildAuditTables();
-                $this->rebuildUniSearch(); // CR1000458
                 $this->repairDatabase();
                 break;
         }
@@ -106,7 +108,8 @@ class RepairAndClear
 
 	public function repairDatabaseSelectModules()
 	{
-		global $current_user, $mod_strings, $dictionary;
+		global $mod_strings, $dictionary;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
 		set_time_limit(3600);
 
 		$db = DBManagerFactory::getInstance();
@@ -114,7 +117,7 @@ class RepairAndClear
 		if (is_admin($current_user) || is_admin_for_any_module($current_user))
 		{
 			$export = false;
-    		if($this->show_output) echo getClassicModuleTitle($mod_strings['LBL_REPAIR_DATABASE'], array($mod_strings['LBL_REPAIR_DATABASE']), false);
+    		if($this->show_output) echo getClassicModuleTitle($mod_strings['LBL_REPAIR_DATABASE'], [$mod_strings['LBL_REPAIR_DATABASE']], false);
             if($this->show_output) {
                 echo "<h1 id=\"rdloading\">{$mod_strings['LBL_REPAIR_DATABASE_PROCESSING']}</h1>";
                 ob_flush();
@@ -125,7 +128,7 @@ class RepairAndClear
 				$repair_related_modules = array_keys($dictionary);
 				//repair DB
 				$dm = inDeveloperMode();
-				$GLOBALS['sugar_config']['developerMode'] = true;
+				SpiceConfig::getInstance()->config['developerMode'] = true;
 				foreach($this->module_list as $bean_name)
 				{
 
@@ -146,7 +149,7 @@ class RepairAndClear
 					}
 				}
 
-				$GLOBALS['sugar_config']['developerMode'] = $dm;
+				SpiceConfig::getInstance()->config['developerMode'] = $dm;
 
 		        if ($this->show_output) echo "<script type=\"text/javascript\">document.getElementById('rdloading').style.display = \"none\";</script>";
 	    		if (isset ($sql) && !empty ($sql))
@@ -182,7 +185,7 @@ class RepairAndClear
 	{
 		global $mod_strings;
 		if($this->show_output) echo $mod_strings['LBL_QR_REBUILDEXT'];
-		global $current_user;
+		$current_user = AuthenticationController::getInstance()->getCurrentUser();
 		require_once('ModuleInstall/ModuleInstaller.php');
 		$mi = new ModuleInstaller();
 		$mi->rebuild_all(!$this->show_output);
@@ -194,8 +197,8 @@ class RepairAndClear
 // cleanup. Tbale versions no longer exists (since spicecrm 2020.03.001)
 //        // clear the database row if it exists (just to be sure)
 //        $query = "DELETE FROM versions WHERE name='Rebuild Extensions'";
-//        $GLOBALS['log']->info($query);
-//        $GLOBALS['db']->query($query);
+//        \SpiceCRM\includes\Logger\LoggerManager::getLogger()->info($query);
+//        \SpiceCRM\includes\database\DBManagerFactory::getInstance()->query($query);
 //
 //        // insert a new database row to show the rebuild extensions is done
 //        $id = create_guid();
@@ -203,8 +206,8 @@ class RepairAndClear
 //        $date_entered = db_convert("'$gmdate'", 'datetime');
 //        $query = 'INSERT INTO versions (id, deleted, date_entered, date_modified, modified_user_id, created_by, name, file_version, db_version) '
 //            . "VALUES ('$id', '0', $date_entered, $date_entered, '1', '1', 'Rebuild Extensions', '4.0.0', '4.0.0')";
-//        $GLOBALS['log']->info($query);
-//        $GLOBALS['db']->query($query);
+//        \SpiceCRM\includes\Logger\LoggerManager::getLogger()->info($query);
+//        \SpiceCRM\includes\database\DBManagerFactory::getInstance()->query($query);
 
         // unset the session variable so it is not picked up in DisplayWarnings.php
         if(isset($_SESSION['rebuild_extensions'])) {
@@ -349,14 +352,14 @@ class RepairAndClear
             }
         }
         // Clear app* cache values too
-        if(!empty($GLOBALS['sugar_config']['languages'])) {
-            $languages = $GLOBALS['sugar_config']['languages'];
+        if(!empty(SpiceConfig::getInstance()->config['languages'])) {
+            $languages = SpiceConfig::getInstance()->config['languages'];
         } else {
-            $languages = array($GLOBALS['current_language'] => $GLOBALS['current_language']);
+            $languages = [$GLOBALS['current_language'] => $GLOBALS['current_language']];
         }
         foreach(array_keys($languages) as $language) {
-        	sugar_cache_clear('app_strings.'.$language);
-        	sugar_cache_clear('app_list_strings.'.$language);
+        	SugarCache::sugar_cache_clear('app_strings.'.$language);
+        	SugarCache::sugar_cache_clear('app_list_strings.'.$language);
         }
 
 	}
@@ -365,7 +368,7 @@ class RepairAndClear
 	 * Remove the cached unified_search_modules.php file
 	 */
     public function clearUniSearchCache() {
-        global $mod_strings, $sugar_config;
+        global $mod_strings;
         if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_CLEARSEARCH']}</h3>";
         $search_dir=sugar_cached('');
         $src_file = $search_dir . 'modules/unified_search_modules.php';
@@ -378,7 +381,7 @@ class RepairAndClear
      */
     public function clearExternalAPICache()
 	{
-        global $mod_strings, $sugar_config;
+        global $mod_strings;
         if($this->show_output) echo "<h3>{$mod_strings['LBL_QR_CLEAR_EXT_API']}</h3>";
         require_once('include/externalAPI/ExternalAPIFactory.php');
         ExternalAPIFactory::clearCache();
@@ -467,20 +470,4 @@ class RepairAndClear
 		}
 	}
 
-
-    /**
-     * CR1000458
-     * rebuild unified_search_modules.php for cache
-     */
-    public function rebuildUniSearch(){
-        global $mod_strings;
-        //clear the unified_search_module.php file
-        require_once('include/utils/UnifiedSearchAdvanced.php');
-        UnifiedSearchAdvanced::unlinkUnifiedSearchModulesFile();
-        $uni = new \UnifiedSearchAdvanced();
-        $uni->buildCache();
-        if($this->show_output) {
-            echo "<br>{$mod_strings['LBL_REBUILD_UNISEARCH']}";
-        }
-    }
 }

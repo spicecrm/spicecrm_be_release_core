@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,43 +34,45 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['OutputTemplate'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['OutputTemplate'] = [
     'table' => 'outputtemplates',
     'comment' => 'Templates used to output something to .pdf or so...',
-    'fields' => array(
-        'header' => array(
+    'fields' => [
+        'header' => [
             'name' => 'header',
             'vname' => 'LBL_HEADER',
             'type' => 'html',
             'comment' => 'The html template header',
-        ),
-        'body_spb' => array(
+        ],
+        'body_spb' => [
             'name' => 'body_spb',
             'vname' => 'LBL_BODY_SPB',
             'type' => 'json',
             'dbType' => 'text',
             'comment' => 'save the json structure of the page builder'
-        ),
-        'body' => array(
+        ],
+        'body' => [
             'name' => 'body',
             'vname' => 'LBL_CONTENT',
             'type' => 'html',
             'comment' => 'The html template body itself',
             'stylesheet_id_field' => 'stylesheet_id',
-        ),
-        'footer' => array(
+        ],
+        'footer' => [
             'name' => 'footer',
             'vname' => 'LBL_FOOTER',
             'type' => 'html',
             'comment' => 'The html template footer'
-        ),
-        'stylesheet_id' => array(
+        ],
+        'stylesheet_id' => [
             'name' => 'stylesheet_id',
             'vname' => 'LBL_STYLE',
             'type' => 'varchar',
             'len' => 36,
-        ),
-        'type' => array(
+        ],
+        'type' => [
             'name' => 'type',
             'vname' => 'LBL_TYPE',
             'type' => 'enum',
@@ -80,8 +81,8 @@ $dictionary['OutputTemplate'] = array(
             'reportable'=> false,
             'options' => 'output_template_types',
             'comment' => 'Type of the template'
-        ),
-        'language' => array(
+        ],
+        'language' => [
             'name' => 'language',
             'vname' => 'LBL_LANGUAGE',
             'type' => 'language',
@@ -89,8 +90,8 @@ $dictionary['OutputTemplate'] = array(
             'len' => 10,
             'required' => true,
             'comment' => 'Language used by the template'
-        ),
-        'module_name' => array(
+        ],
+        'module_name' => [
             'name' => 'module_name',
             'vname' => 'LBL_MODULE',
             'type' => 'enum',
@@ -98,19 +99,19 @@ $dictionary['OutputTemplate'] = array(
             'required' => true,
             'options' => 'modules',
             'comment' => 'The module/bean used for the template'
-        ),
-        'bean_id' => array(
+        ],
+        'bean_id' => [
             'name' => 'bean_id',
             'type' => 'varchar',
             'len' => 36,
             'source' => 'non-db',
-        ),
-        'bean' => array(
+        ],
+        'bean' => [
             'name' => 'bean',
             'type' => 'text',
             'source' => 'non-db',
-        ),
-        'page_size' => array(
+        ],
+        'page_size' => [
             'name' => 'page_size',
             'vname' => 'LBL_PAGE_SIZE',
             'type' => 'enum',
@@ -118,8 +119,8 @@ $dictionary['OutputTemplate'] = array(
             'required' => true,
             'default' => 'A4',
             'options' => 'page_sizes_dom',
-        ),
-        'page_orientation' => array(
+        ],
+        'page_orientation' => [
             'name' => 'page_orientation',
             'vname' => 'LBL_PAGE_ORIENTATION',
             'type' => 'enum',
@@ -127,36 +128,36 @@ $dictionary['OutputTemplate'] = array(
             'default' => 'P',
             'required' => true,
             'options' => 'page_orientation_dom',
-        ),
-        'margin_left' => array(
+        ],
+        'margin_left' => [
             'name' => 'margin_left',
             'vname' => 'LBL_MARGIN_LEFT',
             'type' => 'int'
-        ),
-        'margin_top' => array(
+        ],
+        'margin_top' => [
             'name' => 'margin_top',
             'vname' => 'LBL_MARGIN_TOP',
             'type' => 'int'
-        ),
-        'margin_right' => array(
+        ],
+        'margin_right' => [
             'name' => 'margin_right',
             'vname' => 'LBL_MARGIN_RIGHT',
             'type' => 'int'
-        ),
-        'margin_bottom' => array(
+        ],
+        'margin_bottom' => [
             'name' => 'margin_bottom',
             'vname' => 'LBL_MARGIN_BOTTOM',
             'type' => 'int'
-        ),
-        'public_name' => array(
+        ],
+        'public_name' => [
             'name' => 'public_name',
             'vname' => 'LBL_PUBLIC_NAME',
             'type' => 'varchar',
             'len' => '255',
             'comment' => 'Name of the document, in case it published as file (to foreign persons).'
-        )
-    ),
-    'indices' => array(
+        ]
+    ],
+    'indices' => [
 /* no duplication handling possible...
         array(
             'name' => 'idx_output_template_name',
@@ -164,13 +165,13 @@ $dictionary['OutputTemplate'] = array(
             'fields'=> array('name','deleted','language')
         ),
 */
-    ),
-    'relationships' => array(
+    ],
+    'relationships' => [
 
-    ),
-);
+    ],
+];
 //BEGIN PHP7.1 compatibility: avoid PHP Fatal error:  Uncaught Error: Cannot use string offset as an array
 global $dictionary;
 //END
 
-VardefManager::createVardef('OutputTemplates','OutputTemplate', array('default', 'assignable'));
+VardefManager::createVardef('OutputTemplates','OutputTemplate', ['default', 'assignable']);

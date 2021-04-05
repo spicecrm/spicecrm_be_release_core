@@ -1,13 +1,16 @@
 <?php
-$dictionary['AccountKPI'] = array(
+
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['AccountKPI'] = [
     'table' => 'accountkpis',
-    'fields' => array(
-        'account_id' => array (
+    'fields' => [
+        'account_id' => [
             'name' => 'account_id',
             'type' => 'id',
             'vname' => 'LBL_ACCOUNT_ID'
-        ),
-        'account_name' => array (
+        ],
+        'account_name' => [
             'source' => 'non-db',
             'name' => 'account_name',
             'vname' => 'LBL_ACCOUNT',
@@ -18,8 +21,8 @@ $dictionary['AccountKPI'] = array(
             'link' => 'accounts_link',
             'join_name' => 'accounts',
             'rname' => 'name'
-        ),
-        'accounts_link' => array (
+        ],
+        'accounts_link' => [
             'name' => 'accounts_link',
             'type' => 'link',
             'relationship' => 'accounts_accountkpis',
@@ -27,14 +30,14 @@ $dictionary['AccountKPI'] = array(
             'side' => 'right',
             'source' => 'non-db',
             'vname' => 'LBL_ACCOUNTS',
-        ),
-        'companycode_id' => array (
+        ],
+        'companycode_id' => [
             'name' => 'companycode_id',
             'type' => 'varchar',
             'len' => 36,
             'vname' => 'LBL_COMPANYCODE_ID'
-        ),
-        'companycode_name' => array (
+        ],
+        'companycode_name' => [
             'source' => 'non-db',
             'name' => 'companycode_name',
             'vname' => 'LBL_COMPANYCODE',
@@ -45,8 +48,8 @@ $dictionary['AccountKPI'] = array(
             'link' => 'companycodes_link',
             'join_name' => 'companycodes',
             'rname' => 'name'
-        ),
-        'companycodes_link' => array (
+        ],
+        'companycodes_link' => [
             'name' => 'companycodes_link',
             'type' => 'link',
             'relationship' => 'companycodes_accountkpis',
@@ -54,24 +57,24 @@ $dictionary['AccountKPI'] = array(
             'side' => 'right',
             'source' => 'non-db',
             'vname' => 'LBL_COMPANYCODES',
-        ),
-        'year' => array (
+        ],
+        'year' => [
             'name' => 'year',
             'type' => 'int',
             'vname' => 'LBL_YEAR'
-        ),
-        'period' => array (
+        ],
+        'period' => [
             'name' => 'period',
             'type' => 'varchar',
             'vname' => 'LBL_PERIOD',
             'len' => 10
-        ),
-        'period_date' => array (
+        ],
+        'period_date' => [
             'name' => 'period_date',
             'type' => 'date',
             'vname' => 'LBL_PERIOD'
-        ),
-        'revenue' => array(
+        ],
+        'revenue' => [
             'name' => 'revenue',
             'vname' => 'LBL_REVENUE',
             'type' => 'currency',
@@ -79,18 +82,17 @@ $dictionary['AccountKPI'] = array(
             'required' => true,
             'options' => 'numeric_range_search_dom',
             'enable_range_search' => true,
-        ),
-        'quantity' => array (
+        ],
+        'quantity' => [
             'name' => 'quantity',
             'type' => 'int',
             'vname' => 'LBL_QUANTITY'
-        ),
-    ),
-    'indices' => array(
-        'id' => array('name' => 'accountkpis_pk', 'type' => 'primary', 'fields' => array('id')),
-        'accounts_accountkpis_account_id' => array('name' => 'accounts_accountkpis_account_id', 'type' => 'index', 'fields' => array('account_id'))
-    ),
-);
+        ],
+    ],
+    'indices' => [
+        'id' => ['name' => 'accountkpis_pk', 'type' => 'primary', 'fields' => ['id']],
+        'accounts_accountkpis_account_id' => ['name' => 'accounts_accountkpis_account_id', 'type' => 'index', 'fields' => ['account_id']]
+    ],
+];
 
-require_once('include/SugarObjects/VardefManager.php');
-VardefManager::createVardef('AccountKPIs', 'AccountKPI', array('default', 'assignable'));
+VardefManager::createVardef('AccountKPIs', 'AccountKPI', ['default', 'assignable']);

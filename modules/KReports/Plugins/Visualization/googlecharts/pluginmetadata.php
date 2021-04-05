@@ -14,20 +14,19 @@
 
 
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$pluginmetadata = array(
+$pluginmetadata = [
     'id' => 'googlecharts',
     'displayname' => 'LBL_GOOGLECHARTS',
     'type' => 'visualization',
-    'visualization' => array(
+    'visualization' => [
         'include' => 'kGoogleCharts.php',
         'class' => 'kGoogleChart'
-    ),
+    ],
     'pluginpanel' => 'SpiceCRM.KReporter.Designer.visualizationplugins.googlechartspanel',
     'viewpanel' => 'SpiceCRM.KReporter.Viewer.visualizationplugins.googlechartsviz',
-    'includes' => array(
+    'includes' => [
         'edit' => 'googlechartspanel.js',
         'view' => 'googlechartsviz.js'
-    )
-);
+    ]
+];

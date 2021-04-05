@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -47,7 +46,7 @@ require_once('include/Pear/Crypt_Blowfish/Blowfish.php');
  * @return string key
  */
 function blowfishGetKey($type) {
-	$key = array();
+	$key = [];
 
 	$type = str_rot13($type);
 

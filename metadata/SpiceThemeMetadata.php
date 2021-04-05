@@ -27,132 +27,132 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 
-$dictionary['spicefavorites'] = array(
+$dictionary['spicefavorites'] = [
 	'table' => 'spicefavorites',
-	'fields' => array(
-		array(
+	'fields' => [
+		[
 			'name' => 'beanid',
 			'type' => 'varchar',
 			'len' => 36
-		),
-		array(
+        ],
+		[
 			'name' => 'user_id',
 			'type' => 'varchar',
 			'len' => '36'
-		),
-		array(
+        ],
+		[
 			'name' => 'bean',
 			'type' => 'varchar',
 			'len' => '36',
-		),
-		array(
+        ],
+		[
 			'name' => 'date_entered',
 			'type' => 'datetime'
-		)
-	),
-	'indices' => array(
- 		array(	'name'			=> 'tfr_idx',
+        ]
+    ],
+	'indices' => [
+ 		['name'			=> 'tfr_idx',
 				'type'			=> 'unique',
-				'fields'		=> array('beanid', 'user_id'),
-		),
- 		array(	'name'			=> 'tsrusr_idx',
+				'fields'		=> ['beanid', 'user_id'],
+        ],
+ 		['name'			=> 'tsrusr_idx',
 				'type'			=> 'index',
-				'fields'		=> array('user_id'),
-		),
-		array(	'name'			=> 'tsrusrbean_idx',
+				'fields'		=> ['user_id'],
+        ],
+		['name'			=> 'tsrusrbean_idx',
 				'type'			=> 'index',
-				'fields'		=> array('user_id', 'bean'),
-		),
-	),
+				'fields'		=> ['user_id', 'bean'],
+        ],
+    ],
 
-);
-$dictionary['spicereminders'] = array(
+];
+$dictionary['spicereminders'] = [
 	'table'=> 'spicereminders',
-	'fields'=> array(
-		array(	'name'			=> 'user_id',
+	'fields'=> [
+		['name'			=> 'user_id',
 				'type'			=> 'varchar',
 				'len'			=> '36'
-		),
-		array(	'name'			=> 'bean',
+        ],
+		['name'			=> 'bean',
 				'type'			=> 'varchar',
 				'len'			=> '36',
-		),
-		array(	'name'			=> 'bean_id',
+        ],
+		['name'			=> 'bean_id',
 				'type'			=> 'varchar',
 				'len'			=> '36',
-		),
-		array(	'name'			=> 'reminder_date',
+        ],
+		['name'			=> 'reminder_date',
 				'type'			=> 'date'
-		)
- 	),
-	'indices' => array(
- 		array(	'name'			=> 'tsr_idx',
+        ]
+    ],
+	'indices' => [
+ 		['name'			=> 'tsr_idx',
 				'type'			=> 'unique',
-				'fields'		=> array('user_id', 'bean_id'),
-		)
-	),
-);
+				'fields'		=> ['user_id', 'bean_id'],
+        ]
+    ],
+];
 
-$dictionary['spicenotes'] = array(
+$dictionary['spicenotes'] = [
 		'table' => 'spicenotes',
-		'fields' => array(
-				array(
+		'fields' => [
+				[
 						'name' => 'id',
 						'type' => 'varchar',
 						'len' => 36
-				),
-				array(
+                ],
+				[
 						'name' => 'bean_type',
 						'type' => 'varchar',
 						'len' => 100
-				),
-				array(
+                ],
+				[
 						'name' => 'bean_id',
 						'type' => 'varchar',
 						'len' => 36
-				),
-				array(
+                ],
+				[
 						'name' => 'user_id',
 						'type' => 'varchar',
 						'len' => 36
-				),
-				array(
+                ],
+				[
 						'name' => 'trdate',
 						'type' => 'datetime'
-				),
-				array(
+                ],
+				[
 						'name' => 'trglobal',
 						'type' => 'bool'
-				),
-				array(
+                ],
+				[
 						'name' => 'text',
 						'type' => 'text'
-				),
-				array(
+                ],
+				[
 						'name' => 'deleted',
 						'type' => 'bool'
-				),
-		),
-		'indices' => array(
-				array(	'name'			=> 'tqn_idx',
+                ],
+        ],
+		'indices' => [
+				['name'			=> 'tqn_idx',
 						'type'			=> 'unique',
-						'fields'		=> array('id'),
-				),
-				array(	'name'			=> 'tqnusr_idx',
+						'fields'		=> ['id'],
+                ],
+				['name'			=> 'tqnusr_idx',
 						'type'			=> 'index',
-						'fields'		=> array('user_id'),
-				),
-				array(	'name'			=> 'tqnusrbean_idx',
+						'fields'		=> ['user_id'],
+                ],
+				['name'			=> 'tqnusrbean_idx',
 						'type'			=> 'index',
-						'fields'		=> array('bean_type', 'bean_id'),
-				),
-				array(	'name'			=> 'tqnselection_idx',
+						'fields'		=> ['bean_type', 'bean_id'],
+                ],
+				['name'			=> 'tqnselection_idx',
 						'type'			=> 'index',
-						'fields'		=> array('bean_type', 'bean_id', 'user_id', 'deleted'),
-				),
-		),
+						'fields'		=> ['bean_type', 'bean_id', 'user_id', 'deleted'],
+                ],
+        ],
 
-);
+];
 
 $dictionary['spiceattachments'] = [
 	'table'  => 'spiceattachments',

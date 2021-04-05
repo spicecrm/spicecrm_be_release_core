@@ -26,57 +26,65 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
-use BeanFactory;
+
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\modules\SpiceImports\KREST\controllers\SpiceImportController;
+
+
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
 
-$RESTManager->app->get('/modules/SpiceImports/savedImports/{beanName}', function ($req, $res, $args) {
-    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'list', true))
-        throw (new ForbiddenException("Forbidden for details in module SpiceImports."))->setErrorCode('noModuleDetails');
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('spiceimports', '1.0');
 
-    $bean = BeanFactory::getBean('SpiceImports');
-    echo $bean->getSavedImports($args['beanName']);
-});
 
-$RESTManager->app->get('/modules/SpiceImports/filePreview', function ($req, $res, $args) {
-    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'edit', true))
-        throw (new ForbiddenException("Forbidden for details in module SpiceImports."))->setErrorCode('noModuleDetails');
-    $params = $req->getParams();
-    $bean = BeanFactory::getBean('SpiceImports');
-    echo $bean->getFilePreview($params);
-});
-
-$RESTManager->app->delete('/modules/SpiceImports/upf', function () {
-    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'delete', true))
-        throw (new ForbiddenException("Forbidden to delete in module SpiceImports."))->setErrorCode('noModuleDelete');
-
-    $filemd5 = $_GET['filemd5'];
-    $bean = BeanFactory::getBean('SpiceImports');
-    echo $bean->deleteImportFile($filemd5);
-});
-
-$RESTManager->app->post('/modules/SpiceImports/import', function () {
-    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'edit', true))
-        throw (new ForbiddenException("Forbidden for details in module SpiceImports."))->setErrorCode('noModuleDetails');
-
-    $postParams = $_GET ?: Array();
-    $bean = BeanFactory::getBean('SpiceImports');
-    echo $bean->saveFromImport($postParams);
-});
-
-$RESTManager->app->get('/modules/SpiceImports/{importId}/logs', function ($req, $res, $args) {
-
-    if (!$GLOBALS['ACLController']->checkAccess('SpiceImports', 'detail', true))
-        throw (new ForbiddenException("Forbidden for details in module SpiceImports."))->setErrorCode('noModuleDetails');
-
-    $id = $args['importId'];
-    global $db;
-    $logs = array();
-
-    $res = $db->query("SELECT * FROM spiceimportlogs WHERE import_id = '$id'");
-    while ($log = $db->fetchByAssoc($res))
-        $logs[] = $log;
-
-    echo json_encode($logs);
-});
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/modules/SpiceImports/savedImports/{beanName}',
+        'class'       => SpiceImportController::class,
+        'function'    => 'SpiceImportGetSaves',
+        'description' => 'get the saved spice imports',
+        'options'     => ['noAuth' => true, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/modules/SpiceImports/filePreview',
+        'class'       => SpiceImportController::class,
+        'function'    => 'SpiceImportGetFilePreview',
+        'description' => 'get the file reviews',
+        'options'     => ['noAuth' => true, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/modules/SpiceImports/upf',
+        'class'       => SpiceImportController::class,
+        'function'    => 'SpiceImportDeleteFile',
+        'description' => 'delete the import files',
+        'options'     => ['noAuth' => true, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/modules/SpiceImports/import',
+        'class'       => SpiceImportController::class,
+        'function'    => 'SpiceImportSave',
+        'description' => 'saves data from an imports',
+        'options'     => ['noAuth' => true, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/modules/SpiceImports/{importId}/logs',
+        'class'       => SpiceImportController::class,
+        'function'    => 'SpiceImportGetLog',
+        'description' => 'get the spice import log entries',
+        'options'     => ['noAuth' => true, 'adminOnly' => false],
+    ],
+];
+$RESTManager->registerRoutes($routes);

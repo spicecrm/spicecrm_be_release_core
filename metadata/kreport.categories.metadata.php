@@ -11,21 +11,19 @@
  *
  * You can contact us at info@kreporter.org
  * ****************************************************************************** */
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
 
-$dictionary['KReportCategory'] = array(
+$dictionary['KReportCategory'] = [
     'table' => 'kreportcategories',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'vname' => 'LBL_CATEGORIES_ID',
             'type' => 'id',
             'required' => true,
             'reportable' => true,
             'comment' => 'Unique identifier'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_CATEGORIES_NAME',
             'type' => 'name',
@@ -38,18 +36,18 @@ $dictionary['KReportCategory'] = array(
             'duplicate_merge' => 'enabled',
             //'duplicate_merge_dom_value' => '3',
             'merge_filter' => 'selected',
-        ),
-        'is_admin_only' => array(
+        ],
+        'is_admin_only' => [
             'name' => 'is_admin_only',
             'vname' => 'LBL_CATEGORIES_IS_ADMIN_ONLY',
             'type' => 'bool',
-        ),
-        'priority' => array(
+        ],
+        'priority' => [
             'name' => 'priority',
             'vname' => 'LBL_CATEGORIES_PRIORITY',
             'type' => 'int'
-        ),
-        'date_entered' => array(
+        ],
+        'date_entered' => [
             'name' => 'date_entered',
             'vname' => 'LBL_DATE_ENTERED',
             'type' => 'datetime',
@@ -57,8 +55,8 @@ $dictionary['KReportCategory'] = array(
             'comment' => 'Date record created',
             'enable_range_search' => true,
             'options' => 'date_range_search_dom',
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'vname' => 'LBL_DATE_MODIFIED',
             'type' => 'datetime',
@@ -66,8 +64,8 @@ $dictionary['KReportCategory'] = array(
             'comment' => 'Date record last modified',
             'enable_range_search' => true,
             'options' => 'date_range_search_dom',
-        ),
-        'modified_user_id' => array(
+        ],
+        'modified_user_id' => [
             'name' => 'modified_user_id',
             'rname' => 'user_name',
             'id_name' => 'modified_user_id',
@@ -80,8 +78,8 @@ $dictionary['KReportCategory'] = array(
             'reportable' => true,
             'comment' => 'User who last modified record',
             'massupdate' => false,
-        ),
-        'modified_by_name' => array(
+        ],
+        'modified_by_name' => [
             'name' => 'modified_by_name',
             'vname' => 'LBL_MODIFIED_NAME',
             'type' => 'relate',
@@ -94,8 +92,8 @@ $dictionary['KReportCategory'] = array(
             'link' => 'modified_user_link',
             'duplicate_merge' => 'disabled',
             'massupdate' => false,
-        ),
-        'created_by' => array(
+        ],
+        'created_by' => [
             'name' => 'created_by',
             'rname' => 'user_name',
             'id_name' => 'modified_user_id',
@@ -107,8 +105,8 @@ $dictionary['KReportCategory'] = array(
             'group' => 'created_by_name',
             'comment' => 'User who created record',
             'massupdate' => false,
-        ),
-        'created_by_name' => array(
+        ],
+        'created_by_name' => [
             'name' => 'created_by_name',
             'vname' => 'LBL_CREATED',
             'type' => 'relate',
@@ -122,45 +120,45 @@ $dictionary['KReportCategory'] = array(
             'duplicate_merge' => 'disabled',
             'importable' => 'false',
             'massupdate' => false,
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'vname' => 'LBL_DELETED',
             'type' => 'bool',
             'default' => '0',
             'reportable' => false,
             'comment' => 'Record deletion indicator'
-        ),
+        ],
 
-        'assigned_user_id' => array(
+        'assigned_user_id' => [
             'name' => 'assigned_user_id',
             'type' => 'id',
-        ),
+        ],
 
-        'created_by_link' => array(
+        'created_by_link' => [
             'name' => 'created_by_link',
             'type' => 'link',
-            'relationship' => strtolower($module) . '_created_by',
+            'relationship' => 'kreportcategories_created_by',
             'vname' => 'LBL_CREATED_USER',
             'link_type' => 'one',
             'module' => 'Users',
             'bean_name' => 'User',
             'source' => 'non-db',
-        ),
-        'modified_user_link' => array(
+        ],
+        'modified_user_link' => [
             'name' => 'modified_user_link',
             'type' => 'link',
-            'relationship' => strtolower($module) . '_modified_user',
+            'relationship' => 'kreportcategories_modified_user',
             'vname' => 'LBL_MODIFIED_USER',
             'link_type' => 'one',
             'module' => 'Users',
             'bean_name' => 'User',
             'source' => 'non-db',
-        ),
-    ),
-    'indices' => array(
-        array('name' => 'kreportcategoriespk', 'type' => 'primary', 'fields' => array('id')),
-        array('name' => 'idx_is_admin', 'type' => 'index', 'fields' => array('is_admin_only', 'deleted')),
-    ),
-);
+        ],
+    ],
+    'indices' => [
+        ['name' => 'kreportcategoriespk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' => 'idx_is_admin', 'type' => 'index', 'fields' => ['is_admin_only', 'deleted']],
+    ],
+];
 

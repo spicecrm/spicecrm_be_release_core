@@ -1,11 +1,20 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
-use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+use Swift_Attachment;
+use Swift_Message;
 use Swift_TransportException;
+use SpiceCRM\modules\Emails\Email;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 
 trait GmailApiTrait
 {
+    use SwiftInlineImagesTrait;
+
+    /**
+     * @inheritdoc
+     */
     public function testConnection($testEmail) {
         $status = $this->checkConfiguration($this->outgoing_settings);
         if (!$status['result']) {
@@ -18,25 +27,28 @@ trait GmailApiTrait
         }
 
         try {
-            $this->sendMail(\Email::getTestEmail($this->mailbox, $testEmail));
+            $this->sendMail(Email::getTestEmail($this->mailbox, $testEmail));
             $response['result'] = true;
         } catch (Swift_TransportException $e) {
             $response['errors'] = $e->getMessage();
-            $GLOBALS['log']->info($e->getMessage());
+            LoggerManager::getLogger()->info($e->getMessage());
             $response['result'] = false;
-        } catch (Exception $e) {
+        } catch (\Exception $e) { //todo-uebelmar clarify which exception
             $response['errors'] = $e->getMessage();
-            $GLOBALS['log']->info($e->getMessage());
+            LoggerManager::getLogger()->info($e->getMessage());
             $response['result'] = false;
         }
 
         return $response;
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function composeEmail($email) {
         $this->checkEmailClass($email);
 
-        $message = (new \Swift_Message($email->name))
+        $message = (new Swift_Message($email->name))
             ->setFrom([$this->userName => $this->mailbox->gmail_email_address])
             ->setBody($email->body, 'text/html')
         ;
@@ -79,17 +91,22 @@ trait GmailApiTrait
             $message->setReplyTo($this->mailbox->reply_to);
         }
 
-        if($email->id){
+        if ($email->id) {
             foreach (json_decode (SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {
                 $message->attach(
-                    \Swift_Attachment::fromPath('upload://' . $att->filemd5)->setFilename($att->filename)
+                    Swift_Attachment::fromPath('upload://' . $att->filemd5)->setFilename($att->filename)
                 );
             }
+
+            $this->handleInlineImages($message, $email);
         }
 
         return $message;
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function dispatch($message) {
         $msg = $this->base64url_encode($message);
 

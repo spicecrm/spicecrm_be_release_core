@@ -1,5 +1,4 @@
 <?php
-
 /*********************************************************************************
 * This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
 * and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
@@ -30,16 +29,35 @@
 
 namespace SpiceCRM\includes;
 
-use Administration;
-use AuthenticationController;
-use BeanFactory;
-use Contact;
-use LogicHook;
+
+/**
+ * @OA\Info(title="SpiceCRM Api", version="0.1")
+ */
+
 use Slim\App;
+use Slim\Exception\HttpNotFoundException;
+use Slim\Psr7\Response;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\ErrorHandlers\Exception;
+use SpiceCRM\includes\ErrorHandlers\NotFoundException;
 use SpiceCRM\includes\ErrorHandlers\UnauthorizedException;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\LogicHook\LogicHook;
+use SpiceCRM\includes\Middleware\AdminOnlyAccessMiddleware;
+use SpiceCRM\includes\Middleware\ErrorMiddleware;
+use SpiceCRM\includes\Middleware\ExceptionMiddleware;
+use SpiceCRM\includes\Middleware\LoggerMiddleware;
+use SpiceCRM\includes\Middleware\ModuleRouteMiddleware;
+use SpiceCRM\includes\Middleware\RequireAuthenticationMiddleware;
+use SpiceCRM\includes\Middleware\ValidationMiddleware;
+use SpiceCRM\includes\SpiceSwagger\SpiceSwaggerGenerator;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 use SpiceCRM\includes\utils\SpiceUtils;
 use SpiceCRM\includes\utils\RESTRateLimiter;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\Contacts\Contact;
+use Throwable;
 
 class RESTManager
 {
@@ -59,19 +77,23 @@ class RESTManager
     private $requestParams = [];
     private $noAuthentication = false;
     private $adminOnly = false;
-    public $tmpSessionId = null;
     public $extensions = [];
+    private $routes = [];
+    private function __construct()
+    {
+    }
 
-    private function __construct() {}
-
-    private function __clone() {}
+    private function __clone()
+    {
+    }
 
     /**
      * Returns an instance of the RESTManager singleton.
      *
      * @return RESTManager|null
      */
-    public static function getInstance() {
+    public static function getInstance()
+    {
         if (!is_object(self::$_instance)) {
             self::$_instance = new RESTManager();
         }
@@ -82,51 +104,25 @@ class RESTManager
      * Initializes the RESTManager.
      *
      * @param App $app
+     * @throws ErrorHandlers\TooManyRequestsException
      */
-    public function intialize(App $app) {
+    public function initialize(App $app)
+    {
         // link the app and the request paramas
         $this->app = $app;
-        // some general global settings
-        // disable fixup format added to pürevent fixup format in sugarbean .. invalidates float based on user settings
-        global $disable_fixup_format;
-        $disable_fixup_format = true;
 
-        // set a global transaction id
-        $GLOBALS['transactionID'] = SpiceUtils::createGuid();
+        $this->initGlobals();
+        $this->initRateLimiter();
 
-        if (isset($GLOBALS['sugar_config']['sessionMaxLifetime'])) {
-            ini_set('session.gc_maxlifetime', $GLOBALS['sugar_config']['sessionMaxLifetime']);
-        }
+        $this->app->options('/{routes:.+}', function ($request, $response, $args) {
+            return $response;
+        });
 
-        // handle the error reporting for the REST APOI accoridng to the Config Settings
-        if (isset($GLOBALS['sugar_config']['krest']['error_reporting'])) {
-            error_reporting($GLOBALS['sugar_config']['krest']['error_reporting']);
-        }
-
-        if (isset($GLOBALS['sugar_config']['krest']['display_errors'])) {
-            ini_set('display_errors', $GLOBALS['sugar_config']['krest']['display_errors']);
-        }
-
-        // check if the rate Limiter is active
-        if (@$GLOBALS['sugar_config']['krest']['rateLimiting']['active']) {
-            $app->add(
-                function ($request, $response, $next) {
-                    RESTRateLimiter::check($request->getMethod());
-                    return $response = $next($request, $response);
-                }
-            );
-        }
-
-        $app->add(function ($req, $res, $next) {
-            $response = $next($req, $res);
-            return $response
+        $this->app->add(function ($req, $next) {
+            return $next->handle($req)
                 ->withHeader('Access-Control-Allow-Origin', '*')
                 ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
                 ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-        });
-
-        $app->options('/{routes:.+}', function ($request, $response, $args) {
-            return $response;
         });
 
         $this->initErrorHandling();
@@ -136,8 +132,288 @@ class RESTManager
             $this->initLogging();
         }
 
+        $this->app->addRoutingMiddleware();
+
+        $this->initExtensions();
+
+        $this->initRoutes();
+
+        // Catch-all route to serve a 404 Not Found page if none of the routes match
+        // NOTE: make sure this route is defined last
+        $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($req, $res) {
+            throw new HttpNotFoundException($req);
+        });
+    }
+
+    /**
+     * Registers the routes from the extensions
+     *
+     * @param array $routeArray
+     * @param string|null $extension
+     */
+    public function registerRoutes(array $routeArray, string $extension = null): void {
+        foreach ($routeArray as $route) {
+            $route['extension'] = $extension;
+            $this->routes[$route['method'].':'.$route['route']] = $route;
+        }
+    }
+
+    /**
+     * Check on function getallheaders! Not all PHP distributions have this function
+     * Example: Nginx, PHP-FPM or any other FastCGI method of running PHP
+     *
+     * @return array|false
+     */
+    private function getallheaders()
+    {
+        if (!function_exists('getallheaders')) {
+            $headers = [];
+            foreach ($_SERVER as $name => $value) {
+                if (substr($name, 0, 5) == 'HTTP_') {
+                    $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+                }
+            }
+            return $headers;
+        } else {
+            return getallheaders();
+        }
+    }
+
+    /**
+     * Registers an extension.
+     *
+     * @param string $extension
+     * @param string $version
+     * @param array|null $config
+     * @param array $routes
+     */
+    public function registerExtension(string $extension, string $version, ?array $config = [], array $routes = []): void {
+        $this->extensions[$extension] = [
+            'version' => $version,
+            'config' => $config,
+        ];
+
+        if (!empty($routes)) {
+            $this->registerRoutes($routes, $extension);
+        }
+    }
+
+    /**
+     * Excludes the given path from authentication.
+     *
+     * @param $path
+     * @deprecated delete this once all the calls to this function are removed
+     */
+    public function excludeFromAuthentication($path)
+    {
+    }
+
+    /**
+     * Makes a given path accessible only for admins.
+     *
+     * @param $path
+     * @deprecated delete this once all the calls to this function are removed
+     */
+    public function adminAccessOnly($path) {
+    }
+
+    /**
+     * Returns all headers converted to lower case.
+     *
+     * @return array
+     */
+    private function getHeaders()
+    {
+        $retHeaders = [];
+        $headers = $this->getallheaders();
+        foreach ($headers as $key => $value) {
+            $retHeaders[strtolower($key)] = $value;
+        }
+        return $retHeaders;
+    }
+
+    /**
+     * Authenticates the user based on the headers or post parameters.
+     *
+     * @throws UnauthorizedException
+     */
+    public function authenticate()
+    {
+        // set SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1 in .htaccessfile
+
+        // get the headers
+        $headers = $this->getHeaders();
+
+        $token = null;
+        $tokenIssuer = null;
+        $user = null;
+        $pass = null;
+
+        if (!empty($headers['oauth-token'])) {
+            $token = $headers['oauth-token'];
+            $tokenIssuer = $headers['oauth-issuer'];
+            if(empty($tokenIssuer)) {
+                $tokenIssuer="SpiceCRM";
+            }
+        } elseif (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])) {
+            $user = $_SERVER['PHP_AUTH_USER'];
+            $pass = $_SERVER['PHP_AUTH_PW'];
+        } elseif (!empty($_GET['PHP_AUTH_DIGEST_RAW'])) {
+            $auth = explode(':', base64_decode(str_replace('Basic ', '', $_GET['PHP_AUTH_DIGEST_RAW'])));
+            $user = $auth[0];
+            $pass = $auth[1];
+        } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+            list($user, $pass) = explode(':', base64_decode(substr($_SERVER['REDIRECT_HTTP_AUTHORIZATION'], 6)));
+        }
+
+        /*
+         * if we have a user or a token try to authenticate
+         * otherwise we continue unauthenticated
+         */
+        if($user || $token) {
+            $authController = AuthenticationController::getInstance();
+            return $authController->authenticate($user, $pass, $token, $tokenIssuer);
+        }
+    }
+
+    /**
+     * Initialize Error Handling
+     * Each thrown Exception is caught here and is available in $exception.
+     */
+    private function initErrorHandling()
+    {
+
+        $this->app->add(ErrorMiddleware::class);
+        $this->app->add(ExceptionMiddleware::class);
+        $this->app->addErrorMiddleware(true, true, true);
+    }
+
+    /**
+     * kind of deprecated... only use outside of slim
+     *
+     * todo should be moved to some error handler/logger class. if it's even still necessary at all.
+     * @param $exception
+     * @return string
+     */
+    public function outputError($exception)
+    {
+        $inDevMode = (isset(SpiceConfig::getInstance()->config['developerMode'])
+                    and SpiceConfig::getInstance()->config['developerMode']);
+
+        if (is_object($exception)) {
+            if (is_a( $exception, Exception::class)) {
+                if ($exception->isFatal()) {
+                    LoggerManager::getLogger()->fatal($exception->getMessageToLog() . ' in '
+                        . $exception->getFile() . ':' . $exception->getLine() );
+                }
+                $responseData = $exception->getResponseData();
+                if (get_class( $exception ) === Exception::class) {
+                    $responseData['line']  = $exception->getLine();
+                    $responseData['file']  = $exception->getFile();
+                    $responseData['trace'] = $exception->getTrace();
+                }
+                $httpCode = $exception->getHttpCode();
+            } else {
+                if ($inDevMode) {
+                    $responseData = [
+                        'message' => $exception->getMessage(),
+                        'line'    => $exception->getLine(),
+                        'file'    => $exception->getFile(),
+                        'trace'   => $exception->getTrace(),
+                    ];
+                } else {
+                    $responseData['error'] = ['message' => 'Application Error.'];
+                }
+                $httpCode = $exception->getCode();
+            }
+        } else {
+            LoggerManager::getLogger()->fatal($exception);
+            $responseData['error'] = ['message' => $inDevMode ? 'Application Error.' : $exception];
+            $httpCode = 500;
+        }
+
+        http_response_code($httpCode ? $httpCode : 500);
+        $json = json_encode(['error' => $responseData], JSON_PARTIAL_OUTPUT_ON_ERROR);
+        if (!$json) {
+            echo json_encode(['error' => 'Error while JSON encoding of an exception: '
+                . json_last_error_msg() . '... with exception message: ' . $exception->getMessage()]);
+        } else {
+            echo $json;
+        }
+
+        exit;
+
+    }
+
+    /**
+     * Generates the swagger definition of the API;
+     * @param array|null $extensions
+     * @param array|null $modules
+     * @return string
+     */
+    public function getSwagger(?array $extensions, ?array $modules): string {
+        $swaggerGenerator = new SpiceSwaggerGenerator($this->routes, $this->extensions, $extensions, $modules);
+        return $swaggerGenerator->generateSwaggerFile();
+    }
+
+    /**
+     * Initializes the logger middleware. It logs the traffic into the syskrestlog table.
+     */
+    private function initLogging()
+    {
+        $this->app->add(LoggerMiddleware::class);
+    }
+
+
+    /**
+     * Sets general global settings.
+     */
+    private function initGlobals() {
+        // some general global settings
+        // disable fixup format added to pürevent fixup format in sugarbean .. invalidates float based on user settings
+        global $disable_fixup_format;
+        $disable_fixup_format = true;
+
+        // set a global transaction id
+        $GLOBALS['transactionID'] = SpiceUtils::createGuid();
+
+        if (isset(SpiceConfig::getInstance()->config['sessionMaxLifetime'])) {
+            ini_set('session.gc_maxlifetime', SpiceConfig::getInstance()->config['sessionMaxLifetime']);
+        }
+
+        // handle the error reporting for the REST APOI accoridng to the Config Settings
+        if (isset(SpiceConfig::getInstance()->config['krest']['error_reporting'])) {
+            error_reporting(SpiceConfig::getInstance()->config['krest']['error_reporting']);
+        }
+
+        if (isset(SpiceConfig::getInstance()->config['krest']['display_errors'])) {
+            ini_set('display_errors', SpiceConfig::getInstance()->config['krest']['display_errors']);
+        }
+    }
+
+    /**
+     * Add the rate limiter if necessary.
+     *
+     * @throws ErrorHandlers\TooManyRequestsException
+     */
+    private function initRateLimiter() {
+        // check if the rate Limiter is active
+        if (@SpiceConfig::getInstance()->config['krest']['rateLimiting']['active']) {
+            $this->app->add(
+                function ($request, $next) {
+                    RESTRateLimiter::check($request->getMethod());
+                    return $next->handle($request);
+                }
+            );
+        }
+    }
+
+    /**
+     * Initializes extensions and routes.
+     */
+    private function initExtensions() {
         // check if we have extension in the local path
-        $checkRootPaths = ['include', 'modules', 'custom/modules'];
+        $checkRootPaths = ['include', 'modules', 'custom/modules', 'custom/include'];
         foreach ($checkRootPaths as $checkRootPath) {
             $KRestDirHandle = opendir("./$checkRootPath");
             if ($KRestDirHandle) {
@@ -156,6 +432,15 @@ class RESTManager
             }
         }
 
+        $KRestDirHandle = opendir('./KREST/extensions');
+        while (false !== ($KRestNextFile = readdir($KRestDirHandle))) {
+            $statusInclude = 'NOP';
+            if (preg_match('/.php$/', $KRestNextFile)) {
+                $statusInclude = 'included';
+                require_once('./KREST/extensions/' . $KRestNextFile);
+            }
+        }
+
         if (file_exists('./custom/KREST/extensions')) {
             $KRestDirHandle = opendir('./custom/KREST/extensions');
             if ($KRestDirHandle) {
@@ -166,613 +451,65 @@ class RESTManager
                 }
             }
         }
-
-        $KRestDirHandle = opendir('./KREST/extensions');
-        while (false !== ($KRestNextFile = readdir($KRestDirHandle))) {
-            $statusInclude = 'NOP';
-            if (preg_match('/.php$/', $KRestNextFile)) {
-                $statusInclude = 'included';
-                require_once('./KREST/extensions/' . $KRestNextFile);
-            }
-        }
-
-        // authenticate
-        try {
-            if ($_SERVER['REQUEST_METHOD'] != 'OPTIONS') {
-                $this->authenticate();
-            }
-        } catch (Exception $exception) {
-            $this->outputError($exception);
-        }
-
-        // specific handler for the files
-        $this->getProxyFiles();
-
-        // Catch-all route to serve a 404 Not Found page if none of the routes match
-        // NOTE: make sure this route is defined last
-        $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($req, $res) {
-            $handler = $this->notFoundHandler; // handle using the default Slim page not found handler
-            return $handler($req, $res);
-        });
     }
 
     /**
-     * Registers an extension.
-     *
-     * @param $extension
-     * @param $version
-     * @param array $config
+     * Initializes the routes, by iterating over the $routes array and registering them with the slim app.
      */
-    public function registerExtension($extension, $version, $config = []) {
-        $this->extensions[$extension] = [
-            'version' => $version,
-            'config' => $config,
-        ];
-    }
+    public function initRoutes(): void {
+        foreach ($this->routes as $route) {
+            if (isset($route['method']) && isset($route['route']) && isset($route['class'])
+                && isset($route['function'])) {
 
-    /**
-     * Excludes the given path from authentication.
-     *
-     * @param $path
-     */
-    public function excludeFromAuthentication($path) {
-        global $sugar_config;
-
-        // support for IIS
-        $currentPath = $this->app->getContainer()['environment']->get("REDIRECT_URL") ?: $this->app->getContainer()['environment']->get("REQUEST_URI");
-        if (!isset($sugar_config['krest']['url_prefix'])) {
-            $pos = strpos($currentPath, '/sysinfo');
-            if ($pos !== false) {
-                $urlPrefix = substr($currentPath, 0, $pos);
-            } else {
-                // todo write the $urlPrefix value into the config file
-            }
-        } else {
-            $urlPrefix = $sugar_config['krest']['url_prefix'];
-        }
-        $currentPath = explode($urlPrefix, $currentPath, 2)[1];
-
-        if (substr($path, -1) === '*' && strpos($currentPath, substr($path, 0, -1)) === 0) {
-            $this->noAuthentication = true;
-        } elseif ($currentPath === $path) {
-            $this->noAuthentication = true;
-        }
-    }
-
-    /**
-     * Makes a given path accessible only for admins.
-     *
-     * @param $path
-     */
-    public function adminAccessOnly($path)
-    {
-        // support for IIS
-        $currentPath = $this->app->getContainer()['environment']->get("REDIRECT_URL") ?: $this->app->getContainer()['environment']->get("REQUEST_URI");
-        $currentPath = explode('/KREST', $currentPath, 2)[1];
-
-        if (substr($path, -1) === '*' && strpos($currentPath, substr($path, 0, -1)) === 0) {
-            $this->adminOnly = true;
-        } elseif ($currentPath === $path) {
-            $this->adminOnly = true;
-        }
-    }
-
-    /**
-     * Returns all headers converted to lower case.
-     *
-     * @return array
-     */
-    private function getHeaders() {
-        $retHeaders = [];
-        $headers = getallheaders();
-        foreach ($headers as $key => $value) {
-            $retHeaders[strtolower($key)] = $value;
-        }
-        return $retHeaders;
-    }
-
-    /**
-     * Authenticates the user based on the headers or post parameters.
-     *
-     * @throws UnauthorizedException
-     */
-    public function authenticate() {
-        //$environment = $this->app->getContainer()['environment'];
-        if ($this->noAuthentication) {
-            return;
-        }
-
-        // get the headers
-        $headers = $this->getHeaders();
-
-        // handle the session start
-        $sessionSuccess = false;
-        if (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])) {
-            $loginData = $this->login([
-                'user_name'  => $_SERVER['PHP_AUTH_USER'],
-                'password'   => $_SERVER['PHP_AUTH_PW'],
-                'encryption' => 'PLAIN',
-                'loginByDev' => isset($_GET['byDev']{0}) ? $_GET['byDev'] : null
-            ]);
-            if ($loginData !== false) {
-                $this->sessionId = $loginData;
-                $this->tmpSessionId = $loginData;
-                $accessLog = BeanFactory::getBean('UserAccessLogs');
-                $accessLog->addRecord();
-            } else {
-                $this->authenticationError('', $_SERVER['PHP_AUTH_USER']);
-            }
-        } elseif (!empty($_GET['PHP_AUTH_DIGEST_RAW'])) {
-            // handling for CLI
-            $auth = explode(':', base64_decode($_GET['PHP_AUTH_DIGEST_RAW']));
-            $loginData = $this->login([
-                'user_name'  => $auth[0],
-                'password'   => $auth[1],
-                'encryption' => 'PLAIN',
-                'loginByDev' => isset($_GET['byDev']{0}) ? $_GET['byDev'] : null
-            ]);
-            if ($loginData !== false) {
-                $this->sessionId = $loginData;
-                $this->tmpSessionId = $loginData;
-                $accessLog = BeanFactory::getBean('UserAccessLogs');
-                $accessLog->addRecord();
-            } else {
-                $this->authenticationError('', $auth[0]);
-            }
-        } elseif (!empty($this->requestParams['user_name']) && !empty($this->requestParams['password'])) {
-            $loginData = $this->login([
-                'user_name'  => $this->requestParams['user_name'],
-                'password'   => $this->requestParams['password'],
-                'encryption' => $this->requestParams['encryption'],
-            ]);
-            echo $this->requestParams['user_name'];
-            exit;
-            if ($loginData !== false) {
-                $this->sessionId = $loginData;
-                $this->tmpSessionId = $loginData;
-            } else {
-                $this->authenticationError('', $this->requestParams['user_name']);
-            }
-        } elseif (!empty($headers['oauth-token'])) {
-            $startedSession = $this->startSession($headers['oauth-token']);
-            if ($startedSession !== false)
-                $this->sessionId = $startedSession;
-            else
-                $this->authenticationError('session invalid');
-        } elseif (!empty($this->requestParams['session_id']) ||
-            !empty($this->requestParams['sessionid'])) {
-
-            $sessionId = $this->requestParams['session_id'] ?: $this->requestParams['sessionid'];
-            $startedSession = $this->startSession($sessionId);
-
-            if ($startedSession !== false) {
-                $this->sessionId = $startedSession;
-            } else {
-                $this->authenticationError('session invalid');
-            }
-        } else {
-            $this->authenticationError('auth data missing');
-        }
-
-        if ($this->adminOnly && !$GLOBALS['current_user']->is_admin) {
-            $this->authenticationError('Admin Access only');
-        }
-    }
-
-    public function cleanup() {
-        // delete the session if it was created without login
-        if (!empty($this->tmpSessionId)) {
-            session_destroy();
-        }
-    }
-
-    /**
-     * Handles an authentication error: writes it into log and throws an exception.
-     *
-     * @param string $message
-     * @param null $loginName
-     * @throws UnauthorizedException
-     */
-    public function authenticationError($message = '', $loginName = null) {
-        $accessLog = BeanFactory::getBean('UserAccessLogs');
-        $accessLog->addRecord('loginfail', $loginName);
-
-        // set for cors
-        // header("Access-Control-Allow-Origin: *");
-        throw new UnauthorizedException('Authentication failed' . (isset($message{0}) ? ': ' . $message : '.'));
-    }
-
-    /**
-     * Starts the session.
-     *
-     * @param string $session_id
-     * @return false|mixed|string
-     */
-    public function startSession($session_id = '') {
-        if (empty($session_id)) {
-            $requestparams = $_GET;
-            if (isset($requestparams['session_id'])) {
-                $session_id = $requestparams['session_id'];
-            }
-        }
-
-        if (!empty($session_id)) {
-            if (!session_id()) {
-                // hack to keep data that was written to the session already
-                $sessionbackup = $_SESSION;
-                session_id($session_id);
-                session_start();
-                // add the backed up session data
-                foreach($sessionbackup as $key => $val){
-                    $_SESSION[$key] = $val;
+                if (isset($route['options']['noAuth']) && $route['options']['noAuth'] == false
+                    && AuthenticationController::getInstance()->isAuthenticated()===false) {
+                    continue;
                 }
-            }
 
-            if (!empty($_SESSION['authenticated_user_id'])) {
-                global $current_user;
-                $current_user = BeanFactory::getBean('Users', $_SESSION['authenticated_user_id']);
-                return $session_id;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Validates the session.
-     *
-     * @param $session_id
-     * @return bool
-     */
-    public function validate_session($session_id) {
-        if (!empty($session_id)) {
-            // only initialize session once in case this method is called multiple times
-            if (!session_id()) {
-                session_id($session_id);
-                session_start();
-            }
-
-            if (!empty($_SESSION['is_valid_session']) && $_SESSION['type'] == 'user') {
-                global $current_user;
-                $current_user = BeanFactory::getBean('Users', $_SESSION['authenticated_user_id']);
-                return true;
-            }
-
-            session_destroy();
-        }
-        LogicHook::initialize();
-        return false;
-    }
-
-    private function login($user_auth) {
-        global $sugar_config, $system_config;
-
-        $user = BeanFactory::getBean('Users');
-        $success = false;
-        $error = '';
-        //rrs
-        $system_config = new Administration();
-        $system_config->retrieveSettings('system');
-        $authController = new AuthenticationController();
-        $passwordEncrypted = true;
-        //rrs
-        //var_dump($user_auth);
-        if (!empty($user_auth['encryption']) &&
-            $user_auth['encryption'] === 'PLAIN' &&
-            $authController->authController->userAuthenticateClass != "LDAPAuthenticateUser") {
-            $user_auth['password'] = md5($user_auth['password']);
-        }
-        if (!empty($user_auth['encryption']) && $user_auth['encryption'] === 'SPICECRMMOBILE') {
-            if ($authController->authController->userAuthenticateClass != "LDAPAuthenticateUser") {
-                $user_auth['password'] = md5(base64_decode(str_rot13($user_auth['password'])));
-            } else {
-                $user_auth['password'] = base64_decode(str_rot13($user_auth['password']));
-                $passwordEncrypted = false;
-            }
-        }
-        $isLoginSuccess = $authController->login(
-            $user_auth['user_name'],
-            $user_auth['password'],
-            [
-                'passwordEncrypted' => $passwordEncrypted,
-                'loginByDev' => (isset($user_auth['loginByDev']{0}) and @$GLOBALS['sugar_config']['masqueraded_developers_allowed'] === true) ? $user_auth['loginByDev'] : null
-            ]
-        );
-
-        $usr_id = $user->retrieve_user_id($user_auth['user_name']);
-        if ($usr_id) {
-            $user->retrieve($usr_id);
-        }
-
-        if ($isLoginSuccess) {
-            if ($_SESSION['hasExpiredPassword'] == '1') {
-                $error = 'password_expired';
-            }
-            if (!empty($user) && !empty($user->id) && !$user->is_group) {
-                $success = true;
-                global $current_user;
-                $current_user = $user;
-            }
-        } elseif ($usr_id && isset($user->user_name) && ($user->getPreference('lockout') == '1')) {
-            $error = 'lockout_reached';
-        } /* else if (function_exists('mcrypt_cbc') && $authController->authController->userAuthenticateClass == "LDAPAuthenticateUser" && (empty($user_auth['encryption']) || $user_auth['encryption'] !== 'PLAIN' )) {
-          $password = self::$helperObject->decrypt_string($user_auth['password']);
-          $authController->loggedIn = false; // reset login attempt to try again with decrypted password
-          if ($authController->login($user_auth['user_name'], $password) && isset($_SESSION['authenticated_user_id']))
-          $success = true;
-          } */ elseif ($authController->authController->userAuthenticateClass == "LDAPAuthenticateUser" &&
-                        (empty($user_auth['encryption']) || $user_auth['encryption'] == 'PLAIN')) {
-            $authController->loggedIn = false; // reset login attempt to try again with md5 password
-            if ($authController->login($user_auth['user_name'], md5($user_auth['password']), ['passwordEncrypted' => true]) &&
-                isset($_SESSION['authenticated_user_id'])) {
-                $success = true;
-            } else {
-                $error = 'ldap_error';
-            }
-        }
-
-        if ($success) {
-            session_start();
-            global $current_user;
-            $current_user->loadPreferences();
-            $_SESSION['is_valid_session'] = true;
-            $_SESSION['ip_address'] = query_client_ip();
-            $_SESSION['user_id'] = $current_user->id;
-            $_SESSION['type'] = 'user';
-            $_SESSION['KREST'] = true;
-
-            $_SESSION['avail_modules'] = query_module_access_list($user);
-            $GLOBALS['ACLController']->filterModuleList($_SESSION['avail_modules'], false);
-
-            $_SESSION['authenticated_user_id'] = $current_user->id;
-            $_SESSION['unique_key'] = $sugar_config['unique_key'];
-
-            //$GLOBALS['log']->info('End: SugarWebServiceImpl->login - successful login');
-            return session_id();
-        } else {
-            return false;
-        }
-    }
-
-    public function getLoginData() {
-        global $current_user;
-
-        // clear the tem session ... seemingly we came via login so the session shoudl be kept
-        $this->tmpSessionId = null;
-
-        $loginData = [
-            'access_token' => $_SESSION['google_oauth']['access_token'],
-            'admin' => $current_user->is_admin,
-            'display_name' => $current_user->get_summary_text(),
-            'email' => $current_user->email1,
-            'first_name' => $current_user->first_name,
-            'id' => session_id(),
-            'last_name' => $current_user->last_name,
-            'portal_only' => $current_user->portal_only,
-            'renewPass' => $current_user->system_generated_password,
-            'user_name' => $current_user->user_name,
-            'userid' => $current_user->id,
-            'user_image' => $current_user->user_image,
-            'dev' => $current_user->is_dev,
-            'companycode_id' => $current_user->companycode_id,
-            'obtainGDPRconsent' => false
-        ];
-
-        // Is it a portal user? And the GDPR consent for portal users is configured?
-        if ($current_user->portal_only and @$GLOBALS['sugar_config']['portal_gdpr']['obtain_consent']) {
-            $contactOfPortalUser = new Contact();
-            $contactOfPortalUser->retrieve_by_string_fields(['portal_user_id' => $GLOBALS['current_user']->id]);
-            // gdpr_marketing_agreement not 'g' and not 'r' indicates that the user has not yet been asked for consent of GDPR in general (data AND marketing)
-            if (($contactOfPortalUser->gdpr_marketing_agreement !== 'g' and $contactOfPortalUser->gdpr_marketing_agreement !== 'r') and !$contactOfPortalUser->gdpr_data_agreement) $loginData['obtainGDPRconsent'] = true;
-        }
-
-        return $loginData;
-    }
-
-    public function getProxyFiles() {
-        $headers = getallheaders();
-
-        if ($headers['proxyfiles']) {
-            $files = json_decode(base64_decode($headers['proxyfiles']), true);
-            $_FILES = $files;
-        }
-
-    }
-
-    /**
-     * Initialize Error Handling
-     * Each thrown Exception is caught here and is available in $exception.
-     */
-    private function initErrorHandling() {
-        if (isset($this->app)) {
-            $c = $this->app->getContainer();
-        }
-
-        // Error handlers
-
-        # errorHandler is for PHP < 7
-        $c['errorHandler'] = $c['phpErrorHandler'] = function( $container ) {
-            return function( $request, $response, $exceptionObjectOrMessage ) {
-                return $this->handleErrorResponse($exceptionObjectOrMessage);
-            };
-        };
-
-        $c['notFoundHandler'] = function ( $container ) {
-            return function( $request, $response ) {
-                return $this->handleErrorResponse(new \SpiceCRM\includes\ErrorHandlers\NotFoundException());
-            };
-        };
-
-        $c['notAllowedHandler'] = function( $container ) {
-            return function ( $request, $response, $allowedMethods ) use( $container ) {
-                $responseData['error'] = [ 'message' => 'Method not allowed.', 'errorCode' => 'notAllowed', 'methodsAllowed' => implode(', ', $allowedMethods), 'httpCode' => 405 ];
-                return $container['response']
-                    ->withHeader('Allow', implode(', ', $allowedMethods )) # todo: header not appears in browser (response)
-                    ->withJson( $responseData, 405 );
-            };
-        };
-
-        $this->app->add( function( $request, $response, $next ) {
-            try {
-                $response = $next( $request, $response );
-            }
-            catch( \SpiceCRM\includes\ErrorHandlers\Exception $exception ) {
-                return \SpiceCRM\includes\RESTManager::getInstance()->handleErrorResponse($exception);
-            }
-            catch( Exception $exception ) {
-                return \SpiceCRM\includes\RESTManager::getInstance()->handleErrorResponse($exception);
-            }
-            return $response;
-        });
-    }
-
-    /**
-     * kind of deprecated... only use outside of slim
-     * @param $exception
-     * @return string
-     */
-    private function outputError( $exception ) {
-        $inDevMode = ( isset( $GLOBALS['sugar_config']['developerMode'] ) and $GLOBALS['sugar_config']['developerMode'] );
-
-        if ( is_object( $exception )) {
-
-            if ( is_a( $exception, 'SpiceCRM\includes\ErrorHandlers\Exception' ) ) {
-                if ( $exception->isFatal() ) $GLOBALS['log']->fatal( $exception->getMessageToLog() . ' in ' . $exception->getFile() . ':' . $exception->getLine() );
-                $responseData = $exception->getResponseData();
-                if ( get_class( $exception ) === 'SpiceCRM\includes\ErrorHandlers\Exception' ) {
-                    $responseData['line'] = $exception->getLine();
-                    $responseData['file'] = $exception->getFile();
-                    $responseData['trace'] = $exception->getTrace();
+                if (isset($route['options']['adminOnly']) && $route['options']['adminOnly'] == true) {
+                    $this->app->{$route['method']}($route['route'], [new $route['class'](), $route['function']])
+                        ->add(AdminOnlyAccessMiddleware::class);
+                    continue;
                 }
-                $httpCode = $exception->getHttpCode();
-            } else {
-                if ( $inDevMode )
-                    $responseData =  [ 'message' => $exception->getMessage(), 'line' => $exception->getLine(), 'file' => $exception->getFile(), 'trace' => $exception->getTrace() ];
-                else $responseData['error'] = ['message' => 'Application Error.'];
-                $httpCode = $exception->getCode();
-            }
 
-        } else {
-
-            $GLOBALS['log']->fatal( $exception );
-            $responseData['error'] = [ 'message' => $inDevMode ? 'Application Error.' : $exception ];
-            $httpCode = 500;
-
-        }
-
-        http_response_code( $httpCode ? $httpCode : 500 );
-        $json = json_encode( [ 'error' => $responseData ], JSON_PARTIAL_OUTPUT_ON_ERROR);
-        if(!$json)
-            echo json_encode([ 'error' => 'Error while JSON encoding of an exception: '.json_last_error_msg().'... with exception message: '.$exception->getMessage()]);
-        else
-            echo $json;
-        exit;
-
-    }
-
-    private function handleErrorResponse($exception) {
-        $specialResponseHeaders = [];
-        $inDevMode = ( isset( $GLOBALS['sugar_config']['developerMode'] ) and $GLOBALS['sugar_config']['developerMode'] );
-
-        if ( is_object( $exception )) {
-
-            if ( is_a( $exception, 'SpiceCRM\includes\ErrorHandlers\Exception' ) ) {
-                if ( $exception->isFatal() ) $GLOBALS['log']->fatal( $exception->getMessageToLog() . ' in ' . $exception->getFile() . ':' . $exception->getLine() );
-                $responseData = $exception->getResponseData();
-                if ( get_class( $exception ) === 'SpiceCRM\includes\ErrorHandler\Exception' ) {
-                    $responseData['line'] = $exception->getLine();
-                    $responseData['file'] = $exception->getFile();
-                    $responseData['trace'] = $exception->getTrace();
+                if (isset($route['options']['moduleRoute']) && $route['options']['moduleRoute'] == true) {
+                    $this->app->{$route['method']}($route['route'], [new $route['class'](), $route['function']])
+                        ->add(ModuleRouteMiddleware::class);
+                    continue;
                 }
-                $httpCode = $exception->getHttpCode();
-                $specialResponseHeaders = $exception->getHttpHeaders();
-            } else {
-                if ( $inDevMode )
-                    $responseData =  [ 'code' => $exception->getCode(), 'message' => $exception->getMessage(), 'line' => $exception->getLine(), 'file' => $exception->getFile(), 'trace' => $exception->getTrace() ];
-                else $responseData['error'] = ['message' => 'Application Error.'];
-                $httpCode = 500;
+
+                if (isset($route['options']['validate']) && $route['options']['validate'] == true) {
+                    $this->app->{$route['method']}($route['route'], [new $route['class'](), $route['function']])
+                        ->add(ValidationMiddleware::class);
+                    continue;
+                }
+
+                $this->app->{$route['method']}($route['route'], [new $route['class'](), $route['function']]);
+
+//                if (isset($route['options']['noAuth']) && $route['options']['noAuth'] == true) {
+//                    $this->app->{$route['method']}($route['route'], [new $route['class'](), $route['function']]);
+//                } else {
+//                    $this->app->{$route['method']}($route['route'], [new $route['class'](), $route['function']])
+//                        ->add(RequireAuthenticationMiddleware::class);
+//                }
             }
-
-        } else {
-
-            $GLOBALS['log']->fatal( $exception );
-            $responseData['error'] = [ 'message' => $inDevMode ? 'Application Error.' : $exception ];
-            $httpCode = 500;
-
         }
-
-        $response = new \Slim\Http\Response();
-        foreach ( $specialResponseHeaders as $k => $v ) $response = $response->withHeader( $k, $v );
-        return $response->withJson(['error' => $responseData], $httpCode ? $httpCode : 500, JSON_PARTIAL_OUTPUT_ON_ERROR);
     }
 
-    private function initLogging() {
-        $mw = function ($request, $response, $next) {
-            global $db, $current_user;
-            $starting_time = microtime(true);
 
-            $route = $request->getAttribute('route');
-            $log = (object) [];
-            // if no route was found... $route = null
-            if ($route) {
-                $log->route  = $route->getPattern();
-                $log->method = $route->getMethods()[0];
-                $log->args   = json_encode($route->getArguments());
-            }
+    public function getRoutes(): array {
+        return array_values($this->routes);
+    }
 
-            $log->url = (string) $request->getUri();    // will be converted to the complete url when be used in text context, therefore it is cast to a string...
+    public function getRoute($routeIdentifier, $method) {
+        $routes = $this->app->getRouteCollector()->getRoutes();
 
-            $log->ip = $request->getServerParam('REMOTE_ADDR');
-            $log->get_params = json_encode($_GET);
-            $log->headers =  json_encode($request->getHeaders());
-            $log->post_params = $request->getBody()->getContents();
-            $log->requested_at = gmdate('Y-m-d H:i:s');
-            // $current_user is an empty beansobject if the current route doesn't need any authentication...
-            $log->user_id = $current_user->id;
-            // and session is also missing!
-            $log->session_id = session_id();
-            //var_dump($request->getParsedBody(), $request->getParams());
-            $log->transaction_id = $GLOBALS['transactionID'];
+        if (isset($routes[$routeIdentifier])) {
+            $routeKey = $method . ':' . $routes[$routeIdentifier]->getPattern();
 
-            // check if this request has to be logged by some rules...
-            $sql = "SELECT COUNT(id) cnt FROM syskrestlogconfig WHERE 
-              (route = '{$log->route}' OR route = '*' OR '{$log->route}' LIKE route) AND
-              (method = '{$log->method}' OR method = '*') AND
-              (user_id = '{$log->user_id}' OR user_id = '*') AND
-              (ip = '{$log->ip}' OR ip = '*') AND
-              is_active = 1";
-            $res = $db->query($sql);
-            $row = $db->fetchByAssoc($res);
-            if ( $row['cnt'] > 0 ) {
-                $logging = true;
-                // write the log...
-                $log->id = create_guid();
-                $id = $db->insertQuery('syskrestlog', (array) $log);
-                $log->id = $id;
+            return $this->routes[$routeKey];
+        }
 
-                ob_start();
-            } else {
-                $logging = false;
-            }
 
-            // do the magic...
-            $response = $next($request, $response);
-
-            if ( $logging ) {
-                $log->http_status_code = $response->getStatusCode();
-                $log->runtime = (microtime(true) - $starting_time)*1000;
-                $log->response = ob_get_contents();
-                ob_end_flush();
-
-                // if the endpoint didn't use echo... instead the response object ist correctly returned by the endpoint
-                if(!$log->response)
-                    $log->response = $response->getBody();
-                // update the log...
-                $result = $db->updateQuery('syskrestlog', ['id' => $log->id], (array) $log);
-                //var_dump($result, $db->last_error);
-            }
-            return $response;
-        };
-
-        $this->app->add($mw);
     }
 }

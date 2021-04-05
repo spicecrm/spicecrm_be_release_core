@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,6 +34,8 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['Call'] = [
     'table'                          => 'calls',
     'comment'                        => 'A Call is an activity representing a phone call',
@@ -236,13 +237,13 @@ $dictionary['Call'] = [
             'relationship' => 'calls_users_status_accept',
             'default' => true,
             'module' => 'Calls',
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                )
-            )
+                ]
+            ]
         ],
         'call_user_status_decline' => [
             'name'   => 'call_user_status_decline',
@@ -251,13 +252,13 @@ $dictionary['Call'] = [
             'source' => 'non-db',
             'relationship' => 'calls_users_status_decline',
             'module' => 'Calls',
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                )
-            )
+                ]
+            ]
         ],
         'call_user_status_tentative' => [
             'name'   => 'call_user_status_tentative',
@@ -266,13 +267,13 @@ $dictionary['Call'] = [
             'source' => 'non-db',
             'relationship' => 'calls_users_status_tentative',
             'module' => 'Calls',
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                )
-            )
+                ]
+            ]
         ],
 
         //bug 39559
@@ -368,17 +369,17 @@ $dictionary['Call'] = [
             'vname'        => 'LBL_CONTACTS',
             'module'       => 'Contacts',
             'default'      => true,
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                ),
-                'date_modified' => array(
+                ],
+                'date_modified' => [
                     'type' => 'datetime',
                     'map' => 'activity_status_date_modified'
-                )
-            )
+                ]
+            ]
         ],
         'users' => [
             'name'         => 'users',
@@ -388,21 +389,21 @@ $dictionary['Call'] = [
             'vname'        => 'LBL_USERS',
             'module'       => 'Users',
             'default'      => true,
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                ),
-                'date_modified' => array(
+                ],
+                'date_modified' => [
                     'type' => 'datetime',
                     'map' => 'activity_status_date_modified'
-                ),
-                'required' => array(
+                ],
+                'required' => [
                     'type' => 'bool',
                     'map' => 'activity_required'
-                )
-            )
+                ]
+            ]
         ],
         'notes' => [
             'name'         => 'notes',
@@ -437,7 +438,7 @@ $dictionary['Call'] = [
             'name'         => 'assigned_user_link',
             'type'         => 'link',
             'relationship' => 'calls_assigned_user',
-            'vname'        => 'LBL_ASSIGNED_TO_USER',
+            'vname'        => 'LBL_ASSIGNED_TO',
             'link_type'    => 'one',
             'module'       => 'Users',
             'bean_name'    => 'User',
@@ -553,6 +554,13 @@ $dictionary['Call'] = [
             'source'       => 'non-db',
             'module'       => 'Campaigntasks',
         ],
+        'tasks' => [
+            'name'         => 'tasks',
+            'type'         => 'link',
+            'relationship' => 'calls_tasks',
+            'source'       => 'non-db',
+            'module'       => 'Tasks',
+        ]
     ],
     'indices' => [
         [
@@ -626,6 +634,17 @@ $dictionary['Call'] = [
             'lhs_key'                        => 'id',
             'rhs_module'                     => 'Notes',
             'rhs_table'                      => 'notes',
+            'rhs_key'                        => 'parent_id',
+            'relationship_type'              => 'one-to-many',
+            'relationship_role_column'       => 'parent_type',
+            'relationship_role_column_value' => 'Calls',
+        ],
+        'calls_tasks' => [
+            'lhs_module'                     => 'Calls',
+            'lhs_table'                      => 'calls',
+            'lhs_key'                        => 'id',
+            'rhs_module'                     => 'Tasks',
+            'rhs_table'                      => 'tasks',
             'rhs_key'                        => 'parent_id',
             'relationship_type'              => 'one-to-many',
             'relationship_role_column'       => 'parent_type',

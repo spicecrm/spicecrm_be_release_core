@@ -1,24 +1,25 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$dictionary['OpportunityRevenueLine'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['OpportunityRevenueLine'] = [
     'table' => 'opportunityrevenuelines',
     'comment' => 'Split Opportunity Revenue in recognition lines',
-    'fields' => array(
-        'name' => array(
+    'fields' => [
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_NAME',
             'type' => 'varchar',
             'len' => 255,
             'required' => false,
-        ),
-        'revenue_date' => array(
+        ],
+        'revenue_date' => [
             'name' => 'revenue_date',
             'vname' => 'LBL_DATE',
             'type' => 'date',
             'required' => true
-        ),
-        'amount' => array(
+        ],
+        'amount' => [
             'name' => 'amount',
             'vname' => 'LBL_AMOUNT',
             //'function'=>array('vname'=>'getCurrencyType'),
@@ -30,8 +31,8 @@ $dictionary['OpportunityRevenueLine'] = array(
             'required' => true,
             'options' => 'numeric_range_search_dom',
             'enable_range_search' => true,
-        ),
-        'amount_usdollar' => array(
+        ],
+        'amount_usdollar' => [
             'name' => 'amount_usdollar',
             'vname' => 'LBL_AMOUNT_USDOLLAR',
             'type' => 'currency',
@@ -39,13 +40,13 @@ $dictionary['OpportunityRevenueLine'] = array(
             'dbType' => 'double',
             'disable_num_format' => true,
             'audited' => true
-        ),
-        'opportunity_id' => array(
+        ],
+        'opportunity_id' => [
             'name' => 'opportunity_id',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'opportunities' => array(
+        ],
+        'opportunities' => [
             'name' => 'opportunities',
             'type' => 'link',
             'relationship' => 'opportunity_opportunityrevenuelines',
@@ -54,17 +55,17 @@ $dictionary['OpportunityRevenueLine'] = array(
             'module' => 'Opportunities',
             'bean_name' => 'Opportunity',
             'vname' => 'LBL_OPPORTUNITY',
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_opp_id',
             'type' => 'index',
-            'fields' => array('opportunity_id'),
-        )
-    ),
-    'relationships' => array(
-        'opportunity_opportunityrevenuelines' => array(
+            'fields' => ['opportunity_id'],
+        ]
+    ],
+    'relationships' => [
+        'opportunity_opportunityrevenuelines' => [
             'lhs_module' => 'Opportunities',
             'lhs_table' => 'opportunities',
             'lhs_key' => 'id',
@@ -72,9 +73,9 @@ $dictionary['OpportunityRevenueLine'] = array(
             'rhs_table' => 'opportunityrevenuelines',
             'rhs_key' => 'opportunity_id',
             'relationship_type' => 'one-to-many',
-        )
-    )
+        ]
+    ]
     //This enables optimistic locking for Saves From EditView
 , 'optimistic_locking' => true,
-);
-VardefManager::createVardef('OpportunityRevenueLines', 'OpportunityRevenueLine', array('basic', 'assignable'));
+];
+VardefManager::createVardef('OpportunityRevenueLines', 'OpportunityRevenueLine', ['basic', 'assignable']);

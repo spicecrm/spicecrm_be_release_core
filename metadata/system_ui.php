@@ -1138,7 +1138,15 @@ $dictionary['sysmodules'] = [
         [
             'name' => 'idx_sysmodules_reassign',
             'type' => 'index',
-            'fields' => ['reassignable']]
+            'fields' => ['reassignable']],
+        [
+            'name' => 'idx_sysmodules_singular',
+            'type' => 'index',
+            'fields' => ['singular']],
+        [
+            'name' => 'idx_sysmodules_sysdictionarydef',
+            'type' => 'index',
+            'fields' => ['sysdictionarydefinition_id']],
     ]
 ];
 
@@ -1151,9 +1159,21 @@ $dictionary['syscustommodules'] = [
             'type' => 'primary',
             'fields' => ['id']],
         [
+            'name' => 'idx_syscustommodules_module',
+            'type' => 'index',
+            'fields' => ['module']],
+        [
             'name' => 'idx_syscustommodules_reassign',
             'type' => 'index',
-            'fields' => ['reassignable']]
+            'fields' => ['reassignable']],
+        [
+            'name' => 'idx_syscustommodules_singular',
+            'type' => 'index',
+            'fields' => ['singular']],
+        [
+            'name' => 'idx_syscustommodules_sysdictionarydef',
+            'type' => 'index',
+            'fields' => ['sysdictionarydefinition_id']],
     ]
 ];
 
@@ -2218,11 +2238,11 @@ $dictionary['sysuicopyrules'] = [
             'type' => 'json',
             'dbtype' => 'text'
         ],
-        'params' => array(
+        'params' => [
             'name' => 'params',
             'type' => 'varchar',
             'len' => 100
-        ),
+        ],
         'version' => [
             'name' => 'version',
             'type' => 'varchar',
@@ -2285,11 +2305,11 @@ $dictionary['sysuicustomcopyrules'] = [
             'type' => 'json',
             'dbtype' => 'text'
         ],
-        'params' => array(
+        'params' => [
             'name' => 'params',
             'type' => 'varchar',
             'len' => 100
-        ),
+        ],
         'version' => [
             'name' => 'version',
             'type' => 'varchar',

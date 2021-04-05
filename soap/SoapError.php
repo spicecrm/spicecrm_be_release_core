@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -59,9 +58,9 @@ class SoapError{
 	}
 
 	function get_soap_array(){
-		return Array('number'=>$this->number,
+		return ['number'=>$this->number,
 					 'name'=>$this->name,
-					 'description'=>$this->description);
+					 'description'=>$this->description];
 
 	}
 

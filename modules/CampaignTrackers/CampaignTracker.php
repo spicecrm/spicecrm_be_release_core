@@ -34,6 +34,10 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 /*********************************************************************************
 
  * Description: The primary Function of this file is to manage all the data
@@ -85,19 +89,19 @@ class CampaignTracker extends SugarBean {
     /* $column_fields holds a list of columns that exist in this bean's table. This list is referenced
     * when fetching or saving data for the bean. As you modify a table you need to keep this up to date.
     */
-    var $column_fields = Array(
+    var $column_fields = [
         'id',
         'tracker_key',
         'tracker_url',
         'tracker_name',
         'campaign_id'
-    );
+    ];
 
     // This is used to retrieve related fields from form posts.
-    var $additional_column_fields = Array('campaign_id');
-    var $relationship_fields = Array('campaing_id'=>'campaign');
+    var $additional_column_fields = ['campaign_id'];
+    var $relationship_fields = ['campaing_id'=>'campaign'];
 
-    var $required_fields =  array('tracker_name'=>1,'tracker_url'=>1);
+    var $required_fields =  ['tracker_name'=>1,'tracker_url'=>1];
     /*This bean's constructor*/
     public function __construct() {
         parent::__construct();
@@ -129,7 +133,7 @@ class CampaignTracker extends SugarBean {
     */
 
     function fill_in_additional_detail_fields() {
-        global $sugar_config;
+
 
         //setup campaign name.
         $query = "SELECT name from campaigns where id = '$this->campaign_id'";
@@ -144,12 +148,12 @@ class CampaignTracker extends SugarBean {
         if (!class_exists('Administration')) {
 
         }
-        $admin=new Administration();
+        $admin= BeanFactory::getBean('Administration');
         $admin->retrieveSettings('massemailer'); //retrieve all admin settings.
         if (isset($admin->settings['massemailer_tracking_entities_location_type']) and $admin->settings['massemailer_tracking_entities_location_type']=='2'  and isset($admin->settings['massemailer_tracking_entities_location']) ) {
             $this->message_url=$admin->settings['massemailer_tracking_entities_location'];
         } else {
-            $this->message_url=$sugar_config['site_url'];
+            $this->message_url= SpiceConfig::getInstance()->config['site_url'];
         }
         if ($this->is_optout == 1) {
             $this->message_url .= '/index.php?entryPoint=removeme&identifier={MESSAGE_ID}';

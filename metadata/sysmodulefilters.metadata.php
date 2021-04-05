@@ -1,100 +1,100 @@
 <?php
 
-$dictionary['sysmodulefilters'] = array(
+$dictionary['sysmodulefilters'] = [
     'table' => 'sysmodulefilters',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'created_by_id' => array(
+        ],
+        'created_by_id' => [
             'name' => 'created_by_id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'filterdefs' => array(
+        ],
+        'filterdefs' => [
             'name' => 'filterdefs',
             'type' => 'text'
-        ),
-        'filtermethod' => array(
+        ],
+        'filtermethod' => [
             'name' => 'filtermethod',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysmodulefilters',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['syscustommodulefilters'] = array(
+$dictionary['syscustommodulefilters'] = [
     'table' => 'syscustommodulefilters',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'created_by_id' => array(
+        ],
+        'created_by_id' => [
             'name' => 'created_by_id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'filterdefs' => array(
+        ],
+        'filterdefs' => [
             'name' => 'filterdefs',
             'type' => 'text'
-        ),
-        'filtermethod' => array(
+        ],
+        'filtermethod' => [
             'name' => 'filtermethod',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'version' => array(
+        ],
+        'version' => [
             'name' => 'version',
             'type' => 'varchar',
             'len' => 16
-        ),
-        'package' => array(
+        ],
+        'package' => [
             'name' => 'package',
             'type' => 'varchar',
             'len' => 32
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_syscustommodulefilters',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 

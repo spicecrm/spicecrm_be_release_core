@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,54 +33,54 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['accounts_opportunities'] = array(
+global $dictionary;
+$dictionary['accounts_opportunities'] = [
     'table' => 'accounts_opportunities',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'opportunity_id' => array(
+        ],
+        'opportunity_id' => [
             'name' => 'opportunity_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'account_id' => array(
+        ],
+        'account_id' => [
             'name' => 'account_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'default' => '0'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'accounts_opportunitiespk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_account_opportunity',
             'type' => 'alternate_key',
-            'fields' => array('account_id', 'opportunity_id')
-        ),
-        array(
+            'fields' => ['account_id', 'opportunity_id']
+        ],
+        [
             'name' => 'idx_oppid_del_accid',
             'type' => 'index',
-            'fields' => array('opportunity_id', 'deleted', 'account_id')
-        )
-    ),
-    'relationships' => array(
-        'accounts_opportunities' => array(
+            'fields' => ['opportunity_id', 'deleted', 'account_id']
+        ]
+    ],
+    'relationships' => [
+        'accounts_opportunities' => [
             'lhs_module' => 'Accounts',
             'lhs_table' => 'accounts',
             'lhs_key' => 'id',
@@ -91,8 +90,8 @@ $dictionary['accounts_opportunities'] = array(
             'relationship_type' => 'many-to-many',
             'join_table' => 'accounts_opportunities',
             'join_key_lhs' => 'account_id',
-            'join_key_rhs' => 'opportunity_id')
-    )
-);
+            'join_key_rhs' => 'opportunity_id']
+    ]
+];
 
 

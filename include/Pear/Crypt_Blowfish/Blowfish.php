@@ -25,7 +25,7 @@
  * @link       http://pear.php.net/package/Crypt_Blowfish
  */
 
-
+use SpiceCRM\includes\Logger\LoggerManager;
 
 
 /**
@@ -54,7 +54,7 @@ class Crypt_Blowfish
      * @var array
      * @access private
      */
-    var $_P = array();
+    var $_P = [];
     
     
     /**
@@ -63,7 +63,7 @@ class Crypt_Blowfish
      * @var array
      * @access private
      */
-    var $_S = array();
+    var $_S = [];
 
     /**
      * Mcrypt td resource
@@ -193,7 +193,7 @@ class Crypt_Blowfish
     function encrypt($plainText)
     {
         if (!is_string($plainText)) {
-            $GLOBALS['log']->fatal('Plain text must be a string');
+            LoggerManager::getLogger()->fatal('Plain text must be a string');
         }
 
 		/*
@@ -224,7 +224,7 @@ class Crypt_Blowfish
     function decrypt($cipherText)
     {
         if (!is_string($cipherText)) {
-            $GLOBALS['log']->fatal('Chiper text must be a string');
+            LoggerManager::getLogger()->fatal('Chiper text must be a string');
         }
 
 		/*
@@ -257,13 +257,13 @@ class Crypt_Blowfish
     function setKey($key)
     {
         if (!is_string($key)) {
-            $GLOBALS['log']->fatal('Key must be a string');
+            LoggerManager::getLogger()->fatal('Key must be a string');
         }
 
         $len = strlen($key);
 
         if ($len > 56 || $len == 0) {
-            $GLOBALS['log']->fatal('Key must be less than 56 characters and non-zero. Supplied key length: ' . $len);
+            LoggerManager::getLogger()->fatal('Key must be less than 56 characters and non-zero. Supplied key length: ' . $len);
         }
 
 		/*
@@ -285,7 +285,7 @@ class Crypt_Blowfish
         for ($i = 0; $i < 18; $i++) {
             $data = 0;
             for ($j = 4; $j > 0; $j--) {
-                    $data = $data << 8 | ord($key{$k});
+                    $data = $data << 8 | ord($key[$k]);
                     $k = ($k+1) % $len;
             }
             $this->_P[$i] ^= $data;

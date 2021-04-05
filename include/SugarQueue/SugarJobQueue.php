@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,9 +33,16 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\includes\SugarQueue;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManager;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\modules\SchedulersJobs\SchedulersJob;
 
-require_once 'modules/SchedulersJobs/SchedulersJob.php';
 
 /**
  * Job queue driver
@@ -72,11 +78,11 @@ class SugarJobQueue
         $this->db = DBManagerFactory::getInstance();
         $job = new SchedulersJob();
         $this->job_queue_table = $job->table_name;
-        if(!empty($GLOBALS['sugar_config']['jobs']['max_retries'])) {
-            $this->jobTries = $GLOBALS['sugar_config']['jobs']['max_retries'];
+        if(!empty(SpiceConfig::getInstance()->config['jobs']['max_retries'])) {
+            $this->jobTries = SpiceConfig::getInstance()->config['jobs']['max_retries'];
         }
-        if(!empty($GLOBALS['sugar_config']['jobs']['timeout'])) {
-            $this->timeout = $GLOBALS['sugar_config']['jobs']['timeout'];
+        if(!empty(SpiceConfig::getInstance()->config['jobs']['timeout'])) {
+            $this->timeout = SpiceConfig::getInstance()->config['jobs']['timeout'];
         }
     }
 
@@ -106,10 +112,10 @@ class SugarJobQueue
      */
     protected function getJob($jobId)
     {
-        $job = new SchedulersJob();
+        $job = BeanFactory::getBean('SchedulerJobs');
         $job->retrieve($jobId);
         if(empty($job->id)) {
-            $GLOBALS['log']->info("Job $jobId not found!");
+            LoggerManager::getLogger()->info("Job $jobId not found!");
             return null;
         }
         return $job;
@@ -149,7 +155,7 @@ class SugarJobQueue
      */
     public function deleteJob($jobId)
     {
-        $job = new SchedulersJob();
+        $job = BeanFactory::getBean('SchedulerJobs');
         if(empty($job)) return false;
         return $job->mark_deleted($jobId);
     }
@@ -164,7 +170,7 @@ class SugarJobQueue
         $ret = true;
         // bsitnikovski@sugarcrm.com bugfix #56144: Scheduler Bug
         $date = $this->db->convert($this->db->quoted($GLOBALS['timedate']->getNow()->modify("-{$this->timeout} seconds")->format(TimeDate::DB_DATETIME_FORMAT)), 'datetime');
-        $res = $this->db->query("SELECT id FROM {$this->job_queue_table} WHERE status='".SchedulersJob::JOB_STATUS_RUNNING."' AND date_modified <= $date");
+        $res = $this->db->query("SELECT id FROM {$this->job_queue_table} WHERE status='". SchedulersJob::JOB_STATUS_RUNNING."' AND date_modified <= $date");
         while($row = $this->db->fetchByAssoc($res)) {
             $this->resolveJob($row["id"], SchedulersJob::JOB_FAILURE, translate('ERR_TIMEOUT', 'SchedulersJobs'));
             $ret = false;

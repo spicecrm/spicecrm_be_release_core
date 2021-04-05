@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -39,77 +38,77 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /**
  * Core email_address table
  */
-$dictionary['email_addresses'] = array(
+$dictionary['email_addresses'] = [
     'table' => 'email_addresses',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id',
             'vname' => 'LBL_EMAIL_ADDRESS_ID',
             'required' => true,
-        ),
-        'email_address' => array(
+        ],
+        'email_address' => [
             'name' => 'email_address',
             'type' => 'varchar',
             'vname' => 'LBL_EMAIL_ADDRESS',
             'length' => 100,
             'required' => true,
-        ),
-        'email_address_caps' => array(
+        ],
+        'email_address_caps' => [
             'name' => 'email_address_caps',
             'type' => 'varchar',
             'vname' => 'LBL_EMAIL_ADDRESS_CAPS',
             'length' => 100,
             'required' => true,
             'reportable' => false,
-        ),
-        'invalid_email' => array(
+        ],
+        'invalid_email' => [
             'name' => 'invalid_email',
             'type' => 'bool',
             'default' => 0,
             'vname' => 'LBL_INVALID_EMAIL',
-        ),
-        'opt_out' => array(
+        ],
+        'opt_out' => [
             'name' => 'opt_out',
             'type' => 'bool',
             'default' => 0,
             'vname' => 'LBL_OPT_OUT',
-        ),
-        'date_created' => array(
+        ],
+        'date_created' => [
             'name' => 'date_created',
             'type' => 'datetime',
             'vname' => 'LBL_DATE_CREATE',
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime',
             'vname' => 'LBL_DATE_MODIFIED',
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'default' => 0,
             'vname' => 'LBL_DELETED',
-        ),
-    ),
-    'indices' => array(
-        array(
-            'name' => 'email_addressespk',
+        ],
+    ],
+    'indices' => [
+        [
+            'name' => 'edremail_adssespk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_ea_caps_opt_out_invalid',
             'type' => 'index',
-            'fields' => array('email_address_caps', 'opt_out', 'invalid_email')
-        ),
-        array(
+            'fields' => ['email_address_caps', 'opt_out', 'invalid_email']
+        ],
+        [
             'name' => 'idx_ea_opt_out_invalid',
             'type' => 'index',
-            'fields' => array('email_address', 'opt_out', 'invalid_email')
-        ),
-    ),
-);
+            'fields' => ['email_address', 'opt_out', 'invalid_email']
+        ],
+    ],
+];
 
 // hack for installer
 if (file_exists("cache/modules/EmailAddresses/EmailAddressvardefs.php")) {
@@ -121,155 +120,155 @@ if (file_exists("cache/modules/EmailAddresses/EmailAddressvardefs.php")) {
 /**
  * Relationship table linking email addresses to an instance of a Sugar Email object
  */
-$dictionary['emails_email_addr_rel'] = array(
+$dictionary['emails_email_addr_rel'] = [
     'table' => 'emails_email_addr_rel',
     'comment' => 'Normalization of multi-address fields such as To:, CC:, BCC',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id',
             'required' => true,
             'comment' => 'GUID',
-        ),
-        'email_id' => array(
+        ],
+        'email_id' => [
             'name' => 'email_id',
             'type' => 'id',
             'required' => true,
             'comment' => 'Foriegn key to emails table NOT unique'
-        ),
-        'address_type' => array(
+        ],
+        'address_type' => [
             'name' => 'address_type',
             'type' => 'varchar',
             'len' => 4,
             'required' => true,
             'comment' => 'Type of entry, TO, CC, or BCC'
-        ),
-        'email_address_id' => array(
+        ],
+        'email_address_id' => [
             'name' => 'email_address_id',
             'type' => 'id',
             'required' => true,
             'comment' => 'Foriegn key to emails table NOT unique'
-        ),
-        'parent_type' => array(
+        ],
+        'parent_type' => [
             'name' => 'parent_type',
             'type' => 'varchar',
             'len' => '100',
             'comment' => 'the type of the bean the email address is linked to'
-        ),
-        'parent_id' => array(
+        ],
+        'parent_id' => [
             'name' => 'parent_id',
             'type' => 'varchar',
             'len' => '36',
             'comment' => 'the id of the bean the email address is linked to'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'default' => 0,
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'emails_email_addr_relpk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_eearl_email_id',
             'type' => 'index',
-            'fields' => array('email_id', 'address_type')
-        ),
-        array(
+            'fields' => ['email_id', 'address_type']
+        ],
+        [
             'name' => 'idx_eearl_address_id',
             'type' => 'index',
-            'fields' => array('email_address_id')
-        ),
-        array(
+            'fields' => ['email_address_id']
+        ],
+        [
             'name' => 'idx_eearl_parent_type',
             'type' => 'index',
-            'fields' => array('parent_type')
-        ),
-        array(
+            'fields' => ['parent_type']
+        ],
+        [
             'name' => 'idx_eearl_parent_id',
             'type' => 'index',
-            'fields' => array('parent_id')
-        ),
-        array(
+            'fields' => ['parent_id']
+        ],
+        [
             'name' => 'idx_eearl_linkemailtoaddress',
             'type' => 'index',
-            'fields' => array('email_id', 'email_address_id', 'address_type', 'deleted')
-        )
-    )
-);
+            'fields' => ['email_id', 'email_address_id', 'address_type', 'deleted']
+        ]
+    ]
+];
 
 /**
  * Relationship table linking email addresses to various SugarBeans or type Person
  */
-$dictionary['email_addr_bean_rel'] = array(
+$dictionary['email_addr_bean_rel'] = [
     'table' => 'email_addr_bean_rel',
-    'fields' => array(
-        array(
+    'fields' => [
+        [
             'name' => 'id',
             'type' => 'id',
             'required' => true,
-        ),
-        array(
+        ],
+        [
             'name' => 'email_address_id',
             'type' => 'id',
             'required' => true,
-        ),
-        array(
+        ],
+        [
             'name' => 'bean_id',
             'type' => 'id',
             'required' => true,
-        ),
-        array(
+        ],
+        [
             'name' => 'bean_module',
             'type' => 'varchar',
             'len' => 100,
             'required' => true,
-        ),
-        array(
+        ],
+        [
             'name' => 'primary_address',
             'type' => 'bool',
             'default' => '0',
-        ),
-        array(
+        ],
+        [
             'name' => 'reply_to_address',
             'type' => 'bool',
             'default' => '0',
-        ),
-        array(
+        ],
+        [
             'name' => 'date_created',
             'type' => 'datetime'
-        ),
-        array(
+        ],
+        [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        array(
+        ],
+        [
             'name' => 'deleted',
             'type' => 'bool',
             'default' => 0,
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'email_addresses_relpk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_email_address_id',
             'type' => 'index',
-            'fields' => array('email_address_id')
-        ),
-        array(
+            'fields' => ['email_address_id']
+        ],
+        [
             'name' => 'idx_bean_id',
             'type' => 'index',
-            'fields' => array('bean_id', 'bean_module'),
-        ),
-    ),
-    'relationships' => array(//Defined in Person/Company template vardefs
-    ),
-);
+            'fields' => ['bean_id', 'bean_module'],
+        ],
+    ],
+    'relationships' => [//Defined in Person/Company template vardefs
+    ],
+];

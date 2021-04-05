@@ -15,21 +15,19 @@
 
 
 
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
 
-$pluginmetadata = array(
+$pluginmetadata = [
     'id' => 'kcsvexport',
     'type' => 'integration',
     'category' => 'export',
     'displayname' => 'LBL_CSV_EXPORT',
-    'integration' => array(
+    'integration' => [
         
         'include' => 'kcsvexport.php',
         'class' => 'kcsvexport'
-    ), 
-    'includes' => array(
+    ],
+    'includes' => [
         'view' => 'kcsvexport.js',
         'viewItem' => 'SpiceCRM.KReporter.Viewer.integrationplugins.csvexport.menuitem'
-    )
-);
+    ]
+];

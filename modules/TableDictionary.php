@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,7 +34,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-
+/*
 $metadatahandle = @opendir('./metadata');
 while (false !== ($metadatafile = readdir($metadatahandle))) {
     if (preg_match('/\.php$/', $metadatafile)) {
@@ -59,8 +58,9 @@ if(file_exists('custom/application/Ext/TableDictionary/tabledictionary.ext.php')
 }
 
 // BEGIN CR1000108 vardefs to db
-if(isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) && $GLOBALS['sugar_config']['systemvardefs']['dictionary']){
-    require_once 'modules/SystemVardefs/SystemVardefs.php';
-    SpiceCRM\modules\SystemVardefs\SystemVardefs::loadDictionaries($dictionary, 'metadata');
+if(isset(\SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['systemvardefs']['dictionary']) && \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['systemvardefs']['dictionary']){
+    require_once 'include/SpiceDictionaryVardefs/SpiceDictionaryVardefs.php';
+    SpiceCRM\includes\SpiceDictionaryVardefs\SpiceDictionaryVardefs::loadDictionaries($dictionary, 'metadata');
 }
 // END
+*/

@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -96,7 +95,7 @@ function override_value_to_string_recursive2($array_name, $value_name, $value, $
  */
 function deepArrayDiff($array1, $array2, $allowEmpty = false)
 {
-    $diff = array();
+    $diff = [];
     foreach ($array1 as $key => $value) {
         if (is_array($value)) {
             if ((!isset($array2[$key]) || !is_array($array2[$key])) && (isset($value) || $allowEmpty)) {
@@ -125,7 +124,7 @@ function setDeepArrayValue(&$array, $key, $value)
     if (strrpos($key, "_")) {
         list ($key, $remkey) = explode('_', $key, 2);
         if (!isset($array[$key]) || !is_array($array[$key])) {
-            $array[$key] = array();
+            $array[$key] = [];
         }
         setDeepArrayValue($array[$key], $remkey, $value);
     } else {
@@ -143,84 +142,16 @@ function setDeepArrayValue(&$array, $key, $value)
 function array_search_insensitive($key, $haystack)
 {
     if (!is_array($haystack))
-        return FALSE;
+        return false;
 
-    $found = FALSE;
+    $found = false;
     foreach ($haystack as $k => $v) {
         if (strtolower($v) == strtolower($key)) {
-            $found = TRUE;
+            $found = true;
             break;
         }
     }
 
     return $found;
-}
-
-/**
- * Wrapper around PHP's ArrayObject class that provides dot-notation recursive searching
- * for multi-dimensional arrays
- */
-class SugarArray extends ArrayObject
-{
-    /**
-     * Return the value matching $key if exists, otherwise $default value
-     *
-     * This method uses dot notation to look through multi-dimensional arrays
-     *
-     * @param string $key key to look up
-     * @param mixed $default value to return if $key does not exist
-     * @return mixed
-     */
-    public function get($key, $default = null)
-    {
-        return $this->_getFromSource($key, $default);
-    }
-
-    /**
-     * Provided as a convinience method for fetching a value within an existing
-     * array without instantiating a SugarArray
-     *
-     * NOTE: This should only used where refactoring an array into a SugarArray
-     *       is unfeasible.  This operation is more expensive than a direct
-     *       SugarArray as each time it creates and throws away a new instance
-     *
-     * @param array $haystack haystack
-     * @param string $needle needle
-     * @param mixed $default default value to return
-     * @return mixed
-     */
-    static public function staticGet($haystack, $needle, $default = null)
-    {
-        if (empty($haystack)) {
-            return $default;
-        }
-        $array = new self($haystack);
-        return $array->get($needle, $default);
-    }
-
-    private function _getFromSource($key, $default)
-    {
-        if (strpos($key, '.') === false) {
-            return isset($this[$key]) ? $this[$key] : $default;
-        }
-
-        $exploded = explode('.', $key);
-        $current_key = array_shift($exploded);
-        return $this->_getRecursive($this->_getFromSource($current_key, $default), $exploded, $default);
-    }
-
-    private function _getRecursive($raw_config, $children, $default)
-    {
-        if ($raw_config === $default) {
-            return $default;
-        } elseif (count($children) == 0) {
-            return $raw_config;
-        } else {
-            $next_key = array_shift($children);
-            return isset($raw_config[$next_key]) ?
-                $this->_getRecursive($raw_config[$next_key], $children, $default) :
-                $default;
-        }
-    }
 }
 

@@ -8,8 +8,8 @@
         "ext-mbstring": "*",
         "pear/ole": "^1.0.0RC5",
         "pear/pear-core-minimal": "^1.10",
-        "symfony/yaml": "^4.1",
-        "ramsey/uuid": "^3.8",
+        "symfony/yaml": "^4.1 || ^5.0",
+        "ramsey/uuid": "^3.8 || ^4.0",
         "psr/log": "^1.0"
     },
     "require-dev": {
@@ -26,7 +26,7 @@
         }
     },
     "autoload-dev": {
-        "psr-0": {
+        "psr-4": {
             "Hfig\\MAPI\\Tests\\": "tests/MAPI"
         }
     }

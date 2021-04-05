@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
@@ -35,10 +34,15 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
+
 class TabController
 {
 
-    var $required_modules = array('Home');
+    var $required_modules = ['Home'];
 
     /**
      * @var bool flag of validation of the cache
@@ -48,7 +52,7 @@ class TabController
     function is_system_tabs_in_db()
     {
 
-        $administration = new Administration();
+        $administration = BeanFactory::getBean('Administration');
         $administration->retrieveSettings('MySettings');
         if (isset($administration->settings) && isset($administration->settings['MySettings_tab'])) {
             return true;
@@ -66,7 +70,7 @@ class TabController
         // if the value is not already cached, then retrieve it.
         if (empty($system_tabs_result) || !self::$isCacheValid) {
 
-            $administration = new Administration();
+            $administration = BeanFactory::getBean('Administration');
             $administration->retrieveSettings('MySettings');
             if (isset($administration->settings) && isset($administration->settings['MySettings_tab'])) {
                 $tabs = $administration->settings['MySettings_tab'];
@@ -77,10 +81,10 @@ class TabController
                     $tabs = unserialize($tabs);
                     //Ensure modules saved in the prefences exist.
                     foreach ($tabs as $id => $tab) {
-                        if (!in_array($tab, $moduleList))
+                        if (is_array($moduleList) && !in_array($tab, $moduleList))
                             unset($tabs[$id]);
                     }
-                    $GLOBALS['ACLController']->filterModuleList($tabs);
+                    SpiceACL::getInstance()->filterModuleList($tabs);
                     $tabs = $this->get_key_array($tabs);
                     $system_tabs_result = $tabs;
                 } else {
@@ -113,14 +117,14 @@ class TabController
             }
         }
 
-        return array($tabs, $unsetTabs);
+        return [$tabs, $unsetTabs];
     }
 
 
     function set_system_tabs($tabs)
     {
 
-        $administration = new Administration();
+        $administration = BeanFactory::getBean('Administration');
         $serialized = base64_encode(serialize($tabs));
         $administration->saveSetting('MySettings', 'tab', $serialized);
         self::$isCacheValid = false;
@@ -129,7 +133,7 @@ class TabController
     function get_users_can_edit()
     {
 
-        $administration = new Administration();
+        $administration = BeanFactory::getBean('Administration');
         $administration->retrieveSettings('MySettings');
         if (isset($administration->settings) && isset($administration->settings['MySettings_disable_useredit'])) {
             if ($administration->settings['MySettings_disable_useredit'] == 'yes') {
@@ -141,10 +145,10 @@ class TabController
 
     function set_users_can_edit($boolean)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         if (is_admin($current_user)) {
 
-            $administration = new Administration();
+            $administration = BeanFactory::getBean('Administration');
             if ($boolean) {
                 $administration->saveSetting('MySettings', 'disable_useredit', 'no');
             } else {
@@ -156,7 +160,7 @@ class TabController
 
     function get_key_array($arr)
     {
-        $new = array();
+        $new = [];
         if (!empty($arr)) {
             foreach ($arr as $val) {
                 $new[$val] = $val;
@@ -168,7 +172,7 @@ class TabController
     function set_user_tabs($tabs, &$user, $type = 'display')
     {
         if (empty($user)) {
-            global $current_user;
+            $current_user = AuthenticationController::getInstance()->getCurrentUser();
             $current_user->setPreference($type . '_tabs', $tabs);
         } else {
             $user->setPreference($type . '_tabs', $tabs);
@@ -189,7 +193,7 @@ class TabController
             if ($type == 'display')
                 return $system_tabs;
             else
-                return array();
+                return [];
         }
 
 
@@ -239,7 +243,7 @@ class TabController
             unset($system_tabs[$tab]);
         }
 
-        return array($tabs, $system_tabs);
+        return [$tabs, $system_tabs];
     }
 
     function get_tabs($user)
@@ -309,7 +313,7 @@ class TabController
                 unset($hide_tabs[$key]);
         }
 
-        return array($display_tabs, $hide_tabs, $remove_tabs);
+        return [$display_tabs, $hide_tabs, $remove_tabs];
     }
 
     function restore_tabs($user)

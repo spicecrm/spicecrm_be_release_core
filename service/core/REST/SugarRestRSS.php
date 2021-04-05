@@ -1,4 +1,9 @@
 <?php
+
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\TimeDate;
+
 if(!defined('sugarEntry'))define('sugarEntry', true);
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
@@ -67,12 +72,13 @@ class SugarRestRSS extends SugarRest
 
 		$date = TimeDate::httpTime();
 
+		$siteUrl= SpiceConfig::getInstance()->config['site_url'];
 		echo <<<EORSS
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
 <channel>
     <title>{$app_strings['LBL_RSS_FEED']} &raquo; {$app_strings['LBL_BROWSER_TITLE']}</title>
-    <link>{$GLOBALS['sugar_config']['site_url']}</link>
+    <link>{$siteUrl}</link>
     <description>{$count} {$app_strings['LBL_RSS_RECORDS_FOUND']}</description>
     <pubDate>{$date}</pubDate>
     <generator>SugarCRM $sugar_version</generator>
@@ -94,7 +100,7 @@ EORSS;
     protected function generateItem($item)
     {
         $name = !empty($item['name_value_list']['name']['value'])?htmlentities( $item['name_value_list']['name']['value']): '';
-        $url = $GLOBALS['sugar_config']['site_url']  . htmlentities('/index.php?module=' . $item['module_name']. '&action=DetailView&record=' . $item['id']);
+        $url = SpiceConfig::getInstance()->config['site_url']  . htmlentities('/index.php?module=' . $item['module_name']. '&action=DetailView&record=' . $item['id']);
         $date = TimeDate::httpTime(TimeDate::getInstance()->fromDb($item['name_value_list']['date_modified']['value'])->getTimestamp());
         $description = '';
         $displayFieldNames = true;
@@ -149,9 +155,9 @@ EORSS;
 		echo '<item><name>';
 		if(is_object($errorObject)){
 			$error = $errorObject->number . ': ' . $errorObject->name . '<br>' . $errorObject->description;
-			$GLOBALS['log']->error($error);
+			LoggerManager::getLogger()->error($error);
 		}else{
-			$GLOBALS['log']->error(var_export($errorObject, true));
+			LoggerManager::getLogger()->error(var_export($errorObject, true));
 			$error = var_export($errorObject, true);
 		} // else
 		echo $error;

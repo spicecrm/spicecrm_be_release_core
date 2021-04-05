@@ -1,9 +1,11 @@
 <?php
 namespace SpiceCRM\includes\Logger;
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
 use SpiceCRM\includes\ErrorHandlers\NotFoundException;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -52,7 +54,7 @@ class RESTLogViewer {
     public function __construct() {
 
         # Accessing the log file is allowed only for admins:
-        if ( !$GLOBALS['current_user']->isAdmin() )
+        if ( !AuthenticationController::getInstance()->getCurrentUser()->isAdmin() )
             throw ( new ForbiddenException('Forbidden to view the KREST log. Only for admins.'))->setErrorCode('noKRESTlogView');
 
         $config = SpiceConfig::getInstance();
@@ -61,7 +63,7 @@ class RESTLogViewer {
     }
 
     public function getRoutes() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $response = [];
         $dbResult = $db->query( 'SELECT DISTINCT route FROM syskrestlog ORDER BY route' );
         while ( $row = $db->fetchByAssoc( $dbResult )) $response[] = array_shift( $row );
@@ -69,7 +71,7 @@ class RESTLogViewer {
     }
 
     public function getLines( $queryParams, $period = null ) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $response = [];
 
         $whereClauseParts = [];
@@ -84,23 +86,23 @@ class RESTLogViewer {
         }
 
         $filter = [];
-        if ( isset( $queryParams['method']{0} )) $filter[] = 'method = "'.$db->quote($queryParams['method']).'"';
-        if ( isset( $queryParams['route']{0} )) $filter[] = 'route = "'.$db->quote($queryParams['route']).'"';
-        if ( isset( $queryParams['postParams']{0} )) $filter[] = 'post_params like "%'.$db->quote($queryParams['postParams']).'%"';
-        if ( isset( $queryParams['urlParams']{0} )) $filter[] = 'get_params like "%'.$db->quote($queryParams['urlParams']).'%"';
-        if ( isset( $queryParams['routeArgs']{0} )) $filter[] = 'args like "%'.$db->quote($queryParams['routeArgs']).'%"';
-        if ( isset( $queryParams['response']{0} )) $filter[] = 'response like "%'.$db->quote($queryParams['response']).'%"';
-        if ( isset( $queryParams['theUrl']{0} )) $filter[] = 'url like "%'.$db->quote($queryParams['theUrl']).'%"';
-        if ( isset( $queryParams['ipAddress']{0} )) $filter[] = 'ip like "%'.$db->quote($queryParams['ipAddress']).'%"';
-        if ( isset( $queryParams['userId']{0} )) $filter[] = 'user_id = "'.$db->quote($queryParams['userId']).'"';
-        if ( isset( $queryParams['status']{0} )) $filter[] = 'http_status_code = "'.$db->quote($queryParams['status']).'"';
-        if ( isset( $queryParams['transactionId']{0} )) $filter[] = 'transaction_id = "'.$db->quote($queryParams['transactionId']).'"';
+        if ( isset( $queryParams['method'][0])) $filter[] = 'method = "'.$db->quote($queryParams['method']).'"';
+        if ( isset( $queryParams['route'][0])) $filter[] = 'route = "'.$db->quote($queryParams['route']).'"';
+        if ( isset( $queryParams['postParams'][0])) $filter[] = 'post_params like "%'.$db->quote($queryParams['postParams']).'%"';
+        if ( isset( $queryParams['urlParams'][0])) $filter[] = 'get_params like "%'.$db->quote($queryParams['urlParams']).'%"';
+        if ( isset( $queryParams['routeArgs'][0])) $filter[] = 'args like "%'.$db->quote($queryParams['routeArgs']).'%"';
+        if ( isset( $queryParams['response'][0])) $filter[] = 'response like "%'.$db->quote($queryParams['response']).'%"';
+        if ( isset( $queryParams['theUrl'][0])) $filter[] = 'url like "%'.$db->quote($queryParams['theUrl']).'%"';
+        if ( isset( $queryParams['ipAddress'][0])) $filter[] = 'ip like "%'.$db->quote($queryParams['ipAddress']).'%"';
+        if ( isset( $queryParams['userId'][0])) $filter[] = 'user_id = "'.$db->quote($queryParams['userId']).'"';
+        if ( isset( $queryParams['status'][0])) $filter[] = 'http_status_code = "'.$db->quote($queryParams['status']).'"';
+        if ( isset( $queryParams['transactionId'][0])) $filter[] = 'transaction_id = "'.$db->quote($queryParams['transactionId']).'"';
         if ( count( $filter )) $whereClauseParts[] = implode( ' AND ', $filter );
 
         $whereClause = count( $whereClauseParts ) ? 'WHERE '.implode( ' AND ', $whereClauseParts ):'';
 
         $limitClause = '';
-        if ( isset( $queryParams['limit']{0} )) {
+        if ( isset( $queryParams['limit'][0])) {
             $queryParams['limit'] *= 1;
             $limitClause = 'LIMIT '.$queryParams['limit'];
         }
@@ -109,7 +111,7 @@ class RESTLogViewer {
 
         $dbResult = $db->query( $sql );
         while ( $row = $db->fetchByAssoc( $dbResult )) {
-            $row['pid'] = isset( $row['pid']{0} ) ? (int)$row['pid']:null;
+            $row['pid'] = isset( $row['pid'][0]) ? (int)$row['pid']:null;
             $row['dtx'] = (float)$row['dtx'];
             $row['status'] = isset( $row['status'] ) ? (integer)$row['status']:$row['status'];
             $row['clr'] = (integer)$row['clr'];
@@ -133,7 +135,7 @@ class RESTLogViewer {
     }
 
     function getFullLine( $lineId ) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $sql = 'SELECT id, route, method, headers, args as routeArgs, get_params as urlParams, post_params as postParams, response, user_id as uid, UNIX_TIMESTAMP(requested_at) as dtx, http_status_code as status, transaction_id as tid FROM '.$this->dbTableName.' WHERE id = "'.$db->quote( $lineId ).'"';
 
@@ -146,7 +148,7 @@ class RESTLogViewer {
     }
 
     function getAllUser() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $list = [];
         $sql = 'SELECT id,user_name as name FROM users WHERE is_group = 0 AND deleted = 0 ORDER BY user_name';
         $dbResult = $db->query( $sql );

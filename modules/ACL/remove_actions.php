@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,9 +34,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\modules\ACLActions\ACLAction;
 
-
-global $current_user,$beanList, $beanFiles;
+global $current_user,$beanList, $beanFiles; //todo-uebelmar check via regex
 $actionarr = ACLAction::getDefaultActions();
 if(is_admin($current_user)){
 	$foundOne = false;

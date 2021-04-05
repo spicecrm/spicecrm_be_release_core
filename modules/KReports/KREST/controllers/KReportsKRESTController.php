@@ -2,7 +2,9 @@
 
 namespace SpiceCRM\modules\KReports\KREST\controllers;
 
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
 
 class KReportsKRESTController
 {
@@ -14,14 +16,15 @@ class KReportsKRESTController
      * @throws ForbiddenException
      */
     public function getPublishedKReports($req, $res, $args) {
-        if (!$GLOBALS['ACLController']->checkAccess('KReports', 'list', true))
+        if (!SpiceACL::getInstance()->checkAccess('KReports', 'list', true))
             throw (new ForbiddenException("Forbidden to list in module KReports."))->setErrorCode('noModuleList');
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $list = [];
         $type = $db->quote($args['type']);
-        $searchKey = $_GET['searchKey'] ? $db->quote($_GET['searchKey']) : '';
-        $offset = $_GET['offset'] ? $db->quote($_GET['offset']) : 0;
-        $limit = $_GET['limit'] ? $db->quote($_GET['limit']) : 40;
+        $params = $req->getParams();
+        $searchKey = $params['searchKey'] ? $db->quote($params['searchKey']) : '';
+        $offset = $params['offset'] ? $db->quote($params['offset']) : 0;
+        $limit = $params['limit'] ? $db->quote($params['limit']) : 40;
         $where = "deleted=0 AND integration_params LIKE '%\"$type\":\"on\"%' AND (integration_params LIKE '%\"kpublishing\":1%' OR integration_params LIKE '%\"kpublishing\":\"1\"%')";
         if ($searchKey != '') {
             $where .= " AND name LIKE '%$searchKey%'";
@@ -37,7 +40,7 @@ class KReportsKRESTController
      * @return array
      */
     public function getReportCategories() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $list = [];
         if($db->tableExists('kreportcategories')) {
             $query = $db->query("SELECT * FROM kreportcategories WHERE deleted <> 1");

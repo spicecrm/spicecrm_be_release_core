@@ -1,81 +1,94 @@
 <?php
-use SpiceCRM\includes\ErrorHandlers\Exception;
+
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
 use SpiceCRM\includes\RESTManager;
+use SpiceCRM\modules\Dashboards\KREST\controllers\DashboardManagerController;
+
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
 
-$RESTManager->app->group('/dashboards', function () {
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('dashboards', '1.0');
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/dashboards/dashlets',
+        'class'       => DashboardManagerController::class,
+        'function'    => 'GetGlobalAndCustomDashlet',
+        'description' => 'selects all global and custom dashlets',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/dashboards/dashlets/{id}',
+        'class'       => DashboardManagerController::class,
+        'function'    => 'ReplaceDashlet',
+        'description' => 'replaces into the database',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/dashboards/dashlets/{id}',
+        'class'       => DashboardManagerController::class,
+        'function'    => 'DeleteDashlet',
+        'description' => 'deletes a dashlet depending on the id',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/dashboards',
+        'class'       => DashboardManagerController::class,
+        'function'    => 'GetAllDashboards',
+        'description' => 'selects everything form dashboards',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/dashboards/{id}',
+        'class'       => DashboardManagerController::class,
+        'function'    => 'GetDashboardID',
+        'description' => 'gets an dashboard id',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/dashboards/{id}',
+        'class'       => DashboardManagerController::class,
+        'function'    => 'InsertINtoDashboardComponent',
+        'description' => 'Inserts into an dashboard component',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
 
-    $this->group('/dashlets', function () {
-        $this->get('', function ($req, $res, $args) {
-            global $db;
-            $dashBoardDashlets = array();
-            $dashlets = "SELECT 'global' As `type`, dlts.* FROM sysuidashboarddashlets dlts UNION ";
-            $dashlets .= "SELECT 'custom' As `type`, cdlts.* FROM sysuicustomdashboarddashlets cdlts";
-            $dashlets = $db->query($dashlets);
-            while ($dashBoardDashlet = $db->fetchByAssoc($dashlets))
-                $dashBoardDashlets[] = $dashBoardDashlet;
-            return $res->withJson($dashBoardDashlets);
-        });
-        $this->post('/{id}', function ($req, $res, $args) {
-            global $db;
-            $columns = [];
-            $values = [];
-            $params = $body = $req->getParsedBody();
-            $table = $params['type'] == 'global' ? 'sysuidashboarddashlets' : 'sysuicustomdashboarddashlets';
-            foreach ($params as $column => $value) {
-                if ($column != 'type') {
-                    $columns[] = $db->quote($column);
-                    $values[] = "'" . $db->quote($value) . "'";
-                }
-            }
-            $columns = implode(',',$columns);
-            $values = implode(',',$values);
+$RESTManager->registerRoutes($routes);
 
-            $isAdded = $db->query("REPLACE INTO $table ($columns) VALUES ($values)");
-            return $res->withJson($isAdded);
-        });
-        $this->delete('/{id}', function ($req, $res, $args) {
-            global $db;
-            $id = $db->quote($args['id']);
-            $isDeleted = $db->query("DELETE FROM sysuidashboarddashlets WHERE id = '$id'");
-            $isDeletedCustom = $db->query("DELETE FROM sysuicustomdashboarddashlets WHERE id = '$id'");
-            return $res->withJson($isDeleted && $isDeletedCustom);
-        });
-    });
-
-    $this->get('', function ($req, $res, $args) {
-        global $db;
-        $dashBoards = array();
-        $dashBoardsObj = $db->query("SELECT * FROM dashboards");
-        while ($dashBoard = $db->fetchByAssoc($dashBoardsObj))
-            $dashBoards[] = $dashBoard;
-        return $res->withJson($dashBoards);
-    });
-    $this->get('/{id}', function($req, $res, $args) {
-        global $db;
-        $dashBoardBean = BeanFactory::getBean('Dashboards', $args['id']);
-        $dashBoardBean = $dashBoardBean->retrieve($args['id']);
-        return $res->withJson($dashBoardBean->components);
-    });
-    $this->post('/{id}', function($req, $res, $args) {
-        global $db;
-        $postbodyitems = $body = $req->getParsedBody();
-        //$postParams = $_GET;
-        //$postbodyitems = json_decode($postBody, true);
-
-        $status = true;
-        // todo: check if this is right to delete and reinsert all records .. might be nices to check what exists and update ...
-        $db->query("DELETE FROM dashboardcomponents WHERE dashboard_id = '{$args['id']}'");
-        foreach ($postbodyitems as $postbodyitem)
-        {
-            // $db->query("UPDATE sysuidashboardcomponents SET position='".json_encode($postbodyitem['position'])."', name='".$postbodyitem['name']."', component='".$postbodyitem['component']."' WHERE id = '".$postbodyitem['id']."'");
-            $sql = "INSERT INTO dashboardcomponents (id, dashboard_id, name, component, componentconfig, position, dashlet_id) values('";
-            $sql .= $postbodyitem['id'] . "', '{$args['id']}', '" . $postbodyitem['name'] . "', '" . $postbodyitem['component'];
-            $sql .= "', '" . $db->quote(json_encode($postbodyitem['componentconfig']));
-            $sql .= "', '" . $db->quote(json_encode($postbodyitem['position']));
-            $sql .= "', '" . $postbodyitem['dashlet_id'] . "')";
-            if( !$db->query($sql) ) throw ( new Exception( $db->last_error ))->setFatal(true);
-        }
-        return $res->withJson(array('status' => $status));
-    });
-});

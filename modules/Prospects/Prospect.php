@@ -1,5 +1,7 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\Prospects;
+
+use SpiceCRM\includes\SugarObjects\templates\person\Person;
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -43,8 +45,6 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * Contributor(s): ______________________________________..
  ********************************************************************************/
 
-require_once('include/SugarObjects/templates/person/Person.php');
-
 class Prospect extends Person {
 
 	var $module_dir = 'Prospects';
@@ -52,7 +52,7 @@ class Prospect extends Person {
 	var $object_name = "Prospect";
 
     // This is used to retrieve related fields from form posts.
-	var $additional_column_fields = Array('assigned_user_name');
+	var $additional_column_fields = ['assigned_user_name'];
 
 
 	function __construct() {

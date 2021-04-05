@@ -26,7 +26,10 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\UserQuotas;
+
+use SpiceCRM\data\SugarBean;
+use DateTime;
 
 class UserQuota extends SugarBean
 {
@@ -55,7 +58,7 @@ class UserQuota extends SugarBean
 
     public function get_quotausers()
     {
-        $users = array();
+        $users = [];
         $usersObj = $this->db->query("SELECT * FROM users WHERE quota_carrying = '1' ORDER BY last_name");
         while ($user = $this->db->fetchByAssoc($usersObj))
             $users[] = $user;
@@ -65,7 +68,7 @@ class UserQuota extends SugarBean
 
     public function get_quotas($year)
     {
-        $userquotas = array();
+        $userquotas = [];
         $userquotasObj = $this->db->query("SELECT * FROM userquotas WHERE deleted = 0 AND year = '$year'");
         while ($userquota = $this->db->fetchByAssoc($userquotasObj))
             $userquotas[] = $userquota;
@@ -77,7 +80,7 @@ class UserQuota extends SugarBean
     {
         $periodArray = explode(',', $period);
         foreach ($periodArray as $thisPeriod) {
-            if (!$this->retrieve_by_string_fields(array('assigned_user_id' => $user, 'year' => $year, 'period' => $thisPeriod))) {
+            if (!$this->retrieve_by_string_fields(['assigned_user_id' => $user, 'year' => $year, 'period' => $thisPeriod])) {
                 $this->assigned_user_id = $user;
                 $this->year = $year;
                 $this->period = $thisPeriod;
@@ -92,7 +95,7 @@ class UserQuota extends SugarBean
     {
         $periodArray = explode(',', $period);
         foreach ($periodArray as $thisPeriod) {
-            if ($this->retrieve_by_string_fields(array('assigned_user_id' => $user, 'year' => $year, 'period' => $period))) {
+            if ($this->retrieve_by_string_fields(['assigned_user_id' => $user, 'year' => $year, 'period' => $period])) {
                 $this->deleted = true;
                 $this->save();
             }

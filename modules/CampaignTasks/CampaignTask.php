@@ -1,8 +1,11 @@
 <?php
+namespace SpiceCRM\modules\CampaignTasks;
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-
-require_once('data/SugarBean.php');
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\UserPreferences\UserPreference;
 
 class CampaignTask extends SugarBean
 {
@@ -11,9 +14,9 @@ class CampaignTask extends SugarBean
     public $table_name = 'campaigntasks';
     public $new_schema = true;
 
-    public $additional_column_fields = Array();
+    public $additional_column_fields = [];
 
-    public $relationship_fields = Array();
+    public $relationship_fields = [];
 
 
     public function get_summary_text()
@@ -32,9 +35,9 @@ class CampaignTask extends SugarBean
 
     function activate($status = 'targeted')
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $thisId = $db->quote($this->id);
-        $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();;
+        $sysModuleFilters = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
 
         $delete_query = "DELETE FROM campaign_log WHERE campaign_id='" . $this->campaign_id . "' AND campaigntask_id='" . $this->id . "' AND activity_type='$status'";
         $this->db->query($delete_query);
@@ -77,12 +80,12 @@ class CampaignTask extends SugarBean
 
     function export()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $exportFields = ['name', 'salutation', 'first_name', 'last_name', 'email1', 'primary_address_street', 'primary_address_city'];
 
         $thisId = $db->quote($this->id);
-        $sysModuleFilters = new SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+        $sysModuleFilters = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
 
         $current_date = $this->db->now();
         $guidSQL = $this->db->getGuidSQL();
@@ -109,16 +112,16 @@ class CampaignTask extends SugarBean
 
 
         // determine the delimiter
-        $delimiter = \UserPreference::getDefaultPreference('export_delimiter');
-        if (!empty($GLOBALS['current_user']->getPreference('export_delimiter'))) $delimiter = $GLOBALS['current_user']->getPreference('export_delimiter');
+        $delimiter = UserPreference::getDefaultPreference('export_delimiter');
+        if (!empty(AuthenticationController::getInstance()->getCurrentUser()->getPreference('export_delimiter'))) $delimiter = AuthenticationController::getInstance()->getCurrentUser()->getPreference('export_delimiter');
 
         // determine the charset
         $supportedCharsets = mb_list_encodings();
-        $charsetTo = \UserPreference::getDefaultPreference('default_charset');
+        $charsetTo = UserPreference::getDefaultPreference('default_charset');
         if (!empty($postBody['charset'])) {
             if (in_array($postBody['charset'], $supportedCharsets)) $charsetTo = $postBody['charset'];
         } else {
-            if (in_array($GLOBALS['current_user']->getPreference('default_export_charset'), $supportedCharsets)) $charsetTo = $GLOBALS['current_user']->getPreference('default_export_charset');
+            if (in_array(AuthenticationController::getInstance()->getCurrentUser()->getPreference('default_export_charset'), $supportedCharsets)) $charsetTo = AuthenticationController::getInstance()->getCurrentUser()->getPreference('default_export_charset');
         }
 
         $fh = @fopen('php://output', 'w');

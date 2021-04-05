@@ -1,9 +1,14 @@
 <?php
+
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
-use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+use SpiceCRM\includes\authentication\GoogleAuthenticate\GoogleAuthenticate;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\modules\Emails\Email;
 use SpiceCRM\modules\GoogleOAuth\GoogleOAuthImpersonation;
-use BeanFactory;
+use SpiceCRM\data\BeanFactory;
+use Swift_TransportException;
 
 class GmailHandler extends TransportHandler
 {
@@ -28,22 +33,25 @@ class GmailHandler extends TransportHandler
         'gmail_email_address',
     ];
 
-    protected function initTransportHandler() {
-        global $sugar_config;
+    protected function initTransportHandler()
+    {
+
 
         $this->userName = $this->mailbox->gmail_user_name ?? $this->mailbox->gmail_email_address;
 
-        $oAuth = new GoogleOAuthImpersonation();
-        $this->accessToken = (array) $oAuth->getTokenByUserName($this->userName);
-        $this->accessToken['expires_at'] = time() + (int) $this->accessToken['expires_in'];
+        $googleAuthController = new GoogleAuthenticate();
+        $this->accessToken = (array)$googleAuthController->getTokenByUserName($this->userName);
+        $this->accessToken['expires_at'] = time() + (int)$this->accessToken['expires_in'];
         $this->accessToken['user_id'] = $this->userName;
+        unset($googleAuthController);
 
         if ($this->accessToken->result === false) {
-            $GLOBALS['log']->fatal('Gmail Oauth Token Error: ' . $this->accessToken->error);
+            LoggerManager::getLogger()->fatal('Gmail Oauth Token Error: ' . $this->accessToken->error);
         }
     }
 
-    public function testConnection($testEmail) {
+    public function testConnection($testEmail)
+    {
         $status = $this->checkConfiguration($this->outgoing_settings);
         if (!$status['result']) {
             $response = [
@@ -55,30 +63,32 @@ class GmailHandler extends TransportHandler
         }
 
         try {
-            $this->sendMail(\Email::getTestEmail($this->mailbox, $testEmail));
+            $this->sendMail(Email::getTestEmail($this->mailbox, $testEmail));
             $response['result'] = true;
-        } catch (\Swift_TransportException $e) {
+        } catch (Swift_TransportException $e) {
             $response['errors'] = $e->getMessage();
-            $GLOBALS['log']->info($e->getMessage());
+            LoggerManager::getLogger()->info($e->getMessage());
             $response['result'] = false;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['errors'] = $e->getMessage();
-            $GLOBALS['log']->info($e->getMessage());
+            LoggerManager::getLogger()->info($e->getMessage());
             $response['result'] = false;
         }
 
         return $response;
     }
 
-    public function fetchEmails($pageToken = null) {
-        global $db, $timedate;
+    public function fetchEmails($pageToken = null)
+    {
+        global $timedate;
+        $db = DBManagerFactory::getInstance();
 
         $messageIdList = $this->fetchMessageList($pageToken);
 
         if (is_array($messageIdList->messages)) {
             foreach ($messageIdList->messages as $messageId) {
                 // check if the email exists. On purpose do not check the deleted flag since it might have been deleted on CRM and then shoudl not be reloaded
-                if($db->fetchByAssoc($db->query("SELECT id FROM emails WHERE external_id = '{$messageId->id}' AND mailbox_id='{$this->mailbox->id}'"))) continue;
+                if ($db->fetchByAssoc($db->query("SELECT id FROM emails WHERE external_id = '{$messageId->id}' AND mailbox_id='{$this->mailbox->id}'"))) continue;
 
                 if ($this->newMailCount >= 100) {
                     break;
@@ -90,6 +100,7 @@ class GmailHandler extends TransportHandler
                     $gmailMessage = new GmailMessage($this, $message, $this->mailbox->id);
                     $email = $gmailMessage->mapGmailToBean();
                     $email->save();
+                    $email->processEmail();
                     ++$this->newMailCount;
                 }
             }
@@ -114,7 +125,8 @@ class GmailHandler extends TransportHandler
      * @param $messageId
      * @return bool
      */
-    private function emailExists($messageId) {
+    private function emailExists($messageId)
+    {
         $email = BeanFactory::getBean('Emails');
         if ($email->retrieve_by_string_fields(['message_id' => $messageId, 'mailbox_id' => $this->mailbox->id])) {
             return true;
@@ -123,7 +135,8 @@ class GmailHandler extends TransportHandler
         return false;
     }
 
-    private function fetchMessageList($pageToken = null) {
+    private function fetchMessageList($pageToken = null)
+    {
         $url = self::API_URL . "/gmail/v1/users/{$this->userName}/messages";
         $url .= '?' . $this->generateSearchParameters($pageToken);
 
@@ -133,9 +146,9 @@ class GmailHandler extends TransportHandler
             CURLOPT_SSL_VERIFYPEER => $this->ssl_verifypeer,
             CURLOPT_SSL_VERIFYHOST => $this->ssl_verifyhost,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => false,
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => false,
+            CURLOPT_HTTPHEADER => [
                 'Content-Type:application/json',
                 'Authorization: Bearer ' . $this->accessToken['access_token'],
             ],
@@ -147,7 +160,7 @@ class GmailHandler extends TransportHandler
         curl_close($curl);
 
         if ($info->http_code >= 400) {
-            $GLOBALS['log']->fatal('Gmail fetch message list error: ' . $response);
+            LoggerManager::getLogger()->fatal('Gmail fetch message list error: ' . $response);
         }
 
         return json_decode($response);
@@ -159,7 +172,8 @@ class GmailHandler extends TransportHandler
      * @param $messageId
      * @return mixed
      */
-    private function fetchMessage($messageId) {
+    private function fetchMessage($messageId)
+    {
         $url = self::API_URL . "/gmail/v1/users/{$this->userName}/messages/{$messageId}";
 
         $curl = curl_init();
@@ -168,9 +182,9 @@ class GmailHandler extends TransportHandler
             CURLOPT_SSL_VERIFYPEER => $this->ssl_verifypeer,
             CURLOPT_SSL_VERIFYHOST => $this->ssl_verifyhost,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => false,
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => false,
+            CURLOPT_HTTPHEADER => [
                 'Content-Type:application/json',
                 'Authorization: Bearer ' . $this->accessToken['access_token'],
             ],
@@ -191,7 +205,8 @@ class GmailHandler extends TransportHandler
      * @param $attachmentId
      * @return mixed
      */
-    public function fetchAttachment($messageId, $attachmentId) {
+    public function fetchAttachment($messageId, $attachmentId)
+    {
         $url = self::API_URL . "/gmail/v1/users/{$this->userName}/messages/{$messageId}/attachments/{$attachmentId}";
 
         $curl = curl_init();
@@ -200,9 +215,9 @@ class GmailHandler extends TransportHandler
             CURLOPT_SSL_VERIFYPEER => $this->ssl_verifypeer,
             CURLOPT_SSL_VERIFYHOST => $this->ssl_verifyhost,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => false,
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => false,
+            CURLOPT_HTTPHEADER => [
                 'Content-Type:application/json',
                 'Authorization: Bearer ' . $this->accessToken['access_token'],
             ],
@@ -221,7 +236,8 @@ class GmailHandler extends TransportHandler
      *
      * @return mixed
      */
-    public function getLabels(){
+    public function getLabels()
+    {
         $url = self::API_URL . "/gmail/v1/users/{$this->userName}/labels";
 
         $curl = curl_init();
@@ -230,9 +246,9 @@ class GmailHandler extends TransportHandler
             CURLOPT_SSL_VERIFYPEER => $this->ssl_verifypeer,
             CURLOPT_SSL_VERIFYHOST => $this->ssl_verifyhost,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => false,
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => false,
+            CURLOPT_HTTPHEADER => [
                 'Content-Type:application/json',
                 'Authorization: Bearer ' . $this->accessToken['access_token'],
             ],
@@ -252,11 +268,12 @@ class GmailHandler extends TransportHandler
      * @param $email
      * @return mixed
      */
-    public function deleteEmail($email, $mailboxparams){
+    public function deleteEmail($email, $mailboxparams)
+    {
 
         return false;
 
-        if(empty($email->external_id) || !$mailboxparams->gmail_delete_emails) return;
+        if (empty($email->external_id) || !$mailboxparams->gmail_delete_emails) return;
 
         $url = self::API_URL . "/gmail/v1/users/{$this->userName}/messages/{$email->external_id}/trash";
 
@@ -266,9 +283,9 @@ class GmailHandler extends TransportHandler
             CURLOPT_SSL_VERIFYPEER => $this->ssl_verifypeer,
             CURLOPT_SSL_VERIFYHOST => $this->ssl_verifyhost,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => [
                 'Content-Type:application/json',
                 'Authorization: Bearer ' . $this->accessToken['access_token'],
             ],
@@ -282,12 +299,13 @@ class GmailHandler extends TransportHandler
         return json_decode($response);
     }
 
-    private function generateSearchParameters($pageToken = null) {
+    private function generateSearchParameters($pageToken = null)
+    {
         $searchParams = [];
 
         $searchParams['q'] = 'in:inbox';
         if ($this->mailbox->last_checked) {
-            $searchParams['q'] .= ' after:' .date('Y/m/d', strtotime($this->mailbox->last_checked));
+            $searchParams['q'] .= ' after:' . date('Y/m/d', strtotime($this->mailbox->last_checked));
         }
 
 
@@ -298,7 +316,8 @@ class GmailHandler extends TransportHandler
         return http_build_query($searchParams);
     }
 
-    private function setAuthConfig($configString) {
+    private function setAuthConfig($configString)
+    {
         if (is_string($configString)) {
             if (!$config = json_decode($configString, true)) {
                 throw new LogicException('invalid json for auth config');
@@ -332,11 +351,13 @@ class GmailHandler extends TransportHandler
         }
     }
 
-    private function base64url_encode($data) {
+    private function base64url_encode($data)
+    {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
-    private function extractMessageId($headers) {
+    private function extractMessageId($headers)
+    {
         foreach ($headers as $header) {
             if ($header->name == 'Message-ID') {
                 return $header->value;

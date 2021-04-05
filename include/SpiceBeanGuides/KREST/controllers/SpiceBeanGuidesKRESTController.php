@@ -1,12 +1,15 @@
 <?php
 namespace SpiceCRM\includes\SpiceBeanGuides\KREST\controllers;
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SpiceBeanGuides\SpiceBeanGuideRestHandler;
+
 class SpiceBeanGuidesKRESTController{
 
     function getStageDefs(){
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $restHandler = new \SpiceCRM\includes\SpiceBeanGuides\SpiceBeanGuideRestHandler();
+        $restHandler = new SpiceBeanGuideRestHandler();
 
         $retArray = [];
 
@@ -27,13 +30,13 @@ class SpiceBeanGuidesKRESTController{
     }
 
     static function getStages($req, $res, $args) {
-        $restHandler = new \SpiceCRM\includes\SpiceBeanGuides\SpiceBeanGuideRestHandler();
-        return $res->write(json_encode($restHandler->getStages($args['module'])));
+        $restHandler = new SpiceBeanGuideRestHandler();
+        return $res->withJson($restHandler->getStages($args['module']));
     }
 
     static function getBeanStages($req, $res, $args) {
-        $restHandler = new \SpiceCRM\includes\SpiceBeanGuides\SpiceBeanGuideRestHandler();
-        return $res->write(json_encode($restHandler->getStages($args['module'], $args['beanid'])));
+        $restHandler = new SpiceBeanGuideRestHandler();
+        return $res->withJson($restHandler->getStages($args['module'], $args['beanid']));
     }
 
 

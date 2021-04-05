@@ -73,7 +73,7 @@ abstract class SugarSoapService extends SugarWebService{
 	 * @param String $arrayType - arrayType: namespace:name (xsd:string)
 	 * @access public
 	 */	
-	abstract function registerType($name, $typeClass, $phpType, $compositor, $restrictionBase, $elements, $attrs=array(), $arrayType='');
+	abstract function registerType($name, $typeClass, $phpType, $compositor, $restrictionBase, $elements, $attrs=[], $arrayType='');
 	
 	/**
 	 * Constructor

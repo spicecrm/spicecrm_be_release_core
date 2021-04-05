@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,8 +34,13 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\data\Relationships;
 
-require_once("data/Relationships/M2MRelationship.php");
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\VardefManager;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+
 
 /**
  * Represents a one to many relationship that is table based.
@@ -63,7 +67,7 @@ class One2MRelationship extends M2MRelationship
             );
             if (empty($links))
             {
-                $GLOBALS['log']->fatal("No Links found for relationship {$this->name}");
+                LoggerManager::getLogger()->fatal("No Links found for relationship {$this->name}");
             }
             else {
                 if (!is_array($links)) //Only one link for a self referencing relationship, this is very bad.
@@ -118,7 +122,7 @@ class One2MRelationship extends M2MRelationship
      * @param  $additionalFields key=>value pairs of fields to save on the relationship
      * @return boolean true if successful
      */
-    public function add($lhs, $rhs, $additionalFields = array())
+    public function add($lhs, $rhs, $additionalFields = [])
     {
         $dataToInsert = $this->getRowToInsert($lhs, $rhs, $additionalFields);
         
@@ -166,7 +170,7 @@ class One2MRelationship extends M2MRelationship
      * 
      * The logic for dealing with adding self-referencing one-to-many relations is in the add() method
      */
-    protected function addSelfReferencing($lhs, $rhs, $additionalFields = array())
+    protected function addSelfReferencing($lhs, $rhs, $additionalFields = [])
     {
         //No-op on One2M.
     }
@@ -174,7 +178,7 @@ class One2MRelationship extends M2MRelationship
     /**
      * Just overriding the function from M2M to prevent it from occuring
      */
-    protected function removeSelfReferencing($lhs, $rhs, $additionalFields = array())
+    protected function removeSelfReferencing($lhs, $rhs, $additionalFields = [])
     {
         //No-op on One2M.
     }

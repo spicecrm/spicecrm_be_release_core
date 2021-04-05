@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,8 +34,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\data\Relationships;
 
-require_once("data/Relationships/One2MBeanRelationship.php");
+use SpiceCRM\data\SugarBean;
 
 /**
  * 1-1 Bean relationship
@@ -55,7 +55,7 @@ class One2OneBeanRelationship extends One2MBeanRelationship
      * @param  $additionalFields key=>value pairs of fields to save on the relationship
      * @return boolean true if successful
      */
-    public function add($lhs, $rhs, $additionalFields = array())
+    public function add($lhs, $rhs, $additionalFields = [])
     {
         $lhsLinkName = $this->lhsLink;
         //In a one to one, any existing links from both sides must be removed first.
@@ -70,13 +70,13 @@ class One2OneBeanRelationship extends One2MBeanRelationship
     {
         //RHS and LHS only ever have one bean
         if (isset($lhs->$lhsLinkName))
-            $lhs->$lhsLinkName->beans = array($rhs->id => $rhs);
+            $lhs->$lhsLinkName->beans = [$rhs->id => $rhs];
 
         if (isset($rhs->$rhsLinkName))
-            $rhs->$rhsLinkName->beans = array($lhs->id => $lhs);
+            $rhs->$rhsLinkName->beans = [$lhs->id => $lhs];
     }
 
-    public function getJoin($link, $params = array(), $return_array = false)
+    public function getJoin($link, $params = [], $return_array = false)
     {
         $linkIsLHS = $link->getSide() == REL_LHS;
         $startingTable = $link->getFocus()->table_name;
@@ -104,14 +104,14 @@ class One2OneBeanRelationship extends One2MBeanRelationship
                . $this->getRoleWhere();
 
         if($return_array){
-            return array(
+            return [
                 'join' => $join,
                 'type' => $this->type,
                 'rel_key' => $targetKey,
-                'join_tables' => array($targetTable),
+                'join_tables' => [$targetTable],
                 'where' => "",
                 'select' => "$targetTable.id",
-            );
+            ];
         }
         return $join;
     }

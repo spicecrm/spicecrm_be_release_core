@@ -34,6 +34,11 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 require_once('service/core/SoapHelperWebService.php');
 class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 
@@ -41,14 +46,14 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
     {
         if($value instanceof Link2 && !method_exists($value, '__toString'))
             $value = '';
-		return array('name'=>$field, 'value'=>$value);
+		return ['name'=>$field, 'value'=>$value];
 	}
 
     function filter_fields($value, $fields)
     {
-        $GLOBALS['log']->info('Begin: SoapHelperWebServices->filter_fields');
+        LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->filter_fields');
         global $invalid_contact_fields;
-        $filterFields = array();
+        $filterFields = [];
         foreach($fields as $field)
         {
             if (is_array($invalid_contact_fields))
@@ -82,28 +87,29 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
             }
             $filterFields[] = $field;
         }
-        $GLOBALS['log']->info('End: SoapHelperWebServices->filter_fields');
+        LoggerManager::getLogger()->info('End: SoapHelperWebServices->filter_fields');
         return $filterFields;
     }
 
     function getRelationshipResults($bean, $link_field_name, $link_module_fields, $optional_where = '', $order_by = '') {
-		$GLOBALS['log']->info('Begin: SoapHelperWebServices->getRelationshipResults');
-		require_once('include/TimeDate.php');
-		global  $beanList, $beanFiles, $current_user;
+		LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->getRelationshipResults');
+
+		global $beanList, $beanFiles;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
 		global $timedate;
 
 		$bean->load_relationship($link_field_name);
 		if (isset($bean->$link_field_name)) {
 			//First get all the related beans
-            $params = array();
+            $params = [];
             if (!empty($optional_where))
             {
                 $params['where'] = $optional_where;
             }
             $related_beans = $bean->$link_field_name->getBeans($params);
             //Create a list of field/value rows based on $link_module_fields
-			$list = array();
-            $filterFields = array();
+			$list = [];
+            $filterFields = [];
             if (!empty($order_by) && !empty($related_beans))
             {
                 $related_beans = order_beans($related_beans, $order_by);
@@ -114,7 +120,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
                 {
                     $filterFields = $this->filter_fields($bean, $link_module_fields);
                 }
-                $row = array();
+                $row = [];
                 foreach ($filterFields as $field) {
                     if (isset($bean->$field))
                     {
@@ -132,10 +138,10 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
                 $row = clean_sensitive_data($bean->field_defs, $row);
                 $list[] = $row;
             }
-            $GLOBALS['log']->info('End: SoapHelperWebServices->getRelationshipResults');
-            return array('rows' => $list, 'fields_set_on_rows' => $filterFields);
+            LoggerManager::getLogger()->info('End: SoapHelperWebServices->getRelationshipResults');
+            return ['rows' => $list, 'fields_set_on_rows' => $filterFields];
 		} else {
-			$GLOBALS['log']->info('End: SoapHelperWebServices->getRelationshipResults - ' . $link_field_name . ' relationship does not exists');
+			LoggerManager::getLogger()->info('End: SoapHelperWebServices->getRelationshipResults - ' . $link_field_name . ' relationship does not exists');
 			return false;
 		} // else
 
@@ -143,9 +149,9 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 
 	function get_field_list($value, $fields, $translate=true) {
 
-	    $GLOBALS['log']->info('Begin: SoapHelperWebServices->get_field_list');
-		$module_fields = array();
-		$link_fields = array();
+	    LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->get_field_list');
+		$module_fields = [];
+		$link_fields = [];
 		if(!empty($value->field_defs)){
 
 			foreach($value->field_defs as $var){
@@ -155,8 +161,8 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 					continue;
 				}
 				$required = 0;
-				$options_dom = array();
-				$options_ret = array();
+				$options_dom = [];
+				$options_ret = [];
 				// Apparently the only purpose of this check is to make sure we only return fields
 				//   when we've read a record.  Otherwise this function is identical to get_module_field_list
 				if( isset($var['required']) && ($var['required'] || $var['required'] == 'true' ) ){
@@ -165,7 +171,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 
 				if(isset($var['options'])){
 					$options_dom = translate($var['options'], $value->module_dir);
-					if(!is_array($options_dom)) $options_dom = array();
+					if(!is_array($options_dom)) $options_dom = [];
 					foreach($options_dom as $key=>$oneOption)
 						$options_ret[$key] = $this->get_name_value($key,$oneOption);
 				}
@@ -174,7 +180,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 	                $options_ret['type'] = $this->get_name_value('type', $var['dbType']);
 	            }
 
-	            $entry = array();
+	            $entry = [];
 	            $entry['name'] = $var['name'];
 	            $entry['type'] = $var['type'];
 	            $entry['group'] = isset($var['group']) ? $var['group'] : '';
@@ -206,9 +212,9 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 			require_once('modules/Releases/Release.php');
 			$seedRelease = new Release();
 			$options = $seedRelease->get_releases(TRUE, "Active");
-			$options_ret = array();
+			$options_ret = [];
 			foreach($options as $name=>$value){
-				$options_ret[] =  array('name'=> $name , 'value'=>$value);
+				$options_ret[] =  ['name'=> $name , 'value'=>$value];
 			}
 			if(isset($module_fields['fixed_in_release'])){
 				$module_fields['fixed_in_release']['type'] = 'enum';
@@ -241,14 +247,14 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 			$module_fields['created_by_name']['name'] = 'created_by_name';
 		}
 
-		$GLOBALS['log']->info('End: SoapHelperWebServices->get_field_list');
-		return array('module_fields' => $module_fields, 'link_fields' => $link_fields);
+		LoggerManager::getLogger()->info('End: SoapHelperWebServices->get_field_list');
+		return ['module_fields' => $module_fields, 'link_fields' => $link_fields];
 	}
 
 	function get_subpanel_defs($module, $type)
 	{
 	    global $beanList, $beanFiles;
-	    $results = array();
+	    $results = [];
 	    switch ($type)
 	    {
 	        case 'default':
@@ -278,7 +284,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
     function get_module_view_defs($module_name, $type, $view){
         require_once('include/MVC/View/SugarView.php');
         $metadataFile = null;
-        $results = array();
+        $results = [];
         $view = strtolower($view);
         switch (strtolower($type)){
             case 'default':
@@ -287,7 +293,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
                     $results = $this->get_subpanel_defs($module_name, $type);
                 else
                 {
-                    $v = new SugarView(null,array());
+                    $v = new SugarView(null, []);
                     $v->module = $module_name;
                     $v->type = $view;
                     $fullView = ucfirst($view) . 'View';
@@ -313,7 +319,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
         require_once("modules/MySettings/TabController.php");
         $controller = new TabController();
         $tabs = $controller->get_tabs_system();
-        $enabled_modules= array();
+        $enabled_modules= [];
         $availModulesKey = array_flip($availModules);
         foreach ($tabs[0] as $key=>$value)
         {
@@ -334,16 +340,16 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
         global $beanList;
         $maxCount = 10;
 
-        $activityModules = array('Meetings' => array('date_field' => 'date_start','status' => 'Planned','status_field' => 'status', 'status_opp' => '='),
-                                 'Calls' => array('date_field' => 'date_start','status' => 'Planned','status_field' => 'status', 'status_opp' => '='),
-                                 'Tasks' => array('date_field' =>'date_due','status' => 'Not Started','status_field' => 'status','status_opp' => '='),
-                                 'Opportunities' => array('date_field' => 'date_closed','status' => array('Closed Won','Closed Lost'), 'status_field' => 'sales_stage', 'status_opp' => '!=') );
-        $results = array();
+        $activityModules = ['Meetings' => ['date_field' => 'date_start','status' => 'Planned','status_field' => 'status', 'status_opp' => '='],
+                                 'Calls' => ['date_field' => 'date_start','status' => 'Planned','status_field' => 'status', 'status_opp' => '='],
+                                 'Tasks' => ['date_field' =>'date_due','status' => 'Not Started','status_field' => 'status','status_opp' => '='],
+                                 'Opportunities' => ['date_field' => 'date_closed','status' => ['Closed Won','Closed Lost'], 'status_field' => 'sales_stage', 'status_opp' => '!=']];
+        $results = [];
         foreach ($activityModules as $module => $meta)
         {
-            if(!self::check_modules_access($GLOBALS['current_user'], $module, 'read'))
+            if(!self::check_modules_access(AuthenticationController::getInstance()->getCurrentUser(), $module, 'read'))
             {
-                $GLOBALS['log']->debug("SugarWebServiceImpl->get_last_viewed: NO ACCESS to $module");
+                LoggerManager::getLogger()->debug("SugarWebServiceImpl->get_last_viewed: NO ACCESS to $module");
                 continue;
             }
 
@@ -354,7 +360,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
             $response = $seed->get_list(/* Order by date field */"{$meta['date_field']} ASC",  /*Where clause */$query, /* No Offset */ 0,
                                         /* No limit */-1, /* Max 10 items */10, /*No Deleted */ 0 );
 
-            $result = array();
+            $result = [];
 
             if( isset($response['list']) )
                 $result = $this->format_upcoming_activities_entries($response['list'],$meta['date_field']);
@@ -363,7 +369,7 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
         }
 
         //Sort the result list by the date due flag in ascending order
-        usort( $results, array( $this , "cmp_datedue" ) ) ;
+        usort( $results, [$this , "cmp_datedue"]) ;
 
         //Only return a subset of the results.
         $results = array_slice($results, 0, $maxCount);
@@ -373,17 +379,17 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
 
     function generateUpcomingActivitiesWhereClause($seed,$meta)
     {
-        $query = array();
+        $query = [];
         $query_date = TimeDate::getInstance()->nowDb();
         $query[] = " {$seed->table_name}.{$meta['date_field']} > '$query_date'"; //Add date filter
-        $query[] = "{$seed->table_name}.assigned_user_id = '{$GLOBALS['current_user']->id}' "; //Add assigned user filter
+        $query[] = "{$seed->table_name}.assigned_user_id = '{\SpiceCRM\includes\authentication\AuthenticationController::getInstance()->getCurrentUser()->id}' "; //Add assigned user filter
         if(is_array($meta['status_field']))
         {
             foreach ($meta['status'] as $field)
-                $query[] = "{$seed->table_name}.{$meta['status_field']} {$meta['status_opp']} '".$GLOBALS['db']->quote($field)."' ";
+                $query[] = "{$seed->table_name}.{$meta['status_field']} {$meta['status_opp']} '". DBManagerFactory::getInstance()->quote($field)."' ";
         }
         else
-            $query[] = "{$seed->table_name}.{$meta['status_field']} {$meta['status_opp']} '".$GLOBALS['db']->quote($meta['status'])."' ";
+            $query[] = "{$seed->table_name}.{$meta['status_field']} {$meta['status_opp']} '". DBManagerFactory::getInstance()->quote($meta['status'])."' ";
 
         return implode(" AND ",$query);
     }
@@ -396,11 +402,11 @@ class SugarWebServiceUtilv3 extends SoapHelperWebServices {
      */
     function format_upcoming_activities_entries($list,$date_field)
     {
-        $results = array();
+        $results = [];
         foreach ($list as $bean)
         {
-            $results[] = array('id' => $bean->id, 'module' => $bean->module_dir,'date_due' => $bean->$date_field,
-                                'summary' => $bean->get_summary_text() );
+            $results[] = ['id' => $bean->id, 'module' => $bean->module_dir,'date_due' => $bean->$date_field,
+                                'summary' => $bean->get_summary_text()];
         }
 
         return $results;

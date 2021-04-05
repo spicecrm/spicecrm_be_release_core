@@ -4,21 +4,18 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
+class ComposerStaticInit91604407326b7423faa9c75e3a2ce1a1
 {
     public static $files = array (
-        'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
-        '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
-        'ddc0a4d7e61c0286f0f8593b1903e894' => __DIR__ . '/..' . '/clue/stream-filter/src/functions.php',
-        '8cff32064859f4559445b89279f3199c' => __DIR__ . '/..' . '/php-http/message/src/filters.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
-        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
+        '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
+        '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
+        '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
+        'e39a8b23c42d4e1452234d762b03835a' => __DIR__ . '/..' . '/ramsey/uuid/src/functions.php',
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
-        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
-        '3f8bdd3b35094c73a26f0106e3c0f8b2' => __DIR__ . '/..' . '/sendgrid/sendgrid/lib/SendGrid.php',
-        '9dda55337a76a24e949fbcc5d905a2c7' => __DIR__ . '/..' . '/sendgrid/sendgrid/lib/helpers/mail/Mail.php',
-        '5d7e2090c9a3b69b2ff2fceddeadca94' => __DIR__ . '/..' . '/sendgrid/sendgrid/lib/helpers/contacts/Recipients.php',
-        '04a9a7b26fb79fbd712347cc9bc9d9be' => __DIR__ . '/..' . '/sendgrid/sendgrid/lib/helpers/stats/Stats.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        'b33e3d135e5d9e47d845c576147bda89' => __DIR__ . '/..' . '/php-di/php-di/src/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -31,68 +28,66 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
             'jamesiarmes\\PhpNtlm\\' => 20,
             'jamesiarmes\\PhpEws\\' => 19,
         ),
-        'W' => 
-        array (
-            'Webmozart\\Assert\\' => 17,
-        ),
         'S' => 
         array (
+            'Symfony\\Polyfill\\Php80\\' => 23,
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Component\\Yaml\\' => 23,
-            'Symfony\\Component\\OptionsResolver\\' => 34,
+            'Svg\\' => 4,
             'SpiceCRM\\modules\\' => 17,
             'SpiceCRM\\includes\\' => 18,
+            'SpiceCRM\\data\\' => 14,
             'SpiceCRM\\custom\\modules\\' => 24,
             'SpiceCRM\\custom\\includes\\' => 25,
+            'SpiceCRM\\custom\\' => 16,
             'SpiceCRM\\KREST\\' => 15,
+            'Slim\\Psr7\\' => 10,
             'Slim\\' => 5,
-            'SendGrid\\' => 9,
         ),
         'R' => 
         array (
             'Ramsey\\Uuid\\' => 12,
+            'Ramsey\\Collection\\' => 18,
         ),
         'P' => 
         array (
             'Psr\\Log\\' => 8,
+            'Psr\\Http\\Server\\' => 16,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
+            'PhpDocReader\\' => 13,
+        ),
+        'O' => 
+        array (
+            'Opis\\Closure\\' => 13,
         ),
         'I' => 
         array (
-            'Interop\\Container\\' => 18,
-            'IXR\\' => 4,
+            'Invoker\\' => 8,
         ),
         'H' => 
         array (
-            'Http\\Promise\\' => 13,
-            'Http\\Message\\MultipartStream\\' => 29,
-            'Http\\Message\\' => 13,
-            'Http\\Discovery\\' => 15,
-            'Http\\Client\\Curl\\' => 17,
-            'Http\\Client\\Common\\' => 19,
-            'Http\\Client\\' => 12,
             'Hfig\\MAPI\\' => 10,
         ),
         'G' => 
         array (
-            'GuzzleHttp\\Psr7\\' => 16,
-            'GuzzleHttp\\Promise\\' => 19,
-            'GuzzleHttp\\' => 11,
             'Giggsey\\Locale\\' => 15,
         ),
         'F' => 
         array (
             'FontLib\\' => 8,
+            'Fig\\Http\\Message\\' => 17,
             'FastRoute\\' => 10,
         ),
         'D' => 
         array (
             'Dompdf\\' => 7,
+            'DI\\' => 3,
         ),
-        'C' => 
+        'B' => 
         array (
-            'Clue\\StreamFilter\\' => 18,
+            'Brick\\Math\\' => 11,
         ),
     );
 
@@ -109,9 +104,13 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/..' . '/php-ews/php-ews/src',
         ),
-        'Webmozart\\Assert\\' => 
+        'Symfony\\Polyfill\\Php80\\' => 
         array (
-            0 => __DIR__ . '/..' . '/webmozart/assert/src',
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
+        ),
+        'Symfony\\Polyfill\\Mbstring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
         ),
         'Symfony\\Polyfill\\Ctype\\' => 
         array (
@@ -121,9 +120,9 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
         ),
-        'Symfony\\Component\\OptionsResolver\\' => 
+        'Svg\\' => 
         array (
-            0 => __DIR__ . '/..' . '/symfony/options-resolver',
+            0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src/Svg',
         ),
         'SpiceCRM\\modules\\' => 
         array (
@@ -133,6 +132,10 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/../..' . '/include',
         ),
+        'SpiceCRM\\data\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/data',
+        ),
         'SpiceCRM\\custom\\modules\\' => 
         array (
             0 => __DIR__ . '/../..' . '/custom/modules',
@@ -141,90 +144,63 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/../..' . '/custom/include',
         ),
+        'SpiceCRM\\custom\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/custom',
+        ),
         'SpiceCRM\\KREST\\' => 
         array (
             0 => __DIR__ . '/../..' . '/KREST',
         ),
-        'SpiceCRM\\custom\\KREST\\' =>
+        'Slim\\Psr7\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/custom/KREST',
+            0 => __DIR__ . '/..' . '/slim/psr7/src',
         ),
         'Slim\\' => 
         array (
             0 => __DIR__ . '/..' . '/slim/slim/Slim',
         ),
-        'SendGrid\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/sendgrid/php-http-client/lib',
-        ),
         'Ramsey\\Uuid\\' => 
         array (
             0 => __DIR__ . '/..' . '/ramsey/uuid/src',
+        ),
+        'Ramsey\\Collection\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/ramsey/collection/src',
         ),
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
+        'Psr\\Http\\Server\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/http-server-handler/src',
+            1 => __DIR__ . '/..' . '/psr/http-server-middleware/src',
+        ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
-        'Interop\\Container\\' => 
+        'PhpDocReader\\' => 
         array (
-            0 => __DIR__ . '/..' . '/container-interop/container-interop/src/Interop/Container',
+            0 => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader',
         ),
-        'IXR\\' => 
+        'Opis\\Closure\\' => 
         array (
-            0 => __DIR__ . '/..' . '/kissifrot/php-ixr/src',
+            0 => __DIR__ . '/..' . '/opis/closure/src',
         ),
-        'Http\\Promise\\' => 
+        'Invoker\\' => 
         array (
-            0 => __DIR__ . '/..' . '/php-http/promise/src',
-        ),
-        'Http\\Message\\MultipartStream\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-http/multipart-stream-builder/src',
-        ),
-        'Http\\Message\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-http/message/src',
-            1 => __DIR__ . '/..' . '/php-http/message-factory/src',
-        ),
-        'Http\\Discovery\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-http/discovery/src',
-        ),
-        'Http\\Client\\Curl\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-http/curl-client/src',
-        ),
-        'Http\\Client\\Common\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-http/client-common/src',
-        ),
-        'Http\\Client\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-http/httplug/src',
+            0 => __DIR__ . '/..' . '/php-di/invoker/src',
         ),
         'Hfig\\MAPI\\' => 
         array (
             0 => __DIR__ . '/..' . '/hfig/mapi/src/MAPI',
-        ),
-        'GuzzleHttp\\Psr7\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
-        ),
-        'GuzzleHttp\\Promise\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
-        ),
-        'GuzzleHttp\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
         'Giggsey\\Locale\\' => 
         array (
@@ -234,6 +210,10 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib',
         ),
+        'Fig\\Http\\Message\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/fig/http-message-util/src',
+        ),
         'FastRoute\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/fast-route/src',
@@ -242,33 +222,22 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
         array (
             0 => __DIR__ . '/..' . '/dompdf/dompdf/src',
         ),
-        'Clue\\StreamFilter\\' => 
+        'DI\\' => 
         array (
-            0 => __DIR__ . '/..' . '/clue/stream-filter/src',
+            0 => __DIR__ . '/..' . '/php-di/php-di/src',
+        ),
+        'Brick\\Math\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/brick/math/src',
         ),
     );
 
     public static $prefixesPsr0 = array (
         'S' => 
         array (
-            'Svg\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src',
-            ),
             'Sabberworm\\CSS' => 
             array (
                 0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/lib',
-            ),
-        ),
-        'P' => 
-        array (
-            'Pimple' => 
-            array (
-                0 => __DIR__ . '/..' . '/pimple/pimple/src',
-            ),
-            'PEAR' => 
-            array (
-                0 => __DIR__ . '/..' . '/pear/pear_exception',
             ),
         ),
         'O' => 
@@ -276,13 +245,6 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
             'OLE' => 
             array (
                 0 => __DIR__ . '/..' . '/pear/ole',
-            ),
-        ),
-        'M' => 
-        array (
-            'Mailgun' => 
-            array (
-                0 => __DIR__ . '/..' . '/mailgun/mailgun-php/src',
             ),
         ),
         'C' => 
@@ -299,22 +261,28 @@ class ComposerStaticInit9961db7456b6021e867a4aee4ea34352
     );
 
     public static $classMap = array (
-        'Cpdf' => __DIR__ . '/..' . '/dompdf/dompdf/lib/Cpdf.php',
+        'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'Dompdf\\Cpdf' => __DIR__ . '/..' . '/dompdf/dompdf/lib/Cpdf.php',
         'HTML5_Data' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Data.php',
         'HTML5_InputStream' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/InputStream.php',
         'HTML5_Parser' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Parser.php',
         'HTML5_Tokenizer' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Tokenizer.php',
         'HTML5_TreeBuilder' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/TreeBuilder.php',
+        'PEAR_Exception' => __DIR__ . '/..' . '/pear/pear_exception/PEAR/Exception.php',
+        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
+        'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
+        'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit9961db7456b6021e867a4aee4ea34352::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit9961db7456b6021e867a4aee4ea34352::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit9961db7456b6021e867a4aee4ea34352::$prefixesPsr0;
-            $loader->fallbackDirsPsr0 = ComposerStaticInit9961db7456b6021e867a4aee4ea34352::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInit9961db7456b6021e867a4aee4ea34352::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit91604407326b7423faa9c75e3a2ce1a1::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit91604407326b7423faa9c75e3a2ce1a1::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit91604407326b7423faa9c75e3a2ce1a1::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInit91604407326b7423faa9c75e3a2ce1a1::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit91604407326b7423faa9c75e3a2ce1a1::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -29,17 +29,59 @@
 use SpiceCRM\includes\RESTManager;
 use SpiceCRM\includes\SpiceDictionary\KREST\controllers\SpiceDictionaryKRESTController;
 
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
-$RESTManager->registerExtension('dictionary', '1.0');
 
-$RESTManager->app->group('/system/dictionary', function () {
-    $this->group('/domains', function () {
-        $this->get('', [new SpiceDictionaryKRESTController(), 'getDomains']);
-        $this->get('/appliststrings', [new SpiceDictionaryKRESTController(), 'getAppListStrings']);
-        $this->post('', [new SpiceDictionaryKRESTController(), 'postDomains']);
-    });
-    $this->group('/definitions', function () {
-        $this->get('', [new SpiceDictionaryKRESTController(), 'getDefinitions']);
-        $this->post('', [new SpiceDictionaryKRESTController(), 'postDefinitions']);
-    });
-});
+/**
+ * routes
+ */
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/system/dictionary/domains',
+        'class'       => SpiceDictionaryKRESTController::class,
+        'function'    => 'getDomains',
+        'description' => 'get domains',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/system/dictionary/domains',
+        'class'       => SpiceDictionaryKRESTController::class,
+        'function'    => 'postDomains',
+        'description' => 'set domains',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/system/dictionary/domains/appliststrings',
+        'class'       => SpiceDictionaryKRESTController::class,
+        'function'    => 'getAppListStrings',
+        'description' => 'get AppListStrings',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/system/dictionary/definitions',
+        'class'       => SpiceDictionaryKRESTController::class,
+        'function'    => 'getDefinitions',
+        'description' => 'get definitions',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/system/dictionary/definitions',
+        'class'       => SpiceDictionaryKRESTController::class,
+        'function'    => 'postDefinitions',
+        'description' => 'post definitions',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+
+];
+
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('dictionary', '1.0', [], $routes);

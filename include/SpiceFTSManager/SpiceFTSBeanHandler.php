@@ -1,23 +1,53 @@
 <?php
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
 
 namespace SpiceCRM\includes\SpiceFTSManager;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\SpicePhoneNumberParser\SpicePhoneNumberParser;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
 
 class SpiceFTSBeanHandler
 {
     var $seed = null;
     var $seedModule = null;
-    var $indexProperties = array();
-    var $indexSettings = array();
-    var $relatedIds = array();
-    var $parentIds = array();
+    var $indexProperties = [];
+    var $indexSettings = [];
+    var $relatedIds = [];
+    var $parentIds = [];
 
     function __construct($bean)
     {
-        global $beanList;
-
         // check if we have a beanname or a bean object being passed in
         if (!is_string($bean)) {
-            $beanModule = array_search($bean->object_name, $beanList);
+            $beanModule = $bean->_module;
             $this->seed = $bean;
             $this->seedModule = $beanModule;
         } else {
@@ -62,9 +92,9 @@ class SpiceFTSBeanHandler
      */
     function normalizeBean()
     {
-        $indexArray = array(
+        $indexArray = [
             '_module' => $this->seedModule
-        );
+        ];
         foreach ($this->indexProperties as $indexProperty) {
             $indexValue = $this->getFieldValue($indexProperty);
             if ($indexValue['fieldvalue'] == '0' || !empty($indexValue['fieldvalue'])) {
@@ -106,7 +136,7 @@ class SpiceFTSBeanHandler
 
                 // handling for phon enumbers
                 if ($indexProperty['phonesearch']) {
-                    $indexArray['_phone'][] = \SpiceCRM\includes\SpicePhoneNumberParser\SpicePhoneNumberParser::convertToE164($indexValue['fieldvalue']);
+                    $indexArray['_phone'][] = SpicePhoneNumberParser::convertToE164($indexValue['fieldvalue']);
                 }
             }
 
@@ -128,8 +158,8 @@ class SpiceFTSBeanHandler
         }
 
         // ACL Controller handling
-        if ($GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'addFTSData')) {
-            $addIndexArray = $GLOBALS['ACLController']->addFTSData($this->seed);
+        if (SpiceACL::getInstance() && method_exists(SpiceACL::getInstance(), 'addFTSData')) {
+            $addIndexArray = SpiceACL::getInstance()->addFTSData($this->seed);
             foreach ($addIndexArray as $indexfield => $indexValue)
                 $indexArray[$indexfield] = $indexValue;
         }
@@ -155,11 +185,11 @@ class SpiceFTSBeanHandler
 
     public function getModuleSearchQuery($searchterm, $addFilters = [])
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-        $searchFields = array();
+        $searchFields = [];
 
-        // $aggregateFields = array();
+        // $aggregateFields = [];
         foreach ($this->indexProperties as $indexProperty) {
             if ($indexProperty['search']) {
                 if ($indexProperty['boost'])
@@ -171,21 +201,21 @@ class SpiceFTSBeanHandler
 
 
         if (count($searchFields) == 0)
-            return array();
+            return [];
 
         if (!empty($searchterm)) {
-            $moduleQuery = array(
-                'bool' => array(
-                    'must' => array(
-                        "multi_match" => array(
+            $moduleQuery = [
+                'bool' => [
+                    'must' => [
+                        "multi_match" => [
                             "query" => "$searchterm",
                             'analyzer' => 'standard',
                             'fields' => $searchFields,
-                        )
+                        ]
 
-                    )
-                )
-            );
+                    ]
+                ]
+            ];
 
 
             if ($this->indexSettings['minimum_should_match'])
@@ -205,8 +235,8 @@ class SpiceFTSBeanHandler
         }
 
         // add ACL Check filters
-        if (!$current_user->is_admin && $GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'getFTSQuery')) {
-            $aclFilters = $GLOBALS['ACLController']->getFTSQuery($this->seedModule);
+        if (!$current_user->is_admin && SpiceACL::getInstance() && method_exists(SpiceACL::getInstance(), 'getFTSQuery')) {
+            $aclFilters = SpiceACL::getInstance()->getFTSQuery($this->seedModule);
             if (count($aclFilters) > 0) {
                 // do not write empty entries
                 if (isset($aclFilters['should']) && count($aclFilters['should']) >= 1) {
@@ -238,7 +268,7 @@ class SpiceFTSBeanHandler
 
     private function getFieldValue($indexproperty)
     {
-        global $sugar_config;
+        
 
         $pathRecords = explode('::', $indexproperty['path']);
         $valueBean = null;
@@ -253,7 +283,7 @@ class SpiceFTSBeanHandler
                     break;
                 case 'link':
                     $fieldName = isset($indexproperty['indexedname']) ?: (!empty($fieldName) ? $fieldName . '->' . $pathRecordDetails[2] : $pathRecordDetails[2]);
-                    $beans = array();
+                    $beans = [];
                     if (is_array($valueBean)) {
                         foreach ($valueBean as $thisValueBean) {
                             $thisValueBean->load_relationship($pathRecordDetails[2]);
@@ -295,7 +325,7 @@ class SpiceFTSBeanHandler
                 case 'field':
                     $fieldName = isset($indexproperty['indexedname']) ? $indexproperty['indexedname'] : (!empty($fieldName) ? $fieldName . '->' . $pathRecordDetails[1] : $pathRecordDetails[1]);
                     if (is_array($valueBean)) {
-                        $valArray = array();
+                        $valArray = [];
                         foreach ($valueBean as $thisValueBean) {
                             // BEGIN CR1000343 handle function: enrich value for bean property before it is processed for indexing
                             if (isset($indexproperty['function'])) {
@@ -324,10 +354,10 @@ class SpiceFTSBeanHandler
             }
         }
 
-        return array(
+        return [
             'fieldname' => $fieldName,
             'fieldvalue' => $fieldValue
-        );
+        ];
     }
 
     /**
@@ -389,14 +419,14 @@ class SpiceFTSBeanHandler
 
     public function mapModule()
     {
-        global $sugar_config;
+        
         $indexProperties = SpiceFTSUtils::getBeanIndexProperties($this->seedModule, true);
-        $properties = array(
+        $properties = [
             '_module' => [
                 'type' => 'keyword',
                 'index' => false
             ]
-        );
+        ];
 
         // if we have a phone searc enabled add a _phone field
         if ($this->indexSettings['phonesearch']) {
@@ -407,9 +437,9 @@ class SpiceFTSBeanHandler
         }
 
         foreach (SpiceFTSUtils::$standardFields as $standardField => $standardFieldData) {
-            $properties[$standardField] = array(
+            $properties[$standardField] = [
                 'type' => $standardFieldData['type'] ?: 'text',
-            );
+            ];
 
             if ($standardFieldData['format'])
                 $properties[$standardField]['format'] = $standardFieldData['format'];
@@ -420,19 +450,19 @@ class SpiceFTSBeanHandler
             }
 
             if ($standardFieldData['enablesort'] || $standardFieldData['suggest'] || ($standardFieldData['duplicatecheck'] && $standardFieldData['duplicatequery'] == 'term')) {
-                $properties[$standardField]['fields']['raw'] = array(
+                $properties[$standardField]['fields']['raw'] = [
                     'type' => $standardFieldData['indextype'] && $standardFieldData['indextype'] != 'text' ? $standardFieldData['indextype'] : 'keyword',
                     'index' => true
-                );
+                ];
                 if ($standardFieldData['indextype'] == 'keyword') {
                     $properties[$standardField]['fields']['raw']['normalizer'] = 'spice_lowercase';
                 }
 
                 // add a sepoarate field for the suggester to have an autocomplete
                 if ($standardFieldData['suggest']) {
-                    $properties[$standardField]['fields']['suggester'] = array(
+                    $properties[$standardField]['fields']['suggester'] = [
                         'type' => 'completion'
-                    );
+                    ];
                 }
 
                 if ($properties[$standardField]['fields']['raw']['type'] == 'date')
@@ -441,10 +471,10 @@ class SpiceFTSBeanHandler
 
             // add separate field for the aggregates
             if (!empty($standardFieldData['aggregate'])) {
-                $properties[$standardField]['fields']['agg'] = array(
+                $properties[$standardField]['fields']['agg'] = [
                     'type' => $standardFieldData['indextype'] && $standardFieldData['indextype'] != 'text' ? $standardFieldData['indextype'] : 'keyword',
                     'index' => true
-                );
+                ];
 
                 if ($properties[$standardField]['fields']['agg']['type'] == 'date')
                     $properties[$standardField]['fields']['agg']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
@@ -455,23 +485,23 @@ class SpiceFTSBeanHandler
             $this->mapIndexProperty($indexProperty, $properties);
         }
 
-        $seed = \BeanFactory::getBean($this->seedModule);
+        $seed = BeanFactory::getBean($this->seedModule);
         if (method_exists($seed, 'add_fts_metadata')) {
             $addFields = $seed->add_fts_metadata();
             if (is_array($addFields) && count($addFields) > 0) {
                 foreach ($addFields as $addFieldName => $addField) {
-                    $properties[$addFieldName] = array(
+                    $properties[$addFieldName] = [
                         'type' => $addField['type'],
                         'index' => $addField['index'] ?: false
-                    );
+                    ];
 
                     if ($addField['enablesort']) {
-                        $properties[$addFieldName]['fields']['raw'] = array(
+                        $properties[$addFieldName]['fields']['raw'] = [
                             'type' => $addField['type'] && $addField['type'] != 'keyword' ? $addField['type'] : 'keyword',
                             //'type' =>  'keyword',
                             //'normalizer' => 'spice_lowercase',
                             'index' => true
-                        );
+                        ];
                         if ($addField['type'] == 'keyword') {
                             $properties[$addFieldName]['fields']['raw']['normalizer'] = 'spice_lowercase';
                         }
@@ -482,10 +512,10 @@ class SpiceFTSBeanHandler
 
                     // separate handling for the aggregates
                     if (!empty($addField['aggregate'])) {
-                        $properties[$addFieldName]['fields']['agg'] = array(
+                        $properties[$addFieldName]['fields']['agg'] = [
                             'type' => $addField['type'] && $addField['type'] != 'text' ? $addField['type'] : 'keyword',
                             'index' => true
-                        );
+                        ];
 
                         if ($properties[$addFieldName]['fields']['agg']['type'] == 'date')
                             $properties[$addFieldName]['fields']['agg']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
@@ -503,14 +533,14 @@ class SpiceFTSBeanHandler
 
     private function mapIndexProperty($indexProperty, &$properties)
     {
-        $fieldParams = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getFieldIndexParams(\BeanFactory::getBean($this->seedModule), $indexProperty['path']);
+        $fieldParams = SpiceFTSUtils::getFieldIndexParams(BeanFactory::getBean($this->seedModule), $indexProperty['path']);
 
         $indexFieldName = $indexProperty['indexfieldname'];
 
-        $properties[$indexFieldName] = array(
+        $properties[$indexFieldName] = [
             'type' => $indexProperty['indextype'] ?: 'text',
             'index' => true
-        );
+        ];
 
 
         if ($indexProperty['analyzer']) {
@@ -525,10 +555,10 @@ class SpiceFTSBeanHandler
         if ($properties[$indexFieldName]['type'] == 'date') $properties[$indexFieldName]['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
 
         if ($indexProperty['indextype'] !== 'date' && ($indexProperty['enablesort'] || $indexProperty['suggest'] || ($indexProperty['duplicatecheck'] && $indexProperty['duplicatequery'] == 'term'))) {
-            $properties[$indexFieldName]['fields']['raw'] = array(
+            $properties[$indexFieldName]['fields']['raw'] = [
                 'type' => $indexProperty['indextype'] && $indexProperty['indextype'] != 'text' ? $indexProperty['indextype'] : 'keyword',
                 'index' => true
-            );
+            ];
 
             // for enum type fields resp string and eyaword .. swicth raw to lowercase .. enabling proper sort
             if ($fieldParams['type'] != 'enum' && $fieldParams['type'] != 'multienum' && $indexProperty['indextype'] == 'keyword') {
@@ -542,10 +572,10 @@ class SpiceFTSBeanHandler
 
         // separate handling for the aggregates
         if (!empty($indexProperty['aggregate'])) {
-            $properties[$indexFieldName]['fields']['agg'] = array(
+            $properties[$indexFieldName]['fields']['agg'] = [
                 'type' => $indexProperty['indextype'] && $indexProperty['indextype'] != 'text' ? $indexProperty['indextype'] : 'keyword',
                 'index' => true
-            );
+            ];
 
             // force date format for date fields
             if ($properties[$indexFieldName]['fields']['agg']['type'] == 'date') $properties[$indexFieldName]['fields']['agg']['format'] = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
@@ -559,31 +589,31 @@ class SpiceFTSBeanHandler
     {
         switch ($indexProperty['activitytype']) {
             case 'activitydate':
-                $properties['_activitydate'] = array(
+                $properties['_activitydate'] = [
                     'type' => 'date',
                     "index" => true,
                     'format' => "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
-                );
+                ];
                 break;
             case 'activityenddate':
-                $properties['_activityenddate'] = array(
+                $properties['_activityenddate'] = [
                     'type' => 'date',
                     "index" => true,
                     'format' => "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
-                );
+                ];
                 break;
             case 'activityparentid':
-                $properties['_activityparentids'] = array(
+                $properties['_activityparentids'] = [
                     'type' => 'keyword',
                     "index" => true
-                );
+                ];
                 break;
 
             case 'activityparticipant':
-                $properties['_activityparticipantids'] = array(
+                $properties['_activityparticipantids'] = [
                     'type' => 'keyword',
                     "index" => true
-                );
+                ];
                 break;
         }
     }

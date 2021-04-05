@@ -1,6 +1,6 @@
 <?php
-$elasticTokenizers = array(
-    "spice_standard_all" => array(
+$elasticTokenizers = [
+    "spice_standard_all" => [
         "type" => "standard",
         "min_gram" => "3",
         "max_gram" => "20",
@@ -11,8 +11,8 @@ $elasticTokenizers = array(
             "symbol",
             "whitespace"
         ],
-    ),
-    "spice_ngram" => array(
+    ],
+    "spice_ngram" => [
         "type" => "nGram",
         "min_gram" => "3",
         "max_gram" => "20",
@@ -20,8 +20,8 @@ $elasticTokenizers = array(
             "letter",
             "digit"
         ]
-    ),
-    "spice_ngram_all" => array(
+    ],
+    "spice_ngram_all" => [
         "type" => "nGram",
         "min_gram" => "3",
         "max_gram" => "20",
@@ -34,8 +34,8 @@ $elasticTokenizers = array(
             "custom"
         ],
         "custom_token_chars" => "+&"
-    ),
-    "spice_ngram_all_search" => array(
+    ],
+    "spice_ngram_all_search" => [
         "type" => "nGram",
         "min_gram" => "3",
         "max_gram" => "20",
@@ -47,8 +47,8 @@ $elasticTokenizers = array(
             "custom"
         ],
         "custom_token_chars" => "+&"
-    ),
-    "spice_edgengram" => array(
+    ],
+    "spice_edgengram" => [
         "type" => "edge_ngram",
         "min_gram" => "3",
         "max_gram" => "20",
@@ -56,9 +56,9 @@ $elasticTokenizers = array(
             "letter",
             "digit"
         ]
-    ),
-    "spice_email" => array(
+    ],
+    "spice_email" => [
         "type" => "uax_url_email",
         "max_token_length" => 5
-    )
-);
+    ]
+];

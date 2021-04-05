@@ -1,5 +1,8 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\Employees;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\SugarObjects\templates\person\Person;
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -43,9 +46,6 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * Contributor(s): ______________________________________..
  ********************************************************************************/
 
-
-require_once('include/SugarObjects/templates/person/Person.php');
-
 // Employee is used to store customer information.
 class Employee extends Person {
 
@@ -56,7 +56,7 @@ class Employee extends Person {
 
 	function __construct() {
 		parent::__construct();
-		$this->emailAddress = new SugarEmailAddress();
+		$this->emailAddress = BeanFactory::getBean('EmailAddresses');
 	}
 
     /**

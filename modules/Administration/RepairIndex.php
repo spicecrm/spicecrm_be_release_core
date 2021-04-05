@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,12 +34,15 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\Accounts\Account;
 
 ///////////////////////////////////////////////////////////////////////////////
 ////	LOCAL UTILITY
 function compare($table_name, $db_indexes, $var_indexes) {
 	global $add_index, $drop_index, $change_index;
-	if(empty($change_index))$change_index = array();
+	if(empty($change_index))$change_index = [];
 	foreach ($var_indexes as $var_i_name=>$var_i_def) {
 		//find corresponding db index with same name
 		//else by columns in the index.
@@ -69,20 +71,20 @@ function compare($table_name, $db_indexes, $var_indexes) {
 
 		//no matching index in database.
 		if(empty($sel_db_index)) {
-			$add_index[]=$GLOBALS['db']->add_drop_constraint($table_name,$var_i_def);
+			$add_index[]= DBManagerFactory::getInstance()->add_drop_constraint($table_name,$var_i_def);
 			continue;
 		}
 		if(!$field_list_match) {
 			//drop the db index and create new index based on vardef
-			$drop_index[]=$GLOBALS['db']->add_drop_constraint($table_name,$sel_db_index,true);
-			$add_index[]=$GLOBALS['db']->add_drop_constraint($table_name,$var_i_def);
+			$drop_index[]= DBManagerFactory::getInstance()->add_drop_constraint($table_name,$sel_db_index,true);
+			$add_index[]= DBManagerFactory::getInstance()->add_drop_constraint($table_name,$var_i_def);
 			continue;
 		}
 		//check for name match.
 		//it should not occur for indexes of type primary or unique.
 		if( $var_i_def['type'] != 'primary' and $var_i_def['type'] != 'unique' and $var_i_def['name'] != $sel_db_index['name']) {
 			//rename index.
-			$rename=$GLOBALS['db']->renameIndexDefs($sel_db_index,$var_i_def,$table_name);
+			$rename= DBManagerFactory::getInstance()->renameIndexDefs($sel_db_index,$var_i_def,$table_name);
 			if(is_array($rename)) {
 				$change_index=array_merge($change_index,$rename);
 			} else {
@@ -105,15 +107,16 @@ set_time_limit(3600);
  */
 if(!isset($_REQUEST['silent'])) $_REQUEST['silent'] = false;
 
-$add_index=array();
-$drop_index=array();
-$change_index=array();
+$add_index=[];
+$drop_index=[];
+$change_index=[];
 
-global $current_user, $beanFiles, $dictionary, $sugar_config, $mod_strings;;
+global $beanFiles, $dictionary,  $mod_strings;;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
 include_once ('include/database/DBManager.php');
 
 $db = DBManagerFactory::getInstance();
-$processed_tables=array();
+$processed_tables=[];
 
 ///////////////////////////////////////////////////////////////////////////////
 ////	PROCESS MODULE BEANS
@@ -134,12 +137,12 @@ foreach ($beanFiles as $beanname=>$beanpath) {
 	if(!empty($dictionary[$focus->object_name]['indices'])) {
 		$indices=$dictionary[$focus->object_name]['indices'];
 	} else {
-		$indices=array();
+		$indices=[];
 	}
 
 	//clean vardef defintions.. removed indexes not value for this dbtype.
 	//set index name as the key.
-	$var_indices=array();
+	$var_indices=[];
 	foreach ($indices as $definition) {
 		//database helpers do not know how to handle full text indices
 		if ($definition['type']=='fulltext') {
@@ -165,12 +168,12 @@ foreach ($dictionary as $rel=>$rel_def) {
 	if(!empty($rel_def['indices'])) {
 		$indices=$rel_def['indices'];
 	} else {
-		$indices=array();
+		$indices=[];
 	}
 
 	//clean vardef defintions.. removed indexes not value for this dbtype.
 	//set index name as the key.
-	$var_indices=array();
+	$var_indices=[];
 	foreach ($indices as $definition) {
 		if(empty($definition['db']) or $definition['db'] == $focus->db->dbType) {
 			$var_indices[$definition['name']] = $definition;

@@ -18,11 +18,11 @@ class DependencySet {
         $container->register('mime.headerfactory')
             ->asNewInstanceOf(HeaderFactory::class)
             ->withDependencies([
-                'email.validator',
                 'mime.qpheaderencoder',
                 'mime.rfc2231encoder',
+                'email.validator',
                 'properties.charset',
-//                'address.idnaddressencoder',
+                'address.idnaddressencoder',
             ]);
 
         $registered = true;

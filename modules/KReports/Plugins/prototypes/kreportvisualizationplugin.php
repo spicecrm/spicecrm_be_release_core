@@ -14,7 +14,6 @@
 
 
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 
 /*
@@ -56,7 +55,7 @@ class kreportvisualizationplugin {
      *              want to select this properly in your visualization
      * $addReportParams: Additional Report Params passed to the Query
      */
-    public function getItemUpdate($thisReport, $thisParams, $snaphotid = 0, $addReportParams = array()) {
+    public function getItemUpdate($thisReport, $thisParams, $snaphotid = 0, $addReportParams = []) {
         return '';
     }
     /*
@@ -70,7 +69,7 @@ class kreportvisualizationplugin {
      * $thisParams: the Vis Obnject params extracted from the vis manager
      * $addReportParams: Additional Report Params passed to the Query
      */
-    public function getItem($thisDivId, $thisReport, $thisParams, $addReportParams = array()) {
+    public function getItem($thisDivId, $thisReport, $thisParams, $addReportParams = []) {
         return '';
     }
     

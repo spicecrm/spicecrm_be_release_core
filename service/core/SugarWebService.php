@@ -43,8 +43,8 @@
  */
 abstract class SugarWebService{
 	protected $server = null;
-	protected $excludeFunctions = array();
-	abstract function register($excludeFunctions = array());
+	protected $excludeFunctions = [];
+	abstract function register($excludeFunctions = []);
 	abstract function registerImplClass($class);
 	abstract function getRegisteredImplClass();
 	abstract function registerClass($class);

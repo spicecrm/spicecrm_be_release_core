@@ -2,14 +2,19 @@
 
 namespace SpiceCRM\includes\SpiceBeanGuides;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use stdClass;
+
 class SpiceBeanGuideRestHandler
 {
 
     public function getStageDefs($module)
     {
-        global $db, $current_language;
+        global $current_language;
+$db = DBManagerFactory::getInstance();
 
-        $focus = \BeanFactory::getBean($module);
+        $focus = BeanFactory::getBean($module);
 
         // get the object
         // get the object
@@ -22,7 +27,7 @@ class SpiceBeanGuideRestHandler
 
         // get the sales stages
         $stagesObj = $db->query("SELECT st.*, stt.stage_name, stt.stage_secondaryname, stt.stage_description FROM spicebeanguidestages st , spicebeanguidestages_texts stt WHERE st.spicebeanguide_id = '" . $object['id'] . "' AND st.id = stt.stage_id AND stt.language = '$current_language' ORDER BY st.stage_sequence");
-        $stages = array();
+        $stages = [];
         $stagePassed = false;
         while ($stage = $db->fetchByAssoc($stagesObj)) {
             // set the stage - for multi stage take the first or the one that is active if it is not the first
@@ -32,31 +37,32 @@ class SpiceBeanGuideRestHandler
 
 
                 // perform checks
-                $stages[$stage['stage']]['checks'] = array();
+                $stages[$stage['stage']]['checks'] = [];
                 $stages[$stage['stage']]['checkcontent'] = '';
             }
         }
 
-        $retStages = array();
+        $retStages = [];
         foreach ($stages as $stage => $stageData) {
             $retStages[] = $stageData;
         }
 
-        return array(
+        return [
             'statusfield' => $object['status_field'],
             'stages' => $retStages
-        );
+        ];
     }
 
 
     public function getStages($module, $beanid = '')
     {
-        global $db, $current_language;
+        global $current_language;
+$db = DBManagerFactory::getInstance();
 
         if (!empty($beanid))
-            $focus = \BeanFactory::getBean($module, $beanid);
+            $focus = BeanFactory::getBean($module, $beanid);
         else
-            $focus = \BeanFactory::getBean($module);
+            $focus = BeanFactory::getBean($module);
 
         // get the object
         $object = $db->fetchByAssoc($db->query("SELECT * FROM spicebeancustomguides WHERE module='$module'"));
@@ -70,7 +76,7 @@ class SpiceBeanGuideRestHandler
         $stagesObj = $db->query("SELECT st.*, stt.stage_name, stt.stage_secondaryname, stt.stage_description FROM spicebeanguidestages st LEFT JOIN spicebeanguidestages_texts stt ON st.id = stt.stage_id AND stt.language = '$current_language' WHERE st.spicebeanguide_id = '" . $object['id'] . "' ORDER BY st.stage_sequence");
 
 
-        $stages = array();
+        $stages = [];
         $stagePassed = false;
         while ($stage = $db->fetchByAssoc($stagesObj)) {
             // set the stage - for multi stage take the first or the one that is active if it is not the first
@@ -82,7 +88,7 @@ class SpiceBeanGuideRestHandler
                 $stages[$stage['stage']]['statusfield'] = $object['status_field'];
 
                 // perform checks
-                $stages[$stage['stage']]['checks'] = array();
+                $stages[$stage['stage']]['checks'] = [];
                 $stages[$stage['stage']]['checkcontent'] = '';
                 $checks = $db->query("SELECT sc.*, sct.text FROM spicebeanguidestages_checks sc LEFT JOIN spicebeanguidestages_check_texts sct on sc.id = sct.stage_check_id AND sct.language='$current_language' WHERE sc.spicebeanguide_id = '" . $object['id'] . "' AND sc.stage_id = '" . $stage['id'] . "' ORDER BY sc.check_sequence");
 //                if (!empty($beanid)) {
@@ -105,23 +111,23 @@ class SpiceBeanGuideRestHandler
                     }
 
                     // prepare results
-                    $stages[$stage['stage']]['checks'][] = array(
+                    $stages[$stage['stage']]['checks'][] = [
                         'checkid' => $check['id'],
                         'name' => $check['text'],
                         'label' => $check['check_label'],
                         'result' => $checkResult
-                    );
+                    ];
                     // END
                 }
             }
         }
 
-        $retStages = array();
+        $retStages = [];
         foreach ($stages as $stage => $stageData) {
-            $retStages[] = array(
+            $retStages[] = [
                 'stage' => $stage,
                 'stagedata' => $stageData
-            );
+            ];
         }
         return $retStages;
     }
@@ -131,7 +137,7 @@ class SpiceBeanGuideRestHandler
      * return results for stage check;
      * @param $method
      * @param $params
-     * @return \stdClass
+     * @return stdClass
      */
     public function runCheckResults($method, $params){
         $checkResult = false;

@@ -1,27 +1,28 @@
 <?php
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$dictionary['CampaignTask'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['CampaignTask'] = [
     'table' => 'campaigntasks',
     'comment' => 'CampaignTasks Module',
     'audited' => true,
     'duplicate_merge' => false,
     'unified_search' => false,
-    'fields' => array(
-        'start_date' => array(
+    'fields' => [
+        'start_date' => [
             'name' => 'start_date',
             'vname' => 'LBL_DATE_START',
             'type' => 'date',
             'audited' => true
-        ),
-        'end_date' => array(
+        ],
+        'end_date' => [
             'name' => 'end_date',
             'vname' => 'LBL_DATE_END',
             'type' => 'date',
             'audited' => true
-        ),
-        'status' => array(
+        ],
+        'status' => [
             'name' => 'status',
             'vname' => 'LBL_STATUS',
             'type' => 'enum',
@@ -29,14 +30,14 @@ $dictionary['CampaignTask'] = array(
             'len' => 100,
             'audited' => true,
             'required' => true
-        ),
-        'activated' => array(
+        ],
+        'activated' => [
             'name' => 'activated',
             'vname' => 'LBL_ACTIVATED',
             'type' => 'bool',
             'audited' => true
-        ),
-        'campaigntask_type' => array(
+        ],
+        'campaigntask_type' => [
             'name' => 'campaigntask_type',
             'vname' => 'LBL_TYPE',
             'type' => 'enum',
@@ -44,7 +45,7 @@ $dictionary['CampaignTask'] = array(
             'len' => 100,
             'audited' => true,
             'required' => true
-        ),
+        ],
         'campaign_id' => [
             'name' => 'campaign_id',
             'vname' => 'LBL_CAMPAIGN_ID',
@@ -64,15 +65,15 @@ $dictionary['CampaignTask'] = array(
             'len' => '255',
             'source' => 'non-db'
         ],
-        'campaigns' => array(
+        'campaigns' => [
             'name' => 'campaigns',
             'type' => 'link',
             'relationship' => 'campaign_campaigntasks',
             'source' => 'non-db',
             'module' => 'Campaigns'
-        ),
+        ],
         'email_template_name' =>
-            array(
+            [
                 'name' => 'email_template_name',
                 'rname' => 'name',
                 'id_name' => 'email_template_id',
@@ -85,80 +86,80 @@ $dictionary['CampaignTask'] = array(
                 'link' => 'emailtemplates',
                 'len' => '255',
                 'source' => 'non-db',
-            ),
-        'emailtemplates' => array(
+            ],
+        'emailtemplates' => [
             'name' => 'emailtemplates',
             'type' => 'link',
             'relationship' => 'campaigntask_email_template',
             'source' => 'non-db',
             'module' => 'EmailTemaplates'
-        ),
-        'email_template_id' => array(
+        ],
+        'email_template_id' => [
             'name' => 'email_template_id',
             'vname' => 'LBL_EMAILTEMPLATE_ID',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'mailbox_id' => array(
+        ],
+        'mailbox_id' => [
             'name' => 'mailbox_id',
             'vname' => 'LBL_MAILBOX',
             'type' => 'mailbox',
             'dbtype' => 'varchar',
             'len' => 36
-        ),
-        'objective' => array(
+        ],
+        'objective' => [
             'name' => 'objective',
             'vname' => 'LBL_OBJECTIVE',
             'type' => 'text'
-        ),
-        'content' => array(
+        ],
+        'content' => [
             'name' => 'content',
             'vname' => 'LBL_CONTENT',
             'type' => 'text'
-        ),
-        'ext_id' => array (
+        ],
+        'ext_id' => [
             'name' => 'ext_id',
             'vname' => 'LBL_EXT_ID',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        'mailing_id' => array (
+        ],
+        'mailing_id' => [
             'name' => 'mailing_id',
             'vname' => 'LBL_MAILING_ID',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        'prospectlists' => array(
+        ],
+        'prospectlists' => [
             'name' => 'prospectlists',
             'vname' => 'LBL_PROSPECTLISTS',
             'type' => 'link',
             'relationship' => 'prospect_list_campaigntasks',
             'source' => 'non-db'
-        ),
-        'log_entries' => array(
+        ],
+        'log_entries' => [
             'name' => 'log_entries',
             'type' => 'link',
             'relationship' => 'campaigntask_campaignlog',
             'source' => 'non-db',
             'module' => 'CampaignLog',
             'vname' => 'LBL_LOG_ENTRIES',
-        ),
-        'calls' => array(
+        ],
+        'calls' => [
             'name' => 'calls',
             'type' => 'link',
             'vname' => 'LBL_CALLS',
             'relationship' => 'calls_campaigntasks',
             'source' => 'non-db',
             'module' => 'Calls'
-        ),
-        'eventregistrations' => array(
+        ],
+        'eventregistrations' => [
             'name' => 'eventregistrations',
             'vname' => 'LBL_EVENTREGISTRATOINS_LINK',
             'type' => 'link',
             'module' => 'EventRegistrations',
             'relationship' => 'eventregistration_campaigntask_rel',
             'source' => 'non-db',
-        ),
+        ],
         'email_subject' => [
             'name' => 'email_subject',
             'vname' => 'LBL_SUBJECT',
@@ -173,19 +174,19 @@ $dictionary['CampaignTask'] = array(
             'stylesheet_id_field' => 'email_stylesheet_id',
             'comment' => 'the body when an email is composed right in the campaigntask'
         ],
-        'email_spb' => array(
+        'email_spb' => [
             'name' => 'email_spb',
             'vname' => 'LBL_EMAIL_SPB',
             'type' => 'json',
             'dbType' => 'text',
             'comment' => 'save the json structure of the page builder'
-        ),
-        'via_spb' => array(
+        ],
+        'via_spb' => [
             'name' => 'via_spb',
             'vname' => 'LBL_VIA_SPICE_PAGE_BUILDER',
             'type' => 'bool',
             'comment' => 'True when the body is designed via the spice page builder'
-        ),
+        ],
         'email_stylesheet_id' => [
             'name' => 'email_stylesheet_id',
             'vname' => 'LBL_STYLESHEET',
@@ -231,8 +232,8 @@ $dictionary['CampaignTask'] = array(
             'link_type'    => 'one',
             'source'       => 'non-db'
         ]
-    ),
-    'relationships' => array(
+    ],
+    'relationships' => [
         'campaign_campaigntasks' => [
             'lhs_module' => 'Campaigns',
             'lhs_table' => 'campaigns',
@@ -269,8 +270,8 @@ $dictionary['CampaignTask'] = array(
             'rhs_key' => 'questionnaire_id',
             'relationship_type' => 'one-to-many'
         ]
-    ),
-    'indices' => array()
-);
+    ],
+    'indices' => []
+];
 
-VardefManager::createVardef('CampaignTasks', 'CampaignTask', array('default', 'assignable'));
+VardefManager::createVardef('CampaignTasks', 'CampaignTask', ['default', 'assignable']);

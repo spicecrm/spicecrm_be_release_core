@@ -29,26 +29,28 @@
 
 namespace SpiceCRM\includes\SpiceDuns\KREST\controllers;
 
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 class SpiceDunsKRESTController{
 
     static function getDuns($req, $res, $args) {
-        global $sugar_config;
+
 
         $api_class = '\SpiceCRM\includes\SpiceDuns\SpiceDuns';
         // check on API to use
-        if(isset($sugar_config['duns']['api_class']) && !empty($sugar_config['duns']['api_class'])){
-            $api_class = $sugar_config['duns']['api_class'];
+        if(isset(SpiceConfig::getInstance()->config['duns']['api_class']) && !empty(SpiceConfig::getInstance()->config['duns']['api_class'])){
+            $api_class = SpiceConfig::getInstance()->config['duns']['api_class'];
         }
 
         $duns = new $api_class();
         //prepare request
-        $params = $req->getParams();
+        $params = $req->getQueryParams();
         //call
         $response = $duns->sendRequest($params);
         //handle results
         $results = $duns->handleResponse($response);
 
         //return results
-        return $res->write(json_encode($results));
+        return $res->withJson($results);
     }
 }

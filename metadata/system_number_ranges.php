@@ -1,83 +1,83 @@
 <?php
 
-$dictionary['sysnumberranges'] = array(
+$dictionary['sysnumberranges'] = [
     'table' => 'sysnumberranges',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'prefix' => array(
+        ],
+        'prefix' => [
             'name' => 'prefix',
             'type' => 'varchar',
             'len' => 10
-        ),
-        'length' => array(
+        ],
+        'length' => [
             'name' => 'length',
             'type' => 'int',
             'isnull' => true
-        ),
-        'range_from' => array(
+        ],
+        'range_from' => [
             'name' => 'range_from',
             'type' => 'double'
-        ),
-        'range_to' => array(
+        ],
+        'range_to' => [
             'name' => 'range_to',
             'type' => 'double'
-        ),
-        'next_number' => array(
+        ],
+        'next_number' => [
             'name' => 'next_number',
             'type' => 'double'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysnumberranges',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];
 
-$dictionary['sysnumberrangeallocation'] = array(
+$dictionary['sysnumberrangeallocation'] = [
     'table' => 'sysnumberrangeallocation',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'field' => array(
+        ],
+        'field' => [
             'name' => 'field',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'numberrange' => array(
+        ],
+        'numberrange' => [
             'name' => 'numberrange',
             'type' => 'varchar',
             'len' => 36,
-        ),
-        'valid_from' => array(
+        ],
+        'valid_from' => [
             'name' => 'valid_from',
             'type' => 'date'
-        ),
-        'valid_to' => array(
+        ],
+        'valid_to' => [
             'name' => 'valid_to',
             'type' => 'date'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_sysnumberrangeallocation',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];

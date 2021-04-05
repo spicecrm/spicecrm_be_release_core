@@ -115,7 +115,7 @@ class Message extends MessageItem
         return $this->properties->getStore()->getNameId();
     }
 
-    public function getInternetMessageId()
+    public function getInternetMessageId(): ?string
     {
         return $this->properties['internet_message_id'] ?? null;
     }
@@ -200,7 +200,7 @@ class Message extends MessageItem
         return $from;
     }
 
-    public function getSendTime()
+    public function getSendTime(): ?\DateTime
     {
         $sendTime = $this->properties['client_submit_time'];
 
@@ -211,6 +211,11 @@ class Message extends MessageItem
         return \DateTime::createFromFormat('U',$sendTime);
     }
 
+    public function properties(): PropertySet
+    {
+	return $this->properties;
+    }
+	
     public function __get($name)
     {
         if ($name == 'properties') {

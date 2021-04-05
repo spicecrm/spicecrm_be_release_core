@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
 * and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
@@ -28,7 +27,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 
-$dictionary['CompetitorAssessment'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['CompetitorAssessment'] = [
     'table' => 'competitorassessments',
     'comment' => 'Competitor Assessments Module',
     'audited' =>  false,
@@ -37,8 +38,8 @@ $dictionary['CompetitorAssessment'] = array(
     //THIS FLAG ENABLES OPTIMISTIC LOCKING FOR SAVES FROM EDITVIEW
     'optimistic_locking'=>true,
 
-    'fields' => array(
-        'name' => array(
+    'fields' => [
+        'name' => [
             'name' => 'name',
             'vname'  => 'LBL_COMPETITOR',
             'type'  => 'varchar',
@@ -46,40 +47,40 @@ $dictionary['CompetitorAssessment'] = array(
             'audited'  => false,
             'required'  => true,
             'comment'  => 'competitor name',
-        ),
-        'products' => array (
+        ],
+        'products' => [
             'name' => 'products',
             'vname' => 'LBL_PRODUCTS',
             'type' => 'text',
             'required' => false,
             'massupdate' => false,
             'audited' => false,
-        ),
-        'differentitation' => array (
+        ],
+        'differentitation' => [
             'name' => 'differentitation',
             'vname' => 'LBL_DIFFERENTIATION',
             'type' => 'text',
             'required' => false,
             'massupdate' => false,
             'audited' => false,
-        ),
-        'weaknesses' => array (
+        ],
+        'weaknesses' => [
             'name' => 'weaknesses',
             'vname' => 'LBL_WEAKNESSES',
             'type' => 'text',
             'required' => false,
             'massupdate' => false,
             'audited' => false,
-        ),
-        'strengths' => array (
+        ],
+        'strengths' => [
             'name' => 'strengths',
             'vname' => 'LBL_STRENGTHS',
             'type' => 'text',
             'required' => false,
             'massupdate' => false,
             'audited' => false,
-        ),
-        'competitive_threat' => array (
+        ],
+        'competitive_threat' => [
             'name' => 'competitive_threat',
             'vname' => 'LBL_COMPETITIVE_THREAT',
             'type' => 'enum',
@@ -88,8 +89,8 @@ $dictionary['CompetitorAssessment'] = array(
             'required' => false,
             'massupdate' => false,
             'audited' => false,
-        ),
-        'competitive_status' => array (
+        ],
+        'competitive_status' => [
             'name' => 'competitive_status',
             'vname' => 'LBL_STATUS',
             'type' => 'enum',
@@ -98,16 +99,16 @@ $dictionary['CompetitorAssessment'] = array(
             'required' => false,
             'massupdate' => false,
             'audited' => false,
-        ),
-        'opportunity_id' => array(
+        ],
+        'opportunity_id' => [
             'name' => 'opportunity_id',
             'vname'  => 'LBL_OPPORTUNITY_ID',
             'type'  => 'id',
             'audited'  => false,
             'required'  => true,
             'comment'  => '',
-        ),
-        'opportunity_name' => array(
+        ],
+        'opportunity_name' => [
             'name'=>'opportunity_name',
             'rname'=>'name',
             'vname' => 'LBL_OPPORTUNITY',
@@ -120,8 +121,8 @@ $dictionary['CompetitorAssessment'] = array(
             'module'=>'Opportunities',
             'duplicate_merge'=>'disabled',
             'comment' => 'Name of related opportunity',
-        ),
-        'opportunities' => array (
+        ],
+        'opportunities' => [
             'name' => 'opportunities',
             'vname'=>'LBL_OPPORTUNITIES',
             'type' => 'link',
@@ -129,22 +130,22 @@ $dictionary['CompetitorAssessment'] = array(
             'link_type'=>'one',
             'side'=>'right',
             'source'=>'non-db',
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'idx_compass_opp',
             'type' => 'index',
-            'fields' => array('opportunity_id'),
-        ),
-        array(
+            'fields' => ['opportunity_id'],
+        ],
+        [
             'name' => 'idx_compass_oppdel',
             'type' => 'index',
-            'fields' => array('opportunity_id', 'deleted'),
-        ),
-    ),
-    'relationships' => array(
-        'competitorassessments_opportunities' => array(
+            'fields' => ['opportunity_id', 'deleted'],
+        ],
+    ],
+    'relationships' => [
+        'competitorassessments_opportunities' => [
             'lhs_module' => 'Opportunities',
             'lhs_table' => 'opportunities',
             'lhs_key' => 'id',
@@ -152,8 +153,8 @@ $dictionary['CompetitorAssessment'] = array(
             'rhs_table' => 'competitorassessments',
             'rhs_key' => 'opportunity_id',
             'relationship_type' => 'one-to-many',
-        ),
-    )
-);
+        ],
+    ]
+];
 
-VardefManager::createVardef('CompetitorAssessments', 'CompetitorAssessment', array('default', 'assignable'));
+VardefManager::createVardef('CompetitorAssessments', 'CompetitorAssessment', ['default', 'assignable']);

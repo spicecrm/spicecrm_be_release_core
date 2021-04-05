@@ -34,8 +34,11 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\includes\SugarCache;
 
-require_once('include/SugarCache/SugarCacheAbstract.php');
+use Memcache;
+use Memcached;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 class SugarCacheMemcached extends SugarCacheAbstract
 {
@@ -65,7 +68,7 @@ class SugarCacheMemcached extends SugarCacheAbstract
     public function useBackend()
     {
         if ( extension_loaded('memcached')
-                && empty($GLOBALS['sugar_config']['external_cache_disabled_memcached'])
+                && empty(SpiceConfig::getInstance()->config['external_cache_disabled_memcached'])
                 && $this->_getMemcachedObject() )
             return true;
             

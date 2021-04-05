@@ -14,18 +14,17 @@
 
 
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$kreportChartstyles = array(
-    'fusioncharts' => array(
-        'default' => array(
+$kreportChartstyles = [
+    'fusioncharts' => [
+        'default' => [
             'name' => 'default', 
-            'styles' => array(
-                
-            )
-        )
-    )
-);
+            'styles' => [
+
+            ]
+        ]
+    ]
+];
 
 if(file_exists('custom/modules/KReports/config/KReportChartStyles.php'))
     include('custom/modules/KReports/config/KReportChartStyles.php');

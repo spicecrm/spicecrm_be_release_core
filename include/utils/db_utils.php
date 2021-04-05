@@ -34,15 +34,15 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\includes\database\DBManagerFactory;
 
 
-
-$toHTML = array(
+$toHTML = [
     '"' => '&quot;',
     '<' => '&lt;',
     '>' => '&gt;',
     "'" => '&#039;',
-);
+];
 $GLOBALS['toHTML_keys'] = array_keys($toHTML);
 $GLOBALS['toHTML_values'] = array_values($toHTML);
 $GLOBALS['toHTML_keys_set'] = implode("", $GLOBALS['toHTML_keys']);
@@ -97,7 +97,7 @@ function from_html($string, $encode = true)
     global $toHTML;
     static $toHTML_values = null;
     static $toHTML_keys = null;
-    static $cache = array();
+    static $cache = [];
     if (!empty($toHTML) && is_array($toHTML) && (!isset($toHTML_values) || !empty($GLOBALS['from_html_cache_clear']))) {
         $toHTML_values = array_values($toHTML);
         $toHTML_keys = array_keys($toHTML);

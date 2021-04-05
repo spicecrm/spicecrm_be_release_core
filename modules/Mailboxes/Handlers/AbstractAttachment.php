@@ -1,6 +1,8 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
+use Exception;
+
 abstract class AbstractAttachment
 {
     public $filename;
@@ -18,7 +20,7 @@ abstract class AbstractAttachment
      */
     public function saveFile() {
         if (!is_writable(self::ATTACHMENT_DIR)) {
-            throw new \Exception(self::ATTACHMENT_DIR . ' is not writable.');
+            throw new Exception(self::ATTACHMENT_DIR . ' is not writable.');
         }
 
         file_put_contents(self::ATTACHMENT_DIR . $this->filename, $this->content);

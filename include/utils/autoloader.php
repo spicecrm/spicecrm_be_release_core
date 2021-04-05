@@ -37,11 +37,12 @@
 class SugarAutoLoader
 {
 
-    public static $noAutoLoad = array(
-        'Tracker' => true,
-    );
+    // commented out Tracker ... no reason that this cannot be loaded via the bean
+    public static $noAutoLoad = [
+        // 'Tracker' => true,
+    ];
 
-    public static $moduleMap = array();
+    public static $moduleMap = [];
 
     public static function autoload($class)
     {

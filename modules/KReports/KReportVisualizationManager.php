@@ -11,26 +11,19 @@
 *
 * You can contact us at info@kreporter.org
 ******************************************************************************* */
-
-
-
-
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
-
-require_once('modules/KReports/KReport.php');
+use SpiceCRM\modules\KReports\KReportPluginManager;
 
 class KReportVisualizationManager {
 
     // the available layouts
-    var $layouts = array();
+    var $layouts = [];
     // header data we include before the grid
-    var $headerData = array();
+    var $headerData = [];
     // item data we include per item
-    var $itemData = array();
+    var $itemData = [];
     // plugins that register themeselves for updates and hanlgin on the page
     // currently handled if a plugin has a uid
-    var $pluginRegistry = array();
+    var $pluginRegistry = [];
     // centrally keep the pluginmanager
     var $pluginManager;
 
@@ -45,28 +38,28 @@ class KReportVisualizationManager {
 
     public function getLayouts() {
         // get the Layouts
-        $layouts = array();
-        $layouts[] = array(
+        $layouts = [];
+        $layouts[] = [
             'name' => '-',
             'count' => 0
-        );
+        ];
         foreach ($this->layouts as $layoutName => $layoutData) {
-            $layouts[] = array(
+            $layouts[] = [
                 'name' => $layoutName,
                 'count' => count($layoutData['items'])
-            );
+            ];
         }
 
         // manage Colorschemas
-        $colors = array();
+        $colors = [];
         global $kreportColors;
         include('modules/KReports/config/KReportColors.php');
         foreach ($kreportColors as $colorSchema => $colorDetails) {
-            $colors[] = array(
+            $colors[] = [
                 'id' => $colorSchema,
                 'name' => $colorDetails['name'],
                 'colors' => implode('*', $colorDetails['colors'])
-            );
+            ];
         }
 
         return '<script type="text/javascript">kreportavailablelayouts = ' . json_encode($layouts) . ';kreportavailablecolors = ' . json_encode($colors) . ';</script>';
@@ -132,7 +125,7 @@ class KReportVisualizationManager {
         if ($snaphotId == 'actual')
             $snaphotId = 0;
 
-        $updateArray = array();
+        $updateArray = [];
 
         if ($visData != '') {
             // convert JSON to Array
@@ -156,7 +149,7 @@ class KReportVisualizationManager {
             return '';
     }
 
-    public function renderVisualization($visData, $thisReport, $addParams = array()) {
+    public function renderVisualization($visData, $thisReport, $addParams = []) {
 
         if ($visData != '') {
             // convert JSON to Array
@@ -195,9 +188,9 @@ class KReportVisualizationManager {
     }
 
     public function getVisualizationExport($visData, $itemData) {
-        $visObjectArray = array();
+        $visObjectArray = [];
 
-        $pluginObjects = array();
+        $pluginObjects = [];
 
         if ($visData != '') {
             // convert JSON to Array

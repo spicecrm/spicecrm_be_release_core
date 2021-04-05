@@ -1,8 +1,9 @@
 <?php
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$dictionary['Event'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['Event'] = [
     'table' => 'events',
     'comment' => 'Events Module',
     'audited' =>  false,
@@ -102,27 +103,27 @@ $dictionary['Event'] = array(
             'source'       => 'non-db',
             'vname'        => 'LBL_ACCOUNT',
         ],
-        'events_account_role' => array(
+        'events_account_role' => [
             'name' => 'events_account_role',
             'vname' => 'LBL_ROLE',
             'type' => 'enum',
             'source' => 'non-db',
             'options' => 'events_account_roles_dom'
-        ),
-        'events_contact_role' => array(
+        ],
+        'events_contact_role' => [
             'name' => 'events_contact_role',
             'vname' => 'LBL_ROLE',
             'type' => 'enum',
             'source' => 'non-db',
             'options' => 'events_contact_roles_dom'
-        ),
-        'events_consumer_role' => array(
+        ],
+        'events_consumer_role' => [
             'name' => 'events_consumer_role',
             'vname' => 'LBL_ROLE',
             'type' => 'enum',
             'source' => 'non-db',
             'options' => 'events_consumer_roles_dom'
-        ),
+        ],
         'accounts' => [
             'name' => 'accounts',
             'type' => 'link',
@@ -185,7 +186,7 @@ $dictionary['Event'] = array(
         ]
     ],
     'relationships' => [
-        'events_campaigns' => array(
+        'events_campaigns' => [
             'lhs_module' => 'Events',
             'lhs_table' => 'events',
             'lhs_key' => 'id',
@@ -193,7 +194,7 @@ $dictionary['Event'] = array(
             'rhs_table' => 'campaigns',
             'rhs_key' => 'event_id',
             'relationship_type' => 'one-to-many',
-        ),
+        ],
     ],
     'indices' => [
         [
@@ -202,6 +203,6 @@ $dictionary['Event'] = array(
             'fields' => ['location_id', 'location_type', 'deleted']
         ]
     ]
-);
+];
 
-VardefManager::createVardef('Events', 'Event', array('default', 'assignable', 'activities'));
+VardefManager::createVardef('Events', 'Event', ['default', 'assignable', 'activities']);

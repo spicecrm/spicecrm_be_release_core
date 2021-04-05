@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,56 +33,56 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['events_contacts'] = array(
+global $dictionary;
+$dictionary['events_contacts'] = [
     'table' => 'events_contacts',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'event_id' => array(
+        ],
+        'event_id' => [
             'name' => 'event_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'contact_id' => array(
+        ],
+        'contact_id' => [
             'name' => 'contact_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'contact_role' => array(
+        ],
+        'contact_role' => [
             'name' => 'contact_role',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'required' => false,
             'default' => '0'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_events_contacts_primary',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_events_contact',
             'type' => 'alternate_key',
-            'fields' => array('event_id', 'contact_id')
-        )
-    ),
-    'relationships' => array(
-        'events_contacts' => array(
+            'fields' => ['event_id', 'contact_id']
+        ]
+    ],
+    'relationships' => [
+        'events_contacts' => [
             'lhs_module' => 'Events',
             'lhs_table' => 'events',
             'lhs_key' => 'id',
@@ -94,6 +93,6 @@ $dictionary['events_contacts'] = array(
             'join_table' => 'events_contacts',
             'join_key_lhs' => 'event_id',
             'join_key_rhs' => 'contact_id'
-        )
-    )
-);
+        ]
+    ]
+];

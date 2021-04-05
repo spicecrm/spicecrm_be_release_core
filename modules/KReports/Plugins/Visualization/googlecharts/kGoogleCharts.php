@@ -12,6 +12,8 @@
 ******************************************************************************* */
 
 
+use SpiceCRM\modules\KReports\KReportChartData;
+use SpiceCRM\modules\KReports\KReportRenderer;
 
 require_once('modules/KReports/KReport.php');
 require_once('modules/KReports/KReportChartData.php');
@@ -32,7 +34,7 @@ class kGoogleChart extends kreportvisualizationplugin {
      * get the Chart Object to render into the visualization
      */
 
-    public function getItem($thisDivId, $thisReport, $thisParams, $addReportParams = array(), $snapshotid = 0) {
+    public function getItem($thisDivId, $thisReport, $thisParams, $addReportParams = [], $snapshotid = 0) {
         $this->report = $thisReport;
         $googleData = $this->getChartData($thisReport, $thisParams, $snapshotid, $addReportParams);
         $chartData = $this->wrapGoogleData($googleData, $thisDivId, $thisParams);
@@ -40,28 +42,28 @@ class kGoogleChart extends kreportvisualizationplugin {
         return $chartData;
     }
 
-    public function getChartData($thisReport, $thisParams, $snaphotid = 0, $addReportParams = array()) {
+    public function getChartData($thisReport, $thisParams, $snaphotid = 0, $addReportParams = []) {
                 
         $chartDataObj = new KReportChartData();
         $fields = json_decode(html_entity_decode($thisReport->listfields, ENT_QUOTES, 'UTF-8'), true);
 
         // check for all the fieldids we have
-        $fieldMap = array();
+        $fieldMap = [];
         foreach ($fields as $thisFieldIndex => $thisFieldData) {
             $fieldMap[$thisFieldData['fieldid']] = $thisFieldIndex;
         }
 
         //$dimensions = array(array('fieldid' => $fields[0]['fieldid']));
-        $dimensions = array();
+        $dimensions = [];
         foreach ($thisParams['dimensions'] as $thisDimension => $thisDimensionData) {
             if ($thisDimensionData != null)
-                $dimensions[] = array('fieldid' => $thisDimensionData);
+                $dimensions[] = ['fieldid' => $thisDimensionData];
         }
 
         //$dataseries = array($fields[1]['fieldid'], $fields[2]['fieldid']);
-        $dataseries = array();
+        $dataseries = [];
         foreach ($thisParams['dataseries'] as $thisDataSeries => $thisDataSeriesData) {
-            $dataseries[$thisDataSeriesData['fieldid']] = array(
+            $dataseries[$thisDataSeriesData['fieldid']] = [
                 'fieldid' => $thisDataSeriesData['fieldid'],
                 'name' => $fields[$fieldMap[$thisDataSeriesData['fieldid']]]['name'],
                 // 2013-03-19 handle Chart Function properly Bug #448
@@ -69,11 +71,11 @@ class kGoogleChart extends kreportvisualizationplugin {
                 'axis' => $thisDataSeriesData['axis'],
                 'chartfunction' => $thisDataSeriesData['chartfunction'],
                 'renderer' => $thisDataSeriesData['renderer']
-            );
+            ];
         }
 
         // set Chart Params
-        $chartParams = array();
+        $chartParams = [];
         $chartParams['type'] = $thisParams['type']; //needed in KReportChartData for unset dimension1
         $chartParams['showEmptyValues'] = ($thisParams['options']['emptyvalues'] == 'on' ? true : false);
         if ($thisParams['context'] != '')
@@ -103,19 +105,19 @@ class kGoogleChart extends kreportvisualizationplugin {
 
     public function convertRawToGoogleData($chartData, $dimensions, $dataseries) {
         
-        $googleData = array();
-        $googleData['cols'] = array();
-        $googleData['rows'] = array();
+        $googleData = [];
+        $googleData['cols'] = [];
+        $googleData['rows'] = [];
 
         foreach ($dimensions as $thisDimension) {
-            $googleData['cols'][] = array('id' => $thisDimension['fieldid'], 'type' => 'string', 'label' => $thisDimension['fieldid']);
+            $googleData['cols'][] = ['id' => $thisDimension['fieldid'], 'type' => 'string', 'label' => $thisDimension['fieldid']];
         }
 
         foreach ($dataseries as $thisDataseries) {
-            $googleData['cols'][] = array('id' => $thisDataseries['fieldid'], 'type' => 'number', 'label' => ($thisDataseries['name'] != '' ? $thisDataseries['name'] : $thisDataseries['fieldid']));
+            $googleData['cols'][] = ['id' => $thisDataseries['fieldid'], 'type' => 'number', 'label' => ($thisDataseries['name'] != '' ? $thisDataseries['name'] : $thisDataseries['fieldid'])];
 
             // add a row for the annotation
-            $googleData['cols'][] = array('id' => $thisDataseries['fieldid'], 'type' => 'number', 'label' => ($thisDataseries['name'] != '' ? $thisDataseries['name'] : $thisDataseries['fieldid']), 'role' => 'annotation');
+            $googleData['cols'][] = ['id' => $thisDataseries['fieldid'], 'type' => 'number', 'label' => ($thisDataseries['name'] != '' ? $thisDataseries['name'] : $thisDataseries['fieldid']), 'role' => 'annotation'];
 
             // 2013-03-05 check if we have a renderer
             $dataseries[$thisDataseries['fieldid']]['renderer'] = $this->report->getXtypeRenderer($this->report->fieldNameMap[$thisDataseries['fieldid']]['type'], $thisDataseries['fieldid']);
@@ -126,18 +128,18 @@ class kGoogleChart extends kreportvisualizationplugin {
 
         
         foreach ($chartData as $thisDimensionId => $thisData) {
-            $rowArray = array();
+            $rowArray = [];
             
-            $rowArray[] = array('v' => $dimensions[0]['values'][$thisDimensionId]);
+            $rowArray[] = ['v' => $dimensions[0]['values'][$thisDimensionId]];
             
             foreach ($dataseries as $thisDataseries) {
                 //2013-03-05 check if we should render
                 if (!empty($thisDataseries['renderer']))
-                    $rowArray[] = array('x' => 'guidValue', 'v' => $thisData[$thisDataseries['fieldid']], 'f' => $kreportRenderer->{$thisDataseries['renderer']}($thisDataseries['fieldid'], $thisData));
+                    $rowArray[] = ['x' => 'guidValue', 'v' => $thisData[$thisDataseries['fieldid']], 'f' => $kreportRenderer->{$thisDataseries['renderer']}($thisDataseries['fieldid'], $thisData)];
                 else
-                    $rowArray[] = array('v' => $thisData[$thisDataseries['fieldid']]);
+                    $rowArray[] = ['v' => $thisData[$thisDataseries['fieldid']]];
             }
-            $googleData['rows'][] = array('c' => $rowArray);
+            $googleData['rows'][] = ['c' => $rowArray];
         }
         
         return $googleData;
@@ -156,15 +158,15 @@ class kGoogleChart extends kreportvisualizationplugin {
         
         
         // else continue processing ..
-        $googleChart = array(
+        $googleChart = [
             'chartType' => $gvizclass,
             'containerId' => $divId,
-            'options' => array(
+            'options' => [
                 'legend' => 'none',
                 'fontSize' => 11
-            ),
+            ],
             'dataTable' => $googleData
-        );
+        ];
 
         // switch for specific types
         switch($thisParams['type']){
@@ -185,9 +187,9 @@ class kGoogleChart extends kreportvisualizationplugin {
                     $googleChart['options']['is3D'] = true;
                     break;
                 case 'legend':
-                    $googleChart['options']['legend'] = array(
+                    $googleChart['options']['legend'] = [
                         'position' => 'right'
-                    );
+                    ];
                     break;
             }
         }
@@ -195,16 +197,16 @@ class kGoogleChart extends kreportvisualizationplugin {
         // set the title if we have one
         if ($thisParams['title'] != '') {
             $googleChart['options']['title'] = $thisParams['title'];
-            $googleChart['options']['titleTextStyle'] = array(
+            $googleChart['options']['titleTextStyle'] = [
                 'fontSize' => 14
-            );
+            ];
         }
 
         //set the legend
         if ($thisParams['legend'] != '' && $thisParams['legend'] != '') {
-            $googleChart['options']['legend'] = array(
+            $googleChart['options']['legend'] = [
                 'position' => $thisParams['legend']
-            );
+            ];
         }
 
         // set axis max/min values
@@ -241,10 +243,10 @@ class kGoogleChart extends kreportvisualizationplugin {
      */
 
     function parseExportData($exportedData) {
-        return array(
+        return [
             'type' => 'SVG',
             'data' => urldecode(base64_decode($exportedData))
-        );
+        ];
     }
 
 }

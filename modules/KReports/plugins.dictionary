@@ -11,7 +11,6 @@
 * You can contact us at info@kreporter.org
 ******************************************************************************* */
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 $plugins['standard'] = array(
     'id' => 'standard', 

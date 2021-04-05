@@ -29,7 +29,10 @@
 
 namespace SpiceCRM\includes\SysModuleFilters\KREST\controllers;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class SysModuleFiltersController
 {
@@ -41,7 +44,7 @@ class SysModuleFiltersController
 
     private function checkAdmin()
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         if (!$current_user->is_admin) {
             throw (new ForbiddenException('No administration privileges.'))->setErrorCode('notAdmin');
 
@@ -50,7 +53,7 @@ class SysModuleFiltersController
 
     function getFilters($req, $res, $args)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $this->checkAdmin();
 
@@ -61,12 +64,13 @@ class SysModuleFiltersController
         while ($filter = $db->fetchByAssoc($filtersObj))
             $filters[] = $filter;
 
-        return $res->write(json_encode($filters));
+        return $res->withJson($filters);
     }
 
     function saveFilter($req, $res, $args)
     {
-        global $db, $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
         $this->checkAdmin();
         $filterdata = $req->getParsedBody();
         // check if filter exists
@@ -91,7 +95,7 @@ class SysModuleFiltersController
 
     function deleteFilter($req, $res, $args)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $this->checkAdmin();
         $id = $db->quote($args['filter']);
         $resultGlobal = $db->query("DELETE FROM sysmodulefilters WHERE id = '$id'");
@@ -112,7 +116,7 @@ class SysModuleFiltersController
     {
         // check if we have a CR set
         if ($_SESSION['SystemDeploymentCRsActiveCR'])
-            $cr = \BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
+            $cr = BeanFactory::getBean('SystemDeploymentCRs', $_SESSION['SystemDeploymentCRsActiveCR']);
 
         if ($cr) {
             $cr->addDBEntry('sysmodulefilters', $id, $action, $name);

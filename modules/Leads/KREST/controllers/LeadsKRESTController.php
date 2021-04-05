@@ -4,10 +4,12 @@
 namespace SpiceCRM\modules\Leads\KREST\controllers;
 
 
+use SpiceCRM\data\BeanFactory;
+
 class LeadsKRESTController
 {
     public function createFromForm($req, $res, $args){
-        $seed = \BeanFactory::getBean('Leads');
+        $seed = BeanFactory::getBean('Leads');
 
         $post = $req->getParsedBody();
         foreach($post as $fieldname => $fieldvalue){

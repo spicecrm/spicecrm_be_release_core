@@ -28,14 +28,49 @@
 ********************************************************************************/
 use SpiceCRM\includes\RESTManager;
 use SpiceCRM\includes\SysModuleFilters\KREST\controllers\SysModuleFiltersController;
+use Slim\Routing\RouteCollectorProxy;
 
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
 
-$RESTManager->app->group('/sysmodulefilters/{module}', function () {
-    $this->get('', [new SysModuleFiltersController(), 'getFilters']);
-    $this->group('/{filter}', function () {
-        $this->get('', [new SysModuleFiltersController(), 'getFilter']);
-        $this->post('', [new SysModuleFiltersController(), 'saveFilter']);
-        $this->delete('', [new SysModuleFiltersController(), 'deleteFilter']);
-    });
-});
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/sysmodulefilters/{module}',
+        'class'       => SysModuleFiltersController::class,
+        'function'    => 'getFilters',
+        'description' => '',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/sysmodulefilters/{module}/{filter',
+        'class'       => SysModuleFiltersController::class,
+        'function'    => 'getFilter',
+        'description' => '',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/sysmodulefilters/{module}/{filter',
+        'class'       => SysModuleFiltersController::class,
+        'function'    => 'saveFilter',
+        'description' => '',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/sysmodulefilters/{module}/{filter',
+        'class'       => SysModuleFiltersController::class,
+        'function'    => 'deleteFilter',
+        'description' => '',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
+
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('sysmodulefilters', '1.0', [], $routes);

@@ -1,6 +1,8 @@
 <?php
 namespace SpiceCRM\modules\OutputTemplates\handlers\pdf;
 
+use SpiceCRM\modules\OutputTemplates\OutputTemplate;
+
 abstract class PdfHandler
 {
     protected $html_content = '';
@@ -8,7 +10,7 @@ abstract class PdfHandler
     protected $content = '';
     protected $template;
 
-    public function __construct(\OutputTemplate $template)
+    public function __construct(OutputTemplate $template)
     {
         $this->template = $template;
     }
@@ -39,7 +41,7 @@ abstract class PdfHandler
         return static::getTemplateOptions($this->template);
     }
 
-    public static function getTemplateOptions(\OutputTemplate $template)
+    public static function getTemplateOptions(OutputTemplate $template)
     {
         $arr = [];
         foreach($template->PDF_FIELD_OPTIONS as $option)

@@ -6,7 +6,6 @@
  * Time: 13:57
  */
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -43,78 +42,78 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 ********************************************************************************/
 
 
-$dictionary['syslangs'] = array (
+$dictionary['syslangs'] = [
     'table' => 'syslangs',
-    'changerequests' => array(
+    'changerequests' => [
         'active' => true,
         'name' => 'language_code'
-    ),
-    'fields' => array (
-        'id' => array (
+    ],
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'vname' => 'LBL_ID',
             'type' => 'id',
             'required' => true,
-        ),
-        'language_code' => array (
+        ],
+        'language_code' => [
             'name' => 'language_code',
             'vname' => 'LBL_LANGUAGE',
             'type' => 'char',
             'len' => '10',
             'required' => true,
-        ),
-        'language_name' => array (
+        ],
+        'language_name' => [
             'name' => 'language_name',
             'vname' => 'LBL_LANGUAGE',
             'type' => 'char',
             'len' => '50',
             'required' => true,
-        ),
-        'sort_sequence' => array (
+        ],
+        'sort_sequence' => [
             'name' => 'sort_sequence',
             'vname' => 'LBL_SORT_SEQUENCE',
             'type' => 'int',
             'default' => 99
-        ),
-        'is_default' => array (
+        ],
+        'is_default' => [
             'name' => 'is_default',
             'vname' => 'LBL_IS_DEFAULT',
             'type' => 'bool',
-        ),
-        'system_language' => array (
+        ],
+        'system_language' => [
             'name' => 'system_language',
             'vname' => 'LBL_SYSTEM_LANGUAGE',
             'type' => 'bool',
-        ),
-        'communication_language' => array (
+        ],
+        'communication_language' => [
             'name' => 'communication_language',
             'vname' => 'LBL_COMMUNICATION_LANGUAGE',
             'type' => 'bool',
-        )
-    ),
-    'indices' => array (
-        array('name' => 'syslanguagespk', 'type' =>'primary','fields' => array('id')),
-        array('name' => 'syslanguages_idx', 'type' =>'index','fields' => array('language_code')),
-        array('name' => 'syslanguagesdefault_idx', 'type' =>'index','fields' => array('is_default')),
-        array('name' => 'syslanguageslangdefault_idx', 'type' =>'index','fields' => array('language_code', 'is_default')),
-    ),
-);
+        ]
+    ],
+    'indices' => [
+        ['name' => 'syslanguagespk', 'type' =>'primary','fields' => ['id']],
+        ['name' => 'syslanguages_idx', 'type' =>'index','fields' => ['language_code']],
+        ['name' => 'syslanguagesdefault_idx', 'type' =>'index','fields' => ['is_default']],
+        ['name' => 'syslanguageslangdefault_idx', 'type' =>'index','fields' => ['language_code', 'is_default']],
+    ],
+];
 
-$dictionary['syslanguagelabels'] = array (
+$dictionary['syslanguagelabels'] = [
     'table' => 'syslanguagelabels',
-    'fields' => array (
-        'id' => array (
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'vname' => 'LBL_ID',
             'type' => 'id'
-        ),
-        'name' => array (
+        ],
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_LABEL',
             'type' => 'varchar',
             'len' => '100',
             'required' => true,
-        ),
+        ],
 // removed in spice 2020.03.001
 //        'version' => array (
 //            'name' => 'version',
@@ -127,78 +126,78 @@ $dictionary['syslanguagelabels'] = array (
 //            'type' => 'varchar',
 //            'len' => 32
 //        )
-    ),
-    'indices' => array (
-        array('name' => 'syslanguagelabelspk', 'type' =>'primary', 'fields' => array('id')),
-        array('name' => 'syslanguagelabel_idx', 'type' =>'unique', 'fields' => array('name')),
-    ),
-);
+    ],
+    'indices' => [
+        ['name' => 'syslanguagelabelspk', 'type' =>'primary', 'fields' => ['id']],
+        ['name' => 'syslanguagelabel_idx', 'type' =>'unique', 'fields' => ['name']],
+    ],
+];
 
-$dictionary['syslanguagetranslations'] = array (
+$dictionary['syslanguagetranslations'] = [
     'table' => 'syslanguagetranslations',
-    'fields' => array (
-        'id' => array (
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'vname' => 'LBL_ID',
             'type' => 'id'
-        ),
-        'syslanguagelabel_id' => array (
+        ],
+        'syslanguagelabel_id' => [
             'name' => 'syslanguagelabel_id',
             'vname' => 'LBL_SYSLANGUAGELABEL_ID',
             'type' => 'id',
             'required' => true,
-        ),
-        'syslanguage' => array (
+        ],
+        'syslanguage' => [
             'name' => 'syslanguage',
             'vname' => 'LBL_LANGUAGE',
             'type' => 'char',
             'len' => 5,
             'required' => true,
-        ),
-        'translation_default' => array (
+        ],
+        'translation_default' => [
             'name' => 'translation_default',
             'vname' => 'LBL_TRANSLATION_DEFAULT',
             'type' => 'varchar',
             'required' => true,
-        ),
-        'translation_short' => array (
+        ],
+        'translation_short' => [
             'name' => 'translation_short',
             'vname' => 'LBL_TRANSLATION_SHORT',
             'type' => 'varchar',
             'required' => false,
-        ),
-        'translation_long' => array (
+        ],
+        'translation_long' => [
             'name' => 'translation_long',
             'vname' => 'LBL_TRANSLATION_LONG',
             'type' => 'text',
             'required' => false,
-        ),
-    ),
-    'indices' => array (
-        array('name' => 'syslanguagetranslationspk', 'type' =>'primary', 'fields' => array('id')),
-        array('name' => 'syslanguagetranslationlabel_idx', 'type' =>'index', 'fields' => array('syslanguagelabel_id')),
-        array('name' => 'syslanguagetranslationlang_idx', 'type' =>'index', 'fields' => array('syslanguage')),
+        ],
+    ],
+    'indices' => [
+        ['name' => 'syslanguagetranslationspk', 'type' =>'primary', 'fields' => ['id']],
+        ['name' => 'syslanguagetranslationlabel_idx', 'type' =>'index', 'fields' => ['syslanguagelabel_id']],
+        ['name' => 'syslanguagetranslationlang_idx', 'type' =>'index', 'fields' => ['syslanguage']],
         // array('name' => 'syslanguagelabelidlang_idx', 'type' =>'unique', 'fields' => array('syslanguagelabel_id', 'syslanguage')),
-    ),
-);
+    ],
+];
 
-$dictionary['syslanguagecustomlabels'] = array (
+$dictionary['syslanguagecustomlabels'] = [
     'table' => 'syslanguagecustomlabels',
     'fields' => $dictionary['syslanguagelabels']['fields'],
-    'indices' => array (
-        array('name' => 'syslanguagecustomlabelspk', 'type' =>'primary', 'fields' => array('id')),
-        array('name' => 'syslanguagecustomlabel_idx', 'type' =>'unique','fields' => array('name')),
-    ),
-);
+    'indices' => [
+        ['name' => 'syslanguagecustomlabelspk', 'type' =>'primary', 'fields' => ['id']],
+        ['name' => 'syslanguagecustomlabel_idx', 'type' =>'unique','fields' => ['name']],
+    ],
+];
 
-$dictionary['syslanguagecustomtranslations'] = array (
+$dictionary['syslanguagecustomtranslations'] = [
     'table' => 'syslanguagecustomtranslations',
     'fields' => $dictionary['syslanguagetranslations']['fields'],
-    'indices' => array (
-        array('name' => 'syslanguagecustomtranslationspk', 'type' =>'primary', 'fields' => array('id')),
-        array('name' => 'syslanguagecustomtranslationlabel_idx', 'type' =>'index', 'fields' => array('syslanguagelabel_id')),
-        array('name' => 'syslanguagecustomtranslationlang_idx', 'type' =>'index', 'fields' => array('syslanguage')),
-        array('name' => 'syslanguagecustomlabelidlang_idx', 'type' =>'unique', 'fields' => array('syslanguagelabel_id', 'syslanguage')),
-    ),
-);
+    'indices' => [
+        ['name' => 'syslanguagecustomtranslationspk', 'type' =>'primary', 'fields' => ['id']],
+        ['name' => 'syslanguagecustomtranslationlabel_idx', 'type' =>'index', 'fields' => ['syslanguagelabel_id']],
+        ['name' => 'syslanguagecustomtranslationlang_idx', 'type' =>'index', 'fields' => ['syslanguage']],
+        ['name' => 'syslanguagecustomlabelidlang_idx', 'type' =>'unique', 'fields' => ['syslanguagelabel_id', 'syslanguage']],
+    ],
+];
 

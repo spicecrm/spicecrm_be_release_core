@@ -34,66 +34,35 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 require_once('service/v3_1/SugarWebServiceUtilv3_1.php');
 
 class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 {
-    function get_module_view_defs($moduleName, $type, $view)
-    {
-        require_once('include/MVC/View/SugarView.php');
-        $metadataFile = null;
-        $results = array();
-        if( empty($moduleName) )
-            return $results;
-
-        $view = strtolower($view);
-        switch (strtolower($type)){
-            case 'default':
-            default:
-                if ($view == 'subpanel')
-                    $results = $this->get_subpanel_defs($moduleName, $type);
-                else
-                {
-                    $v = new SugarView(null,array());
-                    $v->module = $moduleName;
-                    $v->type = $view;
-                    $fullView = ucfirst($view) . 'View';
-                    $metadataFile = $v->getMetaDataFile();
-                    require_once($metadataFile);
-                    if($view == 'list')
-                        $results = $listViewDefs[$moduleName];
-                    else
-                        $results = $viewdefs[$moduleName][$fullView];
-                }
-        }
-
-        //Add field level acls.
-        $results = $this->addFieldLevelACLs($moduleName,$type, $view, $results);
-
-        return $results;
-    }
-
 
     /**
      * Equivalent of get_list function within SugarBean but allows the possibility to pass in an indicator
      * if the list should filter for favorites.  Should eventually update the SugarBean function as well.
      *
      */
-    function get_data_list($seed, $order_by = "", $where = "", $row_offset = 0, $limit=-1, $max=-1, $show_deleted = 0, $favorites = false)
-	{
-		$GLOBALS['log']->debug("get_list:  order_by = '$order_by' and where = '$where' and limit = '$limit'");
+    function get_data_list($seed, $order_by = "", $where = "", $row_offset = 0, $limit=-1, $max=-1, $show_deleted = 0, $favorites = false, $singleSelect=false)
+    {
+		LoggerManager::getLogger()->debug("get_list:  order_by = '$order_by' and where = '$where' and limit = '$limit'");
 		if(isset($_SESSION['show_deleted']))
 		{
 			$show_deleted = 1;
 		}
 		$order_by=$seed->process_order_by($order_by, null);
 
-		$params = array();
+		$params = [];
 		if(!empty($favorites)) {
 		  $params['favorites'] = true;
 		}
 
-		$query = $seed->create_new_list_query($order_by, $where,array(),$params, $show_deleted);
+		$query = $seed->create_new_list_query($order_by, $where,[],$params, $show_deleted);
 		return $seed->process_list_query($query, $row_offset, $limit, $max, $where);
 	}
 
@@ -106,7 +75,7 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
     public function getModulesFromList($list, $availModules)
     {
         global $app_list_strings;
-        $enabled_modules = array();
+        $enabled_modules = [];
         $availModulesKey = array_flip($availModules);
         foreach ($list as $key=>$value)
         {
@@ -115,7 +84,7 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
                 $label = !empty( $app_list_strings['moduleList'][$key] ) ? $app_list_strings['moduleList'][$key] : '';
         	    $acl = $this->checkModuleRoleAccess($key);
         	    $fav = $this->is_favorites_enabled($key);
-        	    $enabled_modules[] = array('module_key' => $key,'module_label' => $label, 'favorite_enabled' => $fav, 'acls' => $acl);
+        	    $enabled_modules[] = ['module_key' => $key,'module_label' => $label, 'favorite_enabled' => $fav, 'acls' => $acl];
             }
         }
         return $enabled_modules;
@@ -145,8 +114,8 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 	 */
     protected function filter_fields_for_query(SugarBean $value, array $fields)
     {
-        $GLOBALS['log']->info('Begin: SoapHelperWebServices->filter_fields_for_query');
-        $filterFields = array();
+        LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->filter_fields_for_query');
+        $filterFields = [];
         foreach($fields as $field)
         {
             if (isset($value->field_defs[$field]))
@@ -154,15 +123,15 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
                 $filterFields[$field] = $value->field_defs[$field];
             }
         }
-        $GLOBALS['log']->info('End: SoapHelperWebServices->filter_fields_for_query');
+        LoggerManager::getLogger()->info('End: SoapHelperWebServices->filter_fields_for_query');
         return $filterFields;
     }
 
     function get_field_list($value,$fields,  $translate=true) {
 
-	    $GLOBALS['log']->info('Begin: SoapHelperWebServices->get_field_list(too large a struct, '.print_r($fields, true).", $translate");
-		$module_fields = array();
-		$link_fields = array();
+	    LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->get_field_list(too large a struct, '.print_r($fields, true).", $translate");
+		$module_fields = [];
+		$link_fields = [];
 		if(!empty($value->field_defs)){
 
 			foreach($value->field_defs as $var){
@@ -172,8 +141,8 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 					continue;
 				}
 				$required = 0;
-				$options_dom = array();
-				$options_ret = array();
+				$options_dom = [];
+				$options_ret = [];
 				// Apparently the only purpose of this check is to make sure we only return fields
 				//   when we've read a record.  Otherwise this function is identical to get_module_field_list
 				if( isset($var['required']) && ($var['required'] || $var['required'] == 'true' ) ){
@@ -185,7 +154,7 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 
 				if(isset($var['options'])){
 					$options_dom = translate($var['options'], $value->module_dir);
-					if(!is_array($options_dom)) $options_dom = array();
+					if(!is_array($options_dom)) $options_dom = [];
 					foreach($options_dom as $key=>$oneOption)
 						$options_ret[$key] = $this->get_name_value($key,$oneOption);
 				}
@@ -194,7 +163,7 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 	                $options_ret['type'] = $this->get_name_value('type', $var['dbType']);
 	            }
 
-	            $entry = array();
+	            $entry = [];
 	            $entry['name'] = $var['name'];
 	            $entry['type'] = $var['type'];
 	            $entry['group'] = isset($var['group']) ? $var['group'] : '';
@@ -233,7 +202,7 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 		    if( isset($module_fields['duration_minutes']) && isset($GLOBALS['app_list_strings']['duration_intervals']))
 		    {
 		        $options_dom = $GLOBALS['app_list_strings']['duration_intervals'];
-		        $options_ret = array();
+		        $options_ret = [];
 		        foreach($options_dom as $key=>$oneOption)
 						$options_ret[$key] = $this->get_name_value($key,$oneOption);
 
@@ -245,9 +214,9 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 			require_once('modules/Releases/Release.php');
 			$seedRelease = new Release();
 			$options = $seedRelease->get_releases(TRUE, "Active");
-			$options_ret = array();
+			$options_ret = [];
 			foreach($options as $name=>$value){
-				$options_ret[] =  array('name'=> $name , 'value'=>$value);
+				$options_ret[] =  ['name'=> $name , 'value'=>$value];
 			}
 			if(isset($module_fields['fixed_in_release'])){
 				$module_fields['fixed_in_release']['type'] = 'enum';
@@ -284,20 +253,21 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 			$module_fields['created_by_name']['name'] = 'created_by_name';
 		}
 
-		$GLOBALS['log']->info('End: SoapHelperWebServices->get_field_list');
-		return array('module_fields' => $module_fields, 'link_fields' => $link_fields);
+		LoggerManager::getLogger()->info('End: SoapHelperWebServices->get_field_list');
+		return ['module_fields' => $module_fields, 'link_fields' => $link_fields];
 	}
 
 
 	function new_handle_set_entries($module_name, $name_value_lists, $select_fields = FALSE) {
-		$GLOBALS['log']->info('Begin: SoapHelperWebServices->new_handle_set_entries');
-		global $beanList, $beanFiles, $current_user, $app_list_strings;
+		LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->new_handle_set_entries');
+		global $beanList, $beanFiles, $app_list_strings;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-		$ret_values = array();
+		$ret_values = [];
 
 		$class_name = $beanList[$module_name];
 		require_once($beanFiles[$class_name]);
-		$ids = array();
+		$ids = [];
 		$count = 1;
 		$total = sizeof($name_value_lists);
 		foreach($name_value_lists as $name_value_list){
@@ -349,7 +319,7 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 
 			//Add the account to a contact
 			if($module_name == 'Contacts'){
-				$GLOBALS['log']->debug('Creating Contact Account');
+				LoggerManager::getLogger()->debug('Creating Contact Account');
 				$this->add_create_account($seed);
 				$duplicate_id = $this->check_for_duplicate_contacts($seed);
 				if($duplicate_id == null){
@@ -424,7 +394,7 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 
 			// if somebody is calling set_entries_detail() and wants fields returned...
 			if ($select_fields !== FALSE) {
-				$ret_values[$count] = array();
+				$ret_values[$count] = [];
 
 				foreach ($select_fields as $select_field) {
 					if (isset($seed->$select_field)) {
@@ -436,16 +406,16 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 
 		// handle returns for set_entries_detail() and set_entries()
 		if ($select_fields !== FALSE) {
-			$GLOBALS['log']->info('End: SoapHelperWebServices->new_handle_set_entries');
-			return array(
+			LoggerManager::getLogger()->info('End: SoapHelperWebServices->new_handle_set_entries');
+			return [
 				'name_value_lists' => $ret_values,
-			);
+            ];
 		}
 		else {
-			$GLOBALS['log']->info('End: SoapHelperWebServices->new_handle_set_entries');
-			return array(
+			LoggerManager::getLogger()->info('End: SoapHelperWebServices->new_handle_set_entries');
+			return [
 				'ids' => $ids,
-			);
+            ];
 		}
 	}
 
@@ -469,18 +439,18 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 	            return false;
 	        }
         } catch(OAuthException $e) {
-            $GLOBALS['log']->debug("OAUTH Exception: $e");
+            LoggerManager::getLogger()->debug("OAUTH Exception: $e");
             $errorObject->set_error('invalid_login');
 			$this->setFaultObject($errorObject);
             return false;
         }
 
-	    $user = new User();
+	    $user = BeanFactory::getBean('Users');
 	    $user->retrieve($token->assigned_user_id);
 	    if(empty($user->id)) {
 	        return false;
 	    }
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 		$current_user = $user;
 		ini_set("session.use_cookies", 0); // disable cookies to prevent session ID from going out
 		session_start();
@@ -508,7 +478,7 @@ class SugarWebServiceUtilv4 extends SugarWebServiceUtilv3_1
 	function get_subpanel_defs($module, $type)
 	{
 	    global $beanList, $beanFiles;
-	    $results = array();
+	    $results = [];
 	    switch ($type)
 	    {
 	        case 'wireless':

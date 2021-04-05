@@ -12,7 +12,7 @@ interface ACLControllerInterface {
 
     public function checkAccess($category, $action, $is_owner = false, $type = 'module');
 
-    public function checkModuleAllowed($module, $actions = array());
+    public function checkModuleAllowed($module, $actions = []);
 
     public function disabledModuleList($moduleList, $by_value = true, $view = 'list');
 

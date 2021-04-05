@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -44,6 +43,10 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * 
  */
 
+use SpiceCRM\modules\Roles\Role;
+
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 $modules_exempt_from_availability_check['Activities']='Activities';
 $modules_exempt_from_availability_check['History']='History';
 $modules_exempt_from_availability_check['Calls']='Calls';
@@ -58,7 +61,6 @@ $modules_exempt_from_availability_check['ProspectLists']='ProspectLists';
 // CR1000465 cleanup Email
 // $modules_exempt_from_availability_check['EmailMarketing']='EmailMarketing';
 // $modules_exempt_from_availability_check['EmailMan']='EmailMan';
-$modules_exempt_from_availability_check['ProjectTask']='ProjectTask';
 $modules_exempt_from_availability_check['Users']='Users';
 $modules_exempt_from_availability_check['SchedulersJobs']='SchedulersJobs';
 $modules_exempt_from_availability_check['DocumentRevisions']='DocumentRevisions';
@@ -104,8 +106,8 @@ function query_client_ip()
 {
 	global $_SERVER;
 	$clientIP = false;
-	if(!empty($GLOBALS['sugar_config']['ip_variable']) && !empty($_SERVER[$GLOBALS['sugar_config']['ip_variable']])){
-		$clientIP = $_SERVER[$GLOBALS['sugar_config']['ip_variable']];
+	if(!empty(SpiceConfig::getInstance()->config['ip_variable']) && !empty($_SERVER[SpiceConfig::getInstance()->config['ip_variable']])){
+		$clientIP = $_SERVER[SpiceConfig::getInstance()->config['ip_variable']];
 	}else if(isset($_SERVER['HTTP_CLIENT_IP']))
 	{
 		$clientIP = $_SERVER['HTTP_CLIENT_IP'];

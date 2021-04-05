@@ -1,6 +1,8 @@
 <?php
 namespace SpiceCRM\modules\OutputTemplates\handlers\pdf;
 
+use TCPDF;
+
 require_once 'vendor/tcpdf6/tcpdf.php';
 
 /**
@@ -11,7 +13,7 @@ class TcpdfHandler extends LibPdfHandler
 {
     protected function createInstance()
     {
-        return new \TCPDF();
+        return new TCPDF();
     }
 
     public function process($html = null, array $options = null)

@@ -1,7 +1,5 @@
-# SpiceCRM #
+# SugarCRM #
 ###################
-# Ignore IDE
-/.idea/*
 # Ignore custom .htaccess stuff.
 /.htpasswd
 
@@ -134,6 +132,7 @@ Thumbs.db
 .*~
 composer.lock
 xmlfiles
+package-lock.json
 
 # dompdf
 /vendor/dompdf/dompdf/lib/fonts/dompdf_font_family_cache.php

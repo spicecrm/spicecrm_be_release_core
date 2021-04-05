@@ -2,16 +2,19 @@
 
 namespace SpiceCRM\modules\Emails\KREST\controllers;
 
-use BeanFactory;
+use SpiceCRM\data\BeanFactory;
 use Exception;
-use Email;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\modules\Emails\Email;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
 use SpiceCRM\includes\ErrorHandlers\NotFoundException;
 use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
+use SpiceCRM\KREST\handlers\ModuleHandler;
 use SpiceCRM\modules\Mailboxes\Handlers\OutlookAttachmentHandler;
 use SpiceCRM\modules\Mailboxes\Handlers\GSuiteAttachmentHandler;
-use UploadFile;
+use SpiceCRM\includes\UploadFile;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class EmailsKRESTController
 {
@@ -30,10 +33,10 @@ class EmailsKRESTController
      */
     public function getEmail($req, $res, $args) {
         $postBody = $req->getParsedBody();
-        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $moduleHandler = new ModuleHandler();
         $result = [];
 
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $message_id = filter_var($postBody['message_id'], FILTER_SANITIZE_STRING);
         $thread_id = filter_var($postBody['thread_id'], FILTER_SANITIZE_STRING);
@@ -60,7 +63,7 @@ class EmailsKRESTController
             throw new NotFoundException('Email not found');
         }
 
-        return $res->write(json_encode($result));
+        return $res->withJson($result);
     }
 
     /**
@@ -94,13 +97,13 @@ class EmailsKRESTController
         $postBody = $req->getParsedBody();
 
         $emailId = filter_var($postBody['email_id'], FILTER_SANITIZE_STRING);
-        $email = \BeanFactory::getBean('Emails', $emailId);
+        $email = BeanFactory::getBean('Emails', $emailId);
 
         if (isset($postBody['outlookAttachments'])) {
-            return $res->write(json_encode($this->handleOutlookAttachments($email, $postBody)));
+            return $res->withJson($this->handleOutlookAttachments($email, $postBody));
         } else {
             // todo correct http status
-            return $res->write(json_encode("Error: No Outlook Attachments found"));
+            return $res->withJson("Error: No Outlook Attachments found");
         }
     }
 
@@ -115,13 +118,13 @@ class EmailsKRESTController
         $postBody = $req->getParsedBody();
 
         $emailId = filter_var($postBody['email_id'], FILTER_SANITIZE_STRING);
-        $email = \BeanFactory::getBean('Emails', $emailId);
+        $email = BeanFactory::getBean('Emails', $emailId);
 
         if (isset($postBody['attachments'])) {
-            return $res->write(json_encode($this->handleGSuiteAttachments($email, $postBody)));
+            return $res->withJson($this->handleGSuiteAttachments($email, $postBody));
         } else {
             // todo correct http status
-            return $res->write(json_encode("Error: No Outlook Attachments found"));
+            return $res->withJson("Error: No Outlook Attachments found");
         }
     }
 
@@ -170,10 +173,10 @@ class EmailsKRESTController
     public function saveEmailWithBeans($postBody, $res, $source) {
 
         if (!isset($postBody['email'])) {
-            throw new \Exception('Email missing');
+            throw new Exception('Email missing');
         }
         if (!isset($postBody['beans'])) {
-            throw new \Exception('Beans missing');
+            throw new Exception('Beans missing');
         }
 
         $email = $this->externalDataToEmail($postBody['email'], $postBody['bean'], $postBody['beans'], $source);
@@ -191,7 +194,12 @@ class EmailsKRESTController
             $result[] = $email->assignBeanToEmail($bean["id"], $bean["module"]);
         }
 
-        return $res->write(json_encode(['email_id' => $email->id, 'linked_beans' => $result]));
+        // relationships to email are saved after the email save.
+        // therefore index the email again else email won't appear in activity stream of related beans
+        SpiceFTSHandler::getInstance()->indexBean($email);
+        unset($ftsHandler);
+
+        return $res->withJson(['email_id' => $email->id, 'linked_beans' => $result]);
     }
 
     /**
@@ -206,11 +214,10 @@ class EmailsKRESTController
      */
     public function search($req, $res, $args) {
         $postBody = $req->getParsedBody();
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $ftsManager = new SpiceFTSHandler();
 
-        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $moduleHandler = new ModuleHandler();
 
         // get the modules that are fts enabled and have a link to emails
         $modulesObject = $db->query("SELECT sysfts.module FROM relationships, sysfts
@@ -223,10 +230,10 @@ class EmailsKRESTController
         }
 
         $beans = [];
-        $results = $ftsManager->getGlobalSearchResults(implode(',', $modules), $postBody['searchterm'], [], $postBody);
+        $results = SpiceFTSHandler::getInstance()->getGlobalSearchResults(implode(',', $modules), $postBody['searchterm'], [], $postBody);
         foreach ($results as $module => $result) {
             foreach ($result['hits'] as $hit) {
-                $seed = \BeanFactory::getBean($module, $hit['_id']);
+                $seed = BeanFactory::getBean($module, $hit['_id']);
                 if($seed){
                     $beans[] = [
                         'id'           => $hit['_id'],
@@ -243,7 +250,7 @@ class EmailsKRESTController
             return $a['score'] > $b['score'] ? 1 : -1;
         });
 
-        return $res->write(json_encode($beans));
+        return $res->withJson($beans);
     }
 
     /**
@@ -264,7 +271,7 @@ class EmailsKRESTController
         $email->openness = $args['openness'];
         $email->save();
 
-        return $res->write(json_encode(['status' => 'success']));
+        return $res->withJson(['status' => 'success']);
     }
 
     /**
@@ -286,7 +293,7 @@ class EmailsKRESTController
         $email->status = $args['status'];
         $email->save();
 
-        return $res->write(json_encode(['status' => 'success']));
+        return $res->withJson(['status' => 'success']);
     }
 
     /**
@@ -322,12 +329,12 @@ class EmailsKRESTController
     public function previewMsgFromAttachment($req, $res, $args) {
         $attachmentId = filter_var($args['attachmentId'], FILTER_SANITIZE_STRING);
         $attachment   = json_decode(SpiceAttachments::getAttachment($attachmentId));
-        $email = \BeanFactory::getBean('Emails');
+        $email = BeanFactory::getBean('Emails');
         $email->convertMsgToEmail($attachment->filemd5);
 
-        $ModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $ModuleHandler = new ModuleHandler();
 
-        $emailResponse = $ModuleHandler->mapBeanToArray('EMails', $email, array(), false, false);
+        $emailResponse = $ModuleHandler->mapBeanToArray('EMails', $email, [], false, false);
 
         // prepare email addresses
         // email addresse temporär umschreiben ..
@@ -351,10 +358,10 @@ class EmailsKRESTController
      */
     public function createEmailFromMSGFile($req, $res, $args) {
         $postBody = $body = $req->getParsedBody();
-        $postParams = $_GET;
+        $postParams = $req->getQueryParams();
         // $result = SpiceAttachments::saveAttachmentHashFiles($args['beanName'], $args['beanId'], array_merge($postBody, $postParams));
 
-        $email = \BeanFactory::getBean('Emails');
+        $email = BeanFactory::getBean('Emails');
         $email->id = create_guid();
         $email->new_with_id = true;
         $email->file_name = $postBody['filename'];
@@ -374,9 +381,9 @@ class EmailsKRESTController
         $email->convertMsgToEmail($email->file_md5, $postBody['beanModule'], $postBody['beanId']);
         $email->save();
 
-        $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $KRESTModuleHandler = new ModuleHandler();
 
-        return $res->write(json_encode($KRESTModuleHandler->get_bean_detail('Emails', $email->id, null)));
+        return $res->withJson($KRESTModuleHandler->get_bean_detail('Emails', $email->id, null));
     }
 
     /**
@@ -391,13 +398,13 @@ class EmailsKRESTController
      * @throws Exception
      */
     private function externalDataToEmail($data, $emailbean, $beans, $source) {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         try {
             $email = Email::findByMessageId($data['message_id']);
             if (!$email) throw new Exception(false);
             return $email;
         } catch (Exception $e) {
-            $email = \BeanFactory::getBean('Emails');
+            $email = BeanFactory::getBean('Emails');
 
             $email->name          = $data['subject'];
             $email->body          = $data['body'];
@@ -412,7 +419,7 @@ class EmailsKRESTController
             $email->reply_to_addr = $data['replyto'];
 
             // add parent_type and parent_id -> the first bean from the list
-            $firstBean = \BeanFactory::getBean($beans[0]['module'], $beans[0]['id']);
+            $firstBean = BeanFactory::getBean($beans[0]['module'], $beans[0]['id']);
             if ($firstBean) {
                 $email->parent_type = $beans[0]['module'];
                 $email->parent_id   = $beans[0]['id'];
@@ -465,7 +472,7 @@ class EmailsKRESTController
      * @return Email
      */
     private function findEmailByMessageId($message_id) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT * FROM emails WHERE message_id = '" . $message_id . "' LIMIT 1";
 
@@ -474,7 +481,7 @@ class EmailsKRESTController
             return null;
         }
         $row = $result->fetch_assoc();
-        $email = \BeanFactory::getBean('Emails', $row['id']);
+        $email = BeanFactory::getBean('Emails', $row['id']);
         return $email;
     }
 

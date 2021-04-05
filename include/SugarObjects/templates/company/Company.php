@@ -33,8 +33,10 @@
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\includes\SugarObjects\templates\company;
 
-require_once('include/SugarObjects/templates/basic/Basic.php');
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\SugarObjects\templates\basic\Basic;
 
 class Company extends Basic
 { 	
@@ -44,7 +46,7 @@ class Company extends Basic
     public function __construct()
  	{
  		parent::__construct();
- 		$this->emailAddress = new SugarEmailAddress();
+ 		$this->emailAddress = BeanFactory::getBean('EmailAddresses');
  	}
  	
  	/**
@@ -60,7 +62,7 @@ class Company extends Basic
     	$ori_in_workflow = empty($this->in_workflow) ? false : true;
 		$this->emailAddress->handleLegacySave($this, $this->module_dir);
     	$record_id = parent::save($check_notify, $fts_index_bean);
-        $override_email = array();
+        $override_email = [];
         if(!empty($this->email1_set_in_workflow)) {
             $override_email['emailAddress0'] = $this->email1_set_in_workflow;
         }
@@ -71,7 +73,7 @@ class Company extends Basic
             $this->in_workflow = false;
         }
         if($ori_in_workflow === false || !empty($override_email)){
-            $this->emailAddress->save($this->id, $this->module_dir, $override_email,'','','','',$this->in_workflow);
+            $this->emailAddress->saveEmailAddress($this->id, $this->module_dir, $override_email,'','','','',$this->in_workflow);
         }
 		return $record_id;
 	}
@@ -117,13 +119,13 @@ class Company extends Basic
      */
     public function add_fts_metadata()
     {
-        return array(
-            'is_inactive' => array(
+        return [
+            'is_inactive' => [
                 'type' => 'keyword',
                 'search' => false,
                 'enablesort' => true
-            )
-        );
+            ]
+        ];
     }
 
     /**

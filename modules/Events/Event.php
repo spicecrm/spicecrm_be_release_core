@@ -1,8 +1,7 @@
 <?php
+namespace SpiceCRM\modules\Events;
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-
-require_once('data/SugarBean.php');
+use SpiceCRM\data\SugarBean;
 
 class Event extends SugarBean {
     public $module_dir = 'Events';
@@ -10,10 +9,10 @@ class Event extends SugarBean {
     public $table_name = 'events';
     public $new_schema = true;
 
-    public $additional_column_fields = Array();
+    public $additional_column_fields = [];
 
-    public $relationship_fields = Array(
-    );
+    public $relationship_fields = [
+    ];
 
 
     public function get_summary_text(){

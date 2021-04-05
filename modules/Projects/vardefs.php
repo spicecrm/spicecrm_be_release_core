@@ -1,28 +1,13 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
-* SugarCRM Community Edition is a customer relationship management program developed by
-* SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
 * 
-* This program is free software; you can redistribute it and/or modify it under
-* the terms of the GNU Affero General Public License version 3 as published by the
-* Free Software Foundation with the addition of the following permission added
-* to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
-* IN WHICH THE COPYRIGHT IS OWNED BY SUGARCRM, SUGARCRM DISCLAIMS THE WARRANTY
-* OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-* FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
-* details.
-* 
-* You should have received a copy of the GNU Affero General Public License along with
-* this program; if not, see http://www.gnu.org/licenses or write to the Free
-* Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301 USA.
-* 
-* You can contact SugarCRM, Inc. headquarters at 10050 North Wolfe Road,
-* SW2-130, Cupertino, CA 95014, USA. or at email address contact@sugarcrm.com.
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
 * 
 * The interactive user interfaces in modified source and object code versions
 * of this program must display Appropriate Legal Notices, as required under
@@ -33,65 +18,73 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * SugarCRM" logo. If the display of the logo is not reasonably feasible for
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 
-
-$dictionary['Project'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['Project'] = [
     'table' => 'projects',
     'unified_search' => true,
     'full_text_search' => true,
     'unified_search_default_enabled' => false,
     'comment' => 'Projects',
-    'fields' => array(
-        'estimated_start_date' => array(
+    'fields' => [
+        'estimated_start_date' => [
             'name' => 'estimated_start_date',
             'vname' => 'LBL_DATE_START',
             'required' => true,
-            'validation' => array('type' => 'isbefore', 'compareto' => 'estimated_end_date', 'blank' => true),
+            'validation' => ['type' => 'isbefore', 'compareto' => 'estimated_end_date', 'blank' => true],
             'type' => 'date',
             'importable' => 'required',
             'enable_range_search' => true,
-        ),
-        'estimated_end_date' => array(
+        ],
+        'estimated_end_date' => [
             'name' => 'estimated_end_date',
             'vname' => 'LBL_DATE_END',
             'required' => true,
             'type' => 'date',
             'importable' => 'required',
             'enable_range_search' => true,
-        ),
-        'project_type' => array(
+        ],
+        'project_type' => [
             'name' => 'project_type',
             'vname' => 'LBL_TYPE',
             'type' => 'enum',
             'len' => 32,
             'options' => 'project_type_dom',
-        ),
-        'status' => array(
+        ],
+        'status' => [
             'name' => 'status',
             'vname' => 'LBL_STATUS',
             'type' => 'enum',
             'options' => 'project_status_dom',
-        ),
-        'priority' => array(
+        ],
+        'priority' => [
             'name' => 'priority',
             'vname' => 'LBL_PRIORITY',
             'type' => 'enum',
             'options' => 'projects_priority_options',
-        ),
-        'total_estimated_effort' => array(
+        ],
+        'total_estimated_effort' => [
             'name' => 'total_estimated_effort',
-            'type' => 'int',
+            'type' => 'double',
             'source' => 'non-db',
             'vname' => 'LBL_TOTAL_ESTIMATED_EFFORT',
-        ),
-        'total_actual_effort' => array(
+        ],
+        'total_actual_effort' => [
             'name' => 'total_actual_effort',
-            'type' => 'int',
+            'type' => 'double',
             'source' => 'non-db',
             'vname' => 'LBL_TOTAL_ACTUAL_EFFORT',
-        ),
-        'accounts' => array(
+        ],
+        'accounts' => [
             'name' => 'accounts',
             'type' => 'link',
             'module' => 'Accounts',
@@ -99,41 +92,8 @@ $dictionary['Project'] = array(
             'source' => 'non-db',
             'ignore_role' => true,
             'vname' => 'LBL_ACCOUNTS',
-        ),
-        'account_name' => array(
-            'name' => 'account_name',
-            'rname' => 'name',
-            'id_name' => 'account_id',
-            'vname' => 'LBL_ACCOUNT',
-            'join_name' => 'accounts',
-            'type' => 'relate',
-            'link' => 'accounts',
-            'table' => 'accounts',
-            'isnull' => 'true',
-            'module' => 'Accounts',
-            'dbType' => 'varchar',
-            'len' => '255',
-            'source' => 'non-db',
-            'unified_search' => true,
-        ),
-        'account_id' => array(
-            'name' => 'account_id',
-            'rname' => 'id',
-            'id_name' => 'account_id',
-            'vname' => 'LBL_ACCOUNT_ID',
-            'type' => 'relate',
-            'link' => 'accounts',
-            'table' => 'accounts',
-            'isnull' => 'true',
-            'module' => 'Accounts',
-            'dbType' => 'id',
-            'reportable' => false,
-            'source' => 'non-db',
-            'massupdate' => false,
-            'duplicate_merge' => 'disabled',
-            'hideacl' => true,
-        ),
-        'contacts' => array(
+        ],
+        'contacts' => [
             'name' => 'contacts',
             'type' => 'link',
             'module' => 'Contacts',
@@ -141,16 +101,16 @@ $dictionary['Project'] = array(
             'source' => 'non-db',
             'ignore_role' => true,
             'vname' => 'LBL_CONTACTS',
-        ),
-        'users' => array(
+        ],
+        'users' => [
             'name' => 'users',
             'type' => 'link',
             'module' => 'Users',
             'relationship' => 'projects_users',
             'source' => 'non-db',
             'vname' => 'LBL_USERS',
-        ),
-        'opportunities' => array(
+        ],
+        'opportunities' => [
             'name' => 'opportunities',
             'type' => 'link',
             'module' => 'Opportunities',
@@ -158,32 +118,32 @@ $dictionary['Project'] = array(
             'source' => 'non-db',
             'ignore_role' => true,
             'vname' => 'LBL_OPPORTUNITIES',
-        ),
-        'notes' => array(
+        ],
+        'notes' => [
             'name' => 'notes',
             'type' => 'link',
             'module' => 'Notes',
             'relationship' => 'projects_notes',
             'source' => 'non-db',
             'vname' => 'LBL_NOTES',
-        ),
-        'tasks' => array(
+        ],
+        'tasks' => [
             'name' => 'tasks',
             'type' => 'link',
             'module' => 'Tasks',
             'relationship' => 'projects_tasks',
             'source' => 'non-db',
             'vname' => 'LBL_TASKS',
-        ),
-        'meetings' => array(
+        ],
+        'meetings' => [
             'name' => 'meetings',
             'type' => 'link',
             'module' => 'Meetings',
             'relationship' => 'projects_meetings',
             'source' => 'non-db',
             'vname' => 'LBL_MEETINGS',
-        ),
-        'calls' => array(
+        ],
+        'calls' => [
             'name' => 'calls',
             'type' => 'link',
             'module' => 'Calls',
@@ -191,66 +151,52 @@ $dictionary['Project'] = array(
             'source' => 'non-db',
             'vname' => 'LBL_CALLS',
             'join_name' => 'calls'
-        ),
-        'emails' => array(
+        ],
+        'emails' => [
             'name' => 'emails',
             'type' => 'link',
             'module' => 'Emails',
             'relationship' => 'emails_projects_rel',
             'source' => 'non-db',
             'vname' => 'LBL_EMAILS',
-        ),
-        'projecttasks' => array(
-            'name' => 'projecttasks',
-            'type' => 'link',
-            'module' => 'ProjectTasks',
-            'relationship' => 'projects_projecttasks',
-            'source' => 'non-db',
-            'vname' => 'LBL_PROJECTTASKS',
-        ),
-// CR1000426 cleanup backend, module Cases removed
-//        'cases' => array(
-//            'name' => 'cases',
-//            'type' => 'link',
-//            'module' => 'Cases',
-//            'relationship' => 'projects_cases',
-//            'side' => 'right',
-//            'source' => 'non-db',
-//            'vname' => 'LBL_CASES',
-//        ),
-// CR1000426 cleanup backend, module Bugs removed
-//        'bugs' => array(
-//            'name' => 'bugs',
-//            'type' => 'link',
-//            'module' => 'Bugs',
-//            'relationship' => 'projects_bugs',
-//            'side' => 'right',
-//            'source' => 'non-db',
-//            'vname' => 'LBL_BUGS',
-//        ),
-        'documents' => array(
+        ],
+        'documents' => [
             'name' => 'documents',
             'type' => 'link',
             'relationship' => 'documents_projects',
             'source' => 'non-db',
             'module' => 'Documents',
             'vname' => 'LBL_DOCUMENTS',
-        ),
-        'scrumthemes' => array(
+        ],
+        'scrumthemes' => [
             'name' => 'scrumthemes',
             'type' => 'link',
             'relationship' => 'project_scrumthemes',
             'rname' => 'name',
             'source' => 'non-db',
             'module' => 'ScrumThemes'
-        ),
+        ],
+        'projectactivitytypes' => [
+            'name' => 'projectactivitytypes',
+            'vname' => 'LBL_PROJECTACTIVITYTYPES',
+            'type' => 'link',
+            'relationship' => 'projectactivitytype_projects',
+            'source' => 'non-db',
+            'module' => 'ProjectActivityTypes'
+        ],
+        'projectmilestones' => [
+            'name' => 'projectmilestones',
+            'vname' => 'LBL_PROJECTMILESTONES',
+            'type' => 'link',
+            'module' => 'ProjectMilestones',
+            'relationship' => 'projects_projectmilestones',
+            'source' => 'non-db',
+        ]
 
-    ),
-    'indices' => array(
+    ],
 
-    ),
-    'relationships' => array(
-        'projects_notes' => array(
+    'relationships' => [
+        'projects_notes' => [
             'lhs_module' => 'Projects',
             'lhs_table' => 'projects',
             'lhs_key' => 'id',
@@ -260,8 +206,8 @@ $dictionary['Project'] = array(
             'relationship_type' => 'one-to-many',
             'relationship_role_column' => 'parent_type',
             'relationship_role_column_value' => 'Projects'
-        ),
-        'projects_tasks' => array(
+        ],
+        'projects_tasks' => [
             'lhs_module' => 'Projects',
             'lhs_table' => 'projects',
             'lhs_key' => 'id',
@@ -271,8 +217,8 @@ $dictionary['Project'] = array(
             'relationship_type' => 'one-to-many',
             'relationship_role_column' => 'parent_type',
             'relationship_role_column_value' => 'Projects'
-        ),
-        'projects_meetings' => array(
+        ],
+        'projects_meetings' => [
             'lhs_module' => 'Projects',
             'lhs_table' => 'projects',
             'lhs_key' => 'id',
@@ -282,8 +228,8 @@ $dictionary['Project'] = array(
             'relationship_type' => 'one-to-many',
             'relationship_role_column' => 'parent_type',
             'relationship_role_column_value' => 'Projects'
-        ),
-        'projects_calls' => array(
+        ],
+        'projects_calls' => [
             'lhs_module' => 'Projects',
             'lhs_table' => 'projects',
             'lhs_key' => 'id',
@@ -293,8 +239,8 @@ $dictionary['Project'] = array(
             'relationship_type' => 'one-to-many',
             'relationship_role_column' => 'parent_type',
             'relationship_role_column_value' => 'Projects'
-        ),
-        'projects_emails' => array(
+        ],
+        'projects_emails' => [
             'lhs_module' => 'Projects',
             'lhs_table' => 'projects',
             'lhs_key' => 'id',
@@ -304,17 +250,8 @@ $dictionary['Project'] = array(
             'relationship_type' => 'one-to-many',
             'relationship_role_column' => 'parent_type',
             'relationship_role_column_value' => 'Projects'
-        ),
-        'projects_projecttasks' => array(
-            'lhs_module' => 'Projects',
-            'lhs_table' => 'projects',
-            'lhs_key' => 'id',
-            'rhs_module' => 'ProjectTasks',
-            'rhs_table' => 'projecttasks',
-            'rhs_key' => 'project_id',
-            'relationship_type' => 'one-to-many'
-        ),
-        'projects_projectactivities' => array(
+        ],
+        'projects_projectactivities' => [
             'lhs_module' => 'Projects',
             'lhs_table' => 'projects',
             'lhs_key' => 'id',
@@ -325,8 +262,8 @@ $dictionary['Project'] = array(
             'join_table'=> 'projectwbss',
             'join_key_lhs'=>'project_id',
             'join_key_rhs'=>'id'
-        ),
-        'projects_assigned_user' => array(
+        ],
+        'projects_assigned_user' => [
             'lhs_module' => 'Users',
             'lhs_table' => 'users',
             'lhs_key' => 'id',
@@ -334,8 +271,8 @@ $dictionary['Project'] = array(
             'rhs_table' => 'projects',
             'rhs_key' => 'assigned_user_id',
             'relationship_type' => 'one-to-many'
-        ),
-        'projects_modified_user' => array(
+        ],
+        'projects_modified_user' => [
             'lhs_module' => 'Users',
             'lhs_table' => 'users',
             'lhs_key' => 'id',
@@ -343,8 +280,8 @@ $dictionary['Project'] = array(
             'rhs_table' => 'projects',
             'rhs_key' => 'modified_user_id',
             'relationship_type' => 'one-to-many'
-        ),
-        'projects_created_by' => array(
+        ],
+        'projects_created_by' => [
             'lhs_module' => 'Users',
             'lhs_table' => 'users',
             'lhs_key' => 'id',
@@ -352,8 +289,8 @@ $dictionary['Project'] = array(
             'rhs_table' => 'projects',
             'rhs_key' => 'created_by',
             'relationship_type' => 'one-to-many'
-        ),
-        'projects_projectwbss' => array(
+        ],
+        'projects_projectwbss' => [
             'lhs_module' => 'Projects',
             'lhs_table' => 'projects',
             'lhs_key' => 'id',
@@ -361,48 +298,40 @@ $dictionary['Project'] = array(
             'rhs_table' => 'projectwbss',
             'rhs_key' => 'project_id',
             'relationship_type' => 'one-to-many'
-        ),
-
-    ),
-);
+        ],
+    ],
+    'indices' => [
+        ['name' => 'idx_projects_typedel', 'type' => 'index', 'fields' => ['project_type', 'deleted']],
+        ['name' => 'idx_projects_statusdel', 'type' => 'index', 'fields' => ['status', 'deleted']],
+        ['name' => 'idx_projects_typestatusdel', 'type' => 'index', 'fields' => ['project_type', 'status', 'deleted']],
+    ],
+];
 
 // CE version has not all projects modules...
 //set global else error with PHP7.1: Uncaught Error: Cannot use string offset as an array
-global  $dictionary;
-if(is_file('modules/ProjectMilestones/ProjectMilestone.php')) {
-    $dictionary['Project']['fields']['projectmilestones'] = array(
-        'name' => 'projectmilestones',
-        'vname' => 'LBL_PROJECTMILESTONES',
-        'type' => 'link',
-        'module' => 'ProjectMilestones',
-        'relationship' => 'projects_projectmilestones',
-        'source' => 'non-db',
-        'side' => 'right',
-    );
-}
+global $dictionary;
 if(is_file('modules/ProjectActivities/ProjectActivity.php')) {
-    $dictionary['Project']['fields']['projectactivities'] = array(
+    $dictionary['Project']['fields']['projectactivities'] = [
         'name' => 'projectactivities',
         'vname' => 'LBL_PROJECTACTIVITIES',
         'type' => 'link',
         'relationship' => 'projects_projectactivities',
         'source'=>'non-db',
         'module' => 'ProjectActivities',
-    );
+    ];
 }
 if(is_file('modules/ProjectWBSs/ProjectWBS.php')) {
-    $dictionary['Project']['fields']['projectwbss'] = array(
+    $dictionary['Project']['fields']['projectwbss'] = [
         'name' => 'projectwbss',
         'vname' => 'LBL_PROJECTWBSS',
         'type' => 'link',
         'relationship' => 'projects_projectwbss',
         'source'=>'non-db',
-        'side' => 'right',
         'module' => 'ProjectWBSs'
-    );
+    ];
 }
 if(is_file('modules/Products/Product.php')) {
-    $dictionary['Project']['fields']['products'] = array(
+    $dictionary['Project']['fields']['products'] = [
         'name' => 'products',
         'vname' => 'LBL_PRODUCTS',
         'type' => 'link',
@@ -410,20 +339,20 @@ if(is_file('modules/Products/Product.php')) {
         'relationship' => 'projects_products',
         'side' => 'right',
         'source' => 'non-db',
-    );
+    ];
 }
 
-VardefManager::createVardef('Projects', 'Project', array('default', 'assignable'));
+VardefManager::createVardef('Projects', 'Project', ['default', 'assignable']);
 
 global $dictionary;
 // CR1000336
 if(is_file('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')){
-    $dictionary['Project']['relationships']['account_systemdeploymentreleases'] = array(
+    $dictionary['Project']['relationships']['account_systemdeploymentreleases'] = [
         'lhs_module' => 'Projects', 'lhs_table' => 'projects', 'lhs_key' => 'id',
         'rhs_module' => 'SystemDeploymentReleases', 'rhs_table' => 'systemdeploymentreleases', 'rhs_key' => 'parent_id',
         'relationship_type' => 'one-to-many', 'relationship_role_column' => 'parent_type',
         'relationship_role_column_value' => 'Projects'
-    );
+    ];
 //    $dictionary['Project']['fields']['systemdeploymentreleases'] = array(
 //        'name' => 'systemdeploymentreleases',
 //        'type' => 'link',
@@ -436,7 +365,7 @@ if(is_file('modules/SystemDeploymentReleases/SystemDeploymentRelease.php')){
 }
 
 if(is_file('modules/SalesDocs/SalesDoc.php')) {
-    $dictionary['Project']['fields']['salesdocs'] = array(
+    $dictionary['Project']['fields']['salesdocs'] = [
         'name' => 'salesdocs',
         'type' => 'link',
         'relationship' => 'salesdocs_projects_parent',
@@ -444,6 +373,6 @@ if(is_file('modules/SalesDocs/SalesDoc.php')) {
         'bean_name' => 'SalesDoc',
         'source' => 'non-db',
         'vname' => 'LBL_SALESDOCS',
-    );
+    ];
 }
 

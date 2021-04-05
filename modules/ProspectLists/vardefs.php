@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,45 +34,47 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['ProspectList'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['ProspectList'] = [
     'table' => 'prospect_lists',
     'unified_search' => true,
     'full_text_search' => true,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'vname' => 'LBL_ID',
             'type' => 'id',
             'required' => true
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_NAME',
             'type' => 'varchar',
             'len' => '50',
             'importable' => 'required',
             'unified_search' => true,
-            'full_text_search' => array('boost' => 3),
-        ),
-        'list_type' => array(
+            'full_text_search' => ['boost' => 3],
+        ],
+        'list_type' => [
             'name' => 'list_type',
             'vname' => 'LBL_TYPE',
             'type' => 'enum',
             'options' => 'prospect_list_type_dom',
             'len' => 100,
             'importable' => 'required',
-        ),
-        'date_entered' => array(
+        ],
+        'date_entered' => [
             'name' => 'date_entered',
             'vname' => 'LBL_DATE_ENTERED',
             'type' => 'datetime',
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'vname' => 'LBL_DATE_MODIFIED',
             'type' => 'datetime',
-        ),
-        'modified_user_id' => array(
+        ],
+        'modified_user_id' => [
             'name' => 'modified_user_id',
             'rname' => 'user_name',
             'id_name' => 'modified_user_id',
@@ -83,8 +84,8 @@ $dictionary['ProspectList'] = array(
             'isnull' => 'false',
             'dbType' => 'id',
             'reportable' => true,
-        ),
-        'modified_by_name' => array(
+        ],
+        'modified_by_name' => [
             'name' => 'modified_by_name',
             'vname' => 'LBL_MODIFIED_BY',
             'type' => 'relate',
@@ -94,8 +95,8 @@ $dictionary['ProspectList'] = array(
             'id_name' => 'modified_user_id',
             'module' => 'Users',
             'duplicate_merge' => 'disabled',
-        ),
-        'created_by' => array(
+        ],
+        'created_by' => [
             'name' => 'created_by',
             'rname' => 'user_name',
             'id_name' => 'created_by',
@@ -104,8 +105,8 @@ $dictionary['ProspectList'] = array(
             'table' => 'created_by_users',
             'isnull' => 'false',
             'dbType' => 'id'
-        ),
-        'created_by_name' => array(
+        ],
+        'created_by_name' => [
             'name' => 'created_by_name',
             'vname' => 'LBL_CREATED',
             'type' => 'relate',
@@ -115,67 +116,67 @@ $dictionary['ProspectList'] = array(
             'id_name' => 'created_by',
             'module' => 'Users',
             'duplicate_merge' => 'disabled',
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'vname' => 'LBL_CREATED_BY',
             'type' => 'bool',
             'required' => false,
             'reportable' => false,
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'vname' => 'LBL_DESCRIPTION',
             'type' => 'text',
-        ),
-        'domain_name' => array(
+        ],
+        'domain_name' => [
             'name' => 'domain_name',
             'vname' => 'LBL_DOMAIN_NAME',
             'type' => 'varchar',
             'len' => '255',
-        ),
-        'entry_count' => array(
+        ],
+        'entry_count' => [
             'name' => 'entry_count',
             'type' => 'int',
             'source' => 'non-db',
             'vname' => 'LBL_LIST_ENTRIES',
-        ),
-        'ext_id' => array (
+        ],
+        'ext_id' => [
             'name' => 'ext_id',
             'vname' => 'LBL_EXT_ID',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        'attribute_id' => array (
+        ],
+        'attribute_id' => [
             'name' => 'attribute_id',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        'prospectlists_accounts_quantity' => array(
+        ],
+        'prospectlists_accounts_quantity' => [
             'name' => 'prospectlists_accounts_quantity',
             'vname' => 'LBL_QUANTITY',
             'type' => 'varchar',
             'source' => 'non-db'
-        ),
-        'prospectlists_contacts_quantity' => array(
+        ],
+        'prospectlists_contacts_quantity' => [
             'name' => 'prospectlists_contacts_quantity',
             'vname' => 'LBL_QUANTITY',
             'type' => 'varchar',
             'source' => 'non-db'
-        ),
-        'prospectlists_consumer_quantity' => array(
+        ],
+        'prospectlists_consumer_quantity' => [
             'name' => 'prospectlists_consumer_quantity',
             'vname' => 'LBL_QUANTITY',
             'type' => 'varchar',
             'source' => 'non-db'
-        ),
-        'prospects' => array(
+        ],
+        'prospects' => [
             'name' => 'prospects',
             'type' => 'link',
             'relationship' => 'prospect_list_prospects',
             'source' => 'non-db',
-        ),
-        'contacts' => array(
+        ],
+        'contacts' => [
             'name' => 'contacts',
             'type' => 'link',
             'vname' => 'LBL_CONTACTS',
@@ -186,8 +187,8 @@ $dictionary['ProspectList'] = array(
                     'map' => 'prospectlists_contacts_quantity'
                 ]
             ]
-        ),
-        'consumers' => array(
+        ],
+        'consumers' => [
             'name' => 'consumers',
             'type' => 'link',
             'vname' => 'LBL_CONSUMERS',
@@ -198,15 +199,15 @@ $dictionary['ProspectList'] = array(
                     'map' => 'prospectlists_consumer_quantity'
                 ]
             ]
-        ),
-        'leads' => array(
+        ],
+        'leads' => [
             'name' => 'leads',
             'type' => 'link',
             'vname' => 'LBL_LEADS',
             'relationship' => 'prospect_list_leads',
             'source' => 'non-db',
-        ),
-        'accounts' => array(
+        ],
+        'accounts' => [
             'name' => 'accounts',
             'vname' => 'LBL_ACCOUNTS',
             'type' => 'link',
@@ -217,28 +218,28 @@ $dictionary['ProspectList'] = array(
                     'map' => 'prospectlists_accounts_quantity'
                 ]
             ]
-        ),
-        'campaigns' => array(
+        ],
+        'campaigns' => [
             'name' => 'campaigns',
             'type' => 'link',
             'vname' => 'LBL_CAMPAIGNS',
             'relationship' => 'prospect_list_campaigns',
             'source' => 'non-db',
-        ),
-        'campaigntasks' => array(
+        ],
+        'campaigntasks' => [
             'name' => 'campaigntasks',
             'type' => 'link',
             'vname' => 'LBL_CAMPAIGNTASKS',
             'relationship' => 'prospect_list_campaigntasks',
             'source' => 'non-db',
-        ),
-        'users' => array(
+        ],
+        'users' => [
             'name' => 'users',
             'type' => 'link',
             'vname' => 'LBL_USERS',
             'relationship' => 'prospect_list_users',
             'source' => 'non-db',
-        ),
+        ],
 // CR1000465 cleanup Email
 //        'email_marketing' => array(
 //            'name' => 'email_marketing',
@@ -246,38 +247,38 @@ $dictionary['ProspectList'] = array(
 //            'relationship' => 'email_marketing_prospect_lists',
 //            'source' => 'non-db',
 //        ),
-        'marketing_id' => array(
+        'marketing_id' => [
             'name' => 'marketing_id',
             'vname' => 'LBL_MARKETING_ID',
             'type' => 'varchar',
             'len' => '36',
             'source' => 'non-db',
-        ),
-        'marketing_name' => array(
+        ],
+        'marketing_name' => [
             'name' => 'marketing_name',
             'vname' => 'LBL_MARKETING_NAME',
             'type' => 'varchar',
             'len' => '255',
             'source' => 'non-db',
-        ),
-        'prospect_list_filters' => array(
+        ],
+        'prospect_list_filters' => [
             'name' => 'prospect_list_filters',
             'type' => 'link',
             'relationship' => 'prospectlists_prospect_list_filters',
             'source' => 'non-db',
             'module' => 'ProspectListFilters'
-        )
-    ),
+        ]
+    ],
 
-    'indices' => array(
-        array(
+    'indices' => [
+        [
             'name' => 'idx_prospect_list_name',
             'type' => 'index',
-            'fields' => array('name')
-        ),
-    ),
-    'relationships' => array(
-        'prospectlists_assigned_user' => array(
+            'fields' => ['name']
+        ],
+    ],
+    'relationships' => [
+        'prospectlists_assigned_user' => [
             'lhs_module' => 'Users',
             'lhs_table' => 'users',
             'lhs_key' => 'id',
@@ -285,8 +286,8 @@ $dictionary['ProspectList'] = array(
             'rhs_table' => 'prospect_lists',
             'rhs_key' => 'assigned_user_id',
             'relationship_type' => 'one-to-many'
-        ),
-        'prospectlists_prospect_list_filters' => array(
+        ],
+        'prospectlists_prospect_list_filters' => [
             'lhs_module' => 'ProspectLists',
             'lhs_table' => 'prospectlists',
             'lhs_key' => 'id',
@@ -294,9 +295,9 @@ $dictionary['ProspectList'] = array(
             'rhs_table' => 'prospect_list_filters',
             'rhs_key' => 'prospectlist_id',
             'relationship_type' => 'one-to-many'
-        ),
+        ],
 
-    )
-);
+    ]
+];
 
-VardefManager::createVardef('ProspectLists', 'ProspectList', array('assignable', 'default'));
+VardefManager::createVardef('ProspectLists', 'ProspectList', ['assignable', 'default']);

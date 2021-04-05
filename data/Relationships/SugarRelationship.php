@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,12 +34,11 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\data\Relationships;
 
-global $dictionary;
-//Load all relationship metadata
-include_once("modules/TableDictionary.php");
-require_once("data/BeanFactory.php");
-
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SysTrashCan\SysTrashCan;
+use SpiceCRM\includes\TimeDate;
 
 define('REL_LHS', 'LHS');
 define('REL_RHS', 'RHS');
@@ -64,7 +62,7 @@ abstract class SugarRelationship
     protected $ignore_role_filter = false;
     protected $self_referencing = false; //A relationship is self referencing when LHS module = RHS Module
 
-    protected static $beansToResave = array();
+    protected static $beansToResave = [];
 
     public function __debugInfo()
     {
@@ -72,7 +70,7 @@ abstract class SugarRelationship
         return $this->def['relationships'];
     }
 
-    public abstract function add($lhs, $rhs, $additionalFields = array());
+    public abstract function add($lhs, $rhs, $additionalFields = []);
 
     /**
      * @abstract
@@ -87,7 +85,7 @@ abstract class SugarRelationship
      * @param $link Link2 loads the rows for this relationship that match the given link
      * @return void
      */
-    public abstract function load($link, $params = array());
+    public abstract function load($link, $params = []);
 
     /**
      * Gets the query to load a link.
@@ -97,7 +95,7 @@ abstract class SugarRelationship
      * @param  $link Link Object to get query for.
      * @return string|array query used to load this relationship
      */
-    public abstract function getQuery($link, $params = array());
+    public abstract function getQuery($link, $params = []);
 
 
     public function getCount($link, $params)
@@ -155,7 +153,7 @@ abstract class SugarRelationship
 
             // write trash record
             if ($link->def['recover'] !== false)
-                \SpiceCRM\includes\SysTrashCan\SysTrashCan::addRecord('related', get_class($focus), $focus->id, $relBean->get_summary_text(), $link->name, get_class($relBean), $relBean->id);
+                SysTrashCan::addRecord('related', $focus->module_name, $focus->id, $relBean->get_summary_text(), $link->name, $relBean->module_name, $relBean->id);
 
             $result = $result && $sub_result;
         }
@@ -169,7 +167,7 @@ abstract class SugarRelationship
      */
     public function removeById($rowID)
     {
-        $this->removeRow(array("id" => $rowID));
+        $this->removeRow(["id" => $rowID]);
     }
 
     /**
@@ -209,7 +207,7 @@ abstract class SugarRelationship
      */
     public function getFields()
     {
-        return isset($this->def['fields']) ? $this->def['fields'] : array();
+        return isset($this->def['fields']) ? $this->def['fields'] : [];
     }
 
     /**
@@ -222,7 +220,7 @@ abstract class SugarRelationship
         if (!empty($existing)) //Update the existing row, overriding the values with those passed in
             return $this->updateRow($existing['id'], array_merge($existing, $row));
 
-        $values = array();
+        $values = [];
         foreach ($this->getFields() as $def) {
             $field = $def['name'];
             if (isset($row[$field])) {
@@ -244,7 +242,7 @@ abstract class SugarRelationship
      */
     protected function updateRow($id, $values)
     {
-        $newVals = array();
+        $newVals = [];
         //Unset the ID since we are using it to update the row
         if (isset($values['id'])) unset($values['id']);
         foreach ($values as $field => $val) {
@@ -269,7 +267,7 @@ abstract class SugarRelationship
             return false;
 
         $date_modified = TimeDate::getInstance()->getNow()->format(TimeDate::DB_DATETIME_FORMAT);
-        $stringSets = array();
+        $stringSets = [];
         foreach ($where as $field => $val) {
             $stringSets[] = "$field = '$val'";
         }
@@ -345,7 +343,7 @@ abstract class SugarRelationship
      */
     protected function getCustomLogicArguments($focus, $related, $link_name)
     {
-        $custom_logic_arguments = array();
+        $custom_logic_arguments = [];
         $custom_logic_arguments['id'] = $focus->id;
         $custom_logic_arguments['related_id'] = $related->id;
         $custom_logic_arguments['module'] = $focus->module_dir;
@@ -416,7 +414,7 @@ abstract class SugarRelationship
     protected function getOptionalWhereClause($optional_array)
     {
         //lhs_field, operator, and rhs_value must be set in optional_array
-        foreach (array("lhs_field", "operator", "rhs_value") as $required) {
+        foreach (["lhs_field", "operator", "rhs_value"] as $required) {
             if (empty($optional_array[$required]))
                 return "";
         }
@@ -433,7 +431,7 @@ abstract class SugarRelationship
     public static function addToResaveList($bean)
     {
         if (!isset(self::$beansToResave[$bean->module_dir])) {
-            self::$beansToResave[$bean->module_dir] = array();
+            self::$beansToResave[$bean->module_dir] = [];
         }
         self::$beansToResave[$bean->module_dir][$bean->id] = $bean;
     }
@@ -464,7 +462,7 @@ abstract class SugarRelationship
         $GLOBALS['resavingRelatedBeans'] = false;
 
         //Reset the list of beans that will need to be resaved
-        self::$beansToResave = array();
+        self::$beansToResave = [];
     }
 
     /**
@@ -500,7 +498,7 @@ abstract class SugarRelationship
             case "rhs_table" :
                 isset($this->def['rhs_table']) ? $this->def['rhs_table'] : "";
             case "list_fields":
-                return array('lhs_table', 'lhs_key', 'rhs_module', 'rhs_table', 'rhs_key', 'relationship_type');
+                return ['lhs_table', 'lhs_key', 'rhs_module', 'rhs_table', 'rhs_key', 'relationship_type'];
         }
 
         if (isset($this->$name))

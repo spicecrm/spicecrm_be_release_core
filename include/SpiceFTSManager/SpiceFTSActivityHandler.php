@@ -1,11 +1,47 @@
 <?php
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
 
 namespace SpiceCRM\includes\SpiceFTSManager;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\SysModuleFilters\SysModuleFilters;
+use SpiceCRM\KREST\handlers\ModuleHandler;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
+
 class SpiceFTSActivityHandler
 {
-    static function checkActivities($module)
+    public static function checkActivities($module)
     {
-        $settings = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexSettings($module);
+        $settings = SpiceFTSUtils::getBeanIndexSettings($module);
 
         return [
             'Activities' => $settings['activitiessearch'] ?: false,
@@ -27,23 +63,23 @@ class SpiceFTSActivityHandler
      *
      * @return array and array with the element totalcount, aggregates and items
      */
-    static function loadActivities($activitiesmodule, $parentid, $start = 0, $limit = 10, $searchterm = '', $ownerfiler = '', $objects = [])
+    public static function loadActivities($activitiesmodule, $parentid, $start = 0, $limit = 10, $searchterm = '', $ownerfiler = '', $objects = [])
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-        $modules = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getActivitiyModules($activitiesmodule);
+        $modules = SpiceFTSUtils::getActivitiyModules($activitiesmodule);
         $moduleQueries = [];
         $queryModules = [];
         $postFilters = [];
 
         // create an instance of the elastichandler
-        $elastichandler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
+        $elastichandler = new ElasticHandler();
 
         foreach ($modules as $module => $moduleDetails) {
 
             // check acl access for the user as well as if a filter object is set
-            //if(!$GLOBALS['ACLController']->checkACLAccess($module, 'list') || ($objects && count($objects) > 0 && array_search_insensitive($module, $objects) === false)){
-            if (!$GLOBALS['ACLController']->checkAccess($module, 'list') || !$elastichandler->checkIndex($module)) {
+            //if(!SpiceACL::getInstance()->checkACLAccess($module, 'list') || ($objects && count($objects) > 0 && array_search_insensitive($module, $objects) === false)){
+            if (!SpiceACL::getInstance()->checkAccess($module, 'list') || !$elastichandler->checkIndex($module)) {
                 continue;
             }
 
@@ -54,7 +90,7 @@ class SpiceFTSActivityHandler
             // check if we have a filter
 
             if ($beanHandler->indexSettings[strtolower($activitiesmodule) . 'filter']) {
-                $filter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+                $filter = new SysModuleFilters();
                 $filterDef = $filter->generareElasticFilterForFilterId($beanHandler->indexSettings[strtolower($activitiesmodule) . 'filter']);
                 $moduleQuery['bool']['filter']['bool']['must'][] = $filterDef;
             }
@@ -140,16 +176,16 @@ class SpiceFTSActivityHandler
             ];
         }
 
-        $elastichandler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
+        $elastichandler = new ElasticHandler();
         $results = json_decode($elastichandler->query('POST', join(',', $queryModules) . '/_search', null, $query), true);
 
-        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $moduleHandler = new ModuleHandler();
 
         $items = [];
         foreach ($results['hits']['hits'] as &$hit) {
-            if(!$seed = \BeanFactory::getBean($elastichandler->getHitModule($hit), $hit['_id'])){
-                $GLOBALS['log']->fatal(__CLASS__. 'on line '.__LINE__.': no '.$elastichandler->getHitModule($hit).' found with id='.$hit['_id'].'. Check if bean is indexed properly');
-                $GLOBALS['log']->fatal($hit);
+            if(!$seed = BeanFactory::getBean($elastichandler->getHitModule($hit), $hit['_id'])){
+                LoggerManager::getLogger()->fatal(__CLASS__. 'on line '.__LINE__.': no '.$elastichandler->getHitModule($hit).' found with id='.$hit['_id'].'. Check if bean is indexed properly');
+                LoggerManager::getLogger()->fatal($hit);
                 // make correction in total count
 // not sure it's a good idea because of debugging since "correct total" doesn't point to any problem
 //                $newtotal = $elastichandler->getHitsTotalValue($results);
@@ -159,11 +195,11 @@ class SpiceFTSActivityHandler
             }
             foreach ($seed->field_name_map as $field => $fieldData) {
                 //if (!isset($hit['_source']{$field}))
-                $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
+                $hit['_source'][$field] = $seed->{$field} && is_string($seed->{$field}) ? html_entity_decode($seed->{$field}, ENT_QUOTES) : null;
             }
 
             // get the email addresses
-            $krestHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+            $krestHandler = new ModuleHandler();
             $hit['_source']['emailaddresses'] = $krestHandler->getEmailAddresses($elastichandler->getHitModule($hit), $hit['_id']);
 
             $hit['acl'] = $seed->getACLActions();
@@ -223,9 +259,9 @@ class SpiceFTSActivityHandler
      *
      * @return array and array with the element totalcount, aggregates and items
      */
-    static function loadCalendarEvents($startdate, $enddate, $userId, $searchterm = '', $usersIds = [], $objects = [])
+    public static function loadCalendarEvents($startdate, $enddate, $userId, $searchterm = '', $usersIds = [], $objects = [])
     {
-        $modules = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getCalendarModules();
+        $modules = SpiceFTSUtils::getCalendarModules();
         $moduleQueries = [];
         $queryModules = [];
         $postFilters = [];
@@ -233,8 +269,8 @@ class SpiceFTSActivityHandler
         foreach ($modules as $module => $moduleDetails) {
 
             // check acl access for the user as well as if a filter object is set
-            //if(!$GLOBALS['ACLController']->checkACLAccess($module, 'list') || ($objects && count($objects) > 0 && array_search_insensitive($module, $objects) === false)){
-            if (!$GLOBALS['ACLController']->checkAccess($module, 'list', $userId)) {
+            //if(!SpiceACL::getInstance()->checkACLAccess($module, 'list') || ($objects && count($objects) > 0 && array_search_insensitive($module, $objects) === false)){
+            if (!SpiceACL::getInstance()->checkAccess($module, 'list', $userId)) {
                 continue;
             }
 
@@ -246,7 +282,7 @@ class SpiceFTSActivityHandler
             // check if we have a filter
 
             if ($beanHandler->indexSettings['calendarfilter']) {
-                $filter = new \SpiceCRM\includes\SysModuleFilters\SysModuleFilters();
+                $filter = new SysModuleFilters();
                 $filterDef = $filter->generareElasticFilterForFilterId($beanHandler->indexSettings['calendarfilter']);
                 $moduleQuery['bool']['filter']['bool']['must'][] = $filterDef;
             }
@@ -316,20 +352,23 @@ class SpiceFTSActivityHandler
         // set a size
         // ToDo: make this configurable
         // Make this configurable using another was than sugar_config and/or add aggs to group by id in results
-        $query['size'] = (!empty($GLOBALS['sugar_config']['fts']['calendareventssize']) ? $GLOBALS['sugar_config']['fts']['calendareventssize'] : 100);
+        $query['size'] = (!empty(SpiceConfig::getInstance()->config['fts']['calendareventssize']) ? SpiceConfig::getInstance()->config['fts']['calendareventssize'] : 100);
 
-        $elastichandler = new \SpiceCRM\includes\SpiceFTSManager\ElasticHandler();
+        $elastichandler = new ElasticHandler();
         $results = json_decode($elastichandler->query('POST', join(',', $queryModules) . '/_search', null, $query), true);
 
 
-        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $moduleHandler = new ModuleHandler();
 
         $items = [];
+        /** @todo clarify if we should add a check for the data types to split an object etc.. */
         foreach ($results['hits']['hits'] as &$hit) {
-            $seed = \BeanFactory::getBean($elastichandler->getHitModule($hit), $hit['_id']);
+            $seed = BeanFactory::getBean($elastichandler->getHitModule($hit), $hit['_id']);
             foreach ($seed->field_name_map as $field => $fieldData) {
                 //if (!isset($hit['_source']{$field}))
-                $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
+                if(is_string($seed->$field)){
+                    $hit['_source'][$field] = html_entity_decode( $seed->$field, ENT_QUOTES);
+                }
             }
 
             $hit['_source']['emailaddresses'] = $moduleHandler->getEmailAddresses($elastichandler->getHitModule($hit), $hit['_id']);

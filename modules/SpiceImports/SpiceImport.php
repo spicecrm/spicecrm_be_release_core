@@ -26,8 +26,15 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+namespace SpiceCRM\modules\SpiceImports;
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\ErrorHandlers\BadRequestException;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class SpiceImport extends SugarBean
 {
@@ -42,8 +49,6 @@ class SpiceImport extends SugarBean
 
     public static function getFilePreview($params)
     {
-        global $current_user, $sugar_config;
-
         $delimiter = ($params['separator'] == 'comma') ? ',' : ';';
         $enclosure = chr(8);
 
@@ -60,10 +65,8 @@ class SpiceImport extends SugarBean
         $fileData = [];
         $fileHeader = [];
 
-        $file = file("upload://" . $params['file_md5']);
-        $maxRows = (isset($sugar_config['import_max_records_per_file']) ? $sugar_config['import_max_records_per_file'] : 50);
+        $maxRows = (isset(SpiceConfig::getInstance()->config['import_max_records_per_file']) ? SpiceConfig::getInstance()->config['import_max_records_per_file'] : 50);
 
-        $fileTooBig = count($file) > $maxRows;
 
         if (($handle = fopen("upload://" . $params['file_md5'], "r")) !== FALSE) {
             $fileHeader = fgetcsv($handle, 0, $delimiter, $enclosure);
@@ -72,22 +75,17 @@ class SpiceImport extends SugarBean
             }, $fileHeader);
 
             if (!is_array($fileHeader) || count($fileHeader) < 2) {
-                throw new \SpiceCRM\KREST\BadRequestException('separator or enclosure settings do not match the file settings');
+                throw new BadRequestException('separator or enclosure settings do not match the file settings');
             }
 
-            file_put_contents($file, preg_replace('{(.)\1+}', '$1', $handle), file_get_contents($file));
             while (($data = fgetcsv($handle, 0, $delimiter, $enclosure)) !== FALSE) {
-                if (array(null) !== $data) {
+                if ([null] !== $data) {
                     if ($row < 2) {
                         $fileData[] = array_map(function ($item) {
                             return !mb_detect_encoding($item, 'utf-8', true) ? utf8_encode($item) : $item;
                         }, $data);
-                    } else {
-                        break;
                     }
                     $row++;
-                } else {
-                    $data;
                 }
             }
             fclose($handle);
@@ -97,24 +95,24 @@ class SpiceImport extends SugarBean
             'fileHeader' => $fileHeader,
             'fileData' => $fileData,
             'fileRows' => $row,
-            'fileTooBig' => $fileTooBig
+            'fileTooBig' => $row > $maxRows
         ];
 
-        return json_encode($attachments);
+        return $attachments;
     }
 
     public function deleteImportFile($filemd5)
     {
         if (!unlink("upload://" . $filemd5)) {
-            return json_encode(array('status' => 'File cant be deleted'));
+            return json_encode(['status' => 'File cant be deleted']);
         } else {
-            return json_encode(array('status' => 'succeed'));
+            return json_encode(['status' => 'succeed']);
         }
     }
 
     function mark_deleted($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $data = json_decode($this->data);
         $filemd5 = $data->fileId;
@@ -136,13 +134,13 @@ class SpiceImport extends SugarBean
 
     public function getSavedImports($module)
     {
-        global $db;
-        $imports = array();
+        $db = DBManagerFactory::getInstance();
+        $imports = [];
         $savedImports = $db->query("SELECT * FROM spiceimporttemplates WHERE module = '$module' ORDER BY name");
         while ($savedImport = $db->fetchByAssoc($savedImports)) {
-            $savedImport['mappings'] = json_decode(str_replace(array("\r", "\n", "&#039;"), array('', '', '"'), html_entity_decode($savedImport['mappings'], ENT_QUOTES)), true) ?: array();
-            $savedImport['fixed'] = json_decode(str_replace(array("\r", "\n", "&#039;"), array('', '', '"'), html_entity_decode($savedImport['fixed'], ENT_QUOTES)), true) ?: array();
-            $savedImport['checks'] = json_decode(str_replace(array("\r", "\n", "&#039;"), array('', '', '"'), html_entity_decode($savedImport['checks'], ENT_QUOTES)), true) ?: array();
+            $savedImport['mappings'] = json_decode(str_replace(["\r", "\n", "&#039;"], ['', '', '"'], html_entity_decode($savedImport['mappings'], ENT_QUOTES)), true) ?: [];
+            $savedImport['fixed'] = json_decode(str_replace(["\r", "\n", "&#039;"], ['', '', '"'], html_entity_decode($savedImport['fixed'], ENT_QUOTES)), true) ?: [];
+            $savedImport['checks'] = json_decode(str_replace(["\r", "\n", "&#039;"], ['', '', '"'], html_entity_decode($savedImport['checks'], ENT_QUOTES)), true) ?: [];
 
             $imports[] = $savedImport;
         }
@@ -152,7 +150,7 @@ class SpiceImport extends SugarBean
 
     function saveFromImport($data)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $this->objectimport = json_decode($data['objectimport']);
         $this->data = $data['objectimport'];
         $this->module = $this->objectimport->module;
@@ -165,7 +163,7 @@ class SpiceImport extends SugarBean
         if ($this->objectimport->fileTooBig) {
             $this->status = 'q';
             parent::save();
-            return json_encode(array('status' => 'scheduled', 'msg' => 'Import has been scheduled'));
+            return json_encode(['status' => 'scheduled', 'msg' => 'Import has been scheduled']);
         } else {
             $this->status = 'i';
             parent::save();
@@ -178,7 +176,7 @@ class SpiceImport extends SugarBean
         $decodedData = json_decode($this->data);
         $this->objectimport = $decodedData;
         $error = false;
-        $list = array();
+        $list = [];
         $delimiter = ($this->objectimport->separator == 'comma') ? ',' : ';';
         $enclosure = chr(8);
 
@@ -200,17 +198,16 @@ class SpiceImport extends SugarBean
 
             while (($row = fgetcsv($handle, 1000, $delimiter, $enclosure)) !== FALSE) {
 
-                if (array(null) !== $row) {
+                if ([null] !== $row) {
                     $row = array_map(function ($item) {
                         return !mb_detect_encoding($item, 'utf-8', true) ? utf8_encode($item) : $item;
                     }, $row);
 
-                    $retrieve = array();
+                    $retrieve = [];
 
                     foreach ($this->objectimport->checkFields as $check_field)
                         $retrieve[$check_field->moduleField] = $row[array_search($check_field->mappedField, $fileHeader)];
 
-                    require_once('data/BeanFactory.php');
                     $newBean = BeanFactory::getBean($this->objectimport->module);
 
                     switch ($this->objectimport->importAction) {
@@ -239,10 +236,10 @@ class SpiceImport extends SugarBean
             $this->db->query($sql);
             $this->status = 'e';
             $this->save();
-            return json_encode(array('status' => 'error', 'list' => $list, 'import_id' => $this->id, 'msg' => 'Cant open file ' . $this->objectimport->fileName));
+            return json_encode(['status' => 'error', 'list' => $list, 'import_id' => $this->id, 'msg' => 'Cant open file ' . $this->objectimport->fileName]);
         }
 
-        return json_encode(array('status' => 'imported', 'list' => $list, 'import_id' => $this->id));
+        return json_encode(['status' => 'imported', 'list' => $list, 'import_id' => $this->id]);
     }
 
 
@@ -274,7 +271,7 @@ class SpiceImport extends SugarBean
                 $newBean->{$field->field} = $this->objectimport->fixedFieldsValues->{$field->field};
 
             $newBeanId = $newBean->save();
-            $list[] = array('status' => 'imported', 'recordId' => $newBeanId, 'data' => array($row[0], $row[1], $row[2], $row[3]));
+            $list[] = ['status' => 'imported', 'recordId' => $newBeanId, 'data' => [$row[0], $row[1], $row[2], $row[3]]];
 
             if ($this->objectimport->importDuplicateAction == 'log') {
                 $dupRecs = $newBean->checkForDuplicates();
@@ -282,16 +279,16 @@ class SpiceImport extends SugarBean
                 if (count($dupRecs) > 0) {
                     $error = true;
                     $newBeanId = $newBean->save();
-                    $GLOBALS['log']->debug('SpiceImports saved id ' . $newBeanId);
+                    LoggerManager::getLogger()->debug('SpiceImports saved id ' . $newBeanId);
                     $sql = "INSERT INTO spiceimportlogs (id, import_id, msg, data) VALUES (UUID(), '" . $this->id . "', '" . 'Duplicate Entry' . "', '" . implode('";"', $row) . "')";
-                    $list[] = array('status' => 'Duplicate Entry', 'data' => array($row[0], $row[1], $row[2], $row[3]));
+                    $list[] = ['status' => 'Duplicate Entry', 'data' => [$row[0], $row[1], $row[2], $row[3]]];
                     $this->db->query($sql);
                 }
             }
         } else {
             $sql = "INSERT INTO spiceimportlogs (id, import_id, msg, data) VALUES (UUID(), '" . $this->id . "', 'Record Exists', '" . implode('";"', $row) . "')";
             $error = true;
-            $list[] = array('status' => 'Record Exists', 'data' => array($row[0], $row[1], $row[2], $row[3]));
+            $list[] = ['status' => 'Record Exists', 'data' => [$row[0], $row[1], $row[2], $row[3]]];
             $this->db->query($sql);
         }
     }
@@ -310,12 +307,12 @@ class SpiceImport extends SugarBean
                 $newBean->{$field->field} = $this->objectimport->fixedFieldsValues->{$field->field};
 
             $newBeanId = $newBean->save();
-            $GLOBALS['log']->debug('SpiceImports saved id ' . $newBeanId);
-            $list[] = array('status' => 'updated', 'recordId' => $newBeanId, 'data' => array($row[0], $row[1], $row[2], $row[3]));
+            LoggerManager::getLogger()->debug('SpiceImports saved id ' . $newBeanId);
+            $list[] = ['status' => 'updated', 'recordId' => $newBeanId, 'data' => [$row[0], $row[1], $row[2], $row[3]]];
         } else {
             $sql = "INSERT INTO spiceimportlogs (id, import_id, msg, data) VALUES (UUID(), '" . $this->id . "', 'No Entries', '" . implode('";"', $row) . "')";
             $error = true;
-            $list[] = array('status' => 'No Entries', 'data' => array($row[0], $row[1], $row[2], $row[3]));
+            $list[] = ['status' => 'No Entries', 'data' => [$row[0], $row[1], $row[2], $row[3]]];
             $this->db->query($sql);
         }
 

@@ -29,8 +29,14 @@
 
 namespace SpiceCRM\includes\SysModuleFilters;
 
+use DateTimeZone;
+use Exception;
+use SpiceCRM\data\BeanFactory;
 use DateInterval;
 use DateTime;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class SysModuleFilters
 {
@@ -46,13 +52,13 @@ class SysModuleFilters
     var $filtermodule;
 
     /**
-     * static function used in teh systemui rest extension to load all module filters and return to the UI
+     * static function used in the spiceui rest extension to load all module filters and return to the UI
      *
      * @return array
      */
     static function getAllModuleFilters()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         // load module filters list
         $moduleFilters = [];
@@ -63,13 +69,13 @@ class SysModuleFilters
 
         $filters = $db->query($filters);
         while ($filter = $db->fetchByAssoc($filters)) {
-            $moduleFilters[$filter['id']] = array(
+            $moduleFilters[$filter['id']] = [
                 'id' => $filter['id'],
                 'name' => $filter['name'],
                 'module' => $filter['module'],
                 'type' => $filter['type'],
                 'filterdefs' => $filter['filterdefs'],
-            );
+            ];
         }
         return $moduleFilters;
     }
@@ -82,12 +88,12 @@ class SysModuleFilters
      */
     public function getCountForFilterId($filterId)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $filter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="' . $db->quote($filterId) . '" UNION SELECT * FROM syscustommodulefilters WHERE id="' . $db->quote($filterId) . '"'));
         if (!$filter) return 0;
 
-        $seed = \BeanFactory::getBean($filter['module']);
+        $seed = BeanFactory::getBean($filter['module']);
         $whereClause = $this->generareWhereClauseForFilterId($filterId);
         $result = $db->fetchByAssoc($db->query("SELECT count(*) entry_count FROM {$seed->table_name} WHERE deleted = 0 AND $whereClause"));
         return $result['entry_count'] ?: 0;
@@ -102,7 +108,7 @@ class SysModuleFilters
      */
     public function getFilterFields($filterId)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $filter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="' . $db->quote($filterId) . '" UNION SELECT * FROM syscustommodulefilters WHERE id="' . $db->quote($filterId) . '"'));
         if (!$filter) return '';
 
@@ -139,7 +145,7 @@ class SysModuleFilters
      */
     public function generareWhereClauseForFilterId($filterId, $tablename = '', $bean = null)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $filter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="' . $db->quote($filterId) . '" UNION SELECT * FROM syscustommodulefilters WHERE id="' . $db->quote($filterId) . '"'));
         if (!$filter) return '';
@@ -149,7 +155,7 @@ class SysModuleFilters
         $this->filtermodule = $filter['module'];
 
         if (!$tablename) {
-            $seed = \BeanFactory::getBean($filter['module']);
+            $seed = BeanFactory::getBean($filter['module']);
             $tablename = $seed->table_name;
         }
 
@@ -186,7 +192,7 @@ class SysModuleFilters
      */
     public function buildSQLWhereClauseForGroup($group, $tablename, $module = null)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $filterConditionArray = [];
 
         foreach ($group->conditions as $condition) {
@@ -198,9 +204,9 @@ class SysModuleFilters
         }
 
         // get also users we represent
-        $absence = \BeanFactory::getBean('UserAbsences');
+        $absence = BeanFactory::getBean('UserAbsences');
         $userIds = array_merge([$current_user->id], $absence->getSubstituteIDs());
-        $userIds = "'" . join("','") . "'";
+        $userIds = "'" . join("','", $userIds) . "'";
 
 
         $filterCondition = "";
@@ -219,7 +225,7 @@ class SysModuleFilters
         // handle geo Data
         if ($group->geography && $group->geography->radius && $module) {
             // ToDo: make the geo search nicer .. relying on the fts settings might not be the best approiach and lead to issues
-            $settings = \SpiceCRM\includes\SpiceFTSManager\SpiceFTSUtils::getBeanIndexSettings($module);
+            $settings = SpiceFTSUtils::getBeanIndexSettings($module);
             $geocondition = "(6371*acos(cos(radians( {$group->geography->lat}))*cos(radians({$tablename}.{$settings['geolat']}))*cos(radians({$tablename}.{$settings['geolng']})-radians({$group->geography->lng}))+sin(radians({$group->geography->lat}))*sin(radians({$tablename}.{$settings['geolat']})))) < {$group->geography->radius}";
             $filterCondition = "($filterCondition) AND ($geocondition)";
         }
@@ -233,7 +239,7 @@ class SysModuleFilters
      * @param $condition
      * @param $tablename
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     private function bildSQLWhereStatementForCondition($condition, $tablename)
     {
@@ -243,7 +249,7 @@ class SysModuleFilters
                 break;
             case 'emptyr':
                 if ($this->filtermodule) {
-                    $seed = \BeanFactory::getBean($this->filtermodule);
+                    $seed = BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     return "{$tablename}.{$relatedField} IS NULL";
                 }
@@ -253,7 +259,7 @@ class SysModuleFilters
                 break;
             case 'notemptyr':
                 if ($this->filtermodule) {
-                    $seed = \BeanFactory::getBean($this->filtermodule);
+                    $seed = BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     return "({$tablename}.{$relatedField} IS NOT NULL AND {$tablename}.{$relatedField} <> '')";
                 }
@@ -266,7 +272,7 @@ class SysModuleFilters
                 break;
             case 'equalr':
                 if ($this->filtermodule) {
-                    $seed = \BeanFactory::getBean($this->filtermodule);
+                    $seed = BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     $filtervalues = explode('::', $condition->filtervalue);
                     return "{$tablename}.{$relatedField} = '{$filtervalues['0']}'";
@@ -310,81 +316,81 @@ class SysModuleFilters
                 return "({$tablename}.{$condition->field} >= '{$condition->filtervalue} 00:00:00' AND {$tablename}.{$condition->field} <= '{$condition->filtervalueto} 23:59:59')";
                 break;
             case 'today':
-                $today = date_format(new \DateTime(), 'Y-m-d');
+                $today = date_format(new DateTime(), 'Y-m-d');
                 return "({$tablename}.{$condition->field} >= '$today 00:00:00' AND {$tablename}.{$condition->field} <= '$today 23:59:59')";
                 break;
             case 'past':
-                $now = date_format(new \DateTime(), 'Y-m-d H:i:s');
+                $now = date_format(new DateTime(), 'Y-m-d H:i:s');
                 return "{$tablename}.{$condition->field} < '$now'";
                 break;
             case 'future':
-                $now = date_format(new \DateTime(), 'Y-m-d H:i:s');
+                $now = date_format(new DateTime(), 'Y-m-d H:i:s');
                 return "{$tablename}.{$condition->field} > '$now'";
                 break;
             case 'thismonth':
-                $from = date_format(new \DateTime(), 'Y-m-01 00:00:00');
-                $to = date_format(new \DateTime(), 'Y-m-t 23:59:00');
+                $from = date_format(new DateTime(), 'Y-m-01 00:00:00');
+                $to = date_format(new DateTime(), 'Y-m-t 23:59:00');
                 return "({$tablename}.{$condition->field} > '$from' AND {$tablename}.{$condition->field} <= '$to')";
                 break;
             case 'nextmonth':
-                $date = new \DateTime();
-                $date->add(new \DateInterval('P1M'));
+                $date = new DateTime();
+                $date->add(new DateInterval('P1M'));
                 return "({$tablename}.{$condition->field} >= '" . $date->format('Y-m-01 00:00:00') . "' AND {$tablename}.{$condition->field} <= '" . $date->format('Y-m-t 23:59:59') . "')";
                 break;
             case 'thisyear':
-                $date = new \DateTime();
+                $date = new DateTime();
                 return "({$tablename}.{$condition->field} >= '" . $date->format('Y') . "-01-01 00:00:00' AND {$tablename}.{$condition->field} <= '" . $date->format('Y') . "-12-31 23:59:59')";
                 break;
             case 'nextyear':
-                $date = new \DateTime();
-                $date->add(new \DateInterval('P1Y'));
+                $date = new DateTime();
+                $date->add(new DateInterval('P1Y'));
                 return "({$tablename}.{$condition->field} >= '" . $date->format('Y') . "-01-01 00:00:00' AND {$tablename}.{$condition->field} <= '" . $date->format('Y') . "-12-31 23:59:59')";
                 break;
             case 'inndays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->add(new DateInterval("P{$condition->filtervalue}D"));
                 return "({$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 00:00:00' AND {$tablename}.{$condition->field} <= '" . $date->format('Y-m-d') . " 23:59:59')";
                 break;
             case 'thisday':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
                 return "(DAY({$tablename}.{$condition->field}) = '{$date->format('d')}' AND MONTH({$tablename}.{$condition->field}) = '{$date->format('m')}')";
                 break;
             case 'ndaysago':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->sub(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->sub(new DateInterval("P{$condition->filtervalue}D"));
                 return "({$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 00:00:00' AND {$tablename}.{$condition->field} <= '" . $date->format('Y-m-d') . " 23:59:59')";
                 break;
             case 'inlessthanndays':
             case 'inlessthandays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->add(new DateInterval("P{$condition->filtervalue}D"));
                 return "{$tablename}.{$condition->field} <= '" . $date->format('Y-m-d') . " 23:59:59'";
                 break;
             case 'inmorethanndays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->add(new DateInterval("P{$condition->filtervalue}D"));
                 return "{$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 23:59:59'";
             case 'inlastndays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->sub(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->sub(new DateInterval("P{$condition->filtervalue}D"));
                 return "{$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 23:59:59'";
                 break;
             case 'lastndays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->sub(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->sub(new DateInterval("P{$condition->filtervalue}D"));
                 return "{$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 00:00:00'";
                 break;
             case 'lastnmonths':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->sub(new \DateInterval("P{$condition->filtervalue}M"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->sub(new DateInterval("P{$condition->filtervalue}M"));
                 return "{$tablename}.{$condition->field} >= '" . $date->format('Y-m-d') . " 00:00:00'";
                 break;
             case 'untilyesterday':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
                 return "({$tablename}.{$condition->field} < '" . $date->format('Y-m-d') . " 00:00:00')";
                 break;
             case 'fromtomorrow':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
                 return "({$tablename}.{$condition->field} > '" . $date->format('Y-m-d') . " 23:59:59')";
                 break;
         }
@@ -398,7 +404,7 @@ class SysModuleFilters
      */
     public function generareElasticFilterForFilterId($filterId, $bean = null)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $dbfilter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="' . $db->quote($filterId) . '" UNION SELECT * FROM syscustommodulefilters WHERE id="' . $db->quote($filterId) . '"'));
         if (!$dbfilter) return '';
@@ -439,7 +445,7 @@ class SysModuleFilters
      */
     public function buildElasticFilterForGroup($group)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $filterConditionArray = [];
         $filterCondition = [];
         if ($group->conditions) {
@@ -464,7 +470,7 @@ class SysModuleFilters
 
         // handle group scope
         // get also users we represent
-        $absence = \BeanFactory::getBean('UserAbsences');
+        $absence = BeanFactory::getBean('UserAbsences');
         $userIds = array_merge([$current_user->id], $absence->getSubstituteIDs());
 
         switch ($group->groupscope) {
@@ -478,7 +484,7 @@ class SysModuleFilters
 
         // handle geo Data
         if ($group->geography && $group->geography->radius) {
-            $filterCondition['must'][] = array(
+            $filterCondition['must'][] = [
                 "geo_distance" => [
                     "distance" => $group->geography->radius . "km",
                     "_location" => [
@@ -486,7 +492,7 @@ class SysModuleFilters
                         "lon" => $group->geography->lng,
                     ]
                 ]
-            );
+            ];
         }
 
         return count($filterCondition) > 0 ? ['bool' => $filterCondition] : [];
@@ -497,7 +503,7 @@ class SysModuleFilters
      *
      * @param $condition
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function buildElasticFilterForCondition($condition)
     {
@@ -507,14 +513,14 @@ class SysModuleFilters
                 break;
             case 'emptyr':
                 if ($this->filtermodule) {
-                    $seed = \BeanFactory::getBean($this->filtermodule);
+                    $seed = BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     return ['bool' => ['must_not' => [['exists' => ["field" => $relatedField]]]]];
                 }
                 break;
             case 'notempty':
                 if ($this->filtermodule) {
-                    $seed = \BeanFactory::getBean($this->filtermodule);
+                    $seed = BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     return ['exists' => ["field" => $relatedField]];
                 }
@@ -530,7 +536,7 @@ class SysModuleFilters
                 break;
             case 'equalr':
                 if ($this->filtermodule) {
-                    $seed = \BeanFactory::getBean($this->filtermodule);
+                    $seed = BeanFactory::getBean($this->filtermodule);
                     $relatedField = $seed->field_name_map[$condition->field]['id_name'];
                     $filtervalues = explode('::', $condition->filtervalue);
                     return ['term' => [$relatedField => $filtervalues['0']]];
@@ -609,51 +615,51 @@ class SysModuleFilters
                 return ['range' => [$condition->field => ['gte' => $date->format('Y') . '-01-01 00:00:00', "lte" => $date->format('Y') . '-12-31 23:59:59']]];
                 break;
             case 'inndays':
-                $today = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                $today = new DateTime(null, new DateTimeZone('UTC'));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->add(new DateInterval("P{$condition->filtervalue}D"));
                 return ['range' => [$condition->field => ['gte' => $date->format('Y-m-d') . ' 00:00:00', "lte" => $today->format('Y-m-d') . ' 23:59:59']]];
                 break;
             case 'thisday':
-                $today = new \DateTime(null, new \DateTimeZone('UTC'));
+                $today = new DateTime(null, new DateTimeZone('UTC'));
                 return ['script' => ['script' => "doc.{$condition->field}.date.monthOfYear == {$today->format('m')} && doc.{$condition->field}.date.dayOfMonth  == {$today->format('d')}"]];
                 break;
             case 'ndaysago':
-                $today = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->sub(new \DateInterval("P{$condition->filtervalue}D"));
+                $today = new DateTime(null, new DateTimeZone('UTC'));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->sub(new DateInterval("P{$condition->filtervalue}D"));
                 return ['range' => [$condition->field => ['gte' => $date->format('Y-m-d') . ' 00:00:00', "lte" => $today->format('Y-m-d') . ' 23:59:59']]];
                 break;
             case 'inlessthanndays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->add(new DateInterval("P{$condition->filtervalue}D"));
                 return ['range' => [$condition->field => ["lte" => $date->format('Y-m-d') . ' 23:59:59']]];
                 break;
             case 'inmorethanndays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->add(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->add(new DateInterval("P{$condition->filtervalue}D"));
                 return ['range' => [$condition->field => ["gte" => $date->format('Y-m-d') . ' 23:59:59']]];
             case 'inlastndays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->sub(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->sub(new DateInterval("P{$condition->filtervalue}D"));
                 return ['range' => [$condition->field => ["gte" => $date->format('Y-m-d') . ' 23:59:59']]];
                 break;
             case 'lastndays':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->sub(new \DateInterval("P{$condition->filtervalue}D"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->sub(new DateInterval("P{$condition->filtervalue}D"));
                 return ['range' => [$condition->field => ["gte" => $date->format('Y-m-d') . ' 23:59:59']]];
                 break;
             case 'lastnmonths':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
-                $date->sub(new \DateInterval("P{$condition->filtervalue}M"));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
+                $date->sub(new DateInterval("P{$condition->filtervalue}M"));
                 return ['range' => [$condition->field => ["gte" => $date->format('Y-m-d') . ' 23:59:59']]];
                 break;
             case 'untilyesterday':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
                 return ['range' => [$condition->field => ["lt" => $date->format('Y-m-d') . ' 00:00:00']]];
                 break;
             case 'fromtomorrow':
-                $date = new \DateTime(null, new \DateTimeZone('UTC'));
+                $date = new DateTime(null, new DateTimeZone('UTC'));
                 return ['range' => [$condition->field => ["gt" => $date->format('Y-m-d') . ' 23:59:59']]];
                 break;
         }
@@ -669,7 +675,7 @@ class SysModuleFilters
      */
     public function checkBeanForFilterIdMatch($filterId, $bean)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $filter = $db->fetchByAssoc($db->query('SELECT * FROM sysmodulefilters WHERE id="' . $db->quote($filterId) . '" UNION SELECT * FROM syscustommodulefilters WHERE id="' . $db->quote($filterId) . '"'));
         if (!$filter) return '';
@@ -682,11 +688,11 @@ class SysModuleFilters
 
     public function checkBeanForFilterMatchGroup($group, $bean)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $filterConditionArray = [];
 
         // get also users we represent
-        $absence = \BeanFactory::getBean('UserAbsences');
+        $absence = BeanFactory::getBean('UserAbsences');
         $userIds = array_merge([$current_user->id], $absence->getSubstituteIDs());
 
         // if the criteria is won and the user does not match return false

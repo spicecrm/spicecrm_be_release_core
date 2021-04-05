@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,9 +33,16 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\ACLActions;
+
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 
 require_once('modules/ACLActions/actiondefs.php');
-class ACLAction  extends SugarBean
+
+class ACLAction extends SugarBean
 {
     var $module_dir = 'ACLActions';
     var $object_name = 'ACLAction';
@@ -172,7 +178,7 @@ class ACLAction  extends SugarBean
     */
     protected static function getAccessOptions( $action, $type='module'){
         global $ACLActions;
-        $options = array();
+        $options = [];
 
         if(empty($ACLActions[$type]['actions'][$action]['aclaccess']))return $options;
         foreach($ACLActions[$type]['actions'][$action]['aclaccess'] as $action){
@@ -200,7 +206,7 @@ class ACLAction  extends SugarBean
 
         $db = DBManagerFactory::getInstance();
         $result = $db->query($query);
-        $default_actions = array();
+        $default_actions = [];
         while($row = $db->fetchByAssoc($result) ){
             $acl = new ACLAction();
             $acl->populateFromRow($row);
@@ -256,7 +262,7 @@ class ACLAction  extends SugarBean
                     LEFT JOIN acl_roles_actions ON acl_roles_actions.role_id = acl_roles_users.role_id AND acl_roles_actions.action_id = acl_actions.id AND acl_roles_actions.deleted=0
                     WHERE acl_actions.deleted=0 $additional_where ORDER BY category,name";
         $result = $db->query($query);
-        $selected_actions = array();
+        $selected_actions = [];
         while($row = $db->fetchByAssoc($result, FALSE) ){
             $acl = new ACLAction();
             $isOverride  = false;
@@ -266,7 +272,7 @@ class ACLAction  extends SugarBean
                 $isOverride = true;
             }
             if(!isset($selected_actions[$acl->category])){
-                $selected_actions[$acl->category] = array();
+                $selected_actions[$acl->category] = [];
 
             }
             if(!isset($selected_actions[$acl->category][$acl->acltype][$acl->name])
@@ -290,7 +296,7 @@ class ACLAction  extends SugarBean
         //only set the session variable if it was a full list;
         if(empty($category) && empty($action)){
             if(!isset($_SESSION['ACL'])){
-                $_SESSION['ACL'] = array();
+                $_SESSION['ACL'] = [];
             }
             $_SESSION['ACL'][$user_id] = $selected_actions;
         }else{
@@ -359,7 +365,7 @@ class ACLAction  extends SugarBean
     * @param BOOLEAN OPTIONAL $is_owner if the object is owned by the user you are checking access for
     */
     public static function userHasAccess($user_id, $category, $action,$type='module', $is_owner = false){
-       global $current_user;
+       $current_user = AuthenticationController::getInstance()->getCurrentUser();
        if($current_user->isAdminForModule($category)&& !isset($_SESSION['ACL'][$user_id][$category][$type][$action]['aclaccess'])){
         return true;
         }
@@ -435,9 +441,10 @@ class ACLAction  extends SugarBean
     * @param unknown_type $categories
     */
     public static function setupCategoriesMatrix(&$categories){
-        global $ACLActions, $current_user;
-        $names = array();
-        $disabled = array();
+        global $ACLActions;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $names = [];
+        $disabled = [];
         foreach($categories as $cat_name=>$category){
             foreach($category as $type_name=>$type){
                 foreach($type as $act_name=>$action){
@@ -482,8 +489,8 @@ class ACLAction  extends SugarBean
     * @return array of fields with id, name, access and category
     */
     function toArray($dbOnly = false, $stringOnly = false, $upperKeys=false){
-        $array_fields = array('id', 'aclaccess');
-        $arr = array();
+        $array_fields = ['id', 'aclaccess'];
+        $arr = [];
         foreach($array_fields as $field){
             $arr[$field] = $this->$field;
         }

@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,56 +33,56 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['accounts_users'] = array(
+global $dictionary;
+$dictionary['accounts_users'] = [
     'table' => 'accounts_users',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'account_id' => array(
+        ],
+        'account_id' => [
             'name' => 'account_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'user_role' => array(
+        ],
+        'user_role' => [
             'name' => 'user_role',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'required' => false,
             'default' => '0'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'accounts_userspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_account_user',
             'type' => 'alternate_key',
-            'fields' => array('account_id', 'user_id')
-        )
-    ),
-    'relationships' => array(
-        'accounts_users' => array(
+            'fields' => ['account_id', 'user_id']
+        ]
+    ],
+    'relationships' => [
+        'accounts_users' => [
             'lhs_module' => 'Accounts',
             'lhs_table' => 'accounts',
             'lhs_key' => 'id',
@@ -94,6 +93,6 @@ $dictionary['accounts_users'] = array(
             'join_table' => 'accounts_users',
             'join_key_lhs' => 'account_id',
             'join_key_rhs' => 'user_id'
-        )
-    )
-);
+        ]
+    ]
+];

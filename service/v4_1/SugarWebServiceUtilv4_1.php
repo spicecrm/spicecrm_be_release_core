@@ -34,6 +34,11 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\LogicHook\LogicHook;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 require_once('service/v4/SugarWebServiceUtilv4.php');
 
 class SugarWebServiceUtilv4_1 extends SugarWebServiceUtilv4
@@ -47,7 +52,7 @@ class SugarWebServiceUtilv4_1 extends SugarWebServiceUtilv4
    	 */
    	function validate_authenticated($session_id)
     {
-   		$GLOBALS['log']->info('Begin: SoapHelperWebServices->validate_authenticated');
+   		LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->validate_authenticated');
    		if(!empty($session_id)){
 
    			// only initialize session once in case this method is called multiple times
@@ -58,22 +63,23 @@ class SugarWebServiceUtilv4_1 extends SugarWebServiceUtilv4
 
    			if(!empty($_SESSION['is_valid_session']) && $this->is_valid_ip_address('ip_address') && $_SESSION['type'] == 'user'){
 
-   				global $current_user;
+                $authController= AuthenticationController::getInstance();
    				require_once('modules/Users/User.php');
-   				$current_user = new User();
+   				$authController->setCurrentUser(BeanFactory::getBean('Users'));
+   				$current_user = $authController->getCurrentUser();
    				$current_user->retrieve($_SESSION['user_id']);
    				$this->login_success();
-   				$GLOBALS['log']->info('Begin: SoapHelperWebServices->validate_authenticated - passed');
-   				$GLOBALS['log']->info('End: SoapHelperWebServices->validate_authenticated');
+   				LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->validate_authenticated - passed');
+   				LoggerManager::getLogger()->info('End: SoapHelperWebServices->validate_authenticated');
    				return true;
    			}
 
-   			$GLOBALS['log']->debug("calling destroy");
+   			LoggerManager::getLogger()->debug("calling destroy");
    			session_destroy();
    		}
    		LogicHook::initialize();
    		$GLOBALS['logic_hook']->call_custom_logic('Users', 'login_failed');
-   		$GLOBALS['log']->info('End: SoapHelperWebServices->validate_authenticated - validation failed');
+   		LoggerManager::getLogger()->info('End: SoapHelperWebServices->validate_authenticated - validation failed');
    		return false;
    	}
 
@@ -110,16 +116,17 @@ class SugarWebServiceUtilv4_1 extends SugarWebServiceUtilv4
      * @return array|bool Returns an Array of relationship results; false if relationship could not be retrieved
      */
     function getRelationshipResults($bean, $link_field_name, $link_module_fields, $optional_where = '', $order_by = '', $offset = 0, $limit = '') {
-        $GLOBALS['log']->info('Begin: SoapHelperWebServices->getRelationshipResults');
-		require_once('include/TimeDate.php');
-		global $beanList, $beanFiles, $current_user;
+        LoggerManager::getLogger()->info('Begin: SoapHelperWebServices->getRelationshipResults');
+
+		global $beanList, $beanFiles;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
 		global $timedate;
 
 		$bean->load_relationship($link_field_name);
 
 		if (isset($bean->$link_field_name)) {
 			//First get all the related beans
-            $params = array();
+            $params = [];
             $params['offset'] = $offset;
             $params['limit'] = $limit;
 
@@ -130,8 +137,8 @@ class SugarWebServiceUtilv4_1 extends SugarWebServiceUtilv4
 
             $related_beans = $bean->$link_field_name->getBeans($params);
             //Create a list of field/value rows based on $link_module_fields
-			$list = array();
-            $filterFields = array();
+			$list = [];
+            $filterFields = [];
             if (!empty($order_by) && !empty($related_beans))
             {
                 $related_beans = order_beans($related_beans, $order_by);
@@ -142,7 +149,7 @@ class SugarWebServiceUtilv4_1 extends SugarWebServiceUtilv4
                 {
                     $filterFields = $this->filter_fields($bean, $link_module_fields);
                 }
-                $row = array();
+                $row = [];
                 foreach ($filterFields as $field) {
                     if (isset($bean->$field))
                     {
@@ -160,10 +167,10 @@ class SugarWebServiceUtilv4_1 extends SugarWebServiceUtilv4
                 $row = clean_sensitive_data($bean->field_defs, $row);
                 $list[] = $row;
             }
-            $GLOBALS['log']->info('End: SoapHelperWebServices->getRelationshipResults');
-            return array('rows' => $list, 'fields_set_on_rows' => $filterFields);
+            LoggerManager::getLogger()->info('End: SoapHelperWebServices->getRelationshipResults');
+            return ['rows' => $list, 'fields_set_on_rows' => $filterFields];
 		} else {
-			$GLOBALS['log']->info('End: SoapHelperWebServices->getRelationshipResults - ' . $link_field_name . ' relationship does not exists');
+			LoggerManager::getLogger()->info('End: SoapHelperWebServices->getRelationshipResults - ' . $link_field_name . ' relationship does not exists');
 			return false;
 		} // else
 

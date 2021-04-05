@@ -12,11 +12,7 @@
 * You can contact us at info@kreporter.org
 ******************************************************************************* */
 
-
-
-
-if (!defined('sugarEntry') || !sugarEntry)
-   die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\KReports;
 
 class KReportChartData {
 
@@ -33,10 +29,10 @@ class KReportChartData {
     * dataSeries: array with fieldids for which we produce data series
     */
 
-   public function getChartData($thisReport, $snapshotid = '0', $chartParams = array(), $dimensions = array(), $dataSeries = array(), $addReportParams = array()) {
+   public function getChartData($thisReport, $snapshotid = '0', $chartParams = [], $dimensions = [], $dataSeries = [], $addReportParams = []) {
 
       // initialize the return Array
-      $chartData = array();
+      $chartData = [];
 
       // set the basic Report Params
       $reportParams = $addReportParams;
@@ -51,7 +47,7 @@ class KReportChartData {
          $reportParams['parentbean'] = $chartParams['parentBean'];
 
       // get the chart data
-      $reportResults = $thisReport->getSelectionResults($reportParams, $snapshotid, false, '', array());
+      $reportResults = $thisReport->getSelectionResults($reportParams, $snapshotid, false, '', []);
 
       // build the results array
       $dimCount = count($dimensions);
@@ -69,9 +65,9 @@ class KReportChartData {
          $dim0Values = $thisReport->getEnumValues($dimensions[0]['fieldid']);
 
          if (is_array($dim0Values) && count($dim0Values) > 0 && $chartParams['showEmptyValues']) {
-            $dimensions[0]['values'] = array();
+            $dimensions[0]['values'] = [];
             foreach ($dim0Values as $thisDimensionkey => $thisDimensionValue) {
-               $chartData[$thisDimensionValue] = array();
+               $chartData[$thisDimensionValue] = [];
                $dimensions[0]['values'][$thisDimensionValue] = $thisDimensionValue;
             }
          }
@@ -79,7 +75,7 @@ class KReportChartData {
 
       // 2013-03-19 handle Chart Function properly Bug #448
       // count the records per diemnsion
-      $dimCountArray = array();
+      $dimCountArray = [];
 
       // loop over the results
       foreach ($reportResults as $thisResultRecord) {
@@ -236,8 +232,8 @@ class KReportChartData {
          
       // 2013-03-19 handle Chart Function properly Bug #448
       // an array for the cumulated sum
-      $dimCumsumArray = array();
-      $valueAxes = array();
+      $dimCumsumArray = [];
+      $valueAxes = [];
 
       // Fill all missing values with 0
       switch ($dimCount) {
@@ -263,14 +259,14 @@ class KReportChartData {
                     //va will be common axis on the left
                     $valueAxisId = (!empty($thisDataSeries['axis']) ? $thisDataSeries['axis'] : "va"); 
                     if(!in_array($valueAxisId, array_keys($valueAxes))){
-                        $valueAxes[$valueAxisId] = array(
+                        $valueAxes[$valueAxisId] = [
                             'id' => $valueAxisId,
                             'axisThickness'=> 2,
                             'vaxisAlpha'=> 1,
                             'position'=> (count($valueAxes) <= 0 ? "left" : "right"),
                             'offset' => (count($valueAxes) <= 1 ? 0 : 30),
                             'title' => $thisDataSeries['axis']
-                        );
+                        ];
                         if(!empty($thisDataSeries['color'])){
                              $valueAxes[$valueAxisId]['axisColor'] = $thisDataSeries['color'];
                         }
@@ -325,33 +321,33 @@ class KReportChartData {
       // if dimcount has changed we shift the dataseries
       if ($dimCount == 0) {
          // reset the Array
-         $dataSeries = array();
+         $dataSeries = [];
          // add one DataSeries for the values
-         $dataSeries['value'] = array(
+         $dataSeries['value'] = [
              'fieldid' => 'value',
              'name' => 'value'
-         );
+         ];
       } elseif ($dimCount >= 2) {
          // 2014-03-31 change that proper fieldid is returned in n dimensional case
          // reset the Array
          $dataseriesFieldArray = reset($dataSeries);
          $dataSeriesFieldId = $dataseriesFieldArray['fieldid'];
-         $dataSeries = array();
+         $dataSeries = [];
          // add one DataSeries for the values
          foreach ($dimensions[1]['values'] as $thisKey => $thisValue) {
-            $dataSeries[$thisKey] = array(
+            $dataSeries[$thisKey] = [
                 'fieldid' => $thisKey,
                 'dimfieldid' => $dataSeriesFieldId,
                 'name' => $thisValue
-            );
+            ];
          };
          // remove the dimension for the charts
          //if(!$isScatter) unset($dimensions[1]);
-         $keepDimensionsForTypes = array('Scatter', 'Bubble', 'Sankey');
+         $keepDimensionsForTypes = ['Scatter', 'Bubble', 'Sankey'];
          if(!in_array($chartParams['type'], $keepDimensionsForTypes)) unset($dimensions[1]);
       }
       
-      return array('dimensions' => $dimensions, 'dataseries' => $dataSeries, 'chartData' => $chartData, 'valueAxes' => $valueAxes);
+      return ['dimensions' => $dimensions, 'dataseries' => $dataSeries, 'chartData' => $chartData, 'valueAxes' => $valueAxes];
    }
 
 }

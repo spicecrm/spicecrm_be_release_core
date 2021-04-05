@@ -1,7 +1,7 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\KREST\controllers;
 
-use SpiceCRM\modules\Mailboxes\processors\MailboxProcessor;
+use SpiceCRM\data\BeanFactory;
 
 class GmailController
 {
@@ -19,7 +19,7 @@ class GmailController
     public function getMailboxLabels($req, $res, $args) {
         $params = $req->getParsedBody();
 
-        $mailbox = \BeanFactory::getBean('Mailboxes');
+        $mailbox = BeanFactory::getBean('Mailboxes');
         foreach($params['data'] as $name => $value){
             if(isset($mailbox->field_name_map[$name])){
                 $mailbox->$name = $value;
@@ -30,6 +30,6 @@ class GmailController
 
         $result = $mailbox->transport_handler->getLabels();
 
-        return $res->write(json_encode($result));
+        return $res->withJson($result);
     }
 }
