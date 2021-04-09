@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,6 +34,8 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['Meeting'] = [
     'table'                          => 'meetings',
     'unified_search'                 => true,
@@ -72,13 +73,13 @@ $dictionary['Meeting'] = [
             'relationship' => 'meetings_users_status_accept',
             'default' => true,
             'module' => 'Users',
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                )
-            )
+                ]
+            ]
         ],
         'meeting_user_status_decline' => [
             'name'   => 'meeting_user_status_decline',
@@ -87,13 +88,13 @@ $dictionary['Meeting'] = [
             'source' => 'non-db',
             'module' => 'Users',
             'relationship' => 'meetings_users_status_decline',
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                )
-            )
+                ]
+            ]
         ],
         'meeting_user_status_tentative' => [
             'name'   => 'meeting_user_status_tentative',
@@ -102,13 +103,13 @@ $dictionary['Meeting'] = [
             'source' => 'non-db',
             'module' => 'Users',
             'relationship' => 'meetings_users_status_tentative',
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                )
-            )
+                ]
+            ]
         ],
 
 
@@ -175,12 +176,17 @@ $dictionary['Meeting'] = [
             'name'    => 'external_id',
             'vname'   => 'LBL_EXTERNALID',
             'type'    => 'varchar',
-            'len'     => 255,
+            'len'     => 200,
             'comment' => 'Meeting ID for external app API',
             'studio'  => 'false',
         ],
         'external_data' => [
             'name'    => 'external_data',
+            'vname'   => 'LBL_EXTERNALDATA',
+            'type'    => 'text'
+        ],
+        'externalx_data' => [
+            'name'    => 'externalx_data',
             'vname'   => 'LBL_EXTERNALDATA',
             'type'    => 'text'
         ],
@@ -387,17 +393,17 @@ $dictionary['Meeting'] = [
             'vname'        => 'LBL_CONTACTS',
             'module'       => 'Contacts',
             'default'      => true,
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                ),
-                'date_modified' => array(
+                ],
+                'date_modified' => [
                     'type' => 'datetime',
                     'map' => 'activity_status_date_modified'
-                )
-            ),
+                ]
+            ],
         ],
         'parent_name' => [
             'name'        => 'parent_name',
@@ -418,21 +424,21 @@ $dictionary['Meeting'] = [
             'vname'        => 'LBL_USERS',
             'module'       => 'Users',
             'default'      => true,
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                ),
-                'date_modified' => array(
+                ],
+                'date_modified' => [
                     'type' => 'datetime',
                     'map' => 'activity_status_date_modified'
-                ),
-                'required' => array(
+                ],
+                'required' => [
                     'type' => 'bool',
                     'map' => 'activity_required'
-                )
-            )
+                ]
+            ]
         ],
         'accounts' => [
             'name'         => 'accounts',
@@ -449,17 +455,17 @@ $dictionary['Meeting'] = [
             'source'       => 'non-db',
             'vname'        => 'LBL_CONSUMERS',
             'default'      => true,
-            'rel_fields' => array(
-                'accept_status' => array(
+            'rel_fields' => [
+                'accept_status' => [
                     'type' => 'enum',
                     'options' => 'dom_meeting_accept_status',
                     'map' => 'activity_accept_status'
-                ),
-                'date_modified' => array(
+                ],
+                'date_modified' => [
                     'type' => 'datetime',
                     'map' => 'activity_status_date_modified'
-                )
-            ),
+                ]
+            ],
         ],
         'leads' => [
             'name'         => 'leads',
@@ -483,6 +489,15 @@ $dictionary['Meeting'] = [
             'bean_name'    => 'Note',
             'source'       => 'non-db',
             'vname'        => 'LBL_NOTES',
+        ],
+        'tasks' => [
+            'name'         => 'tasks',
+            'type'         => 'link',
+            'relationship' => 'meetings_tasks',
+            'module'       => 'Tasks',
+            'bean_name'    => 'Task',
+            'source'       => 'non-db',
+            'vname'        => 'LBL_TASKS',
         ],
         'contact_id' => [
             'name' => 'contact_id',
@@ -618,6 +633,17 @@ $dictionary['Meeting'] = [
             'relationship_role_column'       => 'parent_type',
             'relationship_role_column_value' => 'Meetings',
         ],
+        'meetings_tasks' => [
+            'lhs_module'                     => 'Meetings',
+            'lhs_table'                      => 'meetings',
+            'lhs_key'                        => 'id',
+            'rhs_module'                     => 'Tasks',
+            'rhs_table'                      => 'tasks',
+            'rhs_key'                        => 'parent_id',
+            'relationship_type'              => 'one-to-many',
+            'relationship_role_column'       => 'parent_type',
+            'relationship_role_column_value' => 'Meetings',
+        ],
     ],
     'indices' => [
         [
@@ -652,7 +678,7 @@ $dictionary['Meeting'] = [
 
 // CE version has not all modules...
 //set global else error with PHP7.1: Uncaught Error: Cannot use string offset as an array
-global  $dictionary;
+global $dictionary;
 if (is_file("modules/ServiceTickets/ServiceTicket.php")) {
     $dictionary['Meeting']['fields']['servicetickets'] = [
         'name'         => 'servicetickets',

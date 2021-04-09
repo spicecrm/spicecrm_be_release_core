@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -36,35 +35,37 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 ********************************************************************************/
 
 
-$GLOBALS['dictionary']['UserAccessLog'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+
+$GLOBALS['dictionary']['UserAccessLog'] = [
     'table' => 'useraccesslogs',
-    'fields' => array(
-        'ipaddress' => array(
+    'fields' => [
+        'ipaddress' => [
             'name' => 'ipaddress',
             'type' => 'varchar',
             'len' => 15
-        ),
-        'action' => array(
+        ],
+        'action' => [
             'name' => 'action',
             'type' => 'varchar',
             'len' => 30
-        ),
-        'user' => array(
+        ],
+        'user' => [
             'name' => 'user',
             'type' => 'link',
             'relationship' => 'users_useraccesslogs',
             'source' => 'non-db',
             'vname' => 'LBL_USER',
-        ),
-        'login_name' => array(
+        ],
+        'login_name' => [
             'name' => 'login_name',
             'type' => 'varchar',
             'len' => 255
-        )
-    ),
-    'relationships' => array(
+        ]
+    ],
+    'relationships' => [
         'users_useraccesslogs' =>
-            array(
+            [
                 'lhs_module' => 'Users',
                 'lhs_table' => 'users',
                 'lhs_key' => 'id',
@@ -72,15 +73,15 @@ $GLOBALS['dictionary']['UserAccessLog'] = array(
                 'rhs_table' => 'useraccesslogs',
                 'rhs_key' => 'assigned_user_id',
                 'relationship_type' => 'one-to-many'
-            )
-    ),
-    'indices' => array(
-        array(
+            ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_useraccesslogsuserid',
             'type' => 'index',
-            'fields' => array('assigned_user_id')
-        )
-    )
-);
+            'fields' => ['assigned_user_id']
+        ]
+    ]
+];
 
-VardefManager::createVardef('UserAccessLogs', 'UserAccessLog', array('default', 'assignable'));
+VardefManager::createVardef('UserAccessLogs', 'UserAccessLog', ['default', 'assignable']);

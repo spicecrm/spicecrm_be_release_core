@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,17 +33,13 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\includes\Logger;
 
-/*********************************************************************************
 
- * Description:  Defines the English language pack for the base application.
- * Portions created by SugarCRM are Copyright (C) SugarCRM, Inc.
- * All Rights Reserved.
- * Contributor(s): ______________________________________..
- ********************************************************************************/
-require_once('include/Logger/LoggerManager.php');
-require_once('include/Logger/LoggerTemplate.php');
-use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 /**
  * Default SugarCRM Logger
@@ -70,13 +65,13 @@ class SpiceLogger implements LoggerTemplate
     /**
      * used for config screen
      */
-    public static $filename_suffix = array(
+    public static $filename_suffix = [
         //bug#50265: Added none option for previous version users
         "" => "None",
         "%m_%Y"    => "Month_Year",
         "%d_%m"    => "Day_Month",
         "%m_%d_%y" => "Month_Day_Year",
-    );
+    ];
 
     /**
      * Let's us know if we've initialized the logger file
@@ -131,7 +126,7 @@ class SpiceLogger implements LoggerTemplate
         $this->log_dir = $log_dir . (empty($log_dir)?'':'/');
         //unset($config);
         $this->_doInitialization();
-        LoggerManager::setLogger('default','SpiceLogger');
+        LoggerManager::setLogger('default','\SpiceCRM\includes\Logger\SpiceLogger');
 
 
     }
@@ -179,7 +174,7 @@ class SpiceLogger implements LoggerTemplate
     public function log(
         $level,
         $message,
-        $logparams = array()
+        $logparams = []
     )
     {
 
@@ -190,10 +185,10 @@ class SpiceLogger implements LoggerTemplate
 
 
         //lets get the current user id or default to -none- if it is not set yet
-//        $userID = (!empty($logparams['user']))?$GLOBALS['current_user']->id:'-none-';
+//        $userID = (!empty($logparams['user']))?\SpiceCRM\includes\authentication\AuthenticationController::getInstance()->getCurrentUser()->id:'-none-';
         $userID = '-none-';
-        if(is_object($GLOBALS['current_user']) && $GLOBALS['current_user']->id) {
-            $userID = $GLOBALS['current_user']->id;
+        if(is_object(AuthenticationController::getInstance()->getCurrentUser()) && AuthenticationController::getInstance()->getCurrentUser()->id) {
+            $userID = AuthenticationController::getInstance()->getCurrentUser()->id;
         }
 
         //if we haven't opened a file pointer yet let's do that
@@ -207,7 +202,7 @@ class SpiceLogger implements LoggerTemplate
         if ( is_array($message) )
             $message = print_r($message,true);
 
-        //if(!$GLOBALS['db']) {
+        //if(!\SpiceCRM\includes\database\DBManagerFactory::getInstance()) {
         //write out to the file including the time in the dateFormat the process id , the user id , and the log level as well as the message
         fwrite($this->fp,
             strftime($this->dateFormat) . ' [' . getmypid() . '][' . $userID . '][' . strtoupper($level) . '] ' . $message . "\n"
@@ -229,22 +224,22 @@ class SpiceLogger implements LoggerTemplate
     public function logToSyslogs(
         $level,
         $message,
-        $logparams = array()
+        $logparams = []
     )
     {
         //do not log on install!
         if ( !empty( $GLOBALS['installing'] )) return true;
 
         //check if level is set for user
-//        if(!empty($GLOBALS['current_user']->id) &&
+//        if(!empty(\SpiceCRM\includes\authentication\AuthenticationController::getInstance()->getCurrentUser()->id) &&
 //            isset($_SESSION['authenticated_user_syslogconfig']) &&
 //            !empty($_SESSION['authenticated_user_syslogconfig']) &&
-//            $_SESSION['authenticated_user_syslogconfig']['user_id'] == $GLOBALS['current_user']->id &&
+//            $_SESSION['authenticated_user_syslogconfig']['user_id'] == \SpiceCRM\includes\authentication\AuthenticationController::getInstance()->getCurrentUser()->id &&
 //            $_SESSION['authenticated_user_syslogconfig']['level'][$level] > 0
 //        ) {
 
             $td = new TimeDate();
-            $log = array("id" => create_guid(),
+            $log = ["id" => create_guid(),
                 "table_name" => "syslogs",
                 "log_level" => $level,
                 "pid" => getmypid(),
@@ -252,13 +247,11 @@ class SpiceLogger implements LoggerTemplate
                 'microtime' => microtime(true),
                 "date_entered" => $td->nowDb(),
                 "description" => $message,
-                "transaction_id" => isset( $GLOBALS['transactionID'] ) ? $GLOBALS['transactionID']:null );
+                "transaction_id" => isset( $GLOBALS['transactionID'] ) ? $GLOBALS['transactionID']:null];
 
             global $dictionary;
-            require_once('modules/TableDictionary.php');
-            LoggerManager::getDbManager();
-            $sql = LoggerManager::$db->insertParams("syslogs", $dictionary['syslogs']['fields'], $log, null, false);
-            LoggerManager::$db->queryOnly($sql);
+            $sql = DBManagerFactory::getInstance()->insertParams("syslogs", $dictionary['syslogs']['fields'], $log, null, false);
+            DBManagerFactory::getInstance()->queryOnly($sql);
 //        }
         //END
 
@@ -275,12 +268,12 @@ class SpiceLogger implements LoggerTemplate
             return;
         }
         // bug#50265: Parse the its unit string and get the size properly
-        $units = array(
+        $units = [
             'b' => 1,                   //Bytes
             'k' => 1024,                //KBytes
             'm' => 1024 * 1024,         //MBytes
             'g' => 1024 * 1024 * 1024,  //GBytes
-        );
+        ];
         if( preg_match('/^\s*([0-9]+\.[0-9]+|\.?[0-9]+)\s*(k|m|g|b)(b?ytes)?/i', $this->logSize, $match) ) {
             $rollAt = ( int ) $match[1] * $units[strtolower($match[2])];
         }
@@ -336,7 +329,7 @@ class SpiceLogger implements LoggerTemplate
         foreach(get_object_vars($this) as $k => $v) {
             $this->$k = null;
         }
-        throw new Exception("Not a serializable object");
+        throw new \Exception("Not a serializable object"); //todo-uebelmar clarify...which expection should be thrown?
     }
 
     /**

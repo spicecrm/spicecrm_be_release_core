@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,84 +33,84 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['opportunities_contacts'] = array(
+global $dictionary;
+$dictionary['opportunities_contacts'] = [
     'table' => 'opportunities_contacts',
-    'fields' => array(
-        array(
+    'fields' => [
+        [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        array(
+        ],
+        [
             'name' => 'contact_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        array(
+        ],
+        [
             'name' => 'opportunity_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        array(
+        ],
+        [
             'name' => 'contact_role',
             'type' => 'varchar',
             'len' => '50'
-        ),
-        array(
+        ],
+        [
             'name' => 'propensity_to_buy',
             'type' => 'enum',
             'options' => 'opportunity_relationship_buying_center_dom',
             'len' => '2'
-        ),
-        array(
+        ],
+        [
             'name' => 'level_of_support',
             'type' => 'enum',
             'options' => 'opportunity_relationship_buying_center_dom',
             'len' => '2'
-        ),
-        array(
+        ],
+        [
             'name' => 'level_of_influence',
             'type' => 'enum',
             'options' => 'opportunity_relationship_buying_center_dom',
             'len' => '2'
-        ),
-        array(
+        ],
+        [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        array(
+        ],
+        [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'default' => '0',
             'required' => false
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'opportunities_contactspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_con_opp_con',
             'type' => 'index',
-            'fields' => array('contact_id')
-        ),
-        array(
+            'fields' => ['contact_id']
+        ],
+        [
             'name' => 'idx_con_opp_opp',
             'type' => 'index',
-            'fields' => array('opportunity_id')
-        ),
-        array(
+            'fields' => ['opportunity_id']
+        ],
+        [
             'name' => 'idx_opportunities_contacts',
             'type' => 'alternate_key',
-            'fields' => array('opportunity_id', 'contact_id')
-        )
-    ),
-    'relationships' => array(
-        'opportunities_contacts' => array(
+            'fields' => ['opportunity_id', 'contact_id']
+        ]
+    ],
+    'relationships' => [
+        'opportunities_contacts' => [
             'lhs_module' => 'Opportunities',
             'lhs_table' => 'opportunities',
             'lhs_key' => 'id',
@@ -122,6 +121,6 @@ $dictionary['opportunities_contacts'] = array(
             'join_table' => 'opportunities_contacts',
             'join_key_lhs' => 'opportunity_id',
             'join_key_rhs' => 'contact_id'
-        )
-    )
-);
+        ]
+    ]
+];

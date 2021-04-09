@@ -1,15 +1,18 @@
 <?php
 namespace SpiceCRM\modules\Administration\KREST\controllers;
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 use SpiceCRM\modules\SystemDeploymentPackages\SystemDeploymentPackageSource;
-use SpiceCRM\modules\SystemUI\SpiceUIConfLoader;
-use SpiceCRM\modules\SystemLanguages\SpiceLanguageLoader;
+use SpiceCRM\includes\SpiceUI\SpiceUIConfLoader;
+use SpiceCRM\includes\SpiceLanguages\SpiceLanguageLoader;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class PackageController {
 
     public function getRepoUrl($repoid) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $repourl = '';
         if ($repoid) {
             $repository = $db->fetchByAssoc($db->query("SELECT * FROM sysuipackagerepositories WHERE id = '{$repoid}'"));
@@ -20,7 +23,7 @@ class PackageController {
     }
 
     private function checkAdmin() {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         if(!$current_user->is_admin) {
             throw new ForbiddenException();
         }
@@ -29,17 +32,18 @@ class PackageController {
     public function getRepositories($req, $res, $args) {
         $this->checkAdmin();
 
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $repositories = [];
         $repositorieObjects = $db->query("SELECT * FROM sysuipackagerepositories");
         while($repository = $db->fetchByAssoc($repositorieObjects)){
             $repositories[] = $repository;
         };
-        return $res->write(json_encode($repositories));
+        return $res->withJson($repositories);
     }
 
     public function getPackages($req, $res, $args) {
-        global $db, $sugar_config;
+        
+$db = DBManagerFactory::getInstance();
 
         $this->checkAdmin();
 
@@ -49,7 +53,7 @@ class PackageController {
         // switched to curl
         // $getJSONcontent = file_get_contents("{$repourl}/config");
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($curl, CURLOPT_URL, $repourl .'/config');
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
@@ -59,27 +63,27 @@ class PackageController {
 
         $content = json_decode($getJSONcontent);
         if ($confloader->release === true) {
-            $content->versions = array();
+            $content->versions = [];
             $content->versions[0]->version = $GLOBALS['sugar_version'];
         }
         $content->loaded = $confloader->getCurrentConf();
         $content->opencrs = $confloader->loader->hasOpenChangeRequest();
 
         // CR1000338 disable blacklisted packages
-        if(isset( $sugar_config['packageloader']['blacklist']) && !empty($sugar_config['packageloader']['blacklist'])) {
+        if(isset( SpiceConfig::getInstance()->config['packageloader']['blacklist']) && !empty(SpiceConfig::getInstance()->config['packageloader']['blacklist'])) {
             foreach ($content->packages as $idx => $package) {
-                if (in_array($package->package, $sugar_config['packageloader']['blacklist'])) {
+                if (in_array($package->package, SpiceConfig::getInstance()->config['packageloader']['blacklist'])) {
                     $package->extensions = 'locked by admin'; // will disable package load since there is no KREST extension by that name
                 }
             }
         }
-        return $res->write(json_encode($content));
+        return $res->withJson($content);
     }
 
     public function loadPackage($req, $res, $args) {
         $this->checkAdmin();
         $confloader = new SpiceUIConfLoader($this->getRepoUrl($args['repository']));
-        return $res->write(json_encode(['response' => $confloader->loadPackage($args['package'], '*')]));
+        return $res->withJson(['response' => $confloader->loadPackage($args['package'], '*')]);
     }
 
     public function deletePackage($req, $res, $args) {
@@ -89,7 +93,7 @@ class PackageController {
 
         if(!$confloader) $this->getLoaders();
 
-        return $res->write(json_encode(['response' => $confloader->deletePackage($args['package'])]));
+        return $res->withJson(['response' => $confloader->deletePackage($args['package'])]);
     }
 
     public function loadLanguage($req, $res, $args) {
@@ -97,7 +101,7 @@ class PackageController {
 
         $langloader = new SpiceLanguageLoader($this->getRepoUrl($args['repository']));
 
-        return $res->write(json_encode($langloader->loadLanguage($args['language'])));
+        return $res->withJson($langloader->loadLanguage($args['language']));
     }
 
     public function deleteLanguage($req, $res, $args) {
@@ -105,7 +109,7 @@ class PackageController {
 
         $langloader = new SpiceLanguageLoader();
 
-        return $res->write(json_encode(['success' => $langloader->deleteLanguage($args['language'])]));
+        return $res->withJson(['success' => $langloader->deleteLanguage($args['language'])]);
     }
 
 }

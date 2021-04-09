@@ -1,6 +1,5 @@
 <?php
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -36,6 +35,11 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\modules\ACLActions\ACLAction;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
+
 require_once('modules/ACLActions/actiondefs.php');
 require_once('modules/ACL/ACLJSController.php');
 
@@ -45,11 +49,12 @@ class ACLController {
     function filterModuleList(&$moduleList, $by_value = true)
     {
 
-        global $aclModuleList, $current_user;
+        global $aclModuleList;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         if (is_admin($current_user)) return;
         $actions = ACLAction::getUserActions($current_user->id, false);
 
-        $compList = array();
+        $compList = [];
         if ($by_value) {
             foreach ($moduleList as $key => $value) {
                 $compList[$value] = $key;
@@ -98,7 +103,7 @@ class ACLController {
      * @param String $module_name
      * @return true if they are allowed.  false otherwise.
      */
-    public function checkModuleAllowed($module_name, $actions = array())
+    public function checkModuleAllowed($module_name, $actions = [])
     {
         //begin CR1000141
         if(empty($actions))
@@ -116,11 +121,12 @@ class ACLController {
 
     public function disabledModuleList($moduleList, $by_value = true, $view = 'list')
     {
-        global $aclModuleList, $current_user;
-        if (is_admin($GLOBALS['current_user'])) return array();
+        global $aclModuleList;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        if (is_admin(AuthenticationController::getInstance()->getCurrentUser())) return [];
         $actions = ACLAction::getUserActions($current_user->id, false);
-        $disabled = array();
-        $compList = array();
+        $disabled = [];
+        $compList = [];
 
         if ($by_value) {
             foreach ($moduleList as $key => $value) {
@@ -180,10 +186,10 @@ class ACLController {
             $category = $category->module_dir;
 
         // check that the module supports ACL ..
-        if(!$GLOBALS['ACLController']->moduleSupportsACL($category))
+        if(!SpiceACL::getInstance()->moduleSupportsACL($category))
             return true;
 
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         if (is_admin($current_user)) return true;
         //calendar is a special case since it has 3 modules in it (calls, meetings, tasks)
 
@@ -206,7 +212,7 @@ class ACLController {
      */
     public function getBeanActions($bean)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $aclArray = [];
         $aclActions = ['list', 'detail', 'edit', 'delete', 'export', 'import'];
@@ -228,13 +234,13 @@ class ACLController {
 
     public function requireOwner($category, $value, $type = 'module')
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         if (is_admin($current_user)) return false;
         return ACLAction::userNeedsOwnership($current_user->id, $category, $value, $type);
 	}
 
 	public function getOwnerWhereClause($bean, $table_name = ''){
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         return "$bean->table_name.assigned_user_id='$current_user->id'";
     }
 
@@ -245,7 +251,7 @@ class ACLController {
 
 	public function moduleSupportsACL($module)
     {
-		static $checkModules = array();
+		static $checkModules = [];
 		global $beanFiles, $beanList;
 		if(isset($checkModules[$module])){
 			return $checkModules[$module];
@@ -254,7 +260,7 @@ class ACLController {
 			$checkModules[$module] = false;
 
 		}else{
-            $mod = \BeanFactory::getBean($module);
+            $mod = BeanFactory::getBean($module);
 			if(!is_subclass_of($mod, 'SugarBean')){
 				$checkModules[$module] = false;
 			}else{
@@ -278,15 +284,15 @@ class ACLController {
      * @return array
      */
 	function getFTSQuery($module){
-	    global $current_user;
+	    $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $thisFilter = [];
         if ($this->requireOwner($module, 'list')) {
-            $thisFilter['should'][] = array(
-                'term' => array(
+            $thisFilter['should'][] = [
+                'term' => [
                     'assigned_user_id' => $current_user->id
-                )
-            );
+                ]
+            ];
         }
 
         return $thisFilter;

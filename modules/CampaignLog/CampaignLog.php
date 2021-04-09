@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,6 +33,12 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\CampaignLog;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+
 
 
 class CampaignLog extends SugarBean {
@@ -44,7 +49,7 @@ class CampaignLog extends SugarBean {
 
 
     function __construct() {
-        global $sugar_config;
+        
         parent::__construct();
 
     }
@@ -139,7 +144,7 @@ class CampaignLog extends SugarBean {
 	}
 
 	static function setStatus($id,$status){
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $db->query("UPDATE campaign_log SET activity_type = '$status', activity_date = NOW() WHERE id = '$id'");
     }
 }

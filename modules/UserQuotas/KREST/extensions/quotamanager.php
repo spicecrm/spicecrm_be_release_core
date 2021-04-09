@@ -26,25 +26,52 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-use BeanFactory;
 use SpiceCRM\includes\RESTManager;
+use SpiceCRM\modules\UserQuotas\KREST\controllers\QuotaManagerController;
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
 
-$RESTManager->app->group('/quotamanager', function () {
-    $this->get('/users', function () {
-        $quota = BeanFactory::getBean('UserQuotas');
-        echo json_encode($quota->get_quotausers());
-    });
-    $this->get('/quotas/{year}', function($req, $res, $args) {
-        $quota = BeanFactory::getBean('UserQuotas');
-        echo json_encode($quota->get_quotas($args['year']));
-    });
-    $this->post('/quota/{userid}/{year}/{period}/{quota}', function($req, $res, $args) {
-        $quota = BeanFactory::getBean('UserQuotas');
-        echo json_encode($quota->set_quota($args['userid'], $args['year'], $args['period'], $args['quota']));
-    });
-    $this->delete('/quota/{userid}/{year}/{period}', function($req, $res, $args) {
-        $quota = BeanFactory::getBean('UserQuotas');
-        echo json_encode($quota->delete_quota($args['userid'], $args['year'], $args['period']));
-    });
-});
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('userquotas', '1.0');
+
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/quotamanager/users',
+        'class'       => QuotaManagerController::class,
+        'function'    => 'GetQuotaUser',
+        'description' => 'gets a quota User',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/quotamanager/quotas/{year}',
+        'class'       => QuotaManagerController::class,
+        'function'    => 'GetQuota',
+        'description' => 'gets a quota',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/quotamanager/quota/{userid}/{year}/{period}/{quota}',
+        'class'       => QuotaManagerController::class,
+        'function'    => 'SetQuota',
+        'description' => 'sets a quota',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/quotamanager/quota/{userid}/{year}/{period}',
+        'class'       => QuotaManagerController::class,
+        'function'    => 'DeleteQuota',
+        'description' => 'deletes a quota',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
+
+$RESTManager->registerRoutes($routes);
+

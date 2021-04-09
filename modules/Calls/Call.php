@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,6 +33,20 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\Calls;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use DateTime;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\Contacts\Contact;
+use SpiceCRM\modules\Leads\Lead;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
+
 
 /*********************************************************************************
  * Description:  TODO: To be written.
@@ -159,11 +172,11 @@ class Call extends SugarBean
 
         // // Get the contact name.
         // $row = $this->db->fetchByAssoc($result);
-        // $GLOBALS['log']->info("additional call fields $query");
+        // \SpiceCRM\includes\Logger\LoggerManager::getLogger()->info("additional call fields $query");
         // if ($row != null) {
         // $this->contact_name = $locale->getLocaleFormattedName($row['first_name'], $row['last_name'], '', '');
-        // $GLOBALS['log']->debug("Call($this->id): contact_name = $this->contact_name");
-        // $GLOBALS['log']->debug("Call($this->id): contact_id = $this->contact_id");
+        // \SpiceCRM\includes\Logger\LoggerManager::getLogger()->debug("Call($this->id): contact_name = $this->contact_name");
+        // \SpiceCRM\includes\Logger\LoggerManager::getLogger()->debug("Call($this->id): contact_id = $this->contact_id");
         // }
         // }
         if (!isset($this->duration_minutes)) {
@@ -194,7 +207,7 @@ class Call extends SugarBean
 
         global $app_list_strings;
         $parent_types = $app_list_strings['record_type_display'];
-        $disabled_parent_types = $GLOBALS['ACLController']->disabledModuleList($parent_types, false, 'list');
+        $disabled_parent_types = SpiceACL::getInstance()->disabledModuleList($parent_types, false, 'list');
         foreach ($disabled_parent_types as $disabled_parent_type) {
             if ($disabled_parent_type != $this->parent_type) {
                 unset($parent_types[$disabled_parent_type]);
@@ -206,7 +219,7 @@ class Call extends SugarBean
         }
 
         if (empty($this->id)) {
-            $reminder_t = $GLOBALS['current_user']->getPreference('reminder_time');
+            $reminder_t = AuthenticationController::getInstance()->getCurrentUser()->getPreference('reminder_time');
             if (isset($reminder_t))
                 $this->reminder_time = $reminder_t;
         }
@@ -216,7 +229,7 @@ class Call extends SugarBean
             $this->email_reminder_time = -1;
         }
         if (empty($this->id)) {
-            $reminder_t = $GLOBALS['current_user']->getPreference('email_reminder_time');
+            $reminder_t = AuthenticationController::getInstance()->getCurrentUser()->getPreference('email_reminder_time');
             if (isset($reminder_t))
                 $this->email_reminder_time = $reminder_t;
         }
@@ -232,9 +245,9 @@ class Call extends SugarBean
 
     function set_notification_body($xtpl, $call)
     {
-        global $sugar_config;
+        
         global $app_list_strings;
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         global $app_list_strings;
         global $timedate;
 
@@ -247,13 +260,13 @@ class Call extends SugarBean
         $xOffset = $timedate->asUser($calldate, $notifyUser) . ' ' . $timedate->userTimezoneSuffix($calldate, $notifyUser);
 
         if (strtolower(get_class($call->current_notify_user)) == 'contact') {
-            $xtpl->assign("ACCEPT_URL", $sugar_config['site_url'] .
+            $xtpl->assign("ACCEPT_URL", SpiceConfig::getInstance()->config['site_url'] .
                 '/index.php?entryPoint=acceptDecline&module=Calls&contact_id=' . $call->current_notify_user->id . '&record=' . $call->id);
         } elseif (strtolower(get_class($call->current_notify_user)) == 'lead') {
-            $xtpl->assign("ACCEPT_URL", $sugar_config['site_url'] .
+            $xtpl->assign("ACCEPT_URL", SpiceConfig::getInstance()->config['site_url'] .
                 '/index.php?entryPoint=acceptDecline&module=Calls&lead_id=' . $call->current_notify_user->id . '&record=' . $call->id);
         } else {
-            $xtpl->assign("ACCEPT_URL", $sugar_config['site_url'] .
+            $xtpl->assign("ACCEPT_URL", SpiceConfig::getInstance()->config['site_url'] .
                 '/index.php?entryPoint=acceptDecline&module=Calls&user_id=' . $call->current_notify_user->id . '&record=' . $call->id);
         }
 
@@ -273,14 +286,14 @@ class Call extends SugarBean
      */
     function get_activities_query($parentModule, $parentId, $own = false)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-        $queryArray = array(
+        $queryArray = [
             'select' => "SELECT DISTINCT(calls.id), date_start sortdate, 'Calls' module",
             'from' => "FROM calls LEFT JOIN calls_contacts on calls.id = calls_contacts.call_id",
             'where' => "WHERE ((parent_type = '$parentModule' and parent_id = '$parentId') OR calls_contacts.contact_id = '$parentId' ) and calls.deleted = 0 and status in ('Planned')",
             'order_by' => ""
-        );
+        ];
 
         switch ($own) {
             case 'assigned':
@@ -291,8 +304,8 @@ class Call extends SugarBean
                 break;
         }
 
-        if ($GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray')) {
-            $GLOBALS['ACLController']->addACLAccessToListArray($queryArray, $this);
+        if (SpiceACL::getInstance() && method_exists(SpiceACL::getInstance(), 'addACLAccessToListArray')) {
+            SpiceACL::getInstance()->addACLAccessToListArray($queryArray, $this);
         }
 
         return $queryArray['select'] . ' ' . $queryArray['from'] . ' '. $queryArray['where'] . ' ' . $queryArray['order_by'];
@@ -300,14 +313,14 @@ class Call extends SugarBean
 
     function get_history_query($parentModule, $parentId, $own = false)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-        $queryArray = array(
+        $queryArray = [
             'select' => "SELECT DISTINCT(calls.id), date_start sortdate, 'Calls' module",
             'from' => "FROM calls LEFT JOIN calls_contacts ON calls.id = calls_contacts.call_id",
             'where' => "WHERE ((parent_type = '$parentModule' AND parent_id = '$parentId') OR calls_contacts.contact_id = '$parentId' ) AND calls.deleted = 0 AND status NOT IN ('Planned')",
             'order_by' => ""
-        );
+        ];
 
         switch ($own) {
             case 'assigned':
@@ -318,8 +331,8 @@ class Call extends SugarBean
                 break;
         }
 
-        if ($GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray')) {
-            $GLOBALS['ACLController']->addACLAccessToListArray($queryArray, $this);
+        if (SpiceACL::getInstance() && method_exists(SpiceACL::getInstance(), 'addACLAccessToListArray')) {
+            SpiceACL::getInstance()->addACLAccessToListArray($queryArray, $this);
         }
 
         return $queryArray['select'] . ' ' . $queryArray['from'] . ' '. $queryArray['where'] . ' ' . $queryArray['order_by'];
@@ -367,7 +380,7 @@ class Call extends SugarBean
 
         $result = $this->db->query($myquery . ' UNION ' . $invitedquery, true);
 
-        $list = Array();
+        $list = [];
 
         while ($row = $this->db->fetchByAssoc($result)) {
             $record = BeanFactory::getBean('Calls', $row['id']);
@@ -383,15 +396,15 @@ class Call extends SugarBean
 
     function get_call_users()
     {
-        $template = new User();
+        $template = BeanFactory::getBean('Users');
         // First, get the list of IDs.
         $query = "SELECT calls_users.required, calls_users.accept_status, calls_users.user_id from calls_users where calls_users.call_id='$this->id' AND calls_users.deleted=0";
-        $GLOBALS['log']->debug("Finding linked records $this->object_name: " . $query);
+        LoggerManager::getLogger()->debug("Finding linked records $this->object_name: " . $query);
         $result = $this->db->query($query, true);
-        $list = Array();
+        $list = [];
 
         while ($row = $this->db->fetchByAssoc($result)) {
-            $template = new User(); // PHP 5 will retrieve by reference, always over-writing the "old" one
+            $template = BeanFactory::getBean('Users'); // PHP 5 will retrieve by reference, always over-writing the "old" one
             $record = $template->retrieve($row['user_id']);
             $template->required = $row['required'];
             $template->accept_status = $row['accept_status'];
@@ -410,13 +423,13 @@ class Call extends SugarBean
         $template = $this;
         // First, get the list of IDs.
         $query = "SELECT calls_users.required, calls_users.accept_status, calls_users.call_id from calls_users where calls_users.user_id='$user->id' AND ( calls_users.accept_status IS NULL OR  calls_users.accept_status='none') AND calls_users.deleted=0";
-        $GLOBALS['log']->debug("Finding linked records $this->object_name: " . $query);
+        LoggerManager::getLogger()->debug("Finding linked records $this->object_name: " . $query);
 
 
         $result = $this->db->query($query, true);
 
 
-        $list = Array();
+        $list = [];
 
 
         while ($row = $this->db->fetchByAssoc($result)) {
@@ -438,19 +451,19 @@ class Call extends SugarBean
     function set_accept_status(&$user, $status)
     {
         if ($user->object_name == 'User') {
-            $relate_values = array('user_id' => $user->id, 'call_id' => $this->id);
-            $data_values = array('accept_status' => $status);
+            $relate_values = ['user_id' => $user->id, 'call_id' => $this->id];
+            $data_values = ['accept_status' => $status];
             $this->set_relationship($this->rel_users_table, $relate_values, true, true, $data_values);
-            global $current_user;
+            $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
 
         } else if ($user->object_name == 'Contact') {
-            $relate_values = array('contact_id' => $user->id, 'call_id' => $this->id);
-            $data_values = array('accept_status' => $status);
+            $relate_values = ['contact_id' => $user->id, 'call_id' => $this->id];
+            $data_values = ['accept_status' => $status];
             $this->set_relationship($this->rel_contacts_table, $relate_values, true, true, $data_values);
         } else if ($user->object_name == 'Lead') {
-            $relate_values = array('lead_id' => $user->id, 'call_id' => $this->id);
-            $data_values = array('accept_status' => $status);
+            $relate_values = ['lead_id' => $user->id, 'call_id' => $this->id];
+            $data_values = ['accept_status' => $status];
             $this->set_relationship($this->rel_leads_table, $relate_values, true, true, $data_values);
         }
     }
@@ -459,25 +472,25 @@ class Call extends SugarBean
     function get_notification_recipients()
     {
 
-//		$GLOBALS['log']->debug('Call.php->get_notification_recipients():'.print_r($this,true));
-        $list = array();
+//		\SpiceCRM\includes\Logger\LoggerManager::getLogger()->debug('Call.php->get_notification_recipients():'.print_r($this,true));
+        $list = [];
         if (!is_array($this->contacts_arr)) {
-            $this->contacts_arr = array();
+            $this->contacts_arr = [];
         }
 
         if (!is_array($this->users_arr)) {
-            $this->users_arr = array();
+            $this->users_arr = [];
         }
 
         if (!is_array($this->leads_arr)) {
-            $this->leads_arr = array();
+            $this->leads_arr = [];
         }
 
         foreach ($this->users_arr as $user_id) {
-            $notify_user = new User();
+            $notify_user = BeanFactory::getBean('Users');
             $notify_user->retrieve($user_id);
             $notify_user->new_assigned_user_name = $notify_user->full_name;
-            $GLOBALS['log']->info("Notifications: recipient is $notify_user->new_assigned_user_name");
+            LoggerManager::getLogger()->info("Notifications: recipient is $notify_user->new_assigned_user_name");
             $list[$notify_user->id] = $notify_user;
         }
 
@@ -485,7 +498,7 @@ class Call extends SugarBean
             $notify_user = new Contact();
             $notify_user->retrieve($contact_id);
             $notify_user->new_assigned_user_name = $notify_user->full_name;
-            $GLOBALS['log']->info("Notifications: recipient is $notify_user->new_assigned_user_name");
+            LoggerManager::getLogger()->info("Notifications: recipient is $notify_user->new_assigned_user_name");
             $list[$notify_user->id] = $notify_user;
         }
 
@@ -493,16 +506,16 @@ class Call extends SugarBean
             $notify_user = new Lead();
             $notify_user->retrieve($lead_id);
             $notify_user->new_assigned_user_name = $notify_user->full_name;
-            $GLOBALS['log']->info("Notifications: recipient is $notify_user->new_assigned_user_name");
+            LoggerManager::getLogger()->info("Notifications: recipient is $notify_user->new_assigned_user_name");
             $list[$notify_user->id] = $notify_user;
         }
-        global $sugar_config;
-        if (isset($sugar_config['disable_notify_current_user']) && $sugar_config['disable_notify_current_user']) {
-            global $current_user;
+        
+        if (isset(SpiceConfig::getInstance()->config['disable_notify_current_user']) && SpiceConfig::getInstance()->config['disable_notify_current_user']) {
+            $current_user = AuthenticationController::getInstance()->getCurrentUser();
             if (isset($list[$current_user->id]))
                 unset($list[$current_user->id]);
         }
-//		$GLOBALS['log']->debug('Call.php->get_notification_recipients():'.print_r($list,true));
+//		\SpiceCRM\includes\Logger\LoggerManager::getLogger()->debug('Call.php->get_notification_recipients():'.print_r($list,true));
         return $list;
     }
 
@@ -522,12 +535,12 @@ class Call extends SugarBean
                 //if the global soap_server_object variable is not empty (as in from a soap/OPI call), then process the assigned_user_id relationship, otherwise
                 //add assigned_user_id to exclude list and let the logic from MeetingFormBase determine whether assigned user id gets added to the relationship
                 if (!empty($GLOBALS['soap_server_object'])) {
-                    $exclude = array('lead_id', 'contact_id', 'user_id');
+                    $exclude = ['lead_id', 'contact_id', 'user_id'];
                 } else {
-                    $exclude = array('lead_id', 'contact_id', 'user_id', 'assigned_user_id');
+                    $exclude = ['lead_id', 'contact_id', 'user_id', 'assigned_user_id'];
                 }
             } else {
-                $exclude = array('user_id');
+                $exclude = ['user_id'];
             }
 
         }
@@ -550,7 +563,7 @@ class Call extends SugarBean
     }
 
     public function removeGcalId() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "UPDATE calls SET external_id = NULL WHERE id = '" . $this->id . "'";
         $result = $db->query($query);

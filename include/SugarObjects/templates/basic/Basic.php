@@ -33,7 +33,9 @@
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\includes\SugarObjects\templates\basic;
 
+use SpiceCRM\data\SugarBean;
 
 class Basic extends SugarBean
 {

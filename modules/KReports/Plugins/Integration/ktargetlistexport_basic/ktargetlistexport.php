@@ -12,9 +12,7 @@
 ******************************************************************************* */
 
 
-
-
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+use SpiceCRM\modules\ProspectLists\ProspectList;
 
 require_once('modules/KReports/Plugins/prototypes/kreportintegrationplugin.php');
 
@@ -26,7 +24,7 @@ class ktargetlistexport extends kreportintegrationplugin {
 
     public function checkAccess($thisReport){
 
-        require_once('modules/ProspectLists/ProspectList.php');
+        //require_once('modules/ProspectLists/ProspectList.php');
         $newProspectList = new ProspectList();
 
         // fill with results:
@@ -46,13 +44,13 @@ class ktargetlistexport extends kreportintegrationplugin {
     }
     
     public function getMenuItem() {
-        return array(
+        return [
             'jsFile' => 'modules/KReports/Plugins/Integration/ktargetlistexport/ktargetlistexport.js',
-            'menuItem' => array(
+            'menuItem' => [
                 'icon' => $this->wrapText('modules/KReports/images/targetlist.png'),
                 'text' => $this->wrapText($this->pluginName),
                 'handler' => $this->wrapFunction('ktargetlistexport')
-                ));
+            ]];
     }
 
 }

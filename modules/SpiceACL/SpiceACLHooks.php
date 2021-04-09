@@ -27,6 +27,10 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
 
+use SpiceCRM\includes\SugarObjects\VardefManager;
+use SpiceCRM\modules\SpiceACL\SpiceACLUsers;
+use SpiceCRM\includes\SpiceUI\KREST\controllers\SpiceUIModulesController;
+
 /**
  * Class SpiceACLHooks
  *
@@ -38,7 +42,7 @@ class SpiceACLHooks
     public function hook_after_retrieve(&$bean, $event, $arguments)
     {
         if ( isset($bean->field_name_map['spiceacl_users_hash']) && !empty($bean->spiceacl_users_hash)) {
-            $userManager = new \SpiceCRM\modules\SpiceACL\SpiceACLUsers();
+            $userManager = new SpiceACLUsers();
             $bean->spiceacl_additional_users = json_encode($userManager->getHashUsers($bean->spiceacl_users_hash));
         }
     }
@@ -56,7 +60,7 @@ class SpiceACLHooks
                     $users[]= $additonalUser->id;
                 }
 
-                $userManager = new \SpiceCRM\modules\SpiceACL\SpiceACLUsers();
+                $userManager = new SpiceACLUsers();
                 $bean->spiceacl_users_hash = $userManager->manageUsersHash($users);
             } else {
                 $bean->spiceacl_users_hash = '';
@@ -67,7 +71,7 @@ class SpiceACLHooks
     public function hook_create_vardefs(&$bean, $event, $arguments)
     {
         if(!isset($GLOBALS['dictionary'][$bean->object_name]['templates']['spiceaclusers'])) {
-            $loader = new \SpiceCRM\modules\SystemUI\KREST\controllers\SystemUIModulesController();
+            $loader = new SpiceUIModulesController();
             $modules = $loader->geUnfilteredModules();
             if ($modules[$bean->module_dir]['acl_multipleusers'] == 1){
                 VardefManager::addTemplate($bean->module_dir, $bean->object_name, 'spiceaclusers');

@@ -1,4 +1,6 @@
 <?php
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['CatalogOrder'] = [
     'table' => 'catalogorders',
     'fields' => [
@@ -84,27 +86,27 @@ $dictionary['CatalogOrder'] = [
             'source' => 'non-db'
         ],
         // will be filled in by retrieve()...
-        'contact_address_street' => array(
+        'contact_address_street' => [
             'name' => 'contact_address_street',
             'vname' => 'LBL_STREET',
             'type' => 'varchar',
             'len' => '150',
             'source' => 'non-db',
-        ),
-        'contact_address_postalcode' => array(
+        ],
+        'contact_address_postalcode' => [
             'name' => 'contact_address_postalcode',
             'vname' => 'LBL_BILLING_ADDRESS_POSTALCODE',
             'type' => 'varchar',
             'len' => '20',
             'source' => 'non-db',
-        ),
-        'contact_address_city' => array(
+        ],
+        'contact_address_city' => [
             'name' => 'contact_address_city',
             'vname' => 'LBL_BILLING_ADDRESS_CITY',
             'type' => 'varchar',
             'len' => '100',
             'source' => 'non-db',
-        ),
+        ],
         'contact_full_name' => [
             'name' => 'contact_full_name',
             'rname' => 'name',
@@ -116,7 +118,7 @@ $dictionary['CatalogOrder'] = [
             'source' => 'non-db',
             'vname' => 'LBL_CONTACT'
         ],
-        'contact_salutation' => array(
+        'contact_salutation' => [
             'name' => 'contact_salutation',
             'vname' => 'LBL_SALUTATION',
             'type' => 'enum',
@@ -124,39 +126,39 @@ $dictionary['CatalogOrder'] = [
             'len' => '255',
             'source' => 'non-db',
             'readonly' => true,
-        ),
-        'contact_first_name' => array(
+        ],
+        'contact_first_name' => [
             'name' => 'contact_first_name',
             'vname' => 'LBL_FIRST_NAME',
             'type' => 'varchar',
             'len' => '100',
             'source' => 'non-db',
             'readonly' => true,
-        ),
-        'contact_last_name' => array(
+        ],
+        'contact_last_name' => [
             'name' => 'contact_last_name',
             'vname' => 'LBL_LAST_NAME',
             'type' => 'varchar',
             'len' => '100',
             'source' => 'non-db',
             'readonly' => true,
-        ),
-        'contact_degree1' => array(
+        ],
+        'contact_degree1' => [
             'name' => 'contact_degree1',
             'vname' => 'LBL_DEGREE1',
             'type' => 'varchar',
             'len' => 50,
             'source' => 'non-db',
             'readonly' => true,
-        ),
-        'contact_degree2' => array(
+        ],
+        'contact_degree2' => [
             'name' => 'contact_degree2',
             'vname' => 'LBL_DEGREE2',
             'type' => 'varchar',
             'len' => 50,
             'source' => 'non-db',
             'readonly' => true,
-        ),
+        ],
         'inquiry_id' => [
             'name' => 'inquiry_id',
             'type' => 'varchar',

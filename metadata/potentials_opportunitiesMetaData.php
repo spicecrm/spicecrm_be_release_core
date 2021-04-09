@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,64 +33,64 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['potentials_opportunities'] = array(
+global $dictionary;
+$dictionary['potentials_opportunities'] = [
     'table' => 'potentials_opportunities',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'opportunity_id' => array(
+        ],
+        'opportunity_id' => [
             'name' => 'opportunity_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'potential_id' => array(
+        ],
+        'potential_id' => [
             'name' => 'potential_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'default' => '0'
-        ),
-        'amount' => array(
+        ],
+        'amount' => [
             'name' => 'amount',
             'type' => 'currency',
             'dbType' => 'double'
-        ),
-        'amount_usdollar' => array(
+        ],
+        'amount_usdollar' => [
             'name' => 'amount_usdollar',
             'type' => 'currency',
             'dbType' => 'double',
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'potentials_opportunitiesspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_potential_opportunity',
             'type' => 'alternate_key',
-            'fields' => array('potential_id', 'opportunity_id')
-        ),
-        array(
+            'fields' => ['potential_id', 'opportunity_id']
+        ],
+        [
             'name' => 'idx_oppid_del_accid',
             'type' => 'index',
-            'fields' => array('potential_id', 'deleted', 'opportunity_id')
-        )
-    ),
-    'relationships' => array(
-        'potentials_opportunities' => array(
+            'fields' => ['potential_id', 'deleted', 'opportunity_id']
+        ]
+    ],
+    'relationships' => [
+        'potentials_opportunities' => [
             'lhs_module' => 'Potentials',
             'lhs_table' => 'potentials',
             'lhs_key' => 'id',
@@ -102,7 +101,7 @@ $dictionary['potentials_opportunities'] = array(
             'join_table' => 'potentials_opportunities',
             'join_key_lhs' => 'potential_id',
             'join_key_rhs' => 'opportunity_id'
-        )
-    )
-);
+        ]
+    ]
+];
 

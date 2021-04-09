@@ -1,5 +1,7 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\ProspectLists;
+
+use SpiceCRM\data\SugarBean;
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -48,13 +50,13 @@ class ProspectList extends SugarBean
     var $object_name = "ProspectList";
 
     // This is used to retrieve related fields from form posts.
-    var $additional_column_fields = array(
+    var $additional_column_fields = [
         'assigned_user_name', 'assigned_user_id', 'campaign_id',
-    );
-    var $relationship_fields = array(
+    ];
+    var $relationship_fields = [
         'campaign_id' => 'campaigns',
         'prospect_list_prospects' => 'prospects',
-    );
+    ];
 
     var $entry_count;
 
@@ -183,7 +185,7 @@ FROM prospect_lists_prospects plp
         $link_field = sprintf("%s_id", $link_name);
 
         foreach ($link_ids as $link_id) {
-            $this->set_relationship('prospect_lists_prospects', array($link_field => $link_id, 'prospect_list_id' => $prospect_list_id));
+            $this->set_relationship('prospect_lists_prospects', [$link_field => $link_id, 'prospect_list_id' => $prospect_list_id]);
         }
     }
 
@@ -191,7 +193,7 @@ FROM prospect_lists_prospects plp
     {
         $link_field = sprintf("%s_id", $link_name);
 
-        $this->set_relationship('prospect_lists_prospects', array($link_field => $link_id, 'prospect_list_id' => $prospect_list_id));
+        $this->set_relationship('prospect_lists_prospects', [$link_field => $link_id, 'prospect_list_id' => $prospect_list_id]);
     }
 
 

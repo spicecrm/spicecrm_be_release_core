@@ -33,7 +33,12 @@
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\includes\resource;
 
+
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 /**
  * ResourceManager.php
@@ -43,7 +48,7 @@ class ResourceManager
 {
 
     private static $instance;
-    private $_observers = array();
+    private $_observers = [];
 
     /**
      * The constructor; declared as private
@@ -90,8 +95,8 @@ class ResourceManager
         if(!empty($observer->module)) {
             $limit = 0;
 
-            if(isset($GLOBALS['sugar_config']['resource_management'])) {
-                   $res = $GLOBALS['sugar_config']['resource_management'];
+            if(isset(SpiceConfig::getInstance()->config['resource_management'])) {
+                   $res = SpiceConfig::getInstance()->config['resource_management'];
                 if(!empty($res['special_query_modules']) &&
                    in_array($observer->module, $res['special_query_modules']) &&
                    !empty($res['special_query_limit']) &&
@@ -136,7 +141,7 @@ class ResourceManager
             $limit = $observer->limit;
             $module = $observer->module;
             eval("\$limitMsg = \"$limitMsg\";");
-            $GLOBALS['log']->fatal($limitMsg);
+            LoggerManager::getLogger()->fatal($limitMsg);
             $observer->notify($limitMsg);
         }
     }

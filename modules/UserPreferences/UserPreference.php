@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,6 +33,15 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\UserPreferences;
+
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\Users\User;
 
 /*********************************************************************************
 
@@ -78,25 +86,16 @@ class UserPreference extends SugarBean
         $category = 'global'
         )
     {
-        global $sugar_config;
+        
 
         $user = $this->_userFocus;
 
         // if the unique key in session doesn't match the app or prefereces are empty
-        if(!isset($_SESSION[$user->user_name.'_PREFERENCES'][$category]) || (!empty($_SESSION['unique_key']) && $_SESSION['unique_key'] != $sugar_config['unique_key'])) {
+        if(!isset($_SESSION[$user->user_name.'_PREFERENCES'][$category]) || (!empty($_SESSION['unique_key']) && $_SESSION['unique_key'] != SpiceConfig::getInstance()->config['unique_key'])) {
             $this->loadPreferences($category);
         }
         if(isset($_SESSION[$user->user_name.'_PREFERENCES'][$category][$name])) {
             return $_SESSION[$user->user_name.'_PREFERENCES'][$category][$name];
-        }
-
-        if ( !@$GLOBALS['isREST'] ) {
-            // check to see if a default preference ( i.e. $sugar_config setting ) exists for this value )
-            // if so, return it
-            $value = $this->getDefaultPreference( $name, $category );
-            if ( !is_null( $value ) ) {
-                return $value;
-            }
         }
 
         return null;
@@ -115,18 +114,18 @@ class UserPreference extends SugarBean
         $category = 'global'
     )
     {
-        global $sugar_config;
+        
 
         $user = $this->_userFocus;
 
         if ( empty($user->user_name) )
             return;
 
-        $focus = new \UserPreference($this->_userFocus);
-        if($result = $focus->retrieve_by_string_fields(array(
+        $focus = new UserPreference($this->_userFocus);
+        if($result = $focus->retrieve_by_string_fields([
             'assigned_user_id' => $user->id,
             'category' => $category,
-        ))) {
+        ])) {
             $cats = unserialize(base64_decode($result->contents));
             return $cats[$name];
         }
@@ -147,25 +146,25 @@ class UserPreference extends SugarBean
         $category = 'global'
         )
     {
-        global $sugar_config;
+        
 
         // Doesn't support any prefs but global ones
         if ( $category != 'global' )
             return null;
 
         // Next, check to see if it's one of the common problem ones
-        if ( isset($sugar_config['default_'.$name]) )
-            return $sugar_config['default_'.$name];
+        if ( isset(SpiceConfig::getInstance()->config['default_'.$name]) )
+            return SpiceConfig::getInstance()->config['default_'.$name];
         if ( $name == 'datef' )
-            return $sugar_config['default_date_format'];
+            return SpiceConfig::getInstance()->config['default_date_format'];
         if ( $name == 'timef' )
-            return $sugar_config['default_time_format'];
+            return SpiceConfig::getInstance()->config['default_time_format'];
         if ( $name == 'email_link_type' )
-            return $sugar_config['email_default_client'];
+            return SpiceConfig::getInstance()->config['email_default_client'];
 
-        // Check for name matching $sugar_config variable
-        if ( isset($sugar_config[$name]) )
-            return $sugar_config[$name];
+        // Check for name matching \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config variable
+        if ( isset(SpiceConfig::getInstance()->config[$name]) )
+            return SpiceConfig::getInstance()->config[$name];
 
     }
 
@@ -189,14 +188,14 @@ class UserPreference extends SugarBean
 
         if(!isset($_SESSION[$user->user_name.'_PREFERENCES'][$category])) {
             if(!$user->loadPreferences($category))
-                $_SESSION[$user->user_name.'_PREFERENCES'][$category] = array();
+                $_SESSION[$user->user_name.'_PREFERENCES'][$category] = [];
         }
 
         // preferences changed or a new preference, save it to DB
         if(!isset($_SESSION[$user->user_name.'_PREFERENCES'][$category][$name])
             || (isset($_SESSION[$user->user_name.'_PREFERENCES'][$category][$name]) && $_SESSION[$user->user_name.'_PREFERENCES'][$category][$name] != $value)) {
                 $GLOBALS['savePreferencesToDB'] = true;
-                if(!isset($GLOBALS['savePreferencesToDBCats'])) $GLOBALS['savePreferencesToDBCats'] = array();
+                if(!isset($GLOBALS['savePreferencesToDBCats'])) $GLOBALS['savePreferencesToDBCats'] = [];
                 $GLOBALS['savePreferencesToDBCats'][$category] = true;
         }
 
@@ -221,14 +220,14 @@ class UserPreference extends SugarBean
         if ( empty($user->user_name) )
             return;
 
-        $focus = new \UserPreference($this->_userFocus);
-        $result = $focus->retrieve_by_string_fields(array(
+        $focus = new UserPreference($this->_userFocus);
+        $result = $focus->retrieve_by_string_fields([
             'assigned_user_id' => $user->id,
             'category' => $category,
-        ));
+        ]);
         $cats = unserialize(base64_decode($result->contents));
 
-        $contents = array_merge($cats, array($name => $value));
+        $contents = array_merge($cats, [$name => $value]);
         $focus->assigned_user_id = $user->id; // MFH Bug #13862
         $focus->deleted = 0;
         $focus->contents = base64_encode(serialize($contents));
@@ -251,13 +250,13 @@ class UserPreference extends SugarBean
 
         if(!isset($_SESSION[$user->user_name.'_PREFERENCES'][$category])) {
             if(!$user->loadPreferences($category))
-                $_SESSION[$user->user_name.'_PREFERENCES'][$category] = array();
+                $_SESSION[$user->user_name.'_PREFERENCES'][$category] = [];
         }
 
         // when preference is set, mark to save to DB
         if( isset( $_SESSION[$user->user_name.'_PREFERENCES'][$category][$name] )) {
             $GLOBALS['savePreferencesToDB'] = true;
-            if(!isset($GLOBALS['savePreferencesToDBCats'])) $GLOBALS['savePreferencesToDBCats'] = array();
+            if(!isset($GLOBALS['savePreferencesToDBCats'])) $GLOBALS['savePreferencesToDBCats'] = [];
             $GLOBALS['savePreferencesToDBCats'][$category] = true;
         }
 
@@ -275,13 +274,13 @@ class UserPreference extends SugarBean
         $category = 'global'
         )
     {
-        global $sugar_config;
+        
 
         $user = $this->_userFocus;
 
         if($user->object_name != 'User')
             return;
-        if(!empty($user->id) && (!isset($_SESSION[$user->user_name . '_PREFERENCES'][$category]) || (!empty($_SESSION['unique_key']) && $_SESSION['unique_key'] != $sugar_config['unique_key']))) {
+        if(!empty($user->id) && (!isset($_SESSION[$user->user_name . '_PREFERENCES'][$category]) || (!empty($_SESSION['unique_key']) && $_SESSION['unique_key'] != SpiceConfig::getInstance()->config['unique_key']))) {
             // cn: moving this to only log when valid - throwing errors on install
             return $this->reloadPreferences($category);
         }
@@ -310,7 +309,7 @@ class UserPreference extends SugarBean
         ];
         foreach($prefMapToDefault as $userpref => $defaultpref) {
             if (empty($this->getPreference($userpref))) {
-                $value = $GLOBALS['sugar_config'][$defaultpref];
+                $value = SpiceConfig::getInstance()->config[$defaultpref];
 //                if($defaultpref == 'currency' && empty($value))
 //                    $value= '-99';
                 $this->setPreference($userpref, $value, $category);
@@ -331,18 +330,18 @@ class UserPreference extends SugarBean
         if($user->object_name != 'User' || empty($user->id) || empty($user->user_name)) {
             return false;
         }
-        $GLOBALS['log']->debug('Loading Preferences DB ' . $user->user_name);
-        if(!isset($_SESSION[$user->user_name . '_PREFERENCES'])) $_SESSION[$user->user_name . '_PREFERENCES'] = array();
-        if(!isset($user->user_preferences) || !is_array($user->user_preferences)) $user->user_preferences = array();
-        $result = $GLOBALS['db']->query("SELECT contents FROM user_preferences WHERE assigned_user_id='$user->id' AND category = '" . $category . "' AND deleted = 0", false, 'Failed to load user preferences');
-        $row = $GLOBALS['db']->fetchByAssoc($result);
+        LoggerManager::getLogger()->debug('Loading Preferences DB ' . $user->user_name);
+        if(!isset($_SESSION[$user->user_name . '_PREFERENCES'])) $_SESSION[$user->user_name . '_PREFERENCES'] = [];
+        if(!isset($user->user_preferences) || !is_array($user->user_preferences)) $user->user_preferences = [];
+        $result = DBManagerFactory::getInstance()->query("SELECT contents FROM user_preferences WHERE assigned_user_id='$user->id' AND category = '" . $category . "' AND deleted = 0", false, 'Failed to load user preferences');
+        $row = DBManagerFactory::getInstance()->fetchByAssoc($result);
         if ($row) {
             $_SESSION[$user->user_name . '_PREFERENCES'][$category] = unserialize(base64_decode($row['contents']));
             $user->user_preferences[$category] = unserialize(base64_decode($row['contents']));
             return true;
         } else {
-            $_SESSION[$user->user_name . '_PREFERENCES'][$category] = array();
-            $user->user_preferences[$category] = array();
+            $_SESSION[$user->user_name . '_PREFERENCES'][$category] = [];
+            $user->user_preferences[$category] = [];
         }
         return false;
     }
@@ -354,11 +353,13 @@ class UserPreference extends SugarBean
      */
     public function getUserDateTimePreferences()
     {
-        global $sugar_config, $db, $timedate, $current_user;
+        global   $timedate;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
         $user = $this->_userFocus;
 
-        $prefDate = array();
+        $prefDate = [];
 
         if(!empty($user) && $this->loadPreferences('global')) {
             // forced to set this to a variable to compare b/c empty() wasn't working
@@ -369,8 +370,8 @@ class UserPreference extends SugarBean
             // cn: bug xxxx cron.php fails because of missing preference when admin hasn't logged in yet
             $timeZone = empty($timeZone) ? 'America/Los_Angeles' : $timeZone;
 
-            if(empty($timeFormat)) $timeFormat = $sugar_config['default_time_format'];
-            if(empty($dateFormat)) $dateFormat = $sugar_config['default_date_format'];
+            if(empty($timeFormat)) $timeFormat = SpiceConfig::getInstance()->config['default_time_format'];
+            if(empty($dateFormat)) $dateFormat = SpiceConfig::getInstance()->config['default_date_format'];
 
             $prefDate['date'] = $dateFormat;
             $prefDate['time'] = $timeFormat;
@@ -414,20 +415,20 @@ class UserPreference extends SugarBean
         $all = false
         )
     {
-        global $sugar_config;
+        
         $GLOBALS['savePreferencesToDB'] = false;
 
         $user = $this->_userFocus;
 
         // these are not the preferences you are looking for [ hand waving ]
-        if(empty($GLOBALS['installing']) && !empty($_SESSION['unique_key']) && $_SESSION['unique_key'] != $sugar_config['unique_key']) return;
+        if(empty($GLOBALS['installing']) && !empty($_SESSION['unique_key']) && $_SESSION['unique_key'] != SpiceConfig::getInstance()->config['unique_key']) return;
 
-        $GLOBALS['log']->debug('Saving Preferences to DB ' . $user->user_name);
+        LoggerManager::getLogger()->debug('Saving Preferences to DB ' . $user->user_name);
         if(isset($_SESSION[$user->user_name. '_PREFERENCES']) && is_array($_SESSION[$user->user_name. '_PREFERENCES'])) {
-             $GLOBALS['log']->debug("Saving Preferences to DB: {$user->user_name}");
+             LoggerManager::getLogger()->debug("Saving Preferences to DB: {$user->user_name}");
             // only save the categories that have been modified or all?
             if(!$all && isset($GLOBALS['savePreferencesToDBCats']) && is_array($GLOBALS['savePreferencesToDBCats'])) {
-                $catsToSave = array();
+                $catsToSave = [];
                 foreach($GLOBALS['savePreferencesToDBCats'] as $category => $value) {
                     if ( isset($_SESSION[$user->user_name. '_PREFERENCES'][$category]) )
                         $catsToSave[$category] = $_SESSION[$user->user_name. '_PREFERENCES'][$category];
@@ -439,10 +440,10 @@ class UserPreference extends SugarBean
 
             foreach ($catsToSave as $category => $contents) { #print_r($contents);
                 $focus = new UserPreference($this->_userFocus);
-                $result = $focus->retrieve_by_string_fields(array(
+                $result = $focus->retrieve_by_string_fields([
                     'assigned_user_id' => $user->id,
                     'category' => $category,
-                    ));
+                ]);
                 $focus->assigned_user_id = $user->id; // MFH Bug #13862
                 $focus->deleted = 0;
                 $focus->contents = base64_encode(serialize($contents));
@@ -463,7 +464,7 @@ class UserPreference extends SugarBean
     {
         $user = $this->_userFocus;
 
-        $GLOBALS['log']->debug('Reseting Preferences for user ' . $user->user_name);
+        LoggerManager::getLogger()->debug('Reseting Preferences for user ' . $user->user_name);
 
         $remove_tabs = $this->getPreference('remove_tabs');
         $favorite_reports = $this->getPreference('favorites', 'Reports');
@@ -483,7 +484,7 @@ class UserPreference extends SugarBean
         }
         else {
             unset($_SESSION[$user->user_name."_PREFERENCES"]);
-            if($user->id == $GLOBALS['current_user']->id) {
+            if($user->id == AuthenticationController::getInstance()->getCurrentUser()->id) {
                 session_destroy();
             }
             $this->setPreference('remove_tabs', $remove_tabs);
@@ -507,7 +508,8 @@ class UserPreference extends SugarBean
         $is_value_array = false,
         $unset_value = false )
     {
-        global $current_user, $db;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
         // Admin-only function; die if calling as a non-admin
         if(!is_admin($current_user)){
@@ -520,8 +522,8 @@ class UserPreference extends SugarBean
 
         $result = $db->query("SELECT id, user_preferences, user_name FROM users");
         while ($row = $db->fetchByAssoc($result)) {
-            $prefs = array();
-            $newprefs = array();
+            $prefs = [];
+            $newprefs = [];
 
             $prefs = unserialize(base64_decode($row['user_preferences']));
 
@@ -532,7 +534,7 @@ class UserPreference extends SugarBean
                     }
 
                     if(empty($prefs[$key][$sub_key])){
-                        $prefs[$key][$sub_key] = array();
+                        $prefs[$key][$sub_key] = [];
                     }
                     $already_exists = false;
                     foreach($prefs[$key][$sub_key] as $k=>$value){
@@ -559,7 +561,7 @@ class UserPreference extends SugarBean
                     }
 
                     if(empty($prefs[$key])){
-                        $prefs[$key] = array();
+                        $prefs[$key] = [];
                     }
                     $already_exists = false;
                     foreach($prefs[$key] as $k=>$value){
@@ -580,7 +582,7 @@ class UserPreference extends SugarBean
                 }
             }
 
-            $newstr = $GLOBALS['db']->quote(base64_encode(serialize($prefs)));
+            $newstr = DBManagerFactory::getInstance()->quote(base64_encode(serialize($prefs)));
             $db->query("UPDATE users SET user_preferences = '{$newstr}' WHERE id = '{$row['id']}'");
         }
 

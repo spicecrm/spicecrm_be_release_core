@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,12 +34,14 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['Campaign'] = array('audited' => true,
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['Campaign'] = ['audited' => true,
     'comment' => 'Campaigns are a series of operations undertaken to accomplish a purpose, usually acquiring leads',
     'table' => 'campaigns',
     'unified_search' => true,
     'full_text_search' => true,
-    'fields' => array(
+    'fields' => [
 //        'tracker_key' => array(
 //            'name' => 'tracker_key',
 //            'vname' => 'LBL_TRACKER_KEY',
@@ -59,7 +60,7 @@ $dictionary['Campaign'] = array('audited' => true,
 //            'default' => '0',
 //            'comment' => 'The number of accesses made to the tracker URL; no longer used as of 4.2 (see campaign_trkrs)'
 //        ),
-        'name' => array(
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_NAME',
             'dbType' => 'varchar',
@@ -69,36 +70,36 @@ $dictionary['Campaign'] = array('audited' => true,
             'importable' => 'required',
             'required' => true,
             'unified_search' => true,
-            'full_text_search' => array('boost' => 3),
-        ),
-        'refer_url' => array(
+            'full_text_search' => ['boost' => 3],
+        ],
+        'refer_url' => [
             'name' => 'refer_url',
             'vname' => 'LBL_REFER_URL',
             'type' => 'varchar',
             'len' => '255',
             'default' => 'http://',
             'comment' => 'The URL referenced in the tracker URL; no longer used as of 4.2 (see campaign_trkrs)'
-        ),
-        'description' => array('name' => 'description', 'type' => 'none', 'comment' => 'inhertied but not used', 'source' => 'non-db'),
-        'tracker_text' => array(
+        ],
+        'description' => ['name' => 'description', 'type' => 'none', 'comment' => 'inhertied but not used', 'source' => 'non-db'],
+        'tracker_text' => [
             'name' => 'tracker_text',
             'vname' => 'LBL_TRACKER_TEXT',
             'type' => 'varchar',
             'len' => '255',
             'comment' => 'The text that appears in the tracker URL; no longer used as of 4.2 (see campaign_trkrs)'
-        ),
+        ],
 
-        'start_date' => array(
+        'start_date' => [
             'name' => 'start_date',
             'vname' => 'LBL_DATE_START',
             'type' => 'date',
             'audited' => true,
             'comment' => 'Starting date of the campaign',
-            'validation' => array('type' => 'isbefore', 'compareto' => 'end_date'),
+            'validation' => ['type' => 'isbefore', 'compareto' => 'end_date'],
             'enable_range_search' => true,
             'options' => 'date_range_search_dom',
-        ),
-        'end_date' => array(
+        ],
+        'end_date' => [
             'name' => 'end_date',
             'vname' => 'LBL_DATE_END',
             'type' => 'date',
@@ -108,8 +109,8 @@ $dictionary['Campaign'] = array('audited' => true,
             'required' => true,
             'enable_range_search' => true,
             'options' => 'date_range_search_dom',
-        ),
-        'status' => array(
+        ],
+        'status' => [
             'name' => 'status',
             'vname' => 'LBL_STATUS',
             'type' => 'enum',
@@ -119,17 +120,17 @@ $dictionary['Campaign'] = array('audited' => true,
             'comment' => 'Status of the campaign',
             'importable' => 'required',
             'required' => true,
-        ),
-        'impressions' => array(
+        ],
+        'impressions' => [
             'name' => 'impressions',
             'vname' => 'LBL_CAMPAIGN_IMPRESSIONS',
             'type' => 'int',
             'default' => 0,
             'reportable' => true,
             'comment' => 'Expected Click throughs manually entered by Campaign Manager'
-        ),
+        ],
         'currency_id' =>
-            array(
+            [
                 'name' => 'currency_id',
                 'vname' => 'LBL_CURRENCY',
                 'type' => 'id',
@@ -138,36 +139,36 @@ $dictionary['Campaign'] = array('audited' => true,
                 'do_report' => false,
                 'reportable' => false,
                 'comment' => 'Currency in use for the campaign'
-            ),
-        'budget' => array(
+            ],
+        'budget' => [
             'name' => 'budget',
             'vname' => 'LBL_BUDGET',
             'type' => 'currency',
             'dbType' => 'double',
             'comment' => 'Budgeted amount for the campaign'
-        ),
-        'expected_cost' => array(
+        ],
+        'expected_cost' => [
             'name' => 'expected_cost',
             'vname' => 'LBL_EXPECTED_COST',
             'type' => 'currency',
             'dbType' => 'double',
             'comment' => 'Expected cost of the campaign'
-        ),
-        'actual_cost' => array(
+        ],
+        'actual_cost' => [
             'name' => 'actual_cost',
             'vname' => 'LBL_ACTUAL_COST',
             'type' => 'currency',
             'dbType' => 'double',
             'comment' => 'Actual cost of the campaign'
-        ),
-        'expected_revenue' => array(
+        ],
+        'expected_revenue' => [
             'name' => 'expected_revenue',
             'vname' => 'LBL_EXPECTED_REVENUE',
             'type' => 'currency',
             'dbType' => 'double',
             'comment' => 'Expected revenue stemming from the campaign'
-        ),
-        'campaign_type' => array(
+        ],
+        'campaign_type' => [
             'name' => 'campaign_type',
             'vname' => 'LBL_TYPE',
             'type' => 'enum',
@@ -177,26 +178,26 @@ $dictionary['Campaign'] = array('audited' => true,
             'comment' => 'The type of campaign',
             'importable' => 'required',
             'required' => false,
-        ),
-        'objective' => array(
+        ],
+        'objective' => [
             'name' => 'objective',
             'vname' => 'LBL_OBJECTIVE',
             'type' => 'text',
             'comment' => 'The objective of the campaign'
-        ),
-        'content' => array(
+        ],
+        'content' => [
             'name' => 'content',
             'vname' => 'LBL_CONTENT',
             'type' => 'text',
             'comment' => 'The campaign description'
-        ),
-        'prospectlists' => array(
+        ],
+        'prospectlists' => [
             'name' => 'prospectlists',
             'vname' => 'LBL_PROSPECTLISTS',
             'type' => 'link',
             'relationship' => 'prospect_list_campaigns',
             'source' => 'non-db',
-        ),
+        ],
 // CR1000465 cleanup Email
 //        'emailmarketing' => array(
 //            'name' => 'emailmarketing',
@@ -210,21 +211,21 @@ $dictionary['Campaign'] = array('audited' => true,
 //            'relationship' => 'campaign_emailman',
 //            'source' => 'non-db',
 //        ),
-        'log_entries' => array(
+        'log_entries' => [
             'name' => 'log_entries',
             'type' => 'link',
             'relationship' => 'campaign_campaignlog',
             'source' => 'non-db',
             'vname' => 'LBL_LOG_ENTRIES',
-        ),
-        'tracked_urls' => array(
+        ],
+        'tracked_urls' => [
             'name' => 'tracked_urls',
             'type' => 'link',
             'relationship' => 'campaign_campaigntrakers',
             'source' => 'non-db',
             'vname' => 'LBL_TRACKED_URLS',
-        ),
-        'frequency' => array(
+        ],
+        'frequency' => [
             'name' => 'frequency',
             'vname' => 'LBL_FREQUENCY',
             'type' => 'enum',
@@ -233,8 +234,8 @@ $dictionary['Campaign'] = array('audited' => true,
             'comment' => 'Frequency of the campaign',
             'options' => 'newsletter_frequency_dom',
             'len' => 100,
-        ),
-        'leads' => array(
+        ],
+        'leads' => [
             'name' => 'leads',
             'type' => 'link',
             'relationship' => 'campaign_leads',
@@ -242,15 +243,15 @@ $dictionary['Campaign'] = array('audited' => true,
             'vname' => 'LBL_LEADS',
             'link_class' => 'ProspectLink',
             'link_file' => 'modules/Campaigns/ProspectLink.php'
-        ),
-        'opportunities' => array(
+        ],
+        'opportunities' => [
             'name' => 'opportunities',
             'type' => 'link',
             'relationship' => 'campaign_opportunities',
             'source' => 'non-db',
             'vname' => 'LBL_OPPORTUNITIES',
-        ),
-        'contacts' => array(
+        ],
+        'contacts' => [
             'name' => 'contacts',
             'type' => 'link',
             'relationship' => 'campaign_contacts',
@@ -258,8 +259,8 @@ $dictionary['Campaign'] = array('audited' => true,
             'vname' => 'LBL_CONTACTS',
             'link_class' => 'ProspectLink',
             'link_file' => 'modules/Campaigns/ProspectLink.php'
-        ),
-        'consumers' => array(
+        ],
+        'consumers' => [
             'name' => 'consumers',
             'type' => 'link',
             'relationship' => 'campaign_consumers',
@@ -267,8 +268,8 @@ $dictionary['Campaign'] = array('audited' => true,
             'vname' => 'LBL_CONSUMERS',
             'link_class' => 'ProspectLink',
             'link_file' => 'modules/Campaigns/ProspectLink.php'
-        ),
-        'accounts' => array(
+        ],
+        'accounts' => [
             'name' => 'accounts',
             'type' => 'link',
             'relationship' => 'campaign_accounts',
@@ -276,10 +277,10 @@ $dictionary['Campaign'] = array('audited' => true,
             'vname' => 'LBL_ACCOUNTS',
             'link_class' => 'ProspectLink',
             'link_file' => 'modules/Campaigns/ProspectLink.php'
-        ),
+        ],
 
         // non db fields for campaign log
-        'activity_type' => array(
+        'activity_type' => [
             'name' => 'activity_type',
             'vname' => 'LBL_ACTIVITY',
             'type' => 'enum',
@@ -287,15 +288,15 @@ $dictionary['Campaign'] = array('audited' => true,
             'len' => 100,
             'comment' => 'The activity that occurred (e.g., Viewed Message, Bounced, Opted out)',
             'source' => 'non-db'
-        ),
-        'activity_date' => array(
+        ],
+        'activity_date' => [
             'name' => 'activity_date',
             'vname' => 'LBL_DATE',
             'type' => 'datetime',
             'comment' => 'The date the activity occurred',
             'source' => 'non-db'
-        ),
-        'eventregistrations' => array(
+        ],
+        'eventregistrations' => [
             'name' => 'eventregistrations',
             'vname' => 'LBL_EVENTREGISTRATIONS',
             'type' => 'link',
@@ -303,16 +304,16 @@ $dictionary['Campaign'] = array('audited' => true,
             'relationship' => 'eventregistration_campaign_rel',
             'module' => 'EventRegistrations',
             'source' => 'non-db',
-        ),
-        'mailrelais' => array(
+        ],
+        'mailrelais' => [
             'name' => 'mailrelais',
             'vname' => 'LBL_MAILRELAIS',
             'type' => 'mailrelais',
             'dbType' => 'varchar',
             'len' => 36
-        ),
+        ],
         'email_template_name' =>
-            array(
+            [
                 'name' => 'email_template_name',
                 'rname' => 'name',
                 'id_name' => 'email_template_id',
@@ -325,29 +326,29 @@ $dictionary['Campaign'] = array('audited' => true,
                 'link' => 'emailtemplates',
                 'len' => '255',
                 'source' => 'non-db',
-            ),
-        'emailtemplates' => array(
+            ],
+        'emailtemplates' => [
             'name' => 'emailtemplates',
             'type' => 'link',
             'relationship' => 'campaign_email_template',
             'source' => 'non-db',
             'module' => 'EmailTemaplates'
-        ),
-        'email_template_id' => array(
+        ],
+        'email_template_id' => [
             'name' => 'email_template_id',
             'vname' => 'LBL_MAILRELAIS',
             'dbType' => 'id',
             'type' => 'char',
             'len' => 36
-        ),
+        ],
 
-        'mailbox_id' => array(
+        'mailbox_id' => [
             'name' => 'mailbox_id',
             'vname' => 'LBL_MAILBOX_ID',
             'type' => 'id',
-        ),
+        ],
 
-        'mailbox_name' => array(
+        'mailbox_name' => [
             'name' => 'mailbox_name',
             'rname' => 'name',
             'id_name' => 'mailbox_id',
@@ -363,9 +364,9 @@ $dictionary['Campaign'] = array('audited' => true,
             'source' => 'non-db',
             'unified_search' => true,
             'massupdate' => false,
-        ),
+        ],
 
-        'mailbox' => array(
+        'mailbox' => [
             'name' => 'mailbox',
             'vname' => 'LBL_MAILBOX_LINK',
             'type' => 'link',
@@ -374,14 +375,14 @@ $dictionary['Campaign'] = array('audited' => true,
             'source' => 'non-db',
             'duplicate_merge' => 'disabled',
             'massupdate' => false,
-        ),
-        'event_id' => array(
+        ],
+        'event_id' => [
             'name' => 'event_id',
             'vname' => 'LBL_EVENT_ID',
             'type' => 'id',
-        ),
+        ],
 
-        'event_name' => array(
+        'event_name' => [
             'name' => 'event_name',
             'rname' => 'name',
             'id_name' => 'event_id',
@@ -397,9 +398,9 @@ $dictionary['Campaign'] = array('audited' => true,
             'source' => 'non-db',
             'unified_search' => true,
             'massupdate' => false,
-        ),
+        ],
 
-        'event' => array(
+        'event' => [
             'name' => 'event',
             'vname' => 'LBL_EVENT',
             'type' => 'link',
@@ -408,30 +409,30 @@ $dictionary['Campaign'] = array('audited' => true,
             'source' => 'non-db',
             'duplicate_merge' => 'disabled',
             'massupdate' => false,
-        ),
-        'campaigntasks' => array(
+        ],
+        'campaigntasks' => [
             'name' => 'campaigntasks',
             'type' => 'link',
             'relationship' => 'campaign_campaigntasks',
             'source' => 'non-db',
             'module' => 'CampaignTasks'
-        )
-    ),
-    'indices' => array(
+        ]
+    ],
+    'indices' => [
 //        array(
 //            'name' => 'camp_auto_tracker_key',
 //            'type' => 'unique',
 //            'fields' => array('tracker_key')
 //        ),
-        array(
+        [
             'name' => 'idx_campaign_name',
             'type' => 'index',
-            'fields' => array('name')
-        ),
-    ),
+            'fields' => ['name']
+        ],
+    ],
 
-    'relationships' => array(
-        'campaigns_mailboxes_rel' => array(
+    'relationships' => [
+        'campaigns_mailboxes_rel' => [
             'lhs_module' => 'Mailboxes',
             'lhs_table' => 'mailboxes',
             'lhs_key' => 'id',
@@ -439,31 +440,31 @@ $dictionary['Campaign'] = array('audited' => true,
             'rhs_table' => 'campaigns',
             'rhs_key' => 'mailbox_id',
             'relationship_type' => 'one-to-many',
-        ),
+        ],
 
-        'campaign_accounts' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
+        'campaign_accounts' => ['lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
             'rhs_module' => 'Accounts', 'rhs_table' => 'accounts', 'rhs_key' => 'campaign_id',
-            'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'],
 
-        'campaign_contacts' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
+        'campaign_contacts' => ['lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
             'rhs_module' => 'Contacts', 'rhs_table' => 'contacts', 'rhs_key' => 'campaign_id',
-            'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'],
 
-        'campaign_consumers' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
+        'campaign_consumers' => ['lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
             'rhs_module' => 'Consumers', 'rhs_table' => 'consumers', 'rhs_key' => 'campaign_id',
-            'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'],
 
-        'campaign_leads' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
+        'campaign_leads' => ['lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
             'rhs_module' => 'Leads', 'rhs_table' => 'leads', 'rhs_key' => 'campaign_id',
-            'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'],
 
-        'campaign_prospects' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
+        'campaign_prospects' => ['lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
             'rhs_module' => 'Prospects', 'rhs_table' => 'prospects', 'rhs_key' => 'campaign_id',
-            'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'],
 
-        'campaign_opportunities' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
+        'campaign_opportunities' => ['lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
             'rhs_module' => 'Opportunities', 'rhs_table' => 'opportunities', 'rhs_key' => 'campaign_id',
-            'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'],
 
 // CR1000465 cleanup Email
 //        'campaign_email_marketing' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
@@ -473,22 +474,22 @@ $dictionary['Campaign'] = array('audited' => true,
 //            'rhs_module' => 'EmailMan', 'rhs_table' => 'emailman', 'rhs_key' => 'campaign_id',
 //            'relationship_type' => 'one-to-many'),
 
-        'campaign_campaignlog' => array('lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
+        'campaign_campaignlog' => ['lhs_module' => 'Campaigns', 'lhs_table' => 'campaigns', 'lhs_key' => 'id',
             'rhs_module' => 'CampaignLog', 'rhs_table' => 'campaign_log', 'rhs_key' => 'campaign_id',
-            'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'],
 
-        'campaign_assigned_user' => array('lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
+        'campaign_assigned_user' => ['lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
             'rhs_module' => 'Campaigns', 'rhs_table' => 'campaigns', 'rhs_key' => 'assigned_user_id',
-            'relationship_type' => 'one-to-many'),
+            'relationship_type' => 'one-to-many'],
 
-        'campaign_modified_user' => array('lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
+        'campaign_modified_user' => ['lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
             'rhs_module' => 'Campaigns', 'rhs_table' => 'campaigns', 'rhs_key' => 'modified_user_id',
-            'relationship_type' => 'one-to-many'),
-        'campaign_email_template' => array('lhs_module' => 'EmailTemplates', 'lhs_table' => 'email_templates', 'lhs_key' => 'id',
+            'relationship_type' => 'one-to-many'],
+        'campaign_email_template' => ['lhs_module' => 'EmailTemplates', 'lhs_table' => 'email_templates', 'lhs_key' => 'id',
             'rhs_module' => 'Campaigns', 'rhs_table' => 'campaigns', 'rhs_key' => 'email_template_id',
-            'relationship_type' => 'one-to-many'),
-    )
-);
-VardefManager::createVardef('Campaigns', 'Campaign', array('default', 'assignable',
-));
+            'relationship_type' => 'one-to-many'],
+    ]
+];
+VardefManager::createVardef('Campaigns', 'Campaign', ['default', 'assignable',
+]);
 

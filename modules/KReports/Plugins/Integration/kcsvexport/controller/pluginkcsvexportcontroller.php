@@ -13,21 +13,19 @@
 ******************************************************************************* */
 
 
-
-
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 class pluginkcsvexportcontroller {
 
     public function action_export($requestParams) {
-        global $sugar_config;
+        
 
         // 2014-02-24 add config option for memory limit see if we should set the runtime and memory limit
-        if (!empty($sugar_config['KReports']['csvmemorylimit']))
-            ini_set('memory_limit', $sugar_config['KReports']['csvmemorylimit']);
-        if (!empty($sugar_config['KReports']['csvmaxruntime']))
-            ini_set('max_execution_time', $sugar_config['KReports']['csvmaxruntime']);
+        if (!empty(SpiceConfig::getInstance()->config['KReports']['csvmemorylimit']))
+            ini_set('memory_limit', SpiceConfig::getInstance()->config['KReports']['csvmemorylimit']);
+        if (!empty(SpiceConfig::getInstance()->config['KReports']['csvmaxruntime']))
+            ini_set('max_execution_time', SpiceConfig::getInstance()->config['KReports']['csvmaxruntime']);
 
 
         require_once('modules/KReports/KReport.php');

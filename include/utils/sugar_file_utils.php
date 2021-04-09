@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,6 +34,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 
 /**
  * sugar_mkdir
@@ -69,23 +71,43 @@ function sugar_mkdir($pathname, $mode=null, $recursive=false, $context='') {
 		if(!sugar_chmod($pathname, $mode)){
 			return false;
 		}
-		if(!empty($GLOBALS['sugar_config']['default_permissions']['user'])){
+		if(!empty(SpiceConfig::getInstance()->config['default_permissions']['user'])){
 			if(!sugar_chown($pathname)){
 				return false;
 			}
 		}
-		if(!empty($GLOBALS['sugar_config']['default_permissions']['group'])){
+		if(!empty(SpiceConfig::getInstance()->config['default_permissions']['group'])){
    			if(!sugar_chgrp($pathname)) {
    				return false;
    			}
 		}
 	}
 	else {
-	    $GLOBALS['log']->error("Cannot create directory $pathname cannot be touched");
+	    LoggerManager::getLogger()->error("Cannot create directory $pathname cannot be touched");
 	}
 
 	return $result;
 }
+
+/**
+ * Convert all \ to / in path, remove multiple '/'s and '/./'
+ * @param string $path
+ * @return string
+ */
+function clean_path( $path )
+{
+    // clean directory/file path with a functional equivalent
+    $appendpath = '';
+    if ( is_windows() && strlen($path) >= 2 && $path[0].$path[1] == "\\\\" ) {
+        $path = substr($path,2);
+        $appendpath = "\\\\";
+    }
+    $path = str_replace( "\\", "/", $path );
+    $path = str_replace( "//", "/", $path );
+    $path = str_replace( "/./", "/", $path );
+    return( $appendpath.$path );
+}
+
 
 /**
  * sugar_fopen
@@ -135,7 +157,7 @@ function sugar_file_put_contents($filename, $data, $flags=null, $context=null){
 	}
 
 	if ( !is_writable($filename) ) {
-	    $GLOBALS['log']->error("File $filename cannot be written to");
+	    LoggerManager::getLogger()->error("File $filename cannot be written to");
 	    return false;
 	}
 
@@ -213,7 +235,7 @@ function sugar_file_get_contents($filename, $use_include_path=false, $context=nu
 	}
 
 	if ( !is_readable($filename) ) {
-	    $GLOBALS['log']->error("File $filename cannot be read");
+	    LoggerManager::getLogger()->error("File $filename cannot be read");
 	    return false;
 	}
 
@@ -251,16 +273,16 @@ function sugar_touch($filename, $time=null, $atime=null) {
    }
 
    if(!$result) {
-       $GLOBALS['log']->error("File $filename cannot be touched");
+       LoggerManager::getLogger()->error("File $filename cannot be touched");
        return $result;
    }
-	if(!empty($GLOBALS['sugar_config']['default_permissions']['file_mode'])){
-		sugar_chmod($filename, $GLOBALS['sugar_config']['default_permissions']['file_mode']);
+	if(!empty(SpiceConfig::getInstance()->config['default_permissions']['file_mode'])){
+		sugar_chmod($filename, SpiceConfig::getInstance()->config['default_permissions']['file_mode']);
 	}
-	if(!empty($GLOBALS['sugar_config']['default_permissions']['user'])){
+	if(!empty(SpiceConfig::getInstance()->config['default_permissions']['user'])){
 		sugar_chown($filename);
 	}
-	if(!empty($GLOBALS['sugar_config']['default_permissions']['group'])){
+	if(!empty(SpiceConfig::getInstance()->config['default_permissions']['group'])){
 		sugar_chgrp($filename);
 	}
 
@@ -306,8 +328,8 @@ function sugar_chown($filename, $user='') {
 		if(strlen($user)){
 			return chown($filename, $user);
 		}else{
-			if(strlen($GLOBALS['sugar_config']['default_permissions']['user'])){
-				$user = $GLOBALS['sugar_config']['default_permissions']['user'];
+			if(strlen(SpiceConfig::getInstance()->config['default_permissions']['user'])){
+				$user = SpiceConfig::getInstance()->config['default_permissions']['user'];
 				return chown($filename, $user);
 			}else{
 				return false;
@@ -331,8 +353,8 @@ function sugar_chgrp($filename, $group='') {
 		if(!empty($group)){
 			return chgrp($filename, $group);
 		}else{
-			if(!empty($GLOBALS['sugar_config']['default_permissions']['group'])){
-				$group = $GLOBALS['sugar_config']['default_permissions']['group'];
+			if(!empty(SpiceConfig::getInstance()->config['default_permissions']['group'])){
+				$group = SpiceConfig::getInstance()->config['default_permissions']['group'];
 				return chgrp($filename, $group);
 			}else{
 				return false;
@@ -355,11 +377,9 @@ function sugar_chgrp($filename, $group='') {
 function get_mode($key = 'dir_mode', $mode=null) {
 	if ( !is_int($mode) )
         $mode = (int) $mode;
-    if(!class_exists('SpiceConfig', true)) {
-		require 'include/SugarObjects/SpiceConfig.php';
-	}
+
 	if(!is_windows()){
-		$conf_inst=SpiceConfig::getInstance();
+		$conf_inst= SpiceConfig::getInstance();
 		$mode = $conf_inst->get('default_permissions.'.$key, $mode);
 	}
 	return $mode;
@@ -383,8 +403,8 @@ function sugar_is_file($path, $mode='r'){
 function sugar_cached($file)
 {
     static $cdir = null;
-    if(empty($cdir) && !empty($GLOBALS['sugar_config']['cache_dir'])) {
-        $cdir = rtrim($GLOBALS['sugar_config']['cache_dir'], '/\\');
+    if(empty($cdir) && !empty(SpiceConfig::getInstance()->config['cache_dir'])) {
+        $cdir = rtrim(SpiceConfig::getInstance()->config['cache_dir'], '/\\');
     }
     if(empty($cdir)) {
         $cdir = "cache";

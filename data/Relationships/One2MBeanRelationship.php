@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,8 +34,13 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\data\Relationships;
 
-require_once("data/Relationships/One2MRelationship.php");
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\data\Link2;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\Logger\LoggerManager;
+
 
 /**
  * Represents a one to many relationship that is table based.
@@ -58,7 +62,7 @@ class One2MBeanRelationship extends One2MRelationship
      * @param  $additionalFields key=>value pairs of fields to save on the relationship
      * @return boolean true if successful
      */
-    public function add($lhs, $rhs, $additionalFields = array())
+    public function add($lhs, $rhs, $additionalFields = [])
     {
         // test to see if the relationship exist if the relationship between the two beans
         // exist then we just fail out with false as we don't want to re-trigger this
@@ -120,7 +124,7 @@ class One2MBeanRelationship extends One2MRelationship
             $lhs->$lhsLinkName->addBean($rhs);
         //RHS only has one bean ever, so we don't need to preload the relationship
         if (isset($rhs->$rhsLinkName))
-            $rhs->$rhsLinkName->beans = array($lhs->id => $lhs);
+            $rhs->$rhsLinkName->beans = [$lhs->id => $lhs];
     }
 
     protected function updateFields($lhs, $rhs, $additionalFields)
@@ -175,10 +179,10 @@ class One2MBeanRelationship extends One2MRelationship
      * @param  $link Link2 loads the relationship for this link.
      * @return void
      */
-    public function load($link, $params = array())
+    public function load($link, $params = [])
     {
         $relatedModule = $link->getSide() == REL_LHS ? $this->def['rhs_module'] : $this->def['lhs_module'];
-        $rows = array();
+        $rows = [];
         //The related bean ID is stored on the RHS table.
         //If the link is RHS, just grab it from the focus.
         if ($link->getSide() == REL_RHS)
@@ -187,7 +191,7 @@ class One2MBeanRelationship extends One2MRelationship
             $id = $link->getFocus()->$rhsID;
             if (!empty($id))
             {
-                $rows[$id] = array('id' => $id);
+                $rows[$id] = ['id' => $id];
             }
         }
         else //If the link is LHS, we need to query to get the full list and load all the beans.
@@ -196,8 +200,8 @@ class One2MBeanRelationship extends One2MRelationship
             $query = $this->getQuery($link, $params);
             if (empty($query))
             {
-                $GLOBALS['log']->fatal("query for {$this->name} was empty when loading from   {$this->lhsLink}\n");
-                return array("rows" => array());
+                LoggerManager::getLogger()->fatal("query for {$this->name} was empty when loading from   {$this->lhsLink}\n");
+                return ["rows" => []];
             }
             $result = $db->query($query);
             while ($row = $db->fetchByAssoc($result, FALSE))
@@ -207,14 +211,14 @@ class One2MBeanRelationship extends One2MRelationship
             }
         }
 
-        return array("rows" => $rows);
+        return ["rows" => $rows];
     }
 
-    public function getQuery($link, $params = array())
+    public function getQuery($link, $params = [])
     {
         //There was an old signature with $return_as_array as the second parameter. We should respect this if $params is true
         if ($params === true){
-            $params = array("return_as_array" => true);
+            $params = ["return_as_array" => true];
         }
 
         if ($link->getSide() == REL_RHS) {
@@ -261,16 +265,16 @@ class One2MBeanRelationship extends One2MRelationship
             }
             else
             {
-                return array(
+                return [
                     'select' => "SELECT {$this->def['rhs_table']}.id",
                     'from' => "FROM {$this->def['rhs_table']}",
                     'where' => $where,
-                );
+                ];
             }
         }
     }
 
-    public function getJoin($link, $params = array(), $return_array = false)
+    public function getJoin($link, $params = [], $return_array = false)
     {
         $linkIsLHS = $link->getSide() == REL_LHS;
         $startingTable = (empty($params['left_join_table_alias']) ? $this->def['lhs_table'] : $params['left_join_table_alias']);
@@ -296,14 +300,14 @@ class One2MBeanRelationship extends One2MRelationship
                . $this->getRoleWhere(($linkIsLHS) ? $targetTable : $startingTable) . "\n";
 
         if($return_array){
-            return array(
+            return [
                 'join' => $join,
                 'type' => $this->type,
                 'rel_key' => $targetKey,
-                'join_tables' => array($targetTable),
+                'join_tables' => [$targetTable],
                 'where' => "",
                 'select' => "$targetTable.id",
-            );
+            ];
         }
         return $join;
     }

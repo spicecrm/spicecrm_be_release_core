@@ -3,6 +3,7 @@ namespace SpiceCRM\modules\OutputTemplates\handlers\pdf;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 /**
  *  Attention: this class is not finished yet... nor tested...
@@ -18,6 +19,11 @@ class DomPdfHandler extends LibPdfHandler
     {
         $options = new Options();
         $options->set('isRemoteEnabled', true);
+
+        // set cache folder for dompdf fonts
+        //die($this->getFontDirCacheFolder());
+        $options->setFontDir($this->getFontDirCacheFolder());
+
         $dompdf = new Dompdf($options);
         $contxt = stream_context_create([
             'ssl' => [
@@ -28,6 +34,16 @@ class DomPdfHandler extends LibPdfHandler
         ]);
         $dompdf->setHttpContext($contxt);
         return $dompdf;
+    }
+
+    /**
+     * return real path for dompdf cache fonts directory
+     * @return string
+     */
+    public function getFontDirCacheFolder(){
+        $rootDir = realpath(__DIR__ . "/../../../../");
+        $fontDir = isset(SpiceConfig::getInstance()->config['dompdf']['fontDir']) ? SpiceConfig::getInstance()->config['dompdf']['fontDir'] : 'dompdf/fonts/';
+        return $rootDir.'/'.create_cache_directory($fontDir);
     }
 
     public function process($html = null, array $options = null)

@@ -7,14 +7,21 @@
  * 
  * All rights reserved
  */
+namespace SpiceCRM\modules\MediaFiles;
+
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class MediaFile extends SugarBean {
 
     public $table_name = "mediafiles";
     public $object_name = "MediaFile";
     public $module_dir = 'MediaFiles';
-    private $imageQualities = array( 'image/bmp' => true, 'image/gif' => null, 'image/jpeg' => 85, 'image/png' => 9, 'image/webp' => 80 ); # for png: it´s not the quality, it´s the compression (lossless)
-    private $imageFunctions = array( 'image/bmp' => 'bmp', 'image/gif' => 'gif', 'image/jpeg' => 'jpeg', 'image/png' => 'png', 'image/webp' => 'webp' );
+    private $imageQualities = ['image/bmp' => true, 'image/gif' => null, 'image/jpeg' => 85, 'image/png' => 9, 'image/webp' => 80]; # for png: it´s not the quality, it´s the compression (lossless)
+    private $imageFunctions = ['image/bmp' => 'bmp', 'image/gif' => 'gif', 'image/jpeg' => 'jpeg', 'image/png' => 'png', 'image/webp' => 'webp'];
     public $filetype, $width, $height, $hash, $name;
 
     public function __construct() {
@@ -34,9 +41,9 @@ class MediaFile extends SugarBean {
     }
 
     public function save( $check_notify = false, $fts_index_bean = true ) {
-        global $sugar_config;
+        
 
-        if ( isset( $this->file{0} )){
+        if ( isset( $this->file[0])){
             $fileContent = base64_decode($this->file);
             $this->storeMedia($fileContent);
             $this->thumbnail = $this->createThumbnail(base64_decode( $this->file ), $this->filetype);
@@ -44,13 +51,13 @@ class MediaFile extends SugarBean {
 
         $returnOfSave = parent::save( $check_notify, $fts_index_bean );
 
-        if ( isset( $sugar_config['mediafiles']['cdnurl']{0} )) {
+        if ( isset( SpiceConfig::getInstance()->config['mediafiles']['cdnurl'][0])) {
             $chf = curl_init();
             curl_setopt($chf, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($chf, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($chf, CURLOPT_POSTFIELDS, $this->getBase64());
-            curl_setopt($chf, CURLOPT_URL, "{$sugar_config['mediafiles']['cdnurl']}/{$this->id}");
-            curl_setopt($chf, CURLOPT_USERPWD, $sugar_config['mediafiles']['cdnuser'] . ":" . $sugar_config['mediafiles']['cdnsecret']);
+            curl_setopt($chf, CURLOPT_URL, SpiceConfig::getInstance()->config['mediafiles']['cdnurl']."/{$this->id}");
+            curl_setopt($chf, CURLOPT_USERPWD, SpiceConfig::getInstance()->config['mediafiles']['cdnuser'] . ":" . SpiceConfig::getInstance()->config['mediafiles']['cdnsecret']);
             curl_setopt($chf, CURLOPT_POST, 1);
             $result = curl_exec($chf);
             curl_close($chf);
@@ -107,7 +114,7 @@ class MediaFile extends SugarBean {
     public function generateThumb( $destSize ) {
         $supportedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'];
         if ( in_array( $this->filetype, $supportedImageTypes )) {
-            if ( !isset( $this->width{0} ) or !isset( $this->height{0} ))
+            if ( !isset( $this->width[0]) or !isset( $this->height[0]))
                 list( $origWidth, $origHeight ) = getimagesize( self::getMediaPath( $this->id ));
             else {
                 $origWidth = $this->width;
@@ -170,29 +177,29 @@ class MediaFile extends SugarBean {
     }
 
     function thumbSizeAllowed( $size ) {
-        global $sugar_config;
-        if (( !isset( $sugar_config['media_files_thumb_sizes'] ) or ( count( $sugar_config['media_files_thumb_sizes'] ) === 0 ))
-            and !isset( $sugar_config['media_files_thumb_sizes_auto_step'] )) return true;
-        if ( isset( $sugar_config['media_files_thumb_sizes'] ) and in_array( $size, $sugar_config['media_files_thumb_sizes'] )) return true;
-        if ( !isset( $sugar_config['media_files_thumb_sizes_auto_step'] )) return false;
-        if ( isset( $sugar_config['media_files_thumb_sizes'] ) and count( $sugar_config['media_files_thumb_sizes'] )) {
-            if ( ( $size - $sugar_config['media_files_thumb_sizes'][count($sugar_config['media_files_thumb_sizes'])-1] ) % $sugar_config['media_files_thumb_sizes_auto_step'] === 0 ) return true;
+        
+        if (( !isset( SpiceConfig::getInstance()->config['media_files_thumb_sizes'] ) or ( count( SpiceConfig::getInstance()->config['media_files_thumb_sizes'] ) === 0 ))
+            and !isset( SpiceConfig::getInstance()->config['media_files_thumb_sizes_auto_step'] )) return true;
+        if ( isset( SpiceConfig::getInstance()->config['media_files_thumb_sizes'] ) and in_array( $size, SpiceConfig::getInstance()->config['media_files_thumb_sizes'] )) return true;
+        if ( !isset( SpiceConfig::getInstance()->config['media_files_thumb_sizes_auto_step'] )) return false;
+        if ( isset( SpiceConfig::getInstance()->config['media_files_thumb_sizes'] ) and count( SpiceConfig::getInstance()->config['media_files_thumb_sizes'] )) {
+            if ( ( $size - SpiceConfig::getInstance()->config['media_files_thumb_sizes'][count(SpiceConfig::getInstance()->config['media_files_thumb_sizes'])-1] ) % SpiceConfig::getInstance()->config['media_files_thumb_sizes_auto_step'] === 0 ) return true;
         } else {
-            if ( $size % $sugar_config['media_files_thumb_sizes_auto_step'] === 0 ) return true;
+            if ( $size % SpiceConfig::getInstance()->config['media_files_thumb_sizes_auto_step'] === 0 ) return true;
         }
         return false;
     }
 
     function widthAllowed( $width ) {
-        global $sugar_config;
-        if (( !isset( $sugar_config['media_files_image_widths'] ) or ( count( $sugar_config['media_files_image_widths'] ) === 0 ))
-            and !isset( $sugar_config['media_files_image_widths_auto_step'] )) return true;
-        if ( isset( $sugar_config['media_files_image_widths'] ) and in_array( $width, $sugar_config['media_files_image_widths'] )) return true;
-        if ( !isset( $sugar_config['media_files_image_widths_auto_step'] )) return false;
-        if ( isset( $sugar_config['media_files_image_widths'] ) and count( $sugar_config['media_files_image_widths'] )) {
-            if ( ( $width - $sugar_config['media_files_image_widths'][count($sugar_config['media_files_image_widths'])-1] ) % $sugar_config['media_files_image_widths_auto_step'] === 0 ) return true;
+        
+        if (( !isset( SpiceConfig::getInstance()->config['media_files_image_widths'] ) or ( count( SpiceConfig::getInstance()->config['media_files_image_widths'] ) === 0 ))
+            and !isset( SpiceConfig::getInstance()->config['media_files_image_widths_auto_step'] )) return true;
+        if ( isset( SpiceConfig::getInstance()->config['media_files_image_widths'] ) and in_array( $width, SpiceConfig::getInstance()->config['media_files_image_widths'] )) return true;
+        if ( !isset( SpiceConfig::getInstance()->config['media_files_image_widths_auto_step'] )) return false;
+        if ( isset( SpiceConfig::getInstance()->config['media_files_image_widths'] ) and count( SpiceConfig::getInstance()->config['media_files_image_widths'] )) {
+            if ( ( $width - SpiceConfig::getInstance()->config['media_files_image_widths'][count(SpiceConfig::getInstance()->config['media_files_image_widths'])-1] ) % SpiceConfig::getInstance()->config['media_files_image_widths_auto_step'] === 0 ) return true;
         } else {
-            if ( $width % $sugar_config['media_files_image_widths_auto_step'] === 0 ) return true;
+            if ( $width % SpiceConfig::getInstance()->config['media_files_image_widths_auto_step'] === 0 ) return true;
         }
         return false;
     }
@@ -203,19 +210,19 @@ class MediaFile extends SugarBean {
     }
 
     function getNextLargestWidth( $width ) {
-        global $sugar_config;
-        if ( isset( $sugar_config['media_files_image_widths'] ) ) {
-            sort( $sugar_config['media_files_image_widths'] );
-            foreach ( $sugar_config['media_files_image_widths'] as $v )
+        
+        if ( isset( SpiceConfig::getInstance()->config['media_files_image_widths'] ) ) {
+            sort( SpiceConfig::getInstance()->config['media_files_image_widths'] );
+            foreach ( SpiceConfig::getInstance()->config['media_files_image_widths'] as $v )
                 if ( $v > $width ) return $v;
         }
-        if ( @$sugar_config['media_files_image_widths_auto_step'] > 0 ) {
-            $start = $sugar_config['media_files_image_widths_auto_step'];
-            if ( count( @$sugar_config['media_files_image_widths'] ))
-                $start += $sugar_config['media_files_image_widths'][count($sugar_config['media_files_image_widths'])-1];
-            # for ( $x = $start; $x < $this->width; $x += $sugar_config['media_files_image_widths_auto_step'] )
+        if ( @SpiceConfig::getInstance()->config['media_files_image_widths_auto_step'] > 0 ) {
+            $start = SpiceConfig::getInstance()->config['media_files_image_widths_auto_step'];
+            if ( count( @SpiceConfig::getInstance()->config['media_files_image_widths'] ))
+                $start += SpiceConfig::getInstance()->config['media_files_image_widths'][count(SpiceConfig::getInstance()->config['media_files_image_widths'])-1];
+            # for ( $x = $start; $x < $this->width; $x += \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['media_files_image_widths_auto_step'] )
             #    if ( $x > $width ) return $x;
-            for ( $x = $start; $x < $width; $x += $sugar_config['media_files_image_widths_auto_step'] );
+            for ( $x = $start; $x < $width; $x += SpiceConfig::getInstance()->config['media_files_image_widths_auto_step'] );
             return $x;
         }
         return $width; # $this->width;
@@ -227,19 +234,19 @@ class MediaFile extends SugarBean {
     }
 
     function getNextLargestThumbSize( $size ) {
-        global $sugar_config;
-        if ( isset( $sugar_config['media_files_thumb_sizes'] ) ) {
-            sort( $sugar_config['media_files_thumb_sizes'] );
-            foreach ( $sugar_config['media_files_thumb_sizes'] as $v )
+        
+        if ( isset( SpiceConfig::getInstance()->config['media_files_thumb_sizes'] ) ) {
+            sort( SpiceConfig::getInstance()->config['media_files_thumb_sizes'] );
+            foreach ( SpiceConfig::getInstance()->config['media_files_thumb_sizes'] as $v )
                 if ( $v > $size ) return $v;
         }
-        if ( @$sugar_config['media_files_thumb_sizes_auto_step'] > 0 ) {
-            $start = $sugar_config['media_files_thumb_sizes_auto_step'];
-            if ( count( @$sugar_config['media_files_thumb_sizes'] ))
-                $start += $sugar_config['media_files_thumb_sizes'][count($sugar_config['media_files_thumb_sizes'])-1];
-            #for ( $x = $start; $x < $this->width; $x += $sugar_config['media_files_thumb_sizes_auto_step'] )
+        if ( @SpiceConfig::getInstance()->config['media_files_thumb_sizes_auto_step'] > 0 ) {
+            $start = SpiceConfig::getInstance()->config['media_files_thumb_sizes_auto_step'];
+            if ( count( @SpiceConfig::getInstance()->config['media_files_thumb_sizes'] ))
+                $start += SpiceConfig::getInstance()->config['media_files_thumb_sizes'][count(SpiceConfig::getInstance()->config['media_files_thumb_sizes'])-1];
+            #for ( $x = $start; $x < $this->width; $x += \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['media_files_thumb_sizes_auto_step'] )
             #    if ( $x > $size ) return $x;
-            for ( $x = $start; $x < $size; $x += $sugar_config['media_files_thumb_sizes_auto_step'] );
+            for ( $x = $start; $x < $size; $x += SpiceConfig::getInstance()->config['media_files_thumb_sizes_auto_step'] );
             return $x;
         }
         return $size; # $this->width;
@@ -261,7 +268,7 @@ class MediaFile extends SugarBean {
 
         if ( !in_array( $this->filetype, $supportedImageTypes )) return false;
 
-        if ( !isset( $this->width{0} ) or !isset( $this->height{0} ))
+        if ( !isset( $this->width[0]) or !isset( $this->height[0]))
             list( $origWidth, $origHeight ) = getimagesize( self::getMediaPath( $this->id ));
         else {
             $origWidth = $this->width;
@@ -301,7 +308,7 @@ class MediaFile extends SugarBean {
     }
 
     function outputHeaders() {
-        global $sugar_config;
+        
         while ( ob_get_level() && @ob_end_clean() );
         # ??? header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         //header("Pragma: public");
@@ -310,7 +317,7 @@ class MediaFile extends SugarBean {
         header("Content-Disposition: inline; filename=\"" . $this->id . '.' . $this->filetype . "\";");
         #header("Content-Length: " . filesize( self::getMediaPath( $this->id ))); // todo
         //header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + 2592000 )); // 1 month
-        if ( isset( $this->hash{0} )) header( 'ETag: "'.$this->hash.'"' );
+        if ( isset( $this->hash[0])) header( 'ETag: "'.$this->hash.'"' );
     }
 
     /**
@@ -339,14 +346,15 @@ class MediaFile extends SugarBean {
     }
 
     public static function deleteMedia( $mediaId ) {
-        global $current_user, $db;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
         $result = $db->query( 'UPDATE mediafiles SET deleted = 1 WHERE id="'.$mediaId.'"' . ( !$current_user->is_admin ? ' AND user_id="' . $current_user->id . '"' : '' ));
         if ( $db->getAffectedRowCount( $result ))
             if ( $db->getAffectedRowCount( $result )) self::_deleteMediaPhysical( $mediaId );
     }
 
     private static function _deleteMediaPhysical( $mediaId ) {
-        if ( @$GLOBALS['sugar_config']['media_files_no_trash'] ) unlink( self::getMediaPath( $mediaId ));
+        if ( @SpiceConfig::getInstance()->config['media_files_no_trash'] ) unlink( self::getMediaPath( $mediaId ));
         else rename( self::getMediaPath( $mediaId ), self::getFolderOfTrash().$mediaId.'.'.microtime() );
         self::deleteVariants( $mediaId );
     }
@@ -366,11 +374,11 @@ class MediaFile extends SugarBean {
     }
 
     public static function getMediaPath( $mediaId ) {
-        return $GLOBALS['sugar_config']['media_files_dir'] . $mediaId;
+        return SpiceConfig::getInstance()->config['media_files_dir'] . $mediaId;
     }
 
     public static function getFolderOfMedia() {
-        return isset( $GLOBALS['sugar_config']['media_files_dir']{0} ) ? $GLOBALS['sugar_config']['media_files_dir'] : 'media/';
+        return isset( SpiceConfig::getInstance()->config['media_files_dir'][0]) ? SpiceConfig::getInstance()->config['media_files_dir'] : 'media/';
     }
 
     public static function getFolderOfThumbs() {
@@ -388,19 +396,19 @@ class MediaFile extends SugarBean {
     private function makeSureDirsExist() {
         $error = false;
         if ( !is_dir( $memmy = self::getFolderOfMedia()) and !mkdir( $memmy, 0770 ) ) {
-            $GLOBALS['log']->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing media directory.' );
+            LoggerManager::getLogger()->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing media directory.' );
             $error = true;
         } else {
             if ( !is_dir( $memmy = self::getFolderOfThumbs()) and !mkdir( $memmy, 0770 ) ) {
-                $GLOBALS['log']->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing thumbs directory.' );
+                LoggerManager::getLogger()->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing thumbs directory.' );
                 $error = true;
             }
             if ( !is_dir( $memmy = self::getFolderOfSizes()) and !mkdir( $memmy, 0770 ) ) {
-                $GLOBALS['log']->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing sizes directory.' );
+                LoggerManager::getLogger()->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing sizes directory.' );
                 $error = true;
             }
             if ( !is_dir( $memmy = self::getFolderOfTrash()) and !mkdir( $memmy, 0770 ) ) {
-                $GLOBALS['log']->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing trash directory.' );
+                LoggerManager::getLogger()->fatal( 'MediaFiles: mkdir() failed! Cannot create not yet existing trash directory.' );
                 $error = true;
             }
         }

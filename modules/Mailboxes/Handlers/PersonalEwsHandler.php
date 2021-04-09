@@ -3,7 +3,8 @@ namespace SpiceCRM\modules\Mailboxes\Handlers;
 
 use SpiceCRM\includes\SpiceCRMExchange\ModuleHandlers\SpiceCRMExchangeEmails;
 use SpiceCRM\includes\SpiceCRMExchange\SpiceCRMExchangeConnector;
-use Mailbox;
+use SpiceCRM\modules\Mailboxes\Mailbox;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class PersonalEwsHandler extends TransportHandler
 {
@@ -19,7 +20,7 @@ class PersonalEwsHandler extends TransportHandler
      * @return string
      */
     public function getMailboxName(){
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         return "Exchange ({$current_user->user_name})";
     }
 
@@ -32,7 +33,7 @@ class PersonalEwsHandler extends TransportHandler
     }
 
     protected function composeEmail($email) {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $this->ewsEmail = new SpiceCRMExchangeEmails($current_user, $email, $this->mailbox);
         return $this->ewsEmail->composeEmail($email);
     }
@@ -42,7 +43,7 @@ class PersonalEwsHandler extends TransportHandler
     }
 
     public function checkConnection() {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $connector = new SpiceCRMExchangeConnector($current_user);
         return $connector->checkConnection();
     }

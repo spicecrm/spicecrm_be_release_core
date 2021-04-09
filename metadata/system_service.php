@@ -1,53 +1,53 @@
 <?php
-$dictionary['sysservicecategories'] = array(
+$dictionary['sysservicecategories'] = [
     'table' => 'sysservicecategories',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
-        ),
-        'keyname' => array(
+        ],
+        'keyname' => [
             'name' => 'keyname',
             'type' => 'varchar',
             'len' => 32
-        ),
-        'selectable' => array(
+        ],
+        'selectable' => [
             'name' => 'selectable',
             'type' => 'bool',
-        ),
-        'favorite' => array(
+        ],
+        'favorite' => [
             'name' => 'favorite',
             'type' => 'bool'
-        ),
-        'parent_id' => array(
+        ],
+        'parent_id' => [
             'name' => 'parent_id',
             'type' => 'id',
             'comment' => 'id of a record located in this table'
-        ),
-        'servicequeue_id' =>  array(
+        ],
+        'servicequeue_id' =>  [
             'name' => 'servicequeue_id',
             'type' => 'id',
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'sysservicecategoriespk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_sysservicecategoriesparent',
             'type' => 'index',
-            'fields' => array('parent_id')
-        ),
-        array(
+            'fields' => ['parent_id']
+        ],
+        [
             'name' => 'idx_sysservicecategoriesqueue',
             'type' => 'index',
-            'fields' => array('servicequeue_id')
-        ),
-    )
-);
+            'fields' => ['servicequeue_id']
+        ],
+    ]
+];

@@ -8,10 +8,12 @@
 
 namespace SpiceCRM\modules\CompanyCodes\KREST\controllers;
 
+use SpiceCRM\modules\CompanyCodes\CompanyCodesLoader;
+
 class CompanyCodesKRESTController
 {
     static function getCompanyCodes(){
-        $loader = new \SpiceCRM\modules\CompanyCodes\CompanyCodesLoader();
+        $loader = new CompanyCodesLoader();
         $results = $loader->loadCompanyCodes();
         return $results;
     }

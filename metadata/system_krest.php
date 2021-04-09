@@ -13,174 +13,174 @@
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-$dictionary['syskrestlogconfig'] = array(
+$dictionary['syskrestlogconfig'] = [
     'table' => 'syskrestlogconfig',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'route' => array(
+        ],
+        'route' => [
             'name' => 'route',
             'type' => 'varchar',
             'len' => 255,
-        ),
-        'method' => array(
+        ],
+        'method' => [
             'name' => 'method',
             'type' => 'varchar',
             'len' => 6,
-        ),
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'ip' => array(
+        ],
+        'ip' => [
             'name' => 'ip',
             'type' => 'varchar',
             'len' => 15
-        ),
-        'is_active' => array(
+        ],
+        'is_active' => [
             'name' => 'is_active',
             'type' => 'bool',
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'idx_syskrestlogconfig',
             'type' => 'primary',
-            'fields' => array('id'),
-        ),
-        array(
+            'fields' => ['id'],
+        ],
+        [
             'name' => 'unq_idx_syskrestlogconfig_v2',
             'type' => 'unique',
-            'fields' => array('route', 'method', 'user_id', 'ip'),
-        ),
-    ),
-);
+            'fields' => ['route', 'method', 'user_id', 'ip'],
+        ],
+    ],
+];
 
 
-$dictionary['syskrestlog'] = array(
+$dictionary['syskrestlog'] = [
     'table' => 'syskrestlog',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'route' => array(
+        ],
+        'route' => [
             'name' => 'route',
             'type' => 'varchar',
             'len' => 255,
-        ),
-        'url' => array(
+        ],
+        'url' => [
             'name' => 'url',
             'type' => 'varchar',
             'len' => 3072,
-        ),
-        'requested_at' => array(
+        ],
+        'requested_at' => [
             'name' => 'requested_at',
             'type' => 'datetime',
-        ),
-        'runtime' => array(
+        ],
+        'runtime' => [
             'name' => 'runtime',
             'type' => 'int',
-        ),
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'ip' => array(
+        ],
+        'ip' => [
             'name' => 'ip',
             'type' => 'varchar',
             'len' => 15
-        ),
-        'session_id' => array(
+        ],
+        'session_id' => [
             'name' => 'session_id',
             'type' => 'varchar',
             'len' => 30
-        ),
-        'method' => array(
+        ],
+        'method' => [
             'name' => 'method',
             'type' => 'varchar',
             'len' => 6
-        ),
-        'args' => array(
+        ],
+        'args' => [
             'name' => 'args',
             'type' => 'varchar',
             'len' => 255
-        ),
-        'headers' => array(
+        ],
+        'headers' => [
             'name' => 'headers',
             'type' => 'text'
-        ),
-        'get_params' => array(
+        ],
+        'get_params' => [
             'name' => 'get_params',
             'type' => 'text',
-        ),
-        'post_params' => array(
+        ],
+        'post_params' => [
             'name' => 'post_params',
             'type' => 'longtext' # todo: MSSQL doesn´t know "longtext"
-        ),
-        'response' => array(
+        ],
+        'response' => [
             'name' => 'response',
             'type' => 'longtext' # todo: MSSQL doesn´t know "longtext"
-        ),
-        'http_status_code' => array(
+        ],
+        'http_status_code' => [
             'name' => 'http_status_code',
             'type' => 'int',
-        ),
-        'transaction_id' => array(
+        ],
+        'transaction_id' => [
             'name' => 'transaction_id',
             'type' => 'varchar',
             'len' => 36
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'idx_syskrestlog',
             'type' => 'primary',
-            'fields' => array('id'),
-        ),
-        array(
+            'fields' => ['id'],
+        ],
+        [
             'name' => 'idx_syskrestlog_requested_at',
             'type' => 'index',
-            'fields' => array('requested_at'),
-        ),
-        array(
+            'fields' => ['requested_at'],
+        ],
+        [
             'name' => 'idx_syskrestlog_user_id',
             'type' => 'index',
-            'fields' => array('user_id'),
-        ),
-        array(
+            'fields' => ['user_id'],
+        ],
+        [
             'name' => 'idx_syskrestlog_route',
             'type' => 'index',
-            'fields' => array('route'),
-        ),
-        array(
+            'fields' => ['route'],
+        ],
+        [
             'name' => 'idx_syskrestlog_ip',
             'type' => 'index',
-            'fields' => array('ip'),
-        ),
-        array(
+            'fields' => ['ip'],
+        ],
+        [
             'name' => 'idx_syskrestlog_method',
             'type' => 'index',
-            'fields' => array('method'),
-        ),
-        array(
+            'fields' => ['method'],
+        ],
+        [
             'name' => 'idx_syskrestlog_session_id',
             'type' => 'index',
-            'fields' => array('session_id'),
-        ),
-        array(
+            'fields' => ['session_id'],
+        ],
+        [
             'name' => 'idx_syskrestlog_http_status_code',
             'type' => 'index',
-            'fields' => array('http_status_code'),
-        ),
-        array(
+            'fields' => ['http_status_code'],
+        ],
+        [
             'name' => 'idx_syskrestlog_transaction_id',
             'type' => 'index',
-            'fields' => array('transaction_id'),
-        )
-    ),
-);
+            'fields' => ['transaction_id'],
+        ]
+    ],
+];

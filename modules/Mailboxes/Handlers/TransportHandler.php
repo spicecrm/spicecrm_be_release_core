@@ -1,8 +1,12 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
+use SpiceCRM\modules\Emails\Email;
+use Exception;
+use SpiceCRM\includes\Logger\SpiceLogger;
 use SpiceCRM\modules\Mailboxes\MailboxLogTrait;
-use Mailbox;
+use SpiceCRM\modules\Mailboxes\Mailbox;
+use SpiceCRM\modules\TextMessages\TextMessage;
 
 abstract class TransportHandler
 {
@@ -20,11 +24,26 @@ abstract class TransportHandler
 
         $this->initTransportHandler();
 
-        $this->logger = new \SpiceLogger();
+        $this->logger = new SpiceLogger();
     }
 
+    /**
+     * Initializes the transport handler.
+     * It usually involves setting various credentials, urls, api keys, etc needed to communicate.
+     * In some cases it also initializes additional classes from libraries that handle the communication.
+     *
+     * @return mixed
+     */
     abstract protected function initTransportHandler();
 
+    /**
+     * Performs a check on the connection to the message (email/text message) server.
+     * It usually involves sending a test message.
+     * Some APIs may have other possibilities to check if the connection can be established.
+     *
+     * @param $testEmail
+     * @return mixed
+     */
     abstract public function testConnection($testEmail);
 
     public function sendMail($email)
@@ -58,8 +77,20 @@ abstract class TransportHandler
         return $this->dispatch($message);
     }
 
+    /**
+     * Maps an Email Bean into a format needed by a given transport handler.
+     *
+     * @param $email
+     * @return mixed
+     */
     abstract protected function composeEmail($email);
 
+    /**
+     * Handles the sending of a message that is already in a format needed by a given transport handler.
+     *
+     * @param $message
+     * @return mixed
+     */
     abstract protected function dispatch($message);
 
     /**
@@ -88,14 +119,14 @@ abstract class TransportHandler
     }
 
     protected function checkEmailClass($object) {
-        if (!($object instanceof \Email)) {
-            throw new \Exception('Email is not of Email class.');
+        if (!($object instanceof Email)) {
+            throw new Exception('Email is not of Email class.');
         }
     }
 
     protected function checkTextMessageClass($object) {
-        if (!($object instanceof \TextMessage)) {
-            throw new \Exception('TextMessage is not of TextMessage class.');
+        if (!($object instanceof TextMessage)) {
+            throw new Exception('TextMessage is not of TextMessage class.');
         }
     }
 }

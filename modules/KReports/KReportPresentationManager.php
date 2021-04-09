@@ -12,13 +12,7 @@
 * You can contact us at info@kreporter.org
 ******************************************************************************* */
 
-
-
-
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
-
-require_once('modules/KReports/KReport.php');
+namespace SpiceCRM\modules\KReports;
 
 class KReportPresentationManager {
 

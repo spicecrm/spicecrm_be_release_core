@@ -1,5 +1,7 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\Dashboards;
+
+use SpiceCRM\data\SugarBean;
 
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
@@ -59,9 +61,9 @@ class Dashboard extends SugarBean
         if (!$bean)
             return $bean;
 
-        $dashBoard['components'] = array();
+        $dashBoard['components'] = [];
         $dashBoardComponents = $this->db->query("SELECT * FROM dashboardcomponents WHERE dashboard_id = '$id'");
-        $components = array();
+        $components = [];
         while ($dashBoardComponent = $this->db->fetchByAssoc($dashBoardComponents)) {
             $dashBoardComponent['position'] = json_decode(html_entity_decode($dashBoardComponent['position']), true);
             $dashBoardComponent['componentconfig'] = json_decode(html_entity_decode($dashBoardComponent['componentconfig']), true);

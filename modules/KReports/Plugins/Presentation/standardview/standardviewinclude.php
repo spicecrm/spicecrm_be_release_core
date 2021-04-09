@@ -12,10 +12,8 @@
 ******************************************************************************* */
 
 
-
-
-if (!defined('sugarEntry') || !sugarEntry)
-   die('Not A Valid Entry Point');
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 require_once('modules/KReports/Plugins/prototypes/kreportpresentationplugin.php');
 
@@ -23,7 +21,8 @@ class kreportpresentationstandard extends kreportpresentationplugin {
 
 //function standarddetailviewdisplay(&$thisview) {
    public function display(&$thisReport) {
-      global $app_list_strings, $mod_strings, $current_language, $current_user;
+      global $app_list_strings, $mod_strings, $current_language;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
 
       // $fieldArray = htmlentities($fieldArray, ENT_QUOTES, 'UTF-8');
       $viewJS = '<script type="text/javascript">FieldsArray = ' . htmlentities($this->buildFieldArray($thisReport)) . ';</script>';
@@ -33,7 +32,7 @@ class kreportpresentationstandard extends kreportpresentationplugin {
       // include the js file 
 
       $viewJS .= '<script type="text/javascript">ColumnsArray = ' . str_replace('"', '', json_encode($this->buildColumnArray($thisReport))) . ';</script>';
-      $viewJS .= '<script type="text/javascript" src="modules/KReports/Plugins/Presentation/standardview/js/viewstandard' . ($GLOBALS['sugar_config']['KReports']['debug'] ? '_debug' : '') . '.js"></script>';
+      $viewJS .= '<script type="text/javascript" src="modules/KReports/Plugins/Presentation/standardview/js/viewstandard' . (SpiceConfig::getInstance()->config['KReports']['debug'] ? '_debug' : '') . '.js"></script>';
 
       return $viewJS;
       // $thisview->ss->assign('viewJS', $viewJS);
@@ -64,11 +63,11 @@ class kreportpresentationstandard extends kreportpresentationplugin {
 
    public function buildColumnArray($thisReport) {
       $arrayList = json_decode(html_entity_decode($thisReport->listfields, ENT_QUOTES), true);
-      $columnArray = array();
+      $columnArray = [];
       foreach ($arrayList as $thisList) {
          if ($thisList['display'] != 'hid') {
             $thisFieldType = ($thisList['overridetype'] == '' ? $thisReport->getFieldTypeById($thisList['fieldid']) : $thisList['overridetype']);
-            $thisColumn = array(
+            $thisColumn = [
                 //2013-03-05 html entities to support special chars in Text
                 //2013-04-19 added UTF-8 support
                 'text' => htmlentities($thisList['name'], ENT_QUOTES, 'UTF-8'),
@@ -78,7 +77,7 @@ class kreportpresentationstandard extends kreportpresentationplugin {
                 'hidden' => ($thisList['display'] != 'yes' ? true : false),
                 'renderer' => 'renderField',
                 'align' => $thisReport->getXtypeAlignment($thisFieldType, $thisList['fieldid'])
-            );
+            ];
 
             // see if we have renderer we need to process
             
@@ -103,8 +102,8 @@ class kreportpresentationstandard extends kreportpresentationplugin {
    }
 
    public function getPresentationMetaData($thisReport){
-       return array(
+       return [
            'gridColumns' => $this->buildColumnArray($thisReport)
-       );
+       ];
    }
 }

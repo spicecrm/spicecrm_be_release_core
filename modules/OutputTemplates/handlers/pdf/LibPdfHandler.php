@@ -1,11 +1,13 @@
 <?php
 namespace SpiceCRM\modules\OutputTemplates\handlers\pdf;
 
+use SpiceCRM\modules\OutputTemplates\OutputTemplate;
+
 abstract class LibPdfHandler extends PdfHandler
 {
     protected $class_instance;
 
-    public function __construct(\OutputTemplate $template)
+    public function __construct(OutputTemplate $template)
     {
         parent::__construct($template);
         $this->class_instance = $this->createInstance();

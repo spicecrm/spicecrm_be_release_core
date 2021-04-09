@@ -1,6 +1,7 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['AccountVATID'] = [
     'table' => 'accountvatids',
     'comment' => 'AccountVATIDs Module',
@@ -66,4 +67,4 @@ $dictionary['AccountVATID'] = [
 
 ];
 
-VardefManager::createVardef('AccountVATIDs', 'AccountVATID', array('default', 'assignable'));
+VardefManager::createVardef('AccountVATIDs', 'AccountVATID', ['default', 'assignable']);

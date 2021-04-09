@@ -1,8 +1,7 @@
-<?php 
- 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-        
-require_once('data/SugarBean.php');
+<?php
+namespace SpiceCRM\modules\CompanyFiscalPeriods;
+
+use SpiceCRM\data\SugarBean;
 
 class CompanyFiscalPeriod extends SugarBean {
     public $module_dir = 'CompanyFiscalPeriods';
@@ -10,10 +9,10 @@ class CompanyFiscalPeriod extends SugarBean {
     public $table_name = 'companyfiscalperiods';
     public $new_schema = true;
     
-    public $additional_column_fields = Array();
+    public $additional_column_fields = [];
 
-    public $relationship_fields = Array(
-    );
+    public $relationship_fields = [
+    ];
 
 
     public function __construct(){

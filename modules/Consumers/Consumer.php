@@ -1,8 +1,8 @@
 <?php
+namespace SpiceCRM\modules\Consumers;
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-
-require_once('data/SugarBean.php');
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\SugarObjects\templates\person\Person;
 
 class Consumer extends Person {
     public $module_dir = 'Consumers';
@@ -12,10 +12,10 @@ class Consumer extends Person {
 
     var $full_name; // l10n localized name
 
-    public $additional_column_fields = Array();
+    public $additional_column_fields = [];
 
-    public $relationship_fields = Array(
-    );
+    public $relationship_fields = [
+    ];
 
 
     public function get_summary_text(){
@@ -39,7 +39,7 @@ class Consumer extends Person {
         // Set campaign name if there is a campaign id
         if( !empty($this->campaign_id)){
 
-            $camp = new Campaign();
+            $camp = BeanFactory::getBean('Campaigns');
             $where = "campaigns.id='{$this->campaign_id}'";
             $campaign_list = $camp->get_full_list("campaigns.name", $where, true);
             $this->campaign_name = $campaign_list[0]->name;

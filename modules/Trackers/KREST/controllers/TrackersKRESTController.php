@@ -1,6 +1,9 @@
 <?php
-
 namespace SpiceCRM\modules\Trackers\KREST\controllers;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\KREST\handlers\ModuleHandler;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class TrackersKRESTController
 {
@@ -10,22 +13,23 @@ class TrackersKRESTController
      *
      * @return array
      */
-    static function loadRecent()
+
+    public function loadRecent()
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $moduleHandler = new ModuleHandler();
 
-        $tracker = \BeanFactory::getBean('Trackers');
+        $tracker = BeanFactory::getBean('Trackers');
         $history = $tracker->get_recently_viewed($current_user->id, '', 50);
-        $recentItems = Array();
+        $recentItems = [];
         foreach ($history as $key => $row) {
             if (empty($history[$key]['module_name']) || empty($row['item_summary'])) {
                 unset($history[$key]);
                 continue;
             }
 
-            $seed = \BeanFactory::getBean($row['module_name'], $row['item_id'], [ 'relationships' => false ] );
+            $seed = BeanFactory::getBean($row['module_name'], $row['item_id'], [ 'relationships' => false ] );
             if($seed){
                 $row['data'] = $moduleHandler->mapBeanToArray($row['module_name'], $seed);
                 $recentItems[] = $row;
@@ -39,28 +43,29 @@ class TrackersKRESTController
     /**
      * returns the recent items. Accepts as call paramaters the module and the limit of records to be retrieved. If no module is sent in the params this is a global request
      */
-    static function getRecent($req, $res, $args)
+
+    public function getRecent($req, $res, $args)
     {
-        global $current_user;
-        $getParams = $req->getParams();
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $getParams = $req->getQueryParams();
 
-        $moduleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $moduleHandler = new ModuleHandler();
 
-        $tracker = \BeanFactory::getBean('Trackers');
-        $history = $tracker->get_recently_viewed($current_user->id, $getParams['module'] ? array($getParams['module']) : '', $getParams['limit']);
-        $recentItems = Array();
+        $tracker = BeanFactory::getBean('Trackers');
+        $history = $tracker->get_recently_viewed($current_user->id, $getParams['module'] ? [$getParams['module']] : '', $getParams['limit']);
+        $recentItems = [];
         foreach ($history as $key => $row) {
             if (empty($history[$key]['module_name']) || empty($row['item_summary'])) {
                 unset($history[$key]);
                 continue;
             }
 
-            $seed = \BeanFactory::getBean($row['module_name'], $row['item_id']);
+            $seed = BeanFactory::getBean($row['module_name'], $row['item_id']);
             if($seed){
                 $row['data'] = $moduleHandler->mapBeanToArray($row['module_name'], $seed);
                 $recentItems[] = $row;
             }
         }
-        return $res->write(json_encode($recentItems));
+        return $res->withJson($recentItems);
     }
 }

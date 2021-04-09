@@ -1,94 +1,94 @@
 <?php
-$dictionary['sysfts'] = array(
+$dictionary['sysfts'] = [
     'table' => 'sysfts',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'char',
             'len' => 36,
             'required' => true,
             'isnull' => false,
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
             'len' => 255,
             'required' => true,
             'isnull' => false
-        ),
-        'index_priority' => array(
+        ],
+        'index_priority' => [
             'name' => 'index_priority',
             'type' => 'int'
-        ),
-        'ftsfields' => array(
+        ],
+        'ftsfields' => [
             'name' => 'ftsfields',
             'type' => 'text'
-        ),
-        'activated_date' => array(
+        ],
+        'activated_date' => [
             'name' => 'activated_date',
             'type' => 'date'
-        ),
-        'activated_fields' => array(
+        ],
+        'activated_fields' => [
             'name' => 'activated_fields',
             'type' => 'text'
-        ),
-        'settings' => array(
+        ],
+        'settings' => [
             'name' => 'settings',
             'type' => 'text'
-        )
-    ),
-    'indices' => array(
-        array('name' => 'sysftspk', 'type' => 'primary', 'fields' => array('id')),
-        array('name' => 'sysftsmodule', 'type' => 'unique', 'fields' => array('module')),
-    )
-);
+        ]
+    ],
+    'indices' => [
+        ['name' => 'sysftspk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' => 'sysftsmodule', 'type' => 'unique', 'fields' => ['module']],
+    ]
+];
 
-$dictionary['sysftslog'] = array(
+$dictionary['sysftslog'] = [
     'table' => 'sysftslog',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'date_created' => array(
+        ],
+        'date_created' => [
             'name' => 'date_created',
             'type' => 'datetime'
-        ),
-        'response_status' => array(
+        ],
+        'response_status' => [
             'name' => 'response_status',
             'type' => 'varchar',
             'len' => 10
-        ),'request_method' => array(
+        ],'request_method' => [
             'name' => 'request_method',
             'type' => 'varchar',
             'len' => 10
-        ),
-        'request_url' => array(
+        ],
+        'request_url' => [
             'name' => 'request_url',
             'type' => 'longtext' # todo: MSSQL doesn´t know "longtext"
-        ),
-        'index_request' => array(
+        ],
+        'index_request' => [
             'name' => 'index_request',
             'type' => 'text'
-        ),
-        'index_response' => array(
+        ],
+        'index_response' => [
             'name' => 'index_response',
             'type' => 'longtext' # todo: MSSQL doesn´t know "longtext"
-        ),
-        'rt_local' => array(
+        ],
+        'rt_local' => [
             'name' => 'rt_local',
             'type' => 'double'
-        ),
-        'rt_remote' => array(
+        ],
+        'rt_remote' => [
             'name' => 'rt_remote',
             'type' => 'double'
-        )
+        ]
 
-    ),
-    'indices' => array(
-        array(
+    ],
+    'indices' => [
+        [
             'name' => 'sysftslogpk',
             'type' => 'primary',
-            'fields' => array('id'))
-    )
-);
+            'fields' => ['id']]
+    ]
+];

@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,8 +34,11 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\data\Relationships;
 
-require_once("data/Relationships/M2MRelationship.php");
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\Logger\LoggerManager;
+
 
 /**
  * Represents a many to many relationship that is table based.
@@ -51,14 +53,14 @@ class EmailAddressRelationship extends M2MRelationship
      * @param  $additionalFields key=>value pairs of fields to save on the relationship
      * @return boolean true if successful
      */
-    public function add($lhs, $rhs, $additionalFields = array())
+    public function add($lhs, $rhs, $additionalFields =[])
     {
         $lhsLinkName = $this->lhsLink;
 
         if (empty($lhs->$lhsLinkName) && !$lhs->load_relationship($lhsLinkName))
         {
             $lhsClass = get_class($lhs);
-            $GLOBALS['log']->fatal("could not load LHS $lhsLinkName in $lhsClass");
+            LoggerManager::getLogger()->fatal("could not load LHS $lhsLinkName in $lhsClass");
             return false;
         }
 
@@ -88,16 +90,16 @@ class EmailAddressRelationship extends M2MRelationship
         $lhsLinkName = $this->lhsLink;
 
         if (!($lhs instanceof SugarBean)) {
-            $GLOBALS['log']->fatal("LHS is not a SugarBean object");
+            LoggerManager::getLogger()->fatal("LHS is not a SugarBean object");
             return false;
         }
         if (!($rhs instanceof SugarBean)) {
-            $GLOBALS['log']->fatal("RHS is not a SugarBean object");
+            LoggerManager::getLogger()->fatal("RHS is not a SugarBean object");
             return false;
         }
         if (empty($lhs->$lhsLinkName) && !$lhs->load_relationship($lhsLinkName))
         {
-            $GLOBALS['log']->fatal("could not load LHS $lhsLinkName");
+            LoggerManager::getLogger()->fatal("could not load LHS $lhsLinkName");
             return false;
         }
 
@@ -110,10 +112,10 @@ class EmailAddressRelationship extends M2MRelationship
             }
         }
 
-        $dataToRemove = array(
+        $dataToRemove = [
             $this->def['join_key_lhs'] => $lhs->id,
             $this->def['join_key_rhs'] => $rhs->id
-        );
+        ];
 
         $this->removeRow($dataToRemove);
 

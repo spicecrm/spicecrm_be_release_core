@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,45 +33,45 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['prospect_list_campaigntasks'] = array(
+global $dictionary;
+$dictionary['prospect_list_campaigntasks'] = [
     'table' => 'prospect_list_campaigntasks',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36',
-        ),
-        'prospect_list_id' => array(
+        ],
+        'prospect_list_id' => [
             'name' => 'prospect_list_id',
             'type' => 'varchar',
             'len' => '36',
-        ),
-        'campaigntask_id' => array(
+        ],
+        'campaigntask_id' => [
             'name' => 'campaigntask_id',
             'type' => 'varchar',
             'len' => '36',
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'default' => '0'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'prospect_list_campaigntaksspk',
             'type' => 'primary',
-            'fields' => array('id')
-        )
-    ),
-    'relationships' => array(
-        'prospect_list_campaigntasks' => array(
+            'fields' => ['id']
+        ]
+    ],
+    'relationships' => [
+        'prospect_list_campaigntasks' => [
             'lhs_module' => 'ProspectLists',
             'lhs_table' => 'prospect_lists',
             'lhs_key' => 'id',
@@ -83,8 +82,8 @@ $dictionary['prospect_list_campaigntasks'] = array(
             'join_table' => 'prospect_list_campaigntasks',
             'join_key_lhs' => 'prospect_list_id',
             'join_key_rhs' => 'campaigntask_id'
-        )
-    )
-)
+        ]
+    ]
+]
 
 ?>

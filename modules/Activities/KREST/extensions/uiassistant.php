@@ -1,86 +1,56 @@
 <?php
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
+
 use SpiceCRM\includes\RESTManager;
-use SpiceCRM\KREST\handlers\ModuleHandler;
-
+use SpiceCRM\modules\Activities\KREST\controllers\UiAssistantController;
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
-$KRESTModuleHandler = new ModuleHandler($RESTManager->app);
 
-$RESTManager->app->group('/assistant', function () use ($KRESTModuleHandler) {
-    $this->get('/list', function ($req, $res, $args) use ($KRESTModuleHandler) {
-        global $db, $current_user;
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('uiassistant', '1.0');
 
-        $params = $req->getParams();
+/**
+ * restrict routes to authenticated users
+ */
 
-        $objectFilters = json_decode($params['objectfilters']) ?: [];
-        $timeFilter = $params['timefilter'] ?: 'today';
-
-        $retArray = array();
-        // todo: this needs to be done nicer ... just a workarodun now to get a feed for the front page
-        /*
-        $records = $db->query("select * from (SELECT bean module, bean_id id, reminder_date DATE FROM spicereminders WHERE user_id  ='$current_user->id'
-                                union
-                                select 'Calls' module, id, date_start date from calls where assigned_user_id = '$current_user->id' and deleted = 0 and status = 'planned' 
-                                union 
-                                select 'Meetings' module, id, date_start date from meetings where assigned_user_id = '$current_user->id' and deleted = 0  and status = 'planned' 
-                                union 
-                                select 'Tasks' module, id, date_due date from tasks where assigned_user_id = '$current_user->id' and deleted = 0  and status in ('Not Started', 'In Progress', 'Pending Input')
-                                union 
-                                select 'Opportunities' module, id, date_closed date from opportunities where assigned_user_id = '$current_user->id' and deleted = 0  and sales_stage not like \"%close%\"
-                                ) unionsel order by date asc");
-        while ($record = $db->fetchByAssoc($records)) {
-            $seed = BeanFactory::getBean($record['module'], $record['id']);
-            if ($seed)
-                $retArray[] = array(
-                    'id' => $record['id'],
-                    'module' => $record['module'],
-                    'data' => $KRESTModuleHandler->mapBeanToArray($record['module'], $seed)
-                );
-        }
-        */
-
-        if($GLOBALS['ACLController']->checkAccess('Calls', 'list', true) && (count($objectFilters) == 0 || array_search('Calls', $objectFilters) !== false)) {
-            $call = BeanFactory::getBean('Calls');
-            $calls = $call->get_user_calls($current_user, $timeFilter);
-            foreach ($calls as $call){
-                $retArray[] = array(
-                    'id' => $call->id,
-                    'module' => 'Calls',
-                    'date_activity' => $call->date_start,
-                    'data' => $KRESTModuleHandler->mapBeanToArray('Calls', $call)
-                );
-            }
-        }
-
-        if($GLOBALS['ACLController']->checkAccess('Meetings', 'list', true) && (count($objectFilters) == 0  || array_search('Meetings', $objectFilters) !== false)) {
-            $meeting = BeanFactory::getBean('Meetings');
-            $meetings = $meeting->get_user_meetings($current_user, $timeFilter);
-            foreach ($meetings as $meeting){
-                $retArray[] = array(
-                    'id' => $meeting->id,
-                    'module' => 'Meetings',
-                    'date_activity' => $meeting->date_start,
-                    'data' => $KRESTModuleHandler->mapBeanToArray('Meetings', $meeting)
-                );
-            }
-        }
-
-        if($GLOBALS['ACLController']->checkAccess('Tasks', 'list', true) && (count($objectFilters) == 0  || array_search('Tasks', $objectFilters) !== false)) {
-            $task = BeanFactory::getBean('Tasks');
-            $tasks = $task->get_user_tasks($current_user, $timeFilter);
-            foreach ($tasks as $task){
-                $retArray[] = array(
-                    'id' => $task->id,
-                    'module' => 'Tasks',
-                    'date_activity' => $task->date_due,
-                    'data' => $KRESTModuleHandler->mapBeanToArray('Tasks', $task)
-                );
-            }
-        }
-
-        usort($retArray, function ($a, $b){
-            return $a['date_activity'] > $b['date_activity']  ? 1 : -1;
-        });
-
-        echo json_encode($retArray);
-    });
-});
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/assistant/list',
+        'class'       => UiAssistantController::class,
+        'function'    => 'getUiAssist',
+        'description' => 'load activities into assistant bar',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
+$RESTManager->registerRoutes($routes);

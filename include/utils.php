@@ -2,6 +2,17 @@
 
 /* * *** SPICE-SUGAR-HEADER-SPACEHOLDER **** */
 
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\LogicHook\LogicHook;
+use SpiceCRM\includes\SugarCache\SugarCache;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\SpiceDictionary\SpiceDictionaryVardefs;
+use SpiceCRM\includes\utils\SpiceUtils;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 /* * *******************************************************************************
 
  * Description:  Includes generic helper functions used throughout the application.
@@ -9,17 +20,17 @@
  * All Rights Reserved.
  * Contributor(s): ______________________________________..
  * ****************************************************************************** */
-require_once('include/SugarObjects/SpiceConfig.php');
+
 require_once('include/utils/security_utils.php');
-
-
+require_once('include/utils/file_utils.php');
+require_once('include/utils/db_utils.php');
 
 
 function get_languages() {
-    global $sugar_config;
-    $lang = $sugar_config['languages'];
-    if (!empty($sugar_config['disabled_languages'])) {
-        foreach (explode(',', $sugar_config['disabled_languages']) as $disable) {
+
+    $lang = SpiceConfig::getInstance()->config['languages'];
+    if (!empty(SpiceConfig::getInstance()->config['disabled_languages'])) {
+        foreach (explode(',', SpiceConfig::getInstance()->config['disabled_languages']) as $disable) {
             unset($lang[$disable]);
         }
     }
@@ -60,10 +71,10 @@ function get_assigned_user_name($assigned_user_id, $is_group = '') {
  * @return array Array of users matching the filter criteria that may be from cache (if similar search was previously run)
  */
 function get_user_array($add_blank = true, $status = "Active", $user_id = '', $use_real_name = false, $user_name_filter = '', $portal_filter = ' AND portal_only=0 ', $from_cache = true) {
-    global $locale, $sugar_config, $current_user;
+    global $locale,  $current_user;
 
     if (empty($locale)) {
-        $locale = new Localization();
+        $locale = new SpiceCRM\includes\Localization\Localization();
     }
 
     if ($from_cache) {
@@ -73,7 +84,7 @@ function get_user_array($add_blank = true, $status = "Active", $user_id = '', $u
 
     if (empty($user_array)) {
         $db = DBManagerFactory::getInstance();
-        $temp_result = Array();
+        $temp_result = [];
         // Including deleted users for now.
         if (empty($status)) {
             $query = "SELECT id, first_name, last_name, user_name from users WHERE 1=1" . $portal_filter;
@@ -109,7 +120,7 @@ function get_user_array($add_blank = true, $status = "Active", $user_id = '', $u
         }
 
         $query = $query . ' ORDER BY ' . $order_by_string;
-        $GLOBALS['log']->debug("get_user_array query: $query");
+        LoggerManager::getLogger()->debug("get_user_array query: $query");
         $result = $db->query($query, true, "Error filling in user array: ");
 
         if ($add_blank == true) {
@@ -146,12 +157,12 @@ function get_user_array($add_blank = true, $status = "Active", $user_id = '', $u
  * based on user pref then system pref
  */
 function showFullName() {
-    global $sugar_config;
-    global $current_user;
+
+    $current_user = AuthenticationController::getInstance()->getCurrentUser();
     static $showFullName = null;
 
     if (is_null($showFullName)) {
-        $sysPref = !empty($sugar_config['use_real_names']);
+        $sysPref = !empty(SpiceConfig::getInstance()->config['use_real_names']);
         $userPref = (is_object($current_user)) ? $current_user->getPreference('use_real_names') : null;
 
         if ($userPref != null) {
@@ -174,22 +185,22 @@ function showFullName() {
  */
 function return_app_list_strings_language($language, $scope = 'all') {
     global $app_list_strings;
-    global $sugar_config;
+
 
     $cache_key = 'app_list_strings.' . $language;
 
     // Check for cached value
     if($scope == 'all') {
-        $cache_entry = sugar_cache_retrieve($cache_key);
+        $cache_entry = SugarCache::sugar_cache_retrieve($cache_key);
         if (!empty($cache_entry)) {
             return $cache_entry;
         }
     }
 
-    $default_language = $sugar_config['default_language'];
+    $default_language = SpiceConfig::getInstance()->config['default_language'];
     $temp_app_list_strings = $app_list_strings;
 
-    $langs = array();
+    $langs = [];
     if ($language != 'en_us') {
         $langs[] = 'en_us';
     }
@@ -198,22 +209,22 @@ function return_app_list_strings_language($language, $scope = 'all') {
     }
     $langs[] = $language;
 
-    $app_list_strings_array = array();
+    $app_list_strings_array = [];
 
     foreach ($langs as $lang) {
-        $app_list_strings = array();
+        $app_list_strings = [];
         if($scope == 'all' || $scope == 'global') {
             if (file_exists("include/language/$lang.lang.php")) {
                 include("include/language/$lang.lang.php");
-                $GLOBALS['log']->info("Found language file: $lang.lang.php");
+                LoggerManager::getLogger()->info("Found language file: $lang.lang.php");
             }
             if (file_exists("include/language/$lang.lang.override.php")) {
                 include("include/language/$lang.lang.override.php");
-                $GLOBALS['log']->info("Found override language file: $lang.lang.override.php");
+                LoggerManager::getLogger()->info("Found override language file: $lang.lang.override.php");
             }
             if (file_exists("include/language/$lang.lang.php.override")) {
                 include("include/language/$lang.lang.php.override");
-                $GLOBALS['log']->info("Found override language file: $lang.lang.php.override");
+                LoggerManager::getLogger()->info("Found override language file: $lang.lang.php.override");
             }
         }
 
@@ -221,22 +232,22 @@ function return_app_list_strings_language($language, $scope = 'all') {
             //check custom
             if (file_exists("custom/include/language/$lang.lang.php")) {
                 include("custom/include/language/$lang.lang.php");
-                $GLOBALS['log']->info("Found language file: $lang.lang.php");
+                LoggerManager::getLogger()->info("Found language file: $lang.lang.php");
             }
             if (file_exists("custom/include/language/$lang.lang.override.php")) {
                 include("custom/include/language/$lang.lang.override.php");
-                $GLOBALS['log']->info("Found override language file: $lang.lang.override.php");
+                LoggerManager::getLogger()->info("Found override language file: $lang.lang.override.php");
             }
             if (file_exists("custom/include/language/$lang.lang.php.override")) {
                 include("custom/include/language/$lang.lang.php.override");
-                $GLOBALS['log']->info("Found override language file: $lang.lang.php.override");
+                LoggerManager::getLogger()->info("Found override language file: $lang.lang.php.override");
             }
         }
 
         // BEGIN CR1000108 vardefs to db
-        if(isset($GLOBALS['sugar_config']['systemvardefs']['domains']) && $GLOBALS['sugar_config']['systemvardefs']['domains']){
+        if(isset(SpiceConfig::getInstance()->config['systemvardefs']['domains']) && SpiceConfig::getInstance()->config['systemvardefs']['domains']){
             //load sys_app_list_strings
-            $sys_app_list_strings = SpiceCRM\modules\SystemVardefs\SystemVardefs::createDictionaryValidationDoms($language);
+            $sys_app_list_strings = SpiceDictionaryVardefs::createDictionaryValidationDoms($language);
             // add to app_list_strings
             foreach($sys_app_list_strings as $dom => $lang){
                 foreach($lang[$language] as $values => $val){
@@ -251,7 +262,7 @@ function return_app_list_strings_language($language, $scope = 'all') {
         $app_list_strings_array[] = $app_list_strings;
     }
 
-    $app_list_strings = array();
+    $app_list_strings = [];
     foreach ($app_list_strings_array as $app_list_strings_item) {
         $app_list_strings = sugarLangArrayMerge($app_list_strings, $app_list_strings_item);
     }
@@ -260,17 +271,17 @@ function return_app_list_strings_language($language, $scope = 'all') {
         foreach ($langs as $lang) {
             if (file_exists("custom/application/Ext/Language/$lang.lang.ext.php")) {
                 $app_list_strings = _mergeCustomAppListStrings("custom/application/Ext/Language/$lang.lang.ext.php", $app_list_strings);
-                $GLOBALS['log']->info("Found extended language file: $lang.lang.ext.php");
+                LoggerManager::getLogger()->info("Found extended language file: $lang.lang.ext.php");
             }
             if (file_exists("custom/include/language/$lang.lang.php")) {
                 include("custom/include/language/$lang.lang.php");
-                $GLOBALS['log']->info("Found custom language file: $lang.lang.php");
+                LoggerManager::getLogger()->info("Found custom language file: $lang.lang.php");
             }
         }
     }
 
     if (!isset($app_list_strings)) {
-        $GLOBALS['log']->fatal("Unable to load the application language file for the selected language ($language) or the default language ($default_language) or the en_us language");
+        LoggerManager::getLogger()->fatal("Unable to load the application language file for the selected language ($language) or the default language ($default_language) or the en_us language");
         return null;
     }
 
@@ -278,7 +289,7 @@ function return_app_list_strings_language($language, $scope = 'all') {
     $app_list_strings = $temp_app_list_strings;
 
     if($scope != 'all') {
-        sugar_cache_put($cache_key, $return_value);
+        SugarCache::sugar_cache_put($cache_key, $return_value);
     }
 
     return $return_value;
@@ -297,7 +308,7 @@ function _mergeCustomAppListStrings($file, $app_list_strings) {
     unset($app_list_strings);
     // FG - bug 45525 - $exemptDropdown array is defined (once) here, not inside the foreach
     //                  This way, language file can add items to save specific standard codelist from being overwritten
-    $exemptDropdowns = array();
+    $exemptDropdowns = [];
     include($file);
     if (!isset($app_list_strings) || !is_array($app_list_strings)) {
         return $app_list_strings_original;
@@ -324,20 +335,20 @@ function _mergeCustomAppListStrings($file, $app_list_strings) {
  * @return array lang strings
  */
 function return_application_language($language) {
-    global $app_strings, $sugar_config;
+    global $app_strings;
 
     $cache_key = 'app_strings.' . $language;
 
     // Check for cached value
-    $cache_entry = sugar_cache_retrieve($cache_key);
+    $cache_entry = SugarCache::sugar_cache_retrieve($cache_key);
     if (!empty($cache_entry)) {
         return $cache_entry;
     }
 
     $temp_app_strings = $app_strings;
-    $default_language = $sugar_config['default_language'];
+    $default_language = SpiceConfig::getInstance()->config['default_language'];
 
-    $langs = array();
+    $langs = [];
     if ($language != 'en_us') {
         $langs[] = 'en_us';
     }
@@ -347,53 +358,53 @@ function return_application_language($language) {
 
     $langs[] = $language;
 
-    $app_strings_array = array();
+    $app_strings_array = [];
 
     foreach ($langs as $lang) {
-        $app_strings = array();
+        $app_strings = [];
         if (file_exists("include/language/$lang.lang.php")) {
             include("include/language/$lang.lang.php");
-            $GLOBALS['log']->info("Found language file: $lang.lang.php");
+            LoggerManager::getLogger()->info("Found language file: $lang.lang.php");
         }
         if (file_exists("include/language/$lang.lang.override.php")) {
             include("include/language/$lang.lang.override.php");
-            $GLOBALS['log']->info("Found override language file: $lang.lang.override.php");
+            LoggerManager::getLogger()->info("Found override language file: $lang.lang.override.php");
         }
         if (file_exists("include/language/$lang.lang.php.override")) {
             include("include/language/$lang.lang.php.override");
-            $GLOBALS['log']->info("Found override language file: $lang.lang.php.override");
+            LoggerManager::getLogger()->info("Found override language file: $lang.lang.php.override");
         }
         if (file_exists("custom/application/Ext/Language/$lang.lang.ext.php")) {
             include("custom/application/Ext/Language/$lang.lang.ext.php");
-            $GLOBALS['log']->info("Found extended language file: $lang.lang.ext.php");
+            LoggerManager::getLogger()->info("Found extended language file: $lang.lang.ext.php");
         }
         if (file_exists("custom/include/language/$lang.lang.php")) {
             include("custom/include/language/$lang.lang.php");
-            $GLOBALS['log']->info("Found custom language file: $lang.lang.php");
+            LoggerManager::getLogger()->info("Found custom language file: $lang.lang.php");
         }
         // BEGIN syslanguages
         if (file_exists("custom/application/Ext/Language/$lang.override.ext.php")) {
             global $extlabels;
             include("custom/application/Ext/Language/$lang.override.ext.php");
             $app_strings = array_merge($app_strings, $extlabels);
-            $GLOBALS['log']->info("Found extended language file: $lang.override.ext.php");
+            LoggerManager::getLogger()->info("Found extended language file: $lang.override.ext.php");
         }
         //END syslanguages
         $app_strings_array[] = $app_strings;
     }
 
-    $app_strings = array();
+    $app_strings = [];
     foreach ($app_strings_array as $app_strings_item) {
         $app_strings = sugarLangArrayMerge($app_strings, $app_strings_item);
     }
 
     if (!isset($app_strings)) {
-        $GLOBALS['log']->fatal("Unable to load the application language strings");
+        LoggerManager::getLogger()->fatal("Unable to load the application language strings");
         return null;
     }
 
     // If we are in debug mode for translating, turn on the prefix now!
-    if (!empty($sugar_config['translation_string_prefix'])) {
+    if (!empty(SpiceConfig::getInstance()->config['translation_string_prefix'])) {
         foreach ($app_strings as $entry_key => $entry_value) {
             $app_strings[$entry_key] = $language . ' ' . $entry_value;
         }
@@ -410,7 +421,7 @@ function return_application_language($language) {
     $return_value = $app_strings;
     $app_strings = $temp_app_strings;
 
-    sugar_cache_put($cache_key, $return_value);
+    SugarCache::sugar_cache_put($cache_key, $return_value);
 
     return $return_value;
 }
@@ -474,52 +485,32 @@ function is_guid($guid) {
 /**
  * A temporary method of generating GUIDs of the correct format for our DB.
  * @return String contianing a GUID in the format: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+ * @deprecated moved to SpiceUtils
  *
  * Portions created by SugarCRM are Copyright (C) SugarCRM, Inc.
  * All Rights Reserved.
  * Contributor(s): ______________________________________..
  */
 function create_guid() {
-    $microTime = microtime();
-    list($a_dec, $a_sec) = explode(" ", $microTime);
-
-    $dec_hex = dechex($a_dec * 1000000);
-    $sec_hex = dechex($a_sec);
-
-    ensure_length($dec_hex, 5);
-    ensure_length($sec_hex, 6);
-
-    $guid = "";
-    $guid .= $dec_hex;
-    $guid .= create_guid_section(3);
-    $guid .= '-';
-    $guid .= create_guid_section(4);
-    $guid .= '-';
-    $guid .= create_guid_section(4);
-    $guid .= '-';
-    $guid .= create_guid_section(4);
-    $guid .= '-';
-    $guid .= $sec_hex;
-    $guid .= create_guid_section(6);
-
-    return $guid;
+    return SpiceUtils::createGuid();
 }
 
+/**
+ * @param $characters
+ * @return string
+ * @deprecated moved to SpiceUtils
+ */
 function create_guid_section($characters) {
-    $return = "";
-    for ($i = 0; $i < $characters; $i++) {
-        $return .= dechex(mt_rand(0, 15));
-    }
-    return $return;
+    return SpiceUtils::createGuidSection($characters);
 }
 
+/**
+ * @param $string
+ * @param $length
+ * @deprecated moved to SpiceUtils
+ */
 function ensure_length(&$string, $length) {
-    $strlen = strlen($string);
-    if ($strlen < $length) {
-        $string = str_pad($string, $length, "0");
-    } else if ($strlen > $length) {
-        $string = substr($string, 0, $length);
-    }
+    SpiceUtils::ensureLength($string, $length);
 }
 
 function microtime_diff($a, $b) {
@@ -621,9 +612,9 @@ function translate($string, $mod = '', $selectedValue = '') {
  * @param boolean $dieOnBadData true (default) if you want to die if bad data if found, false if not
  */
 function clean_string($str, $filter = "STANDARD", $dieOnBadData = true) {
-    global $sugar_config;
 
-    $filters = Array(
+
+    $filters = [
         "STANDARD" => '#[^A-Z0-9\-_\.\@]#i',
         "STANDARDSPACE" => '#[^A-Z0-9\-_\.\@\ ]#i',
         "FILE" => '#[^A-Z0-9\-_\.]#i',
@@ -634,14 +625,14 @@ function clean_string($str, $filter = "STANDARD", $dieOnBadData = true) {
         "UNIFIED_SEARCH" => "#[\\x00]#", /* cn: bug 3356 & 9236 - MBCS search strings */
         "AUTO_INCREMENT" => '#[^0-9\-,\ ]#i',
         "ALPHANUM" => '#[^A-Z0-9\-]#i',
-    );
+    ];
 
     if (preg_match($filters[$filter], $str)) {
-        if (isset($GLOBALS['log']) && is_object($GLOBALS['log'])) {
-            $GLOBALS['log']->fatal("SECURITY[$filter]: bad data passed in; string: {$str}");
+        if ((LoggerManager::getLogger()) ) {
+            LoggerManager::getLogger()->fatal("SECURITY[$filter]: bad data passed in; string: {$str}");
         }
         if ($dieOnBadData) {
-            die("Bad data passed in; <a href=\"{$sugar_config['site_url']}\">Return to Home</a>");
+            die("Bad data passed in;");
         }
         return false;
     } else {
@@ -653,26 +644,24 @@ function clean_string($str, $filter = "STANDARD", $dieOnBadData = true) {
 
 function securexss($value) {
     if (is_array($value)) {
-        $new = array();
+        $new = [];
         foreach ($value as $key => $val) {
             $new[$key] = securexss($val);
         }
         return $new;
     }
-    static $xss_cleanup = array("&quot;" => "&#38;", '"' => '&quot;', "'" => '&#039;', '<' => '&lt;', '>' => '&gt;');
-    $value = preg_replace(array('/javascript:/i', '/\0/'), array('java script:', ''), $value);
+    static $xss_cleanup = ["&quot;" => "&#38;", '"' => '&quot;', "'" => '&#039;', '<' => '&lt;', '>' => '&gt;'];
+    $value = preg_replace(['/javascript:/i', '/\0/'], ['java script:', ''], $value);
     $value = preg_replace('/javascript:/i', 'java script:', $value);
     return str_replace(array_keys($xss_cleanup), array_values($xss_cleanup), $value);
 }
 
-
-
 function set_register_value($category, $name, $value) {
-    return sugar_cache_put("{$category}:{$name}", $value);
+    return SugarCache::sugar_cache_put("{$category}:{$name}", $value);
 }
 
 function get_register_value($category, $name) {
-    return sugar_cache_retrieve("{$category}:{$name}");
+    return SugarCache::sugar_cache_retrieve("{$category}:{$name}");
 }
 
 function display_notice($msg = false) {
@@ -693,36 +682,33 @@ function sugar_cleanup($exit = false) {
     $called = true;
     set_include_path(realpath(dirname(__FILE__) . '/..') . PATH_SEPARATOR . get_include_path());
     chdir(realpath(dirname(__FILE__) . '/..'));
-    global $sugar_config;
-    require_once('include/utils/LogicHook.php');
-    LogicHook::initialize();
-    $GLOBALS['logic_hook']->call_custom_logic('', 'server_round_trip');
 
     //added this check to avoid errors during install.
-    if (empty($sugar_config['dbconfig'])) {
+    if (empty(SpiceConfig::getInstance()->config['dbconfig'])) {
         if ($exit)
             exit;
         else
             return;
     }
 
-    if (!class_exists('Tracker', true)) {
-        require_once 'modules/Trackers/Tracker.php';
-    }
-    Tracker::logPage();
+    // require_once('include/utils/LogicHook.php');
+    LogicHook::initialize();
+    $GLOBALS['logic_hook']->call_custom_logic('', 'server_round_trip');
+
+
+
+    // \SpiceCRM\modules\Trackers\Tracker::logPage();
     // Now write the cached tracker_queries
     if (!empty($GLOBALS['savePreferencesToDB']) && $GLOBALS['savePreferencesToDB']) {
-        if (isset($GLOBALS['current_user']) && $GLOBALS['current_user'] instanceOf User)
-            $GLOBALS['current_user']->savePreferencesToDB();
+        if (AuthenticationController::getInstance()->getCurrentUser() && AuthenticationController::getInstance()->getCurrentUser() instanceOf User)
+            AuthenticationController::getInstance()->getCurrentUser()->savePreferencesToDB();
     }
 
-    if (class_exists('DBManagerFactory')) {
         $db = DBManagerFactory::getInstance();
         $db->disconnect();
         if ($exit) {
             exit;
         }
-    }
 }
 
 register_shutdown_function('sugar_cleanup');
@@ -836,7 +822,7 @@ function StackTraceErrorHandler($errno, $errstr, $errfile, $errline, $errcontext
     }
 }
 
-if (isset($sugar_config['stack_trace_errors']) && $sugar_config['stack_trace_errors']) {
+if (isset(SpiceConfig::getInstance()->config['stack_trace_errors']) && SpiceConfig::getInstance()->config['stack_trace_errors']) {
     set_error_handler('StackTraceErrorHandler');
 }
 
@@ -902,7 +888,7 @@ function sugarLangArrayMerge($gimp, $dom) {
         foreach ($dom as $domKey => $domVal) {
             if (isset($gimp[$domKey])) {
                 if (is_array($domVal)) {
-                    $tempArr = array();
+                    $tempArr = [];
                     foreach ($domVal as $domArrKey => $domArrVal)
                         $tempArr[$domArrKey] = $domArrVal;
                     foreach ($gimp[$domKey] as $gimpArrKey => $gimpArrVal)
@@ -945,7 +931,7 @@ function sugarArrayMerge($gimp, $dom) {
         foreach ($dom as $domKey => $domVal) {
             if (array_key_exists($domKey, $gimp)) {
                 if (is_array($domVal)) {
-                    $tempArr = array();
+                    $tempArr = [];
                     foreach ($domVal as $domArrKey => $domArrVal)
                         $tempArr[$domArrKey] = $domArrVal;
                     foreach ($gimp[$domKey] as $gimpArrKey => $gimpArrVal)
@@ -1006,7 +992,7 @@ function can_start_session() {
 }
 
 function inDeveloperMode() {
-    return isset($GLOBALS['sugar_config']['developerMode']) && $GLOBALS['sugar_config']['developerMode'];
+    return isset(SpiceConfig::getInstance()->config['developerMode']) && SpiceConfig::getInstance()->config['developerMode'];
 }
 
 
@@ -1125,7 +1111,7 @@ function clean_sensitive_data($defs, $data) {
  * @return array
  */
 function getTypeDisplayList() {
-    return array('record_type_display', 'parent_type_display', 'record_type_display_notes');
+    return ['record_type_display', 'parent_type_display', 'record_type_display_notes'];
 }
 
 /**
@@ -1137,9 +1123,9 @@ function getTypeDisplayList() {
  * @return array $rels
  */
 function findRelationships($lhs_module, $rhs_module, $name = "", $type = "") {
-    global $db;
+    $db = DBManagerFactory::getInstance();
 
-    $rels = array();
+    $rels = [];
     // copied from Relationship module, but needed to modifiy, if there are more than one relationships of that combination
     $sql = "SELECT * FROM relationships
             WHERE deleted = 0
@@ -1180,7 +1166,7 @@ function create_date($year=null,$mnth=null,$day=null)
  */
 function createShorturl( $route, $active = 1 )
 {
-    global $db;
+    $db = DBManagerFactory::getInstance();
     $maxAttempts = 100000;
     $route = $db->quote( $route ); // prevent sql injection
     $active *= 1; // prevent sql injection
@@ -1199,7 +1185,7 @@ function createShorturl( $route, $active = 1 )
     } while( $db->getAffectedRowCount( $result ) === 0 and $attemptCounter < $maxAttempts );
 
     if ( $attemptCounter === $maxAttempts ) {
-        $GLOBALS['log']->fatal('Could not create short url, could not get any free key. Did '.$maxAttempts.' attempts. Last unsuccessful attempt with key "'.$key.'" (and GUID "'.$guid.'").');
+        LoggerManager::getLogger()->fatal('Could not create short url, could not get any free key. Did '.$maxAttempts.' attempts. Last unsuccessful attempt with key "'.$key.'" (and GUID "'.$guid.'").');
         return false;
     }
     else return $key;
@@ -1223,4 +1209,254 @@ function generateShorturlKey( $length = 6 ) {
         $key = $key . substr( $charBKT, rand() % strlen($charBKT), 1 );
     }
     return $key;
+}
+
+
+/**
+ * moved from currency.php
+ *
+ * ToDo: remove this in general!!
+ *
+ */
+
+/**
+ * currency_format_number
+ *
+ * This method is a wrapper designed exclusively for formatting currency values
+ * with the assumption that the method caller wants a currency formatted value
+ * matching his/her user preferences(if set) or the system configuration defaults
+ *(if user preferences are not defined).
+ *
+ * @param $amount The amount to be formatted
+ * @param $params Optional parameters(see @format_number)
+ * @return String representation of amount with formatting applied
+ */
+function currency_format_number($amount, $params = []) {
+    global $locale;
+    if(isset($params['round']) && is_int($params['round'])){
+        $real_round = $params['round'];
+    }else{
+        $real_round = $locale->getPrecedentPreference('default_currency_significant_digits');
+    }
+    if(isset($params['decimals']) && is_int($params['decimals'])){
+        $real_decimals = $params['decimals'];
+    }else{
+        $real_decimals = $locale->getPrecedentPreference('default_currency_significant_digits');
+    }
+    $real_round = $real_round == '' ? 0 : $real_round;
+    $real_decimals = $real_decimals == '' ? 0 : $real_decimals;
+
+    $showCurrencySymbol = $locale->getPrecedentPreference('default_currency_symbol') != '' ? true : false;
+    if($showCurrencySymbol && !isset($params['currency_symbol'])) {
+        $params["currency_symbol"] = true;
+    }
+    return format_number($amount, $real_round, $real_decimals, $params);
+
+}
+
+/**
+ * format_number(deprecated)
+ *
+ * This method accepts an amount and formats it given the user's preferences.
+ * Should the values set in the user preferences be invalid then it will
+ * apply the system wide Sugar configuration values.  Calls to
+ * getPrecendentPreference() method in Localization.php are made that
+ * handle this logic.
+ *
+ * Going forward with Sugar 4.5.0e+ implementations, users of this class should
+ * simple call this function with $amount parameter and leave it to the
+ * class to locate and apply the appropriate formatting.
+ *
+ * One of the problems is that there is considerable legacy code that is using
+ * this method for non currency formatting.  In other words, the format_number
+ * method may be called to just display a number like 1,000 formatted appropriately.
+ *
+ * Also, issues about responsibilities arise.  Currently the callers of this function
+ * are responsible for passing in the appropriate decimal and number rounding digits
+ * as well as parameters to control displaying the currency symbol or not.
+ *
+ * @param $amount The currency amount to apply formatting to
+ * @param $round Integer value for number of places to round to
+ * @param $decimals Integer value for number of decimals to round to
+ * @param $params Array of additional parameter values
+ *
+ *
+ * The following are passed in as an array of params:
+ *        boolean $params['currency_symbol'] - true to display currency symbol
+ *        boolean $params['convert'] - true to convert from USD dollar
+ *        boolean $params['percentage'] - true to display % sign
+ *        boolean $params['symbol_space'] - true to have space between currency symbol and amount
+ *        String  $params['symbol_override'] - string to over default currency symbol
+ *        String  $params['type'] - pass in 'pdf' for pdf currency symbol conversion
+ *        String  $params['currency_id'] - currency_id to retreive, defaults to current user
+ *        String  $params['human'] - formatting that truncates the first thousands and appends "k"
+ * @return String formatted currency value
+ * @see include/Localization/Localization.php
+ */
+function format_number($amount, $round = null, $decimals = null, $params = []) {
+    global $app_strings,  $locale;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
+    static $current_users_currency = null;
+    static $last_override_currency = null;
+    static $override_currency_id = null;
+    static $currency;
+
+    $seps = get_number_seperators();
+    $num_grp_sep = $seps[0];
+    $dec_sep = $seps[1];
+
+    // cn: bug 8522 - sig digits not honored in pdfs
+    if(is_null($decimals)) {
+        $decimals = $locale->getPrecision();
+    }
+    if(is_null($round)) {
+        $round = $locale->getPrecision();
+    }
+
+    // only create a currency object if we need it
+    if((!empty($params['currency_symbol']) && $params['currency_symbol']) ||
+        (!empty($params['convert']) && $params['convert']) ||
+        (!empty($params['currency_id']))) {
+        // if we have an override currency_id
+        if(!empty($params['currency_id'])) {
+            if($override_currency_id != $params['currency_id']) {
+                $override_currency_id = $params['currency_id'];
+                $currency = BeanFactory::getBean('Currencies');
+                $currency->retrieve($override_currency_id);
+                $last_override_currency = $currency;
+            } else {
+                $currency = $last_override_currency;
+            }
+
+        } elseif(!isset($current_users_currency)) { // else use current user's
+            $current_users_currency = BeanFactory::getBean('Currencies');
+            if($current_user->getPreference('currency')) $current_users_currency->retrieve($current_user->getPreference('currency'));
+            else $current_users_currency->retrieve('-99'); // use default if none set
+            $currency = $current_users_currency;
+        }
+    }
+    if(!empty($params['convert']) && $params['convert']) {
+        $amount = $currency->convertFromDollar($amount, 6);
+    }
+
+    if(!empty($params['currency_symbol']) && $params['currency_symbol']) {
+        if(!empty($params['symbol_override'])) {
+            $symbol = $params['symbol_override'];
+        }
+        elseif(!empty($params['type']) && $params['type'] == 'pdf') {
+            $symbol = $currency->getPdfCurrencySymbol();
+            $symbol_space = false;
+        } else {
+            if(empty($currency->symbol))
+                $symbol = $currency->getDefaultCurrencySymbol();
+            else
+                $symbol = $currency->symbol;
+            $symbol_space = true;
+        }
+    } else {
+        $symbol = '';
+    }
+
+    if(isset($params['charset_convert'])) {
+        $symbol = $locale->translateCharset($symbol, 'UTF-8', $locale->getExportCharset());
+    }
+
+    if(empty($params['human'])) {
+        $amount = number_format(round($amount, $round), $decimals, $dec_sep, $num_grp_sep);
+        $amount = format_place_symbol($amount, $symbol,(empty($params['symbol_space']) ? false : true));
+    } else {
+        // If amount is more greater than a thousand(positive or negative)
+        if(strpos($amount, '.') > 0) {
+            $checkAmount = strlen(substr($amount, 0, strpos($amount, '.')));
+        }
+
+        if($checkAmount >= 1000 || $checkAmount <= -1000) {
+            $amount = round(($amount / 1000), 0);
+            $amount = number_format($amount, 0, $dec_sep, $num_grp_sep); // add for SI bug 52498
+            $amount = $amount . 'k';
+            $amount = format_place_symbol($amount, $symbol,(empty($params['symbol_space']) ? false : true));
+        } else {
+            $amount = format_place_symbol($amount, $symbol,(empty($params['symbol_space']) ? false : true));
+        }
+    }
+
+    if(!empty($params['percentage']) && $params['percentage']) $amount .= $app_strings['LBL_PERCENTAGE_SYMBOL'];
+    return $amount;
+
+} //end function format_number
+
+
+/**
+ * @param $amount
+ * @param $symbol
+ * @param $symbol_space
+ * @param string $symbol_position : added in Winter release 2017
+ * @return string
+ */
+function format_place_symbol($amount, $symbol, $symbol_space, $symbol_position = 'left') {
+    if($symbol != '') {
+        //get symbol_position from sugar_config
+        if (isset(SpiceConfig::getInstance()->config['default_currency_symbol_position']))
+            $symbol_position = SpiceConfig::getInstance()->config['default_currency_symbol_position'];
+
+        switch ($symbol_position) {
+            case 'right':
+                if ($symbol_space == true) {
+                    $amount = $amount . ( function_exists('mb_chr') ? mb_chr(160):' ' ) . $symbol; # mb_chr() exists from PHP 7.2, 160 ... No-Break Space (nbsp)
+                } else {
+                    $amount = $amount . $symbol;
+                }
+                break;
+            default:
+                if ($symbol_space == true) {
+                    $amount = $symbol . ( function_exists('mb_chr') ? mb_chr(160):' ' ) . $amount; # mb_chr() exists from PHP 7.2, 160 ... No-Break Space (nbsp)
+                } else {
+                    $amount = $symbol . $amount;
+                }
+        }
+    }
+    return $amount;
+}
+
+
+/**
+ * Returns user/system preference for number grouping separator character(default ",") and the decimal separator
+ *(default ".").  Special case: when num_grp_sep is ".", it will return NULL as the num_grp_sep.
+ * @return array Two element array, first item is num_grp_sep, 2nd item is dec_sep
+ */
+function get_number_seperators($reset_sep = false)
+{
+    $current_user = AuthenticationController::getInstance()->getCurrentUser();
+
+    static $dec_sep = null;
+    static $num_grp_sep = null;
+
+    // This is typically only used during unit-tests
+    // TODO: refactor this. unit tests should not have static dependencies
+    if ($reset_sep)
+    {
+        $dec_sep = $num_grp_sep = null;
+    }
+
+    if ($dec_sep == null)
+    {
+        $dec_sep = SpiceConfig::getInstance()->config['default_decimal_seperator'];
+        if (!empty($current_user->id))
+        {
+            $user_dec_sep = $current_user->getPreference('dec_sep');
+            $dec_sep = (empty($user_dec_sep) ? SpiceConfig::getInstance()->config['default_decimal_seperator'] : $user_dec_sep);
+        }
+    }
+
+    if ($num_grp_sep == null)
+    {
+        $num_grp_sep = SpiceConfig::getInstance()->config['default_number_grouping_seperator'];
+        if (!empty($current_user->id))
+        {
+            $user_num_grp_sep = $current_user->getPreference('num_grp_sep');
+            $num_grp_sep = (empty($user_num_grp_sep) ? SpiceConfig::getInstance()->config['default_number_grouping_seperator'] : $user_num_grp_sep);
+        }
+    }
+
+    return [$num_grp_sep, $dec_sep];
 }

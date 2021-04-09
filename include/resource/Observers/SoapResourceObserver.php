@@ -70,7 +70,7 @@ $error = new SoapError();
 $error->set_error('resource_management_error');
 //Override the description
 $error->description = $msg;
-$this->soapServer->methodreturn = array('result'=>$msg, 'error'=>$error->get_soap_array());
+$this->soapServer->methodreturn = ['result'=>$msg, 'error'=>$error->get_soap_array()];
 $this->soapServer->serialize_return();	
 $this->soapServer->send_response();
 sugar_cleanup(true);

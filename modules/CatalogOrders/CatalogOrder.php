@@ -1,4 +1,13 @@
 <?php
+namespace SpiceCRM\modules\CatalogOrders;
+
+use Exception;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+use SpiceCRM\includes\SpiceNumberRanges\SpiceNumberRanges;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 class CatalogOrder extends SugarBean
 {
@@ -52,10 +61,10 @@ class CatalogOrder extends SugarBean
 
     public function save($check_notify = false)
     {
-        global $sugar_config;
+        
 
         if(empty($this->name) || $this->new_with_id === true){
-            $this->name = \SpiceCRM\includes\SpiceNumberRanges\SpiceNumberRanges::getNextNumberForField('CatalogOrders', 'name');
+            $this->name = SpiceNumberRanges::getNextNumberForField('CatalogOrders', 'name');
 
             //if linked to an inquiry, close it!
             $this->closeRelatedInquiry();
@@ -125,7 +134,7 @@ class CatalogOrder extends SugarBean
      * @return string
      */
     public function currentDate(){
-        $now = new DateTime();
+        $now = new \DateTime();
         return $now->format("d.m.Y");
     }
 
@@ -153,18 +162,18 @@ class CatalogOrder extends SugarBean
             $result = $email->sendEmail();
             //todo: check result???
         }
-        catch(\Exception $e){
-            $GLOBALS['log']->error("Error while sending CatalogOrder as Email: ".$e->getMessage());
+        catch(Exception $e){
+            LoggerManager::getLogger()->error("Error while sending CatalogOrder as Email: ".$e->getMessage());
         }
         return $result;
     }
 
     public function toEmail($tmpl_id = null)
     {
-        global $sugar_config;
+        
 
         if(!$tmpl_id)
-            $tmpl_id = $sugar_config['catalogorders']['email_templ_id'];
+            $tmpl_id = SpiceConfig::getInstance()->config['catalogorders']['email_templ_id'];
 
         // load the consumer
         $contact = $this->get_linked_beans('contact', 'Contact')[0];
@@ -173,10 +182,10 @@ class CatalogOrder extends SugarBean
 
         // check if we have a language specific template set
         /*
-        if($contact->language && $sugar_config['catalogorders']['email_templ_id_'.$contact->language])
-            $tmpl_id = $sugar_config['catalogorders']['email_templ_id_'.$contact->language];
+        if($contact->language && \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['catalogorders']['email_templ_id_'.$contact->language])
+            $tmpl_id = \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['catalogorders']['email_templ_id_'.$contact->language];
         */
-        $con_templ_id = $sugar_config['catalogorders']['email_templ_id_'.$contact->language];
+        $con_templ_id = SpiceConfig::getInstance()->config['catalogorders']['email_templ_id_'.$contact->language];
         if($con_templ_id)
             $tmpl_id = $con_templ_id;
 
@@ -205,7 +214,7 @@ class CatalogOrder extends SugarBean
 
     public function toSpiceAttachment()
     {
-        global $sugar_config;
+        
         $otempl = BeanFactory::getBean('OutputTemplates',$this->outputtemplate_id);
         if($otempl->id != $this->outputtemplate_id)
             return false;
@@ -218,12 +227,12 @@ class CatalogOrder extends SugarBean
             'filemimetype' => 'application/pdf'
         ];
 
-        return \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveAttachmentHashFiles($this->module_dir, $this->id, $file);
+        return SpiceAttachments::saveAttachmentHashFiles($this->module_dir, $this->id, $file);
     }
 
     public function getSpiceAttachment()
     {
-        $attachments = \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::getAttachmentsForBean($this->module_dir, $this->id, 1, false);
+        $attachments = SpiceAttachments::getAttachmentsForBean($this->module_dir, $this->id, 1, false);
         return (object) $attachments[0];
     }
 }

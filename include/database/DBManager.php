@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,6 +33,14 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\includes\database;
+
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\resource\ResourceManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 /*********************************************************************************
 
@@ -138,43 +145,32 @@ abstract class DBManager
 	/**
 	 * Array of prepared statements and their correspoding parsed tokens
 	 */
-	protected $preparedTokens = array();
+	protected $preparedTokens = [];
 
-	/**
-	 * TimeDate instance
-	 * @var TimeDate
-	 */
-	protected $timedate;
-
-	/**
-	 * PHP Logger
-	 * @var Logger
-	 */
-	protected $log;
 
 	/**
 	 * Table descriptions
 	 * @var array
 	 */
-	protected static $table_descriptions = array();
+	protected static $table_descriptions = [];
 
 	/**
 	 * Index descriptions
 	 * @var array
 	 */
-	protected static $index_descriptions = array();
+	protected static $index_descriptions = [];
 
 	/**
 	 * Maximum length of identifiers
 	 * @abstract
 	 * @var array
 	 */
-	protected $maxNameLengths = array(
+	protected $maxNameLengths = [
 		'table' => 64,
 		'column' => 64,
 		'index' => 64,
 		'alias' => 64
-	);
+	];
 
 	/**
 	 * DB driver priority
@@ -195,7 +191,7 @@ abstract class DBManager
 	 * @abstract
 	 * @var array
 	 */
-	protected $type_map = array();
+	protected $type_map = [];
 
 	/**
 	 * Type classification into:
@@ -206,7 +202,7 @@ abstract class DBManager
 	 * @abstract
 	 * @var array
 	 */
-	protected $type_class = array(
+	protected $type_class = [
 			'int'      => 'int',
 			'double'   => 'float',
 			'float'    => 'float',
@@ -223,7 +219,7 @@ abstract class DBManager
 			'currency' => 'float',
 			'decimal'  => 'float',
 			'decimal2' => 'float',
-	);
+	];
 
 	/**
 	 * Capabilities this DB supports. Supported list:
@@ -246,22 +242,28 @@ abstract class DBManager
 	 * fix:expandDatabase - needs expandDatabase fix, see expandDatabase.php
 	 * TODO: verify if we need these cases
 	 */
-	protected $capabilities = array();
+	protected $capabilities = [];
 
 	/**
 	 * Database options
 	 * @var array
 	 */
-	protected $options = array();
+	protected $options = [];
+
+    /**
+     * a handler to the logger
+     * @var
+     */
+    public $log;
 
     /**
      * Create DB Driver
      */
 	public function __construct()
 	{
-		$this->timedate = TimeDate::getInstance();
-		$this->log = $GLOBALS['log'];
+
 		$this->helper = $this; // compatibility
+        $this->log = LoggerManager::getLogger();
 	}
 
     /**
@@ -271,7 +273,7 @@ abstract class DBManager
      */
 	public function __get($p)
 	{
-		$this->log->info('Call to DBManager::$'.$p.' is deprecated');
+		LoggerManager::getLogger()->info('Call to DBManager::$'.$p.' is deprecated');
 		return $this->$p;
 	}
 
@@ -336,7 +338,7 @@ abstract class DBManager
 			if(empty($message)) {
 			    $message = "Database error";
 			}
-			$this->log->fatal($message);
+			LoggerManager::getLogger()->fatal($message);
 			if ($dieOnError || $this->dieOnError) {
 				if(isset($GLOBALS['app_strings']['ERR_DB_FAIL'])) {
 					sugar_die($GLOBALS['app_strings']['ERR_DB_FAIL']);
@@ -369,17 +371,17 @@ abstract class DBManager
 	 */
 	protected function dump_slow_queries($query)
 	{
-		global $sugar_config;
+		
 
-		$do_the_dump = isset($sugar_config['dump_slow_queries'])
-			? $sugar_config['dump_slow_queries'] : false;
-		$slow_query_time_msec = isset($sugar_config['slow_query_time_msec'])
-			? $sugar_config['slow_query_time_msec'] : 5000;
+		$do_the_dump = isset(SpiceConfig::getInstance()->config['dump_slow_queries'])
+			? SpiceConfig::getInstance()->config['dump_slow_queries'] : false;
+		$slow_query_time_msec = isset(SpiceConfig::getInstance()->config['slow_query_time_msec'])
+			? SpiceConfig::getInstance()->config['slow_query_time_msec'] : 5000;
 
 		if($do_the_dump) {
 			if($slow_query_time_msec < ($this->query_time * 1000)) {
 				// Then log both the query and the query time
-				$this->log->fatal('Slow Query (time:'.$this->query_time."\n".$query);
+				LoggerManager::getLogger()->fatal('Slow Query (time:'.$this->query_time."\n".$query);
 				return true;
 			}
 		}
@@ -397,7 +399,7 @@ abstract class DBManager
 	*/
 protected function checkQuery($sql, $object_name = false)
 {
-	$match = array();
+	$match = [];
 	preg_match_all("'.* FROM ([^ ]*).* ORDER BY (.*)'is", $sql, $match);
 	$indices = false;
 	if (!empty($match[1][0]))
@@ -417,7 +419,7 @@ protected function checkQuery($sql, $object_name = false)
 		}
 	}
 	if (empty($indices)) {
-		$this->log->warn('CHECK QUERY: Could not find index definitions for table ' . $table);
+		LoggerManager::getLogger()->warn('CHECK QUERY: Could not find index definitions for table ' . $table);
 		return false;
 	}
 	if (!empty($match[2][0])) {
@@ -430,7 +432,7 @@ protected function checkQuery($sql, $object_name = false)
 			if ($orderBy == 'asc' || $orderBy == 'desc')
 				continue;
 
-			$orderBy = str_replace(array($table . '.', ','), '', $orderBy);
+			$orderBy = str_replace([$table . '.', ','], '', $orderBy);
 
 			foreach ($indices as $index)
 				if (empty($index['db']) || $index['db'] == $this->dbType)
@@ -439,10 +441,10 @@ protected function checkQuery($sql, $object_name = false)
 							return true;
 
 			$warning = 'Missing Index For Order By Table: ' . $table . ' Order By:' . $orderBy ;
-			if (!empty($GLOBALS['sugar_config']['dump_slow_queries']))
-				$this->log->fatal('CHECK QUERY:' .$warning);
+			if (!empty(SpiceConfig::getInstance()->config['dump_slow_queries']))
+				LoggerManager::getLogger()->fatal('CHECK QUERY:' .$warning);
 			else
-				$this->log->warn('CHECK QUERY:' .$warning);
+				LoggerManager::getLogger()->warn('CHECK QUERY:' .$warning);
 		}
 	}
 	return false;
@@ -499,7 +501,8 @@ protected function checkQuery($sql, $object_name = false)
      * created by sebastian franz
      * @param string $table the table name
      * @param array $data key/value pairs
-     * @return bool query result
+     * @param bool $execute boolean execute the query on true, return the query on false
+     * @return mixed string | query result
      */
 	public function insertQuery($table, array $data, $execute = true)
     {
@@ -509,10 +512,8 @@ protected function checkQuery($sql, $object_name = false)
         foreach($dictionary as $dictionaryName => $dictionaryDefs){
             if($dictionaryDefs['table'] == $table){
                 return $this->insertParams($table, $dictionaryDefs['fields'], $data, null, $execute);
-                break;
             }
         }
-
         return $data['id'];
     }
 
@@ -547,28 +548,33 @@ protected function checkQuery($sql, $object_name = false)
      * @param array $pks key/value pairs of primary/unique keys
      * @param array $data key/values of fields to update
      * @return mixed query result, could be an id (if inserted) or boolean (if updated)
-     * @throws Exception if queries failing
+     */
+    /**
+     * @see DBManager::upsertQuery()
      */
     public function upsertQuery($table, array $pks, array $data)
     {
-        try {
-            $id = $this->insertQuery($table, $data);
-            if ($id)
-                return $id;
-        } catch(Exception $e) {
-            $result = $this->updateQuery($table, $pks, $data);
-            if( $result )
-                return $result;
-            else
-                throw new Exception($this->last_error);
+
+        $query = $this->query("SELECT id FROM " . $table . " WHERE id = '" . $pks['id'] . "'");
+        while ($row = $this->fetchByAssoc($query)) {
+            $id = $row['id'];
+        }
+
+        if (!empty($id)) {
+            foreach ($data as $col => $val) {
+                $sets[] = "$col = '{$this->quote($val)}'";
+            }
+            $this->query("UPDATE " . $table . " SET " . implode(',', $sets) . " WHERE id = '" . $pks['id'] . "'");
+        } else {
+            $this->insertQuery($table, $data);
         }
     }
 
     /**
      * custom function, to generically hard delete records from db according to a where close
      * @param string $table the table name
-     * @param array|string $data key/value pairs
      * @param array $where key/value pairs for where clause
+     * @param bool $execute
      * @return mixed bool|string
      */
     public function deleteQuery($table, $where, $execute = true)
@@ -577,20 +583,34 @@ protected function checkQuery($sql, $object_name = false)
         return $result;
     }
 
+    /**
+     * deletes all records from a table
+     * @param $table
+     * @param bool $execute
+     * @return bool query result | false
+     */
+    public function deleteAll($table, $execute = true)
+    {
+        if ($execute) {
+            return $this->query("DELETE FROM " . $table);
+        } else {
+            return false;
+        }
+    }
 
 
     /**
-	 * Insert data into table by parameter definition
-	 * @param string $table Table name
-	 * @param array $field_defs Definitions in vardef-like format
-	 * @param array $data Key/value to insert
-	 * @param array $field_map Fields map from SugarBean
-	 * @param bool $execute Execute or return query?
+     * Insert data into table by parameter definition
+     * @param string $table Table name
+     * @param array $field_defs Definitions in vardef-like format
+     * @param array $data Key/value to insert
+     * @param array $field_map Fields map from SugarBean
+     * @param bool $execute Execute or return query?
      * @return bool query result
      */
 	public function insertParams($table, $field_defs, $data, $field_map = null, $execute = true)
 	{
-		$values = array();
+		$values = [];
 		foreach ($field_defs as $field => $fieldDef)
 		{
 			if (isset($fieldDef['source']) && $fieldDef['source'] != 'db')  continue;
@@ -667,7 +687,7 @@ protected function checkQuery($sql, $object_name = false)
      * @return bool query result
      *
      */
-	public function update(SugarBean $bean, array $where = array())
+	public function update(SugarBean $bean, array $where = [])
 	{
 		$sql = $this->updateSQL($bean, $where);
 		$tablename = $bean->getTableName();
@@ -684,7 +704,7 @@ protected function checkQuery($sql, $object_name = false)
      * If where is not passed, it defaults to id of table
      * @return bool query result
      */
-	public function delete(SugarBean $bean, array $where = array())
+	public function delete(SugarBean $bean, array $where = [])
 	{
 		$sql = $this->deleteSQL($bean, $where);
 		$tableName = $bean->getTableName();
@@ -702,7 +722,7 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param  array    $where values with the keys as names of fields.
 	 * @return resource result from the query
 	 */
-	public function retrieve(SugarBean $bean, array $where = array())
+	public function retrieve(SugarBean $bean, array $where = [])
 	{
 		$sql = $this->retrieveSQL($bean, $where);
 		$tableName = $bean->getTableName();
@@ -726,7 +746,7 @@ protected function checkQuery($sql, $object_name = false)
 	 * If where is not passed, all the rows will be returned.
 	 * @return resource
 	 */
-	public function retrieveView(array $beans, array $cols = array(), array $where = array())
+	public function retrieveView(array $beans, array $cols = [], array $where = [])
 	{
 		$sql = $this->retrieveViewSQL($beans, $cols, $where);
 		$msg = "Error retriving values from View Collection:";
@@ -811,7 +831,7 @@ protected function checkQuery($sql, $object_name = false)
 		$tablename = $bean->getTableName();
 
 		//Clean the indexes to prevent duplicate definitions
-		$new_index = array();
+		$new_index = [];
 		foreach($indices as $ind_def){
 			$new_index[$ind_def['name']] = $ind_def;
 		}
@@ -838,7 +858,7 @@ protected function checkQuery($sql, $object_name = false)
     public function repairAuditTable($tablename, $fielddefs, $indices, $execute)
     {
         //Clean the indexes to prevent duplicate definitions
-        $new_index = array();
+        $new_index = [];
         foreach($indices as $ind_def){
             $new_index[$ind_def['name']] = $ind_def;
         }
@@ -894,7 +914,7 @@ protected function checkQuery($sql, $object_name = false)
 	{
         //jc: had a bug when running the repair if the tablename is blank the repair will
         //fail when it tries to create a repair table
-        if ($tablename == '' || empty($fielddefs) || $tablename == 'audit')
+        if ($tablename == '' || empty($fielddefs) || $tablename == 'audit' || $tablename == 'audit_template')
             return '';
 
         //if the table does not exist create it and we are done
@@ -1001,9 +1021,9 @@ protected function checkQuery($sql, $object_name = false)
 
 		// do index comparisons
 		$sql .=	"/* INDEXES */\n";
-		$correctedIndexs = array();
+		$correctedIndexs = [];
 
-        $compareIndices_case_insensitive = array();
+        $compareIndices_case_insensitive = [];
 
 		// do indices comparisons case-insensitive
 		foreach($compareIndices as $k => $value){
@@ -1029,51 +1049,34 @@ protected function checkQuery($sql, $object_name = false)
                 continue;
 
             //don't bother checking primary nothing we can do about them
-			if (isset($value['type']) && $value['type'] == 'primary')
-				continue;
+            if (isset($value['type']) && $value['type'] == 'primary')
+                continue;
 
-			//database helpers do not know how to handle full text indices
-			if ($value['type']=='fulltext')
-				continue;
+            //database helpers do not know how to handle full text indices
+            if ($value['type'] == 'fulltext')
+                continue;
 
-			if ( in_array($value['type'],array('alternate_key','foreign')) )
-				$value['type'] = 'index';
+            if (in_array($value['type'], ['alternate_key', 'foreign']))
+                $value['type'] = 'index';
 
-			if ( !isset($compareIndices[$name]) ) {
-				//First check if an index exists that doesn't match our name, if so, try to rename it
-				$found = false;
-				foreach ($compareIndices as $ex_name => $ex_value) {
-					if($this->compareVarDefs($ex_value, $value, true)) {
-						$found = $ex_name;
-						break;
-					}
-				}
-				if ($found) {
-//					$sql .=	 "/*MISSNAMED INDEX IN DATABASE - $name - $ex_name */\n";
-//					$rename = $this->renameIndexDefs($ex_value, $value, $tablename);
-//					if($execute) {
-//						$this->query($rename, true, "Cannot rename index");
-//					}
-//					$sql .= is_array($rename)?join("\n", $rename). "\n":$rename."\n";
+            if (!in_array($name, array_keys($compareIndices))) {
+                $sql .= "/*MISSING INDEX IN DATABASE - $name -{$value['type']}  ROW */\n";
+                $sql .= $this->addIndexes($tablename, [$value], $execute) . "\n";
 
-                } else {
-					// ok we need this field lets create it
-					$sql .=	 "/*MISSING INDEX IN DATABASE - $name -{$value['type']}  ROW */\n";
-					$sql .= $this->addIndexes($tablename,array($value), $execute) .  "\n";
-				}
-				$take_action = true;
-				$correctedIndexs[$name] = true;
-			} elseif ( !$this->compareVarDefs($compareIndices[$name],$value) ) {
-				// fields are different lets alter it
-				$sql .=	"/*INDEX MISMATCH WITH DATABASE - $name -  ROW ";
-				foreach ($compareIndices[$name] as $n1 => $t1) {
-					$sql .=	 "<$n1>";
-					if ( $n1 == 'fields' )
-						foreach($t1 as $rKey => $rValue)
-							$sql .= "[$rKey] => '$rValue'  ";
-					else
-						$sql .= " $t1 ";
-				}
+                $take_action = true;
+                $correctedIndexs[$name] = true;
+
+            } elseif (!$this->compareVarDefs($compareIndices[$name], $value)) {
+                // fields are different lets alter it
+                $sql .= "/*INDEX MISMATCH WITH DATABASE - $name -  ROW ";
+                foreach ($compareIndices[$name] as $n1 => $t1) {
+                    $sql .= "<$n1>";
+                    if ($n1 == 'fields')
+                        foreach ($t1 as $rKey => $rValue)
+                            $sql .= "[$rKey] => '$rValue'  ";
+                    else
+                        $sql .= " $t1 ";
+                }
 				$sql .=	"*/\n";
 				$sql .=	"/* VARDEF - $name -  ROW";
 				foreach ($value as $n1 => $t1) {
@@ -1085,7 +1088,7 @@ protected function checkQuery($sql, $object_name = false)
 						$sql .= " $t1 ";
 				}
 				$sql .=	"*/\n";
-				$sql .= $this->modifyIndexes($tablename,array($value), $execute) .  ";\n";
+				$sql .= $this->modifyIndexes($tablename,[$value], $execute) .  ";\n";
 				$take_action = true;
 				$correctedIndexs[$name] = true;
 			}
@@ -1168,13 +1171,13 @@ protected function checkQuery($sql, $object_name = false)
 	{
 		$row1 = $this->describeField($name, $table1);
 		$row2 = $this->describeField($name, $table2);
-		$returnArray = array(
+		$returnArray = [
 			'table1' => $row1,
 			'table2' => $row2,
 			'msg'    => 'error',
-			);
+			];
 
-		$ignore_filter = array('Key'=>1);
+		$ignore_filter = ['Key'=>1];
 		if ($row1) {
 			if (!$row2) {
 				// Exists on table1 but not table2
@@ -1214,12 +1217,12 @@ protected function checkQuery($sql, $object_name = false)
 //    {
 //        $row1 = $this->describeIndex($name, $table1);
 //        $row2 = $this->describeIndex($name, $table2);
-//        $returnArray = array(
+//        $returnArray = [
 //            'table1' => $row1,
 //            'table2' => $row2,
 //            'msg'    => 'error',
 //            );
-//        $ignore_filter = array('Table'=>1, 'Seq_in_index'=>1,'Cardinality'=>1, 'Sub_part'=>1, 'Packed'=>1, 'Comment'=>1);
+//        $ignore_filter = ['Table'=>1, 'Seq_in_index'=>1,'Cardinality'=>1, 'Sub_part'=>1, 'Packed'=>1, 'Comment'=>1);
 //
 //        if ($row1) {
 //            if (!$row2) {
@@ -1276,9 +1279,9 @@ protected function checkQuery($sql, $object_name = false)
 	public function getConstraintSql($indices, $table)
 	{
 		if (!$this->isFieldArray($indices))
-			$indices = array($indices);
+			$indices = [$indices];
 
-		$columns = array();
+		$columns = [];
 
 		foreach ($indices as $index) {
 			if(!empty($index['db']) && $index['db'] != $this->dbType)
@@ -1330,7 +1333,7 @@ protected function checkQuery($sql, $object_name = false)
 	 */
 	public function dropIndexes($tablename, $indexes, $execute = true)
 	{
-		$sqls = array();
+		$sqls = [];
 		foreach ($indexes as $index) {
 			$name =$index['name'];
 			$sqls[$name] = $this->add_drop_constraint($tablename,$index,true);
@@ -1373,7 +1376,7 @@ protected function checkQuery($sql, $object_name = false)
 	{
 		$sql = $this->addColumnSQL($tablename, $fieldDefs);
 		if ($this->isFieldArray($fieldDefs)){
-			$columns = array();
+			$columns = [];
 			foreach ($fieldDefs as $fieldDef)
 				$columns[] = $fieldDef['name'];
 			$columns = implode(",", $columns);
@@ -1397,7 +1400,7 @@ protected function checkQuery($sql, $object_name = false)
 	{
 		$sql = $this->alterColumnSQL($tablename, $newFieldDef,$ignoreRequired);
 		if ($this->isFieldArray($newFieldDef)){
-			$columns = array();
+			$columns = [];
 			foreach ($newFieldDef as $fieldDef) {
 				$columns[] = $fieldDef['name'];
 			}
@@ -1468,8 +1471,8 @@ protected function checkQuery($sql, $object_name = false)
      */
 	public function generateInsertSQL(SugarBean $bean, $select_query, $start, $count = -1, $table, $is_related_query = false)
 	{
-		$this->log->info('call to DBManager::generateInsertSQL() is deprecated');
-		global $sugar_config;
+		LoggerManager::getLogger()->info('call to DBManager::generateInsertSQL() is deprecated');
+		
 
 		$rows_found = 0;
 		$count_query = $bean->create_list_count_query($select_query);
@@ -1484,7 +1487,7 @@ protected function checkQuery($sql, $object_name = false)
 			}
 		}
 		if($count == -1){
-			$count 	= $sugar_config['list_max_entries_per_page'];
+			$count 	= SpiceConfig::getInstance()->config['list_max_entries_per_page'];
 		}
 		$next_offset = $start + $count;
 
@@ -1497,7 +1500,7 @@ protected function checkQuery($sql, $object_name = false)
 		// get field definitions
 		$fields = $bean->getFieldDefinitions();
 // CR1000452
-//		$custom_fields = array();
+//		$custom_fields = [];
 
 //		if($bean->hasCustomFields()){
 //			foreach ($fields as $fieldDef){
@@ -1507,23 +1510,23 @@ protected function checkQuery($sql, $object_name = false)
 //			}
 //			if(!empty($custom_fields)){
 //				$custom_fields['id_c'] = 'id_c';
-//				$id_field = array('name' => 'id_c', 'custom_type' => 'id',);
+//				$id_field = ['name' => 'id_c', 'custom_type' => 'id',);
 //				$fields[] = $id_field;
 //			}
 //		}
 
 		// get column names and values
-		$row_array = array();
-		$columns = array();
+		$row_array = [];
+		$columns = [];
 // CR1000452
-//		$cstm_row_array = array();
-//		$cstm_columns = array();
+//		$cstm_row_array = [];
+//		$cstm_columns = [];
 		$built_columns = false;
 		while(($row = $this->fetchByAssoc($result)) != null)
 		{
-			$values = array();
+			$values = [];
 // CR1000452
-//			$cstm_values = array();
+//			$cstm_values = [];
 			if(!$is_related_query){
 				foreach ($fields as $fieldDef)
 				{
@@ -1554,15 +1557,15 @@ protected function checkQuery($sql, $object_name = false)
 							if(isset($type) && $type=='int') {
 // CR1000452
 //								if(!empty($custom_fields[$fieldDef['name']]))
-//									$cstm_values[$fieldDef['name']] = $GLOBALS['db']->quote(from_html($val));
+//									$cstm_values[$fieldDef['name']] = \SpiceCRM\includes\database\DBManagerFactory::getInstance()->quote(from_html($val));
 //								else
-									$values[$fieldDef['name']] = $GLOBALS['db']->quote(from_html($val));
+									$values[$fieldDef['name']] = DBManagerFactory::getInstance()->quote(from_html($val));
 							} else {
 // CR1000452
 //								if(!empty($custom_fields[$fieldDef['name']]))
-//									$cstm_values[$fieldDef['name']] = "'".$GLOBALS['db']->quote(from_html($val))."'";
+//									$cstm_values[$fieldDef['name']] = "'".\SpiceCRM\includes\database\DBManagerFactory::getInstance()->quote(from_html($val))."'";
 //								else
-									$values[$fieldDef['name']] = "'".$GLOBALS['db']->quote(from_html($val))."'";
+									$values[$fieldDef['name']] = "'". DBManagerFactory::getInstance()->quote(from_html($val))."'";
 							}
 						}
 						if(!$built_columns){
@@ -1619,7 +1622,7 @@ protected function checkQuery($sql, $object_name = false)
 //				$custom_sql .= ", ";
 //			}
 //		}
-		return array('data' => $sql, /* CR1000452 'cstm_sql' => $custom_sql,*/ /*'result_count' => $row_count, */ 'total_count' => $rows_found, 'next_offset' => $next_offset);
+		return ['data' => $sql, /* CR1000452 'cstm_sql' => $custom_sql,*/ /*'result_count' => $row_count, */ 'total_count' => $rows_found, 'next_offset' => $next_offset];
 	}
 
 	/**
@@ -1669,8 +1672,7 @@ protected function checkQuery($sql, $object_name = false)
 	public function countQuery()
 	{
 		if (self::$queryLimit != 0 && ++self::$queryCount > self::$queryLimit
-			&&(empty($GLOBALS['current_user']) || !is_admin($GLOBALS['current_user']))) {
-            require_once('include/resource/ResourceManager.php');
+			&&(empty(AuthenticationController::getInstance()->getCurrentUser()) || !is_admin(AuthenticationController::getInstance()->getCurrentUser()))) {
             $resourceManager = ResourceManager::getInstance();
             $resourceManager->notifyObservers('ERR_QUERY_LIMIT');
 		}
@@ -1778,7 +1780,7 @@ protected function checkQuery($sql, $object_name = false)
 	 */
 	public function getOne($sql, $dieOnError = false, $msg = '')
 	{
-		$this->log->info("Get One: |$sql|");
+		LoggerManager::getLogger()->info("Get One: |$sql|");
 		if(!$this->hasLimit($sql)) {
 		    $queryresult = $this->limitQuery($sql, 0, 1, $dieOnError, $msg);
 		} else {
@@ -1806,7 +1808,7 @@ protected function checkQuery($sql, $object_name = false)
 	 */
 	public function fetchOne($sql, $dieOnError = false, $msg = '', $suppress = false)
 	{
-		$this->log->info("Fetch One: |$sql|");
+		LoggerManager::getLogger()->info("Fetch One: |$sql|");
 		$this->checkConnection();
 		$queryresult = $this->query($sql, $dieOnError, $msg);
 		$this->checkError($msg.' Fetch One Failed:' . $sql, $dieOnError);
@@ -1879,7 +1881,7 @@ protected function checkQuery($sql, $object_name = false)
 		if(isset($table[$name]))
 		return $table[$name];
 
-		return array();
+		return [];
 	}
 
 	/**
@@ -1901,7 +1903,7 @@ protected function checkQuery($sql, $object_name = false)
 			return 	self::$index_descriptions[$tablename][$name];
 		}
 
-		return array();
+		return [];
 	}
 
     /**
@@ -1932,11 +1934,11 @@ protected function checkQuery($sql, $object_name = false)
 	public function concat($table, array $fields, $space = ' ')
 	{
 		if(empty($fields)) return '';
-		$elems = array();
+		$elems = [];
 		$space = $this->quoted($space);
 		foreach ( $fields as $field ) {
 			if(!empty($elems)) $elems[] = $space;
-			$elems[] = $this->convert("$table.$field", 'IFNULL', array("''"));
+			$elems[] = $this->convert("$table.$field", 'IFNULL', ["''"]);
 		}
 		$first = array_shift($elems);
 		return "LTRIM(RTRIM(".$this->convert($first, 'CONCAT', $elems)."))";
@@ -1978,7 +1980,7 @@ protected function checkQuery($sql, $object_name = false)
 			} // switch
 		} // foreach
 
-		$this->preparedTokens[] = array('tokens' => $tokens, 'tokenCount' => $count, 'sqlString' => $sqlStr);
+		$this->preparedTokens[] = ['tokens' => $tokens, 'tokenCount' => $count, 'sqlString' => $sqlStr];
 		end($this->preparedTokens);
 		return key($this->preparedTokens);
 	}
@@ -1990,11 +1992,11 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param  array    $data 		The array of data to replace the tokens with.
 	 * @return resource result set or false on error
 	 */
-	public function executePreparedQuery($stmt, $data = array())
+	public function executePreparedQuery($stmt, $data = [])
 	{
 		if(!empty($this->preparedTokens[$stmt])){
 			if(!is_array($data)){
-				$data = array($data);
+				$data = [$data];
 			}
 
 			$pTokens = $this->preparedTokens[$stmt];
@@ -2039,7 +2041,7 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param  array    $data 		The array of data to replace the tokens with.
 	 * @return resource result set or false on error
 	 */
-	public function pQuery($sql, $data = array())
+	public function pQuery($sql, $data = [])
 	{
 		$stmt = $this->prepareQuery($sql);
 		return $this->executePreparedQuery($stmt, $data);
@@ -2082,10 +2084,10 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param  array  $where Optional, where conditions in an array
 	 * @return string SQL Create Table statement
 	 */
-	public function updateSQL(SugarBean $bean, array $where = array())
+	public function updateSQL(SugarBean $bean, array $where = [])
 	{
 		$primaryField = $bean->getPrimaryFieldDefinition();
-		$columns = array();
+		$columns = [];
         $fields = $bean->getFieldDefinitions();
 		// get column names and values
 		foreach ($fields as $field => $fieldDef) {
@@ -2157,7 +2159,7 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param  array  $where Optional, where conditions in an array
 	 * @return array
 	 */
-	protected function updateWhereArray(SugarBean $bean, array $where = array())
+	protected function updateWhereArray(SugarBean $bean, array $where = [])
 	{
 		if (count($where) == 0) {
 			$fieldDef = $bean->getPrimaryFieldDefinition();
@@ -2182,14 +2184,14 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param  array  $whereArray Optional, where conditions in an array
 	 * @return string
 	 */
-	protected function getColumnWhereClause($table, array $whereArray = array())
+	protected function getColumnWhereClause($table, array $whereArray = [])
 	{
-		$where = array();
+		$where = [];
 		foreach ($whereArray as $name => $val) {
 			$op = "=";
 			if (is_array($val)) {
 				$op = "IN";
-				$temp = array();
+				$temp = [];
 				foreach ($val as $tval){
 					$temp[] = $this->quoted($tval);
 				}
@@ -2216,7 +2218,7 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param  array  $whereArray Optional, where conditions in an array
 	 * @return string
 	 */
-	protected function getWhereClause(SugarBean $bean, array $whereArray=array())
+	protected function getWhereClause(SugarBean $bean, array $whereArray=[])
 	{
 	    return " WHERE " . $this->getColumnWhereClause($bean->getTableName(), $whereArray);
 	}
@@ -2313,7 +2315,7 @@ protected function checkQuery($sql, $object_name = false)
 				$fieldDef['dbType'] = $fieldDef['type'];
 		}
 		$type = $this->getColumnType($fieldDef['dbType'],$fieldDef['name'],$tablename);
-		$matches = array();
+		$matches = [];
         // len can be a number or a string like 'max', for example, nvarchar(max)
         preg_match_all('/(\w+)(?:\(([0-9]+,?[0-9]*|\w+)\)|)/i', $type, $matches);
 		if ( isset($matches[1][0]) )
@@ -2339,7 +2341,7 @@ protected function checkQuery($sql, $object_name = false)
 			$selectStatement = trim(substr($selectStatement, 6));
 
 		//Due to sql functions existing in many selects, we can't use php explode
-		$fields = array();
+		$fields = [];
 		$level = 0;
 		$selectField = "";
 		$strLen = strlen($selectStatement);
@@ -2439,10 +2441,10 @@ protected function checkQuery($sql, $object_name = false)
      *
      * @return string SQL Select Statement
      */
-	public function retrieveViewSQL(array $beans, array $cols = array(), array $whereClause = array())
+	public function retrieveViewSQL(array $beans, array $cols = [], array $whereClause = [])
 	{
-		$relations = array(); // stores relations between tables as they are discovered
-		$where = $select = array();
+		$relations = []; // stores relations between tables as they are discovered
+		$where = $select = [];
 		foreach ($beans as $beanID => $bean) {
 			$tableName = $bean->getTableName();
 			$beanTables[$beanID] = $tableName;
@@ -2465,10 +2467,10 @@ protected function checkQuery($sql, $object_name = false)
 			$indices = $bean->getIndices();
 			foreach ($indices as $index){
 				if ($index['type'] == 'foreign') {
-					$relationship[$table][] = array('foreignTable'=> $index['foreignTable']
+					$relationship[$table][] = ['foreignTable'=> $index['foreignTable']
 												,'foreignColumn'=>$index['foreignField']
 												,'localColumn'=> $index['fields']
-												);
+												];
 				}
 			}
 			$where[] = " $table.deleted = 0";
@@ -2483,7 +2485,8 @@ protected function checkQuery($sql, $object_name = false)
 		// relations table define relations between table1 and table2 through column on table 1
 		// table2 is assumed to joining through primary key called id
 		$separator = "";
-		$from = ''; $table_used_in_from = array();
+		$from = '';
+		$table_used_in_from = [];
 		foreach ($relations as $table1 => $rightsidearray){
 			if ($table_used_in_from[$table1]) continue; // table has been joined
 
@@ -2523,7 +2526,7 @@ protected function checkQuery($sql, $object_name = false)
 	{
 		$unique = ($unique) ? "unique" : "";
 		$tablename = $bean->getTableName();
-		$columns = array();
+		$columns = [];
 		// get column names
 		foreach ($fields as $fieldDef)
 			$columns[] = $fieldDef['name'];
@@ -2573,7 +2576,7 @@ protected function checkQuery($sql, $object_name = false)
     {
         if(preg_match("#(?P<type>\w+)\s*(?P<arg>\((?P<len>\w+)\s*(,\s*(?P<scale>\d+))*\))*#", $type, $matches))
         {
-            $return = array();  // Not returning matches array as such as we don't want to expose the regex make up on the interface
+            $return = [];  // Not returning matches array as such as we don't want to expose the regex make up on the interface
             $return['baseType'] = $matches['type'];
             if( isset($matches['arg'])) {
                 $return['arg'] = $matches['arg'];
@@ -2612,8 +2615,8 @@ protected function checkQuery($sql, $object_name = false)
         }
 
         if(!empty($fieldDef['len'])) {
-            if (in_array($colBaseType, array( 'nvarchar', 'nchar', 'varchar', 'varchar2', 'char',
-                                          'clob', 'blob', 'text'))) {
+            if (in_array($colBaseType, [ 'nvarchar', 'nchar', 'varchar', 'varchar2', 'char',
+                                          'clob', 'blob', 'text'])) {
           	    $colType = "$colBaseType(${fieldDef['len']})";
             } elseif(($colBaseType == 'decimal' || $colBaseType == 'float')){
                   if(!empty($fieldDef['precision']) && is_numeric($fieldDef['precision']))
@@ -2626,7 +2629,7 @@ protected function checkQuery($sql, $object_name = false)
                           $colType = $colBaseType . "(".$fieldDef['len'].")";
               }
         } else {
-            if (in_array($colBaseType, array( 'nvarchar', 'nchar', 'varchar', 'varchar2', 'char'))) {
+            if (in_array($colBaseType, [ 'nvarchar', 'nchar', 'varchar', 'varchar2', 'char'])) {
                 $colType = "$colBaseType($defLen)";
             }
         }
@@ -2668,7 +2671,7 @@ protected function checkQuery($sql, $object_name = false)
 			$required = "";
 
 		if ( $return_as_array ) {
-			return array(
+			return [
 				'name' => $name,
 				'colType' => $colType,
                 'colBaseType' => $colBaseType,  // Adding base type for easier processing in derived classes
@@ -2676,7 +2679,7 @@ protected function checkQuery($sql, $object_name = false)
 				'required' => $required,
 				'auto_increment' => $auto_increment,
 				'full' => "$name $colType $default $required $auto_increment",
-				);
+				];
 		} else {
 			return "$name $colType $default $required $auto_increment";
 		}
@@ -2692,7 +2695,7 @@ protected function checkQuery($sql, $object_name = false)
 	 */
 	protected function columnSQLRep($fieldDefs, $ignoreRequired = false, $tablename)
 	{
-		$columns = array();
+		$columns = [];
 
 		if ($this->isFieldArray($fieldDefs)) {
 			foreach ($fieldDefs as $fieldDef) {
@@ -2829,6 +2832,17 @@ protected function checkQuery($sql, $object_name = false)
 		return "TRUNCATE $name";
 	}
 
+    /**
+     * @param $tablename
+     * @param bool $execute
+     * @return string
+     */
+    public function truncateQuery($tablename, $execute  = true)
+    {
+        $query = $this->truncateTableSQL($tablename);
+        return $execute ? $this->query($query, true) : $query;
+    }
+
 	/**
 	 * This method generates sql that deletes a column identified by fieldDef.
 	 *
@@ -2866,7 +2880,7 @@ protected function checkQuery($sql, $object_name = false)
 	public function getValidDBName($name, $ensureUnique = false, $type = 'column', $force = false)
 	{
 		if(is_array($name)) {
-			$result = array();
+			$result = [];
 			foreach($name as $field) {
 				$result[] = $this->getValidDBName($field, $ensureUnique, $type);
 			}
@@ -2956,13 +2970,14 @@ protected function checkQuery($sql, $object_name = false)
      */
 	protected function auditSQL(SugarBean $bean, $changes)
 	{
-        global $current_user, $dictionary;
+        global $dictionary;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
         $sql = "INSERT INTO " . $bean->get_audit_table_name();
         //get field defs for the audit table.
         require('metadata/audit_templateMetaData.php');
         $fieldDefs = $dictionary['audit']['fields'];
 
-        $values = array();
+        $values = [];
         $values['id'] = $this->massageValue(create_guid(), $fieldDefs['id']);
         // $values['transactionid']= $GLOBALS['transactionID'];
         $values['parent_id'] = $this->massageValue($bean->id, $fieldDefs['parent_id']);
@@ -3008,9 +3023,9 @@ protected function checkQuery($sql, $object_name = false)
      */
     public function getDataChanges(SugarBean &$bean, array $field_filter = null)
 	{
-        $changed_values=array();
+        $changed_values=[];
 
-        $fetched_row = array();
+        $fetched_row = [];
         if (is_array($bean->fetched_row))
         {
             $fetched_row = array_merge($bean->fetched_row, $bean->fetched_rel_row);
@@ -3060,8 +3075,8 @@ protected function checkQuery($sql, $object_name = false)
                         // Manual merge of fix 95727f2eed44852f1b6bce9a9eccbe065fe6249f from DBHelper
                         // This fix also fixes Bug #44624 in a more generic way and therefore eliminates the need for fix 0a55125b281c4bee87eb347709af462715f33d2d in DBHelper
                         if ($this->isNumericType($field_type)) {
-                            $numerator = abs(2*((trim($before_value)+0)-(trim($after_value)+0)));
-                            $denominator = abs(((trim($before_value)+0)+(trim($after_value)+0)));
+                            $numerator = abs(2*(($before_value+0)-($after_value+0)));
+                            $denominator = abs((($before_value+0)+($after_value+0)));
                             // detect whether to use absolute or relative error. use absolute if denominator is zero to avoid division by zero
                             $error = ($denominator == 0) ? $numerator : $numerator / $denominator;
                             if ($error >= 0.0000000001) {    // Smaller than 10E-10
@@ -3077,10 +3092,10 @@ protected function checkQuery($sql, $object_name = false)
                             $change = true;
                         }
                         if ($change) {
-                            $changed_values[$field]=array('field_name'=>$field,
+                            $changed_values[$field]=['field_name'=>$field,
                                 'data_type'=>$field_type,
                                 'before'=>$before_value,
-                                'after'=>$after_value);
+                                'after'=>$after_value];
                         }
                     }
                 }
@@ -3100,7 +3115,7 @@ protected function checkQuery($sql, $object_name = false)
      */
     public function getDataAuditedFirstLog(SugarBean &$bean)
     {
-        $changed_values=array();
+        $changed_values=[];
         $audit_fields=$bean->getAuditedFirstLogEnabledFieldDefinitions();
 
         $fieldDefs = $bean->getFieldDefinitions();
@@ -3138,10 +3153,10 @@ protected function checkQuery($sql, $object_name = false)
                                     2*((trim($before_value)+0)-(trim($after_value)+0))/((trim($before_value)+0)+(trim($after_value)+0)) // Using relative difference so that it also works for other numerical types besides currencies
                                 )<0.0000000001)) {    // Smaller than 10E-10
                                 if (!($this->isBooleanType($field_type) && ($this->_getBooleanValue($before_value)== $this->_getBooleanValue($after_value)))) {
-                                    $changed_values[$field]=array('field_name'=>$field,
+                                    $changed_values[$field]=['field_name'=>$field,
                                         'data_type'=>$field_type,
                                         'before'=>$before_value,
-                                        'after'=>$after_value);
+                                        'after'=>$after_value];
                                 }
                             }
                         }
@@ -3211,8 +3226,8 @@ protected function checkQuery($sql, $object_name = false)
      */
 	public function renameIndexDefs($old_definition, $new_definition, $table_name)
 	{
-		return array($this->add_drop_constraint($table_name,$old_definition,true),
-				$this->add_drop_constraint($table_name,$new_definition), false);
+		return [$this->add_drop_constraint($table_name,$old_definition,true),
+				$this->add_drop_constraint($table_name,$new_definition), false];
 	}
 
 	/**
@@ -3321,7 +3336,7 @@ protected function checkQuery($sql, $object_name = false)
 	public function orderByEnum($order_by, $values, $order_dir)
 	{
 		$i = 0;
-		$order_by_arr = array();
+		$order_by_arr = [];
 		foreach ($values as $key => $value) {
 			if($key == '') {
 				$order_by_arr[] = "WHEN ($order_by='' OR $order_by IS NULL) THEN $i";
@@ -3431,17 +3446,17 @@ protected function checkQuery($sql, $object_name = false)
 				$this->query("DELETE FROM temp WHERE id = '100000000000000000000000000000000000'");
 				break;
 			case "ADD COLUMN":
-				$test = array("test" => array("name" => "test", "type" => "varchar", "len" => 50));
+				$test = ["test" => ["name" => "test", "type" => "varchar", "len" => 50]];
 				$sql = 	$this->changeColumnSQL("temp", $test, "add");
 				$this->query($sql);
 				break;
 			case "CHANGE COLUMN":
-				$test = array("test" => array("name" => "test", "type" => "varchar", "len" => 100));
+				$test = ["test" => ["name" => "test", "type" => "varchar", "len" => 100]];
 				$sql = 	$this->changeColumnSQL("temp", $test, "modify");
 				$this->query($sql);
 				break;
 			case "DROP COLUMN":
-				$test = array("test" => array("name" => "test", "type" => "varchar", "len" => 100));
+				$test = ["test" => ["name" => "test", "type" => "varchar", "len" => 100]];
 				$sql = 	$this->changeColumnSQL("temp", $test, "drop");
 				$this->query($sql);
 				break;
@@ -3492,9 +3507,9 @@ protected function checkQuery($sql, $object_name = false)
 			}
 			$qterms = $m[1];
 		} else {
-			$qterms = array($query);
+			$qterms = [$query];
 		}
-		$terms = $must_terms = $not_terms = array();
+		$terms = $must_terms = $not_terms = [];
 		foreach($qterms as $item) {
 			if($item[0] == '"') {
 				$item = trim($item, '"');
@@ -3513,18 +3528,18 @@ protected function checkQuery($sql, $object_name = false)
 			}
 			$terms[] = $item;
 		}
-		return array($terms, $must_terms, $not_terms);
+		return [$terms, $must_terms, $not_terms];
 	}
 
     // Methods to check respective queries
-	protected $standardQueries = array(
+	protected $standardQueries = [
 		'ALTER TABLE' => 'verifyAlterTable',
 		'DROP TABLE' => 'verifyDropTable',
 		'CREATE TABLE' => 'verifyCreateTable',
 		'INSERT INTO' => 'verifyInsertInto',
 		'UPDATE' => 'verifyUpdate',
 		'DELETE FROM' => 'verifyDeleteFrom',
-	);
+	];
 
 
     /**
@@ -3556,15 +3571,15 @@ protected function checkQuery($sql, $object_name = false)
 		$query = trim($query);
 		foreach($this->standardQueries as $qstart => $check) {
 			if(strncasecmp($qstart, $query, strlen($qstart)) == 0) {
-				if(is_callable(array($this, $check))) {
+				if(is_callable([$this, $check])) {
 					$table = $this->extractTableName($query);
 					if(!in_array($table, $skipTables)) {
-						return call_user_func(array($this, $check), $table, $query);
+						return call_user_func([$this, $check], $table, $query);
 					} else {
-						$this->log->debug("Skipping table $table as blacklisted");
+						LoggerManager::getLogger()->debug("Skipping table $table as blacklisted");
 					}
 				} else {
-					$this->log->debug("No verification for $qstart on {$this->dbType}");
+					LoggerManager::getLogger()->debug("No verification for $qstart on {$this->dbType}");
 				}
 				break;
 			}
@@ -3580,10 +3595,10 @@ protected function checkQuery($sql, $object_name = false)
 	 */
 	protected function verifyCreateTable($table, $query)
 	{
-		$this->log->debug('verifying CREATE statement...');
+		LoggerManager::getLogger()->debug('verifying CREATE statement...');
 
 		// rewrite DDL with _temp name
-		$this->log->debug('testing query: ['.$query.']');
+		LoggerManager::getLogger()->debug('testing query: ['.$query.']');
 		$tempname = $table."__uw_temp";
 		$tempTableQuery = str_replace("CREATE TABLE {$table}", "CREATE TABLE $tempname", $query);
 
@@ -3599,7 +3614,7 @@ protected function checkQuery($sql, $object_name = false)
 		}
 
 		// check if table exists
-		$this->log->debug('testing for table: '.$table);
+		LoggerManager::getLogger()->debug('testing for table: '.$table);
 		if(!$this->tableExists($tempname)) {
 			return "Failed to create temp table!";
 		}
@@ -3640,7 +3655,7 @@ protected function checkQuery($sql, $object_name = false)
 
 	    if(is_int($encode) && func_num_args() == 3) {
 	        // old API: $result, $rowNum, $encode
-	        $GLOBALS['log']->deprecated("Using row number in fetchByAssoc is not portable and no longer supported. Please fix your code.");
+	        LoggerManager::getLogger()->deprecated("Using row number in fetchByAssoc is not portable and no longer supported. Please fix your code.");
 	        $encode = func_get_arg(2);
 	    }
 	    $row = $this->fetchRow($result);
@@ -3703,7 +3718,7 @@ protected function checkQuery($sql, $object_name = false)
 	 */
 	public function commit()
 	{
-		$this->log->info("DBManager.commit() stub");
+		LoggerManager::getLogger()->info("DBManager.commit() stub");
 		return true;
 	}
 
@@ -3716,7 +3731,7 @@ protected function checkQuery($sql, $object_name = false)
 	 */
 	public function rollback()
 	{
-		$this->log->info("DBManager.rollback() stub");
+		LoggerManager::getLogger()->info("DBManager.rollback() stub");
 		return false;
 	}
 
@@ -3810,7 +3825,7 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param array  $additional_parameters optional, additional parameters to pass to the db function
 	 * @return string
 	 */
-	abstract public function convert($string, $type, array $additional_parameters = array());
+	abstract public function convert($string, $type, array $additional_parameters = []);
 
 	/**
 	 * Converts from Database data to app data
@@ -4118,7 +4133,7 @@ protected function checkQuery($sql, $object_name = false)
 	 * @param array $must_terms Search terms that have to be in the result
 	 * @param array $exclude_terms Search terms that have to be not in the result
 	 */
-	abstract public function getFulltextQuery($field, $terms, $must_terms = array(), $exclude_terms = array());
+	abstract public function getFulltextQuery($field, $terms, $must_terms = [], $exclude_terms = []);
 
 	/**
 	 * Get install configuration for this DB

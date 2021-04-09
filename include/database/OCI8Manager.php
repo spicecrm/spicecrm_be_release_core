@@ -1,7 +1,38 @@
 <?php
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
+namespace SpiceCRM\includes\database;
 
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
+
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 /**
  * OCI8 driver
  */
@@ -43,17 +74,17 @@ class OCI8Manager extends DBManager
     public $label = 'LBL_ORACLE';
     protected $configOptions;
 // http://docs.oracle.com/cd/B19306_01/server.102/b14200/sql_elements008.htm#sthref723
-    protected $maxNameLengths = array(
+    protected $maxNameLengths = [
         'table' => 30,
         'column' => 30,
         'index' => 30,
         'alias' => 30
-    );
-    protected $date_formats = array(
+    ];
+    protected $date_formats = [
         '%Y-%m-%d' => 'YYYY-MM-DD',
         '%Y-%m' => 'YYYY-MM',
         '%Y' => 'YYYY',
-    );
+    ];
 
     /**
      * Capabilities this DB supports. Supported list:
@@ -76,15 +107,15 @@ class OCI8Manager extends DBManager
      * fix:expandDatabase - needs expandDatabase fix, see expandDatabase.php
      * TODO: verify if we need these cases
      */
-    protected $capabilities = array(
+    protected $capabilities = [
         "affected_rows" => true,
         "case_sensitive" => true,
         "fulltext" => true,
         "auto_increment_sequence" => true,
         'limit_subquery' => true,
         "recursive_query" => true,
-    );
-    protected $user_privileges = array(
+    ];
+    protected $user_privileges = [
         "CREATE TABLE" => "CREATE TABLE",
         "DROP TABLE" => "DROP ANY TABLE",
         "INSERT" => "INSERT ANY TABLE",
@@ -94,9 +125,9 @@ class OCI8Manager extends DBManager
         "ADD COLUMN" => "ALTER ANY TABLE",
         "CHANGE COLUMN" => "ALTER ANY TABLE",
         "DROP COLUMN" => "ALTER ANY TABLE",
-    );
+    ];
 // maybe this can help http://ss64.com/ora/syntax-datatypes.html
-    protected $type_map = array(
+    protected $type_map = [
         'int' => 'number',
         'double' => 'number(38,10)',
         'float' => 'number(30,6)',
@@ -129,7 +160,7 @@ class OCI8Manager extends DBManager
         'encrypt' => 'varchar2(255)',
         'file' => 'varchar2(255)',
         'decimal_tpl' => 'number(%d, %d)',
-    );
+    ];
 
 //--------------------------------------------------------------------------
 //   Extended the functionality of implemented functions in DB Manager
@@ -137,11 +168,6 @@ class OCI8Manager extends DBManager
 
     public function repairTableParams($tablename, $fielddefs, $indices, $execute = true, $engine = null)
     {
-        //Fix indices name length. It is not handled in DB Manager where it should be
-        foreach ($indices as $key => $value) {
-            $indices[$key]['name'] = $this->getValidDBName($value['name'], false, 'index', true);
-        }
-
         return parent::repairTableParams($tablename, $fielddefs, $indices, $execute, $engine);
     }
 
@@ -203,11 +229,11 @@ class OCI8Manager extends DBManager
         $version = $this->version();
 
         if (empty($version)) {
-            return array('ERR_DB_VERSION_FAILURE');
+            return ['ERR_DB_VERSION_FAILURE'];
         }
 
         if (version_compare($version, '9', '<')) {
-            return array('ERR_DB_OCI8_VERSION', $version);
+            return ['ERR_DB_OCI8_VERSION', $version];
         }
 
         return true;
@@ -231,7 +257,7 @@ class OCI8Manager extends DBManager
      *
      * @see DBManager::convert()
      */
-    public function convert($string, $type, array $additional_parameters = array())
+    public function convert($string, $type, array $additional_parameters = [])
     {
         if (!empty($additional_parameters)) {
             $additional_parameters_string = ',' . implode(',', $additional_parameters);
@@ -370,7 +396,7 @@ class OCI8Manager extends DBManager
         // write a global querytime
         $GLOBALS['totalquerytime'] += $this->query_time;
         if ($this->query_time > 1000)
-            $GLOBALS['log']->fatal('SLOW QUERY ' . $sql);
+            LoggerManager::getLogger()->fatal('SLOW QUERY ' . $sql);
 
         if (!$exec_result) {
             if (!empty($stmt)) {
@@ -442,7 +468,7 @@ class OCI8Manager extends DBManager
 				WHERE rnum >= " . $start;
         $this->lastsql = $sql;
 
-        if (!empty($GLOBALS['sugar_config']['check_query'])) {
+        if (!empty(SpiceConfig::getInstance()->config['check_query'])) {
             $this->checkQuery($sql);
         }
 
@@ -512,7 +538,7 @@ class OCI8Manager extends DBManager
 
         $result = $this->query($query);
 
-        $indices = array();
+        $indices = [];
         while ($row = $this->fetchRow($result)) {
             $name = strtolower($row['index_name']);
 
@@ -545,7 +571,7 @@ class OCI8Manager extends DBManager
         // http://ss64.com/orad/USER_TAB_COLUMNS.html
         $result = $this->query("SELECT * FROM user_tab_columns WHERE TABLE_NAME = '" . strtoupper($tablename) . "'");
 
-        $columns = array();
+        $columns = [];
         while ($row = $this->fetchRow($result)) {
             $name = strtolower($row['column_name']);
 
@@ -558,14 +584,14 @@ class OCI8Manager extends DBManager
                 if (!empty($row['data_scale'])) {
                     $columns[$name]['len'] .= ',' . $row['data_scale'];
                 }
-            } elseif (in_array($columns[$name]['type'], array('date', 'clob', 'blob'))) {
+            } elseif (in_array($columns[$name]['type'], ['date', 'clob', 'blob'])) {
                 // do nothing
             } else {
                 $columns[$name]['len'] = strtolower($row['char_length']);
             }
 
             if (!empty($row['data_default'])) {
-                $matches = array();
+                $matches = [];
                 $row['data_default'] = html_entity_decode($row['data_default'], ENT_QUOTES);
 
                 if (preg_match("/^'(.*)'$/i", $row['data_default'], $matches)) {
@@ -660,7 +686,7 @@ class OCI8Manager extends DBManager
 
     public function getFieldsArray($result, $make_lower_case = false)
     {
-        $field_array = array();
+        $field_array = [];
 
         $totalFields = oci_num_fields($result);
 
@@ -686,7 +712,7 @@ class OCI8Manager extends DBManager
     {
         $res = $this->query('SELECT TABLE_NAME FROM USER_TABLES ' . $where);
 
-        $tables = array();
+        $tables = [];
         while ($row = $this->fetchRow($res)) {
             $table_name = '';
 
@@ -730,7 +756,7 @@ class OCI8Manager extends DBManager
         $row = oci_fetch_assoc($result);
 
         if ($row) {
-            $new_row = array();
+            $new_row = [];
 
             foreach ($row as $k => $v) {
                 if (is_object($v)) {
@@ -745,12 +771,12 @@ class OCI8Manager extends DBManager
         return $row;
     }
 
-    public function fetchByAssoc($result)
+    public function fetchByAssoc($result, $encode = null)
     {
         $row = oci_fetch_assoc($result);
 
         if ($row) {
-            $new_row = array();
+            $new_row = [];
 
             foreach ($row as $k => $v) {
                 if (is_object($v)) {
@@ -767,10 +793,10 @@ class OCI8Manager extends DBManager
 
     public function connect(array $configOptions = null, $dieOnError = false)
     {
-        global $sugar_config;
+        
 
         if (!$configOptions)
-            $configOptions = $sugar_config['dbconfig'];
+            $configOptions = SpiceConfig::getInstance()->config['dbconfig'];
 
         $this->configOptions = $configOptions;
 
@@ -802,7 +828,7 @@ class OCI8Manager extends DBManager
                 }
             }
             if ($this->database && $this->getOption('persistent')) {
-                $_SESSION['administrator_error'] = "<B>Severe Performance Degradation: Persistent Database Connections not working.  Please set \$sugar_config['dbconfigoption']['persistent'] to false in your config.php file</B>";
+                $_SESSION['administrator_error'] = "<B>Severe Performance Degradation: Persistent Database Connections not working.  Please set ". SpiceConfig::getInstance()->config['dbconfigoption']['persistent']." to false in your config.php file</B>";
             }
         }
 
@@ -812,7 +838,7 @@ class OCI8Manager extends DBManager
         $collation = $this->getOption('collation');
         if (!empty($collation)) {
             $session_query .= " NLS_COMP=LINGUISTIC"; // NLS_SORT=" . $collation;
-        } else if (!empty($GLOBALS['sugar_config']['oracle_enable_ci']) || $this->getOption('enable_ci')) {
+        } else if (!empty(SpiceConfig::getInstance()->config['oracle_enable_ci']) || $this->getOption('enable_ci')) {
             $session_query .= " NLS_COMP=LINGUISTIC NLS_SORT=BINARY_CI";
         }
         $this->query($session_query);
@@ -841,8 +867,8 @@ class OCI8Manager extends DBManager
         // needed to be overwritten, because oracle has default the BYTE type for alpha numerical columns
         // UTF8 uses multibyte for characters, which can lead to overflow issues therefore the size must be mapped to CHAR
         if (!empty($fieldDef['len'])) {
-            if (in_array($colBaseType, array('nvarchar', 'nchar', 'varchar', 'varchar2', 'char',
-                'clob', 'blob', 'text'))) {
+            if (in_array($colBaseType, ['nvarchar', 'nchar', 'varchar', 'varchar2', 'char',
+                'clob', 'blob', 'text'])) {
                 $colType = "$colBaseType(${fieldDef['len']} CHAR)";
             } elseif (($colBaseType == 'decimal' || $colBaseType == 'float')) {
                 if (!empty($fieldDef['precision']) && is_numeric($fieldDef['precision']))
@@ -854,7 +880,7 @@ class OCI8Manager extends DBManager
                     $colType = $colBaseType . "(" . $fieldDef['len'] . ")";
             }
         } else {
-            if (in_array($colBaseType, array('nvarchar', 'nchar', 'varchar', 'varchar2', 'char'))) {
+            if (in_array($colBaseType, ['nvarchar', 'nchar', 'varchar', 'varchar2', 'char'])) {
                 $colType = "$colBaseType($defLen CHAR)";
             }
         }
@@ -889,7 +915,7 @@ class OCI8Manager extends DBManager
             $required = "";
 
         if ($return_as_array) {
-            return array(
+            return [
                 'name' => $name,
                 'colType' => $colType,
                 'colBaseType' => $colBaseType, // Adding base type for easier processing in derived classes
@@ -897,7 +923,7 @@ class OCI8Manager extends DBManager
                 'required' => $required,
                 'auto_increment' => $auto_increment,
                 'full' => "$name $colType $default $required $auto_increment",
-            );
+            ];
         } else {
             return "$name $colType $default $required $auto_increment";
         }
@@ -1027,7 +1053,7 @@ class OCI8Manager extends DBManager
 
     public function valid()
     {
-        return function_exists("oci_connect");
+        return function_exists("oci_pconnect");
     }
 
     public function dbExists($dbname)
@@ -1055,9 +1081,9 @@ class OCI8Manager extends DBManager
 
     public function getDbInfo()
     {
-        return array(
+        return [
             "Server version" => @oci_server_version($this->database),
-        );
+        ];
     }
 
     public function userExists($dbname)
@@ -1089,9 +1115,9 @@ class OCI8Manager extends DBManager
      * @param array $must_terms Search terms that have to be in the result
      * @param array $exclude_terms Search terms that have to be not in the result
      */
-    public function getFulltextQuery($field, $terms, $must_terms = array(), $exclude_terms = array(), $label = 1)
+    public function getFulltextQuery($field, $terms, $must_terms = [], $exclude_terms = [], $label = 1)
     {
-        $condition = $or_condition = array();
+        $condition = $or_condition = [];
         foreach ($must_terms as $term) {
             $condition[] = $this->quoteTerm($term);
         }
@@ -1130,17 +1156,17 @@ class OCI8Manager extends DBManager
 
     public function installConfig()
     {
-        return array(
-            'LBL_DBCONFIG_ORACLE' => array(
-                "setup_db_database_name" => array("label" => 'LBL_DBCONF_DB_NAME', "required" => true),
+        return [
+            'LBL_DBCONFIG_ORACLE' => [
+                "setup_db_database_name" => ["label" => 'LBL_DBCONF_DB_NAME', "required" => true],
                 "setup_db_host_name" => false,
                 'setup_db_create_sugarsales_user' => false,
-            ),
-            'LBL_DBCONFIG_B_MSG1' => array(
-                "setup_db_admin_user_name" => array("label" => 'LBL_DBCONF_DB_ADMIN_USER', "required" => true),
-                "setup_db_admin_password" => array("label" => 'LBL_DBCONF_DB_ADMIN_PASSWORD', "type" => "password"),
-            ),
-        );
+            ],
+            'LBL_DBCONFIG_B_MSG1' => [
+                "setup_db_admin_user_name" => ["label" => 'LBL_DBCONF_DB_ADMIN_USER', "required" => true],
+                "setup_db_admin_password" => ["label" => 'LBL_DBCONF_DB_ADMIN_PASSWORD', "type" => "password"],
+            ],
+        ];
     }
 
     /**
@@ -1194,8 +1220,8 @@ class OCI8Manager extends DBManager
      */
     private function _findSequence($name)
     {
-        global $sugar_config;
-        $db_user_name = isset($sugar_config['dbconfig']['db_user_name']) ? $sugar_config['dbconfig']['db_user_name'] : '';
+        
+        $db_user_name = isset(SpiceConfig::getInstance()->config['dbconfig']['db_user_name']) ? SpiceConfig::getInstance()->config['dbconfig']['db_user_name'] : '';
         $db_user_name = strtoupper($db_user_name);
         $uname = strtoupper($name);
         $result = $this->query("SELECT SEQUENCE_NAME FROM ALL_SEQUENCES WHERE SEQUENCE_OWNER='$db_user_name' AND SEQUENCE_NAME = '$uname'");
@@ -1317,14 +1343,14 @@ class OCI8Manager extends DBManager
     /**
      * @see DBManager::update()
      */
-    public function update(SugarBean $bean, array $where = array())
+    public function update(SugarBean $bean, array $where = [])
     {
 
         // clone the bean for kicking out text fields and other potential LOB candidates
         $tmp = clone($bean);
         $tmp2 = clone($bean);
-        $lob_fields = array();
-        $lob_dataType = array();
+        $lob_fields = [];
+        $lob_dataType = [];
         foreach ($bean->field_defs as $field => $def) {
 
             if (!empty($bean->{$field})) {
@@ -1433,6 +1459,27 @@ class OCI8Manager extends DBManager
     }
 
     /**
+     * @see DBManager::upsertQuery()
+     */
+    public function upsertQuery($table, array $pks, array $data)
+    {
+
+        $query = $this->query("SELECT id FROM " . $table . " WHERE id = '" . $pks['id'] . "'");
+        while ($row = $this->fetchByAssoc($query)) {
+            $id = $row['id'];
+        }
+
+        if (!empty($id)) {
+            foreach ($data as $col => $val) {
+                $sets[] = "$col = '{$this->quote($val)}'";
+            }
+            $this->query("UPDATE " . $table . " SET " . implode(',', $sets) . " WHERE id = '" . $pks['id'] . "'");
+        } else {
+            $this->insertQuery($table, $data);
+        }
+    }
+
+    /**
      * Does this type represent text (i.e., non-varchar) value?
      * @param string $type
      */
@@ -1466,7 +1513,7 @@ class OCI8Manager extends DBManager
      * @return boolean
      */
     protected
-    function oracleLOBBackDoor($sql, $lob_data, $lob_fields = array(), $lob_dataType = array())
+    function oracleLOBBackDoor($sql, $lob_data, $lob_fields = [], $lob_dataType = [])
     {
 
         $this->checkConnection();
@@ -1486,7 +1533,7 @@ class OCI8Manager extends DBManager
             return false;
         }
 
-        $lobs = array();
+        $lobs = [];
         if (count($lob_fields) > 0) {
             foreach ($lob_fields as $field => $descriptor) {
                 if (isset($lob_dataType[$field])) {
@@ -1614,7 +1661,7 @@ class OCI8Manager extends DBManager
     public
     function transactionRollback()
     {
-        return $this->query('COMMIT');
+        return $this->query('ROLLBACK');
     }
 
 

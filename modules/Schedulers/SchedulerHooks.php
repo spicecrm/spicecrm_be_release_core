@@ -1,6 +1,7 @@
 <?php
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+use SpiceCRM\includes\database\DBManagerFactory;
+
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -39,7 +40,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 class SchedulerHooks {
 
     function getTimeOfLastSuccessfulRun( &$bean, $event, $arguments ) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $bean->last_successful_run = $db->getOne('SELECT execute_time FROM job_queue jq WHERE scheduler_id = "'.$db->quote( $bean->id ).'" AND status = "done" AND resolution = "success" AND deleted = 0 ORDER BY execute_time DESC LIMIT 1');
         return true;

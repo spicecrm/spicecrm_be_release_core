@@ -4,6 +4,8 @@ namespace SpiceCRM\includes\SpicePhoneNumberParser;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 /**
  * Class SpicePhoneNumberParser
@@ -30,11 +32,11 @@ class SpicePhoneNumberParser
 
         $phoneNumberString = preg_replace('/\D/',"",$phoneNumberString);
 
-        global $sugar_config;
+
         $phoneUtil = PhoneNumberUtil::getInstance();
         try {
             // todo recognize the country code from the bean address data if possible
-            $conversion = $phoneUtil->parse($phoneNumberString, $sugar_config['telephony']['default_country']);
+            $conversion = $phoneUtil->parse($phoneNumberString, SpiceConfig::getInstance()->config['telephony']['default_country']);
             if ($phoneUtil->isValidNumber($conversion)) {
                 return $phoneUtil->format($conversion, PhoneNumberFormat::E164);
             } else {
@@ -55,7 +57,7 @@ class SpicePhoneNumberParser
      * @return string
      */
     public static function convertToInternational($phoneNumberString, $default_country = null) {
-        global $current_user, $sugar_config;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         if ($phoneNumberString == '') {
             return '';
@@ -63,7 +65,7 @@ class SpicePhoneNumberParser
 
         // try to dtermine a deault country if none is passed in
         if(!$default_country) $default_country = $current_user->address_country;
-        if(!$default_country) $default_country = $sugar_config['telephony']['default_country'];
+        if(!$default_country) $default_country = SpiceConfig::getInstance()->config['telephony']['default_country'];
 
         $phoneUtil = PhoneNumberUtil::getInstance();
         try {

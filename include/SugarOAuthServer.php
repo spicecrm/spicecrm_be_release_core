@@ -35,6 +35,9 @@
 ********************************************************************************/
 
 
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 require_once 'modules/OAuthTokens/OAuthToken.php';
 require_once 'modules/OAuthKeys/OAuthKey.php';
 /**
@@ -78,7 +81,7 @@ class SugarOAuthServer
         // check $provider->consumer_key
         // on unknown: Zend_Oauth_Provider::CONSUMER_KEY_UNKNOWN
         // on bad key: Zend_Oauth_Provider::CONSUMER_KEY_REFUSED
-        $GLOBALS['log']->debug("OAUTH: lookupConsumer, key={$provider->consumer_key}");
+        LoggerManager::getLogger()->debug("OAUTH: lookupConsumer, key={$provider->consumer_key}");
         $consumer = OAuthKey::fetchKey($provider->consumer_key);
         if(!$consumer) {
             return Zend_Oauth_Provider::CONSUMER_KEY_UNKNOWN;
@@ -110,7 +113,7 @@ class SugarOAuthServer
      */
     public function tokenHandler($provider)
     {
-        $GLOBALS['log']->debug("OAUTH: tokenHandler, token={$provider->token}, verify={$provider->verifier}");
+        LoggerManager::getLogger()->debug("OAUTH: tokenHandler, token={$provider->token}, verify={$provider->verifier}");
 
         $token = OAuthToken::load($provider->token);
         if(empty($token)) {
@@ -119,7 +122,7 @@ class SugarOAuthServer
         if($token->consumer != $this->consumer->id) {
             return Zend_Oauth_Provider::TOKEN_REJECTED;
         }
-        $GLOBALS['log']->debug("OAUTH: tokenHandler, found token=".var_export($token->id, true));
+        LoggerManager::getLogger()->debug("OAUTH: tokenHandler, found token=".var_export($token->id, true));
         if($token->tstate == OAuthToken::REQUEST) {
             if(!empty($token->verify) && $provider->verifier == $token->verify) {
                 $provider->token_secret = $token->secret;
@@ -159,13 +162,13 @@ class SugarOAuthServer
      */
     public function __construct($req_path = '')
     {
-        $GLOBALS['log']->debug("OAUTH: __construct($req_path): ".var_export($_REQUEST, true));
+        LoggerManager::getLogger()->debug("OAUTH: __construct($req_path): ".var_export($_REQUEST, true));
         $this->check();
         $this->provider = new Zend_Oauth_Provider();
         try {
-		    $this->provider->setConsumerHandler(array($this,'lookupConsumer'));
-		    $this->provider->setTimestampNonceHandler(array($this,'timestampNonceChecker'));
-		    $this->provider->setTokenHandler(array($this,'tokenHandler'));
+		    $this->provider->setConsumerHandler([$this,'lookupConsumer']);
+		    $this->provider->setTimestampNonceHandler([$this,'timestampNonceChecker']);
+		    $this->provider->setTokenHandler([$this,'tokenHandler']);
 	        if(!empty($req_path)) {
 		        $this->provider->setRequestTokenPath($req_path);  // No token needed for this end point
 	        }
@@ -175,7 +178,7 @@ class SugarOAuthServer
 	    	    OAuthToken::cleanup();
 	    	}
         } catch(Exception $e) {
-            $GLOBALS['log']->debug($this->reportProblem($e));
+            LoggerManager::getLogger()->debug($this->reportProblem($e));
             throw $e;
         }
     }
@@ -186,7 +189,7 @@ class SugarOAuthServer
      */
     public function requestToken()
     {
-        $GLOBALS['log']->debug("OAUTH: requestToken");
+        LoggerManager::getLogger()->debug("OAUTH: requestToken");
         $token = OAuthToken::generate();
         $token->setConsumer($this->consumer);
         $params = $this->provider->getOAuthParams();
@@ -203,7 +206,7 @@ class SugarOAuthServer
      */
     public function accessToken()
     {
-        $GLOBALS['log']->debug("OAUTH: accessToken");
+        LoggerManager::getLogger()->debug("OAUTH: accessToken");
         if(empty($this->token) || $this->token->tstate != OAuthToken::REQUEST) {
             return null;
         }
@@ -223,7 +226,7 @@ class SugarOAuthServer
      */
     public function authUrl()
     {
-        return urlencode(rtrim($GLOBALS['sugar_config']['site_url'],'/')."/index.php?module=OAuthTokens&action=authorize");
+        return urlencode(rtrim(SpiceConfig::getInstance()->config['site_url'],'/')."/index.php?module=OAuthTokens&action=authorize");
     }
 
     /**

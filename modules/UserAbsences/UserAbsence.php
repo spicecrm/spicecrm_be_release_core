@@ -26,9 +26,12 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\UserAbsences;
 
-
+use SpiceCRM\data\SugarBean;
+use DateTime;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class UserAbsence extends SugarBean {
     public $module_dir = 'UserAbsences';
@@ -48,7 +51,9 @@ class UserAbsence extends SugarBean {
     }
 
     public function getSubstituteIDs(){
-        global $db, $current_user, $timedate;
+        global $timedate;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
         $userIDs = [];
         $today = new DateTime();

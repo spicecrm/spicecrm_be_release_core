@@ -1,33 +1,36 @@
 <?php
-$dictionary['SpiceImport'] = array(
+
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['SpiceImport'] = [
     'table' => 'spiceimports',
-    'fields' => array(
-        'id' => array (
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'vname' => 'LBL_ID',
             'type' => 'id',
             'required' => true,
             'reportable'=>true,
             'comment' => 'Unique identifier'
-        ),
-        'name' => array (
+        ],
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_NAME',
             'type' => 'varchar',
             'len' => '50',
             'importable' => 'required',
-        ),
-        'date_entered' => array (
+        ],
+        'date_entered' => [
             'name' => 'date_entered',
             'vname' => 'LBL_DATE_ENTERED',
             'type' => 'datetime',
-        ),
-        'date_modified' => array (
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'vname' => 'LBL_DATE_MODIFIED',
             'type' => 'datetime',
-        ),
-        'modified_user_id' => array (
+        ],
+        'modified_user_id' => [
             'name' => 'modified_user_id',
             'rname' => 'user_name',
             'id_name' => 'modified_user_id',
@@ -37,8 +40,8 @@ $dictionary['SpiceImport'] = array(
             'isnull' => 'false',
             'dbType' => 'id',
             'reportable'=>true,
-        ),
-        'created_by' => array (
+        ],
+        'created_by' => [
             'name' => 'created_by',
             'rname' => 'user_name',
             'id_name' => 'created_by',
@@ -48,50 +51,50 @@ $dictionary['SpiceImport'] = array(
             'isnull' => false,
             'dbType' => 'id',
             'len' => 36,
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text'
-        ),
-        'deleted' => array (
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'vname' => 'LBL_DELETED',
             'type' => 'bool',
             'reportable'=>false,
             'comment' => 'Record deletion indicator'
-        ),
-        'tags' => array(
+        ],
+        'tags' => [
             'name' => 'tags',
             'type' => 'text'
-        ),
-        'assigned_user_id' => array (
+        ],
+        'assigned_user_id' => [
             'name' => 'assigned_user_id',
             'vname' => 'LBL_USER_ID',
             'type' => 'id',
             'required' => true,
             'reportable' => false,
-        ),
-        'status' => array(
+        ],
+        'status' => [
             'name' => 'status',
             'type' => 'enum',
             'options' => 'spiceimports_status_dom',
             'len' => 1,
             'vname' => 'LBL_STATUS'
-        ),
-        'data' => array(
+        ],
+        'data' => [
             'name' => 'data',
             'type' => 'text',
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar',
-        ),
+        ],
 
-    ),
-    'indices' => array(
-        'id' => array('name' => 'spiceimports_pk', 'type' => 'primary', 'fields' => array('id')),
-    )
-);
+    ],
+    'indices' => [
+        'id' => ['name' => 'spiceimports_pk', 'type' => 'primary', 'fields' => ['id']],
+    ]
+];
 
-require_once('include/SugarObjects/VardefManager.php');
-VardefManager::createVardef('SpiceImports', 'SpiceImport', array('default', 'assignable'));
+
+VardefManager::createVardef('SpiceImports', 'SpiceImport', ['default', 'assignable']);

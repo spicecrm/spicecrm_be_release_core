@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,10 +34,15 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-/*********************************************************************************
- * Description:
- ********************************************************************************/
-// Opportunity is used to store customer information.
+namespace SpiceCRM\modules\Opportunities;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
+
 class Opportunity extends SugarBean
 {
 
@@ -49,10 +53,10 @@ class Opportunity extends SugarBean
     var $object_name = "Opportunity";
 
     // This is used to retrieve related fields from form posts.
-    var $additional_column_fields = array('assigned_user_name', 'assigned_user_id', 'account_name', 'account_id', 'contact_id', 'task_id', 'note_id', 'meeting_id', 'call_id', 'email_id'
-    );
+    var $additional_column_fields = ['assigned_user_name', 'assigned_user_id', 'account_name', 'account_id', 'contact_id', 'task_id', 'note_id', 'meeting_id', 'call_id', 'email_id'
+    ];
 
-    var $relationship_fields = array(
+    var $relationship_fields = [
         'task_id' => 'tasks',
         'note_id' => 'notes',
         'account_id' => 'accounts',
@@ -62,13 +66,13 @@ class Opportunity extends SugarBean
         'project_id' => 'projects', //@deprecated project. use projects
         // Bug 38529 & 40938
         'currency_id' => 'currencies',
-    );
+    ];
 
     public function __construct()
     {
         parent::__construct();
-        global $sugar_config;
-        if (!$sugar_config['require_accounts']) {
+        
+        if (!SpiceConfig::getInstance()->config['require_accounts']) {
             unset($this->required_fields['account_name']);
         }
     }
@@ -86,7 +90,7 @@ class Opportunity extends SugarBean
         parent::fill_in_additional_detail_fields();
 
         if (!empty($this->currency_id)) {
-            $currency = new Currency();
+            $currency = BeanFactory::getBean('Currencies');
             $currency->retrieve($this->currency_id);
             if ($currency->id != $this->currency_id || $currency->deleted == 1) {
                 $this->amount = $this->amount_usdollar;
@@ -95,7 +99,7 @@ class Opportunity extends SugarBean
         }
         //get campaign name
         if (!empty($this->campaign_id)) {
-            $camp = new Campaign();
+            $camp = BeanFactory::getBean('Campaigns');
             $camp->retrieve($this->campaign_id);
             $this->campaign_name = $camp->name;
         }
@@ -115,7 +119,8 @@ class Opportunity extends SugarBean
     function save($check_notify = FALSE, $fts_index_bean = TRUE)
     {
         // Bug 32581 - Make sure the currency_id is set to something
-        global $current_user, $app_list_strings;
+        global $app_list_strings;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         if (empty($this->currency_id))
             $this->currency_id = $current_user->getPreference('currency');
@@ -129,9 +134,14 @@ class Opportunity extends SugarBean
                 $this->probability = $prob_arr[$this->sales_stage];
         }
 
+        //amount is a string when an integer was entered! convert to integer
+        //amount is a double when a decimal was entered. Nothing to correct
+        if(is_string($this->amount)){
+            $this->amount = intval($this->amount);
+        }
         //US DOLLAR
-        if (isset($this->amount) && !empty($value)) {
-            $currency = new Currency();
+        if (isset($this->amount) && $this->amount > 0) {
+            $currency = BeanFactory::getBean('Currencies');
             $currency->retrieve($this->currency_id);
             $this->amount_usdollar = $currency->convertToDollar($this->amount);
         }
@@ -174,7 +184,7 @@ class Opportunity extends SugarBean
             $this->accounts->delete($this->id, $this->rel_fields_before_value['account_id']);
         }
         // Bug 38529 & 40938 - exclude currency_id
-        parent::save_relationship_changes($is_update, array('currency_id'));
+        parent::save_relationship_changes($is_update, ['currency_id']);
 
     }
 
@@ -184,7 +194,7 @@ class Opportunity extends SugarBean
      */
     function get_account_detail($opp_id)
     {
-        $ret_array = array();
+        $ret_array = [];
         $db = DBManagerFactory::getInstance();
         $query = "SELECT acc.id, acc.name, acc.assigned_user_id "
             . "FROM accounts acc, accounts_opportunities a_o "

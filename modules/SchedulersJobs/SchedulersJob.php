@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,7 +33,14 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\SchedulersJobs;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\SugarObjects\templates\basic\Basic;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 /**
  * Job queue job
@@ -95,8 +101,8 @@ class SchedulersJob extends Basic
 	function __construct()
 	{
         parent::__construct();
-        if(!empty($GLOBALS['sugar_config']['jobs']['min_retry_interval'])) {
-            $this->min_interval = $GLOBALS['sugar_config']['jobs']['min_retry_interval'];
+        if(!empty(SpiceConfig::getInstance()->config['jobs']['min_retry_interval'])) {
+            $this->min_interval = SpiceConfig::getInstance()->config['jobs']['min_retry_interval'];
         }
 	}
 
@@ -191,11 +197,11 @@ class SchedulersJob extends Basic
 		curl_close($ch);
 
 		if($result !== FALSE && $cInfo['http_code'] < 400) {
-			$GLOBALS['log']->debug("----->Firing was successful: $job");
-			$GLOBALS['log']->debug('----->WTIH RESULT: '.strip_tags($result).' AND '.strip_tags(print_r($cInfo, true)));
+			LoggerManager::getLogger()->debug("----->Firing was successful: $job");
+			LoggerManager::getLogger()->debug('----->WTIH RESULT: '.strip_tags($result).' AND '.strip_tags(print_r($cInfo, true)));
 			return true;
 		} else {
-			$GLOBALS['log']->fatal("Job failed: $job");
+			LoggerManager::getLogger()->fatal("Job failed: $job");
 			return false;
 		}
 	}
@@ -256,7 +262,7 @@ class SchedulersJob extends Basic
      */
     public function resolveJob($resolution, $message = null)
     {
-        $GLOBALS['log']->info("Resolving job {$this->id} as $resolution: $message");
+        LoggerManager::getLogger()->info("Resolving job {$this->id} as $resolution: $message");
         if($resolution == self::JOB_FAILURE) {
             $this->failure_count++;
             if($this->requeue && $this->retry_count > 0) {
@@ -267,7 +273,7 @@ class SchedulersJob extends Basic
                 }
                 $this->execute_time = $GLOBALS['timedate']->getNow()->modify("+{$this->job_delay} seconds")->format(TimeDate::DB_DATETIME_FORMAT);
                 $this->retry_count--;
-                $GLOBALS['log']->info("Will retry job {$this->id} at {$this->execute_time} ($this->retry_count)");
+                LoggerManager::getLogger()->info("Will retry job {$this->id} at {$this->execute_time} ($this->retry_count)");
                 $this->onFailureRetry();
             } else {
                 // final failure
@@ -328,7 +334,7 @@ class SchedulersJob extends Basic
             $delay = intval($this->job_delay);
         }
         $this->execute_time = $GLOBALS['timedate']->getNow()->modify("+$delay seconds")->format(TimeDate::DB_DATETIME_FORMAT);
-        $GLOBALS['log']->info("Postponing job {$this->id} to {$this->execute_time}: $message");
+        LoggerManager::getLogger()->info("Postponing job {$this->id} to {$this->execute_time}: $message");
 
         $this->save();
         return true;
@@ -365,19 +371,19 @@ class SchedulersJob extends Basic
         $job = new self();
         $job->retrieve($id);
         if(empty($job->id)) {
-            $GLOBALS['log']->fatal("Job $id not found.");
+            LoggerManager::getLogger()->fatal("Job $id not found.");
             return "Job $id not found.";
         }
         if($job->status != self::JOB_STATUS_RUNNING) {
-            $GLOBALS['log']->fatal("Job $id is not marked as running.");
+            LoggerManager::getLogger()->fatal("Job $id is not marked as running.");
             return "Job $id is not marked as running.";
         }
         if($job->client != $client) {
-            $GLOBALS['log']->fatal("Job $id belongs to client {$job->client}, can not run as $client.");
+            LoggerManager::getLogger()->fatal("Job $id belongs to client {$job->client}, can not run as $client.");
             return "Job $id belongs to another client, can not run as $client.";
         }
         $job->job_done = false;
-        register_shutdown_function(array($job, "unexpectedExit"));
+        register_shutdown_function([$job, "unexpectedExit"]);
         $res = $job->runJob();
         $job->job_done = true;
         return $res;
@@ -426,7 +432,7 @@ class SchedulersJob extends Basic
      */
     protected function sudo($user)
     {
-        $GLOBALS['current_user'] = $user;
+        AuthenticationController::getInstance()->setCurrentUser($user);
         // Reset the session
         if(session_id()) {
             session_destroy();
@@ -449,7 +455,7 @@ class SchedulersJob extends Basic
     {
         // set up the current user and drop session
         if(!empty($this->assigned_user_id)) {
-            $this->old_user = $GLOBALS['current_user'];
+            $this->old_user = AuthenticationController::getInstance()->getCurrentUser();
             if(empty($this->user->id) || $this->assigned_user_id != $this->user->id) {
                 $this->user = BeanFactory::getBean('Users', $this->assigned_user_id);
                 if(empty($this->user->id)) {
@@ -491,12 +497,12 @@ class SchedulersJob extends Basic
                 return false;
             }
     		$func = $exJob[1];
-			$GLOBALS['log']->debug("----->SchedulersJob calling function: $func");
-            set_error_handler(array($this, "errorHandler"), E_ALL & ~E_NOTICE & ~E_STRICT);
+			LoggerManager::getLogger()->debug("----->SchedulersJob calling function: $func");
+            set_error_handler([$this, "errorHandler"], E_ALL & ~E_NOTICE & ~E_STRICT);
 			if(!is_callable($func)) {
 			    $this->resolveJob(self::JOB_FAILURE, sprintf(translate('ERR_CALL', 'SchedulersJobs'), $func));
 			}
-			$data = array($this);
+			$data = [$this];
 			if(!empty($this->data)) {
 			    $data[] = $this->data;
 			}
@@ -517,8 +523,8 @@ class SchedulersJob extends Basic
 			}
 		} elseif($exJob[0] == 'url') {
 			if(function_exists('curl_init')) {
-				$GLOBALS['log']->debug('----->SchedulersJob firing URL job: '.$exJob[1]);
-                set_error_handler(array($this, "errorHandler"), E_ALL & ~E_NOTICE & ~E_STRICT);
+				LoggerManager::getLogger()->debug('----->SchedulersJob firing URL job: '.$exJob[1]);
+                set_error_handler([$this, "errorHandler"], E_ALL & ~E_NOTICE & ~E_STRICT);
 				if($this->fireUrl($exJob[1])) {
                     restore_error_handler();
                     $this->resolveJob(self::JOB_SUCCESS);

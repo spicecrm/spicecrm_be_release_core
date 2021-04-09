@@ -26,6 +26,11 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+namespace SpiceCRM\modules\SpiceACLProfiles;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
 
 class SpiceACLProfile extends SugarBean {
 
@@ -42,8 +47,36 @@ class SpiceACLProfile extends SugarBean {
     * return an array with the Profiles IDs for a given UserId
     */
 
-   public function getProfilesForUser($userId) {
-      
+
+    /**
+     * returns the raw database rows of  spiceaclprofiles for a specified userId
+     * @param $userId
+     * @return array
+     * @throws \Exception
+     */
+   public static function getProfilesForUserRows($userId) {
+       $db = DBManagerFactory::getInstance();
+       $q="SELECT p.* FROM spiceaclprofiles_users pu inner join spiceaclprofiles p on p.id=pu.spiceaclprofile_id where pu.user_id='".$db->quote($userId)."' or pu.user_id='*'";
+       if($res = $db->query($q)){
+           while($row = $db->fetchByAssoc($res)){
+               $spiceAclRoles[]=$row;
+           }
+       }
+
+       return $spiceAclRoles;
+   }
+
+    /**
+     * @param $userId
+     * @return SpiceACLProfile[]
+     * @throws \Exception
+     */
+   public static function getProfilesforUser($userId) {
+       $profiles=[];
+       foreach(self::getProfilesForUserRows($userId) as $spiceAlcProfileRow) {
+           $profiles[]=BeanFactory::getBean("SpiceACLProfiles", $spiceAlcProfileRow['id']); //todo getBean returns false ... module is not known.
+       }
+       return $profiles;
    }
 
    public function deactivate() {

@@ -34,6 +34,14 @@
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+// require the autoloader
+require_once 'vendor/autoload.php';
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 chdir(dirname(__FILE__));
 
@@ -50,16 +58,19 @@ if($argc < 3 || empty($argv[1]) || empty($argv[2])) {
 }
 
 if(empty($current_language)) {
-	$current_language = $sugar_config['default_language'];
+	$current_language = SpiceConfig::getInstance()->config['default_language'];
 }
 
 $app_list_strings = return_app_list_strings_language($current_language);
 $app_strings = return_application_language($current_language);
 
-$current_user = new User();
+$authController = AuthenticationController::getInstance();
+$authController->setCurrentUser(BeanFactory::getBean('Users'));
+
+$current_user = $authController->getCurrentUser();
 $current_user->getSystemUser();
 
-$GLOBALS['log']->debug('Starting job {$argv[1]} execution as ${argv[2]}');
+LoggerManager::getLogger()->debug('Starting job {$argv[1]} execution as ${argv[2]}');
 require_once 'modules/SchedulersJobs/SchedulersJob.php';
 $result = SchedulersJob::runJobId($argv[1], $argv[2]);
 

@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,7 +34,15 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-require_once dirname(__FILE__).'/../../vendor/autoload.php';
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\modules\QuestionnaireEvaluations\QuestionnaireEvaluation;
+use SpiceCRM\modules\Workflows\WorkflowScheduler;
+use SpiceCRM\modules\WorkflowTasks\WorkflowTaskScheduler;
 
 /**
  * Set up an array of Jobs with the appropriate metadata
@@ -81,10 +88,10 @@ $job_strings = [
 ];
 
 function workflowHandler(){
-    $schedulerHandler = new \SpiceCRM\modules\WorkflowTasks\WorkflowTaskScheduler();
+    $schedulerHandler = new WorkflowTaskScheduler();
     $schedulerHandler->runScheduledTasks();
 
-    $workflowHandler = new \SpiceCRM\modules\Workflows\WorkflowScheduler();
+    $workflowHandler = new WorkflowScheduler();
     $workflowHandler->rundScheduledWorkflows();
     return true;
 }
@@ -120,13 +127,13 @@ function runMassEmailCampaign() {
  *  Job 3
  */
 function pruneDatabase() {
-	$GLOBALS['log']->info('----->Scheduler fired job of type pruneDatabase()');
+	LoggerManager::getLogger()->info('----->Scheduler fired job of type pruneDatabase()');
 	$backupDir	= sugar_cached('backups');
 	$backupFile	= 'backup-pruneDatabase-GMT0_'.gmdate('Y_m_d-H_i_s', strtotime('now')).'.php';
 
 	$db = DBManagerFactory::getInstance();
 	$tables = $db->getTablesArray();
-    $queryString = array();
+    $queryString = [];
 
 	if(!empty($tables)) {
 		foreach($tables as $kTable => $table) {
@@ -136,11 +143,11 @@ function pruneDatabase() {
 			if(empty($columns['deleted'])) continue;
 
 // CR1000452
-//			$custom_columns = array();
+//			$custom_columns = [];
 //			if(array_search($table.'_cstm', $tables)) {
 //			    $custom_columns = $db->get_columns($table.'_cstm');
 //			    if(empty($custom_columns['id_c'])) {
-//			        $custom_columns = array();
+//			        $custom_columns = [];
 //			    }
 //			}
 
@@ -194,11 +201,11 @@ function pruneDatabase() {
 
 function trimTracker()
 {
-    global $sugar_config, $timedate;
-	$GLOBALS['log']->info('----->Scheduler fired job of type trimTracker()');
+    global  $timedate;
+	LoggerManager::getLogger()->info('----->Scheduler fired job of type trimTracker()');
 	$db = DBManagerFactory::getInstance();
 
-	$admin = new Administration();
+	$admin = BeanFactory::getBean('Administration');
 	$admin->retrieveSettings('tracker');
 	require('modules/Trackers/config.php');
 	$trackerConfig = $tracker_config;
@@ -212,14 +219,14 @@ function trimTracker()
 		   continue;
 		}
 
-	    $timeStamp = $GLOBALS['db']->convert("'". $timedate->asDb($timedate->getNow()->get("-".$prune_interval." days")) ."'" ,"datetime");
+	    $timeStamp = DBManagerFactory::getInstance()->convert("'". $timedate->asDb($timedate->getNow()->get("-".$prune_interval." days")) ."'" ,"datetime");
 		if($tableName == 'tracker_sessions') {
 		   $query = "DELETE FROM $tableName WHERE date_end < $timeStamp";
 		} else {
 		   $query = "DELETE FROM $tableName WHERE date_modified < $timeStamp";
 		}
 
-	    $GLOBALS['log']->info("----->Scheduler is about to trim the $tableName table by running the query $query");
+	    LoggerManager::getLogger()->info("----->Scheduler is about to trim the $tableName table by running the query $query");
 		$db->query($query);
 	} //foreach
     return true;
@@ -241,7 +248,7 @@ function pollMonitoredInboxesForBouncedCampaignEmails() {
  * Job 12
  */
 function sendEmailReminders(){
-	$GLOBALS['log']->info('----->Scheduler fired job of type sendEmailReminders()');
+	LoggerManager::getLogger()->info('----->Scheduler fired job of type sendEmailReminders()');
 	require_once("modules/Activities/EmailReminder.php");
 	$reminder = new EmailReminder();
 	return $reminder->process();
@@ -260,11 +267,11 @@ function sendEmailReminders(){
 /*
 function fullTextIndex(){
     // no date formatting
-    global $disable_date_format, $sugar_config;
+    global $disable_date_format;
     $disable_date_format = true;
 
     // determine package size
-    $packagesize = $sugar_config['fts']['schedulerpackagesize'] ?: 5000;
+    $packagesize = \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['fts']['schedulerpackagesize'] ?: 5000;
 
 //    require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
     $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
@@ -279,14 +286,13 @@ function fullTextIndex(){
 
 function fullTextIndexBulk(){
     // no date formatting
-    global $sugar_config;
+    
 
     // determine package size
-    $packagesize = $sugar_config['fts']['schedulerpackagesize'] ?: 5000;
+    $packagesize = SpiceConfig::getInstance()->config['fts']['schedulerpackagesize'] ?: 5000;
 
 //    require_once('include/SpiceFTSManager/SpiceFTSHandler.php');
-    $ftsHandler = new \SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler();
-    $ftsHandler->bulkIndexBeans($packagesize, null, true );
+    SpiceFTSHandler::getInstance()->bulkIndexBeans($packagesize, null, true );
     return true;
 }
 
@@ -295,15 +301,15 @@ function cleanJobQueue($job)
     $td = TimeDate::getInstance();
     // soft delete all jobs that are older than cutoff
     $soft_cutoff = 7;
-    if(isset($GLOBALS['sugar_config']['jobs']['soft_lifetime'])) {
-        $soft_cutoff = $GLOBALS['sugar_config']['jobs']['soft_lifetime'];
+    if(isset(SpiceConfig::getInstance()->config['jobs']['soft_lifetime'])) {
+        $soft_cutoff = SpiceConfig::getInstance()->config['jobs']['soft_lifetime'];
     }
     $soft_cutoff_date = $job->db->quoted($td->getNow()->modify("- $soft_cutoff days")->format(TimeDate::DB_DATETIME_FORMAT));
     $job->db->query("UPDATE {$job->table_name} SET deleted=1 WHERE status='done' AND date_modified < ".$job->db->convert($soft_cutoff_date, 'datetime'));
     // hard delete all jobs that are older than hard cutoff
     $hard_cutoff = 21;
-    if(isset($GLOBALS['sugar_config']['jobs']['hard_lifetime'])) {
-        $hard_cutoff = $GLOBALS['sugar_config']['jobs']['hard_lifetime'];
+    if(isset(SpiceConfig::getInstance()->config['jobs']['hard_lifetime'])) {
+        $hard_cutoff = SpiceConfig::getInstance()->config['jobs']['hard_lifetime'];
     }
     $hard_cutoff_date = $job->db->quoted($td->getNow()->modify("- $hard_cutoff days")->format(TimeDate::DB_DATETIME_FORMAT));
     $job->db->query("DELETE FROM {$job->table_name} WHERE status='done' AND date_modified < ".$job->db->convert($hard_cutoff_date, 'datetime'));
@@ -325,7 +331,7 @@ function sendCampaignTaskEmails(){
 function fetchEmails() {
     require_once(__DIR__ . '/../../vendor/autoload.php');
 
-    $mailboxes = \BeanFactory::getBean('Mailboxes')
+    $mailboxes = BeanFactory::getBean('Mailboxes')
         ->get_full_list(
             'mailboxes.name',
             'inbound_comm=1 AND active=1'
@@ -348,7 +354,7 @@ function fetchEmails() {
 function processEmails() {
     require_once(__DIR__ . '/../../vendor/autoload.php');
 
-    $mailboxes = \BeanFactory::getBean('Mailboxes')
+    $mailboxes = BeanFactory::getBean('Mailboxes')
         ->get_full_list(
             'mailboxes.name',
             'inbound_comm=1 AND active=1'
@@ -387,8 +393,8 @@ function processSpiceImports(){
 
 function cleanSysLogs(){
     $defaultInterval = "7 DAY";
-    $q = "DELETE FROM syslogs WHERE date_entered < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['logger']['db']['clean_interval']) && !empty($GLOBALS['sugar_config']['logger']['db']['clean_interval']) ? $GLOBALS['sugar_config']['logger']['db']['clean_interval'] : $defaultInterval).")";
-    $GLOBALS['db']->query($q);
+    $q = "DELETE FROM syslogs WHERE date_entered < DATE_SUB(now(), INTERVAL ".(isset(SpiceConfig::getInstance()->config['logger']['db']['clean_interval']) && !empty(SpiceConfig::getInstance()->config['logger']['db']['clean_interval']) ? SpiceConfig::getInstance()->config['logger']['db']['clean_interval'] : $defaultInterval).")";
+    DBManagerFactory::getInstance()->query($q);
     return true;
 }
 
@@ -399,8 +405,8 @@ function cleanSysLogs(){
 
 function cleanSysFTSLogs(){
     $defaultInterval = "14 DAY";
-    $q = "DELETE FROM sysftslog WHERE date_created < DATE_SUB(now(), INTERVAL ".(isset($GLOBALS['sugar_config']['fts']['log_clean_interval']) && !empty($GLOBALS['sugar_config']['fts']['clean_interval']) ? $GLOBALS['sugar_config']['fts']['log_clean_interval'] : $defaultInterval).")";
-    $GLOBALS['db']->query($q);
+    $q = "DELETE FROM sysftslog WHERE date_created < DATE_SUB(now(), INTERVAL ".(isset(SpiceConfig::getInstance()->config['fts']['log_clean_interval']) && !empty(SpiceConfig::getInstance()->config['fts']['clean_interval']) ? SpiceConfig::getInstance()->config['fts']['log_clean_interval'] : $defaultInterval).")";
+    DBManagerFactory::getInstance()->query($q);
     return true;
 }
 
@@ -411,7 +417,7 @@ function cleanSysFTSLogs(){
 
 function schedulerTest() {
     echo "Scheduler Test (function schedulerTest() executed, nothing else is done.\n";
-    $GLOBALS['log']->debug('Scheduler Test');
+    LoggerManager::getLogger()->debug('Scheduler Test');
     return true;
 }
 
@@ -422,7 +428,7 @@ function schedulerTest() {
 
 function generateQuestionnaireEvaluations()
 {
-    global $db;
+    $db = DBManagerFactory::getInstance();
     echo "Generating non existing QuestionnaireEvaluations for ServiceFeedbacks with linked Questionnaires.\n";
     // in future: "FROM questionnaireparticipations instead "FROM servicefeedbacks"
     $result = $db->query('SELECT DISTINCT sf.id FROM servicefeedbacks sf LEFT JOIN questionnaireevaluations qe ON sf.questionnaireevaluation_id = qe.id WHERE NOT ISNULL(NULLIF(sf.questionnaire_id,\'\')) AND ( ISNULL(NULLIF(sf.questionnaireevaluation_id,\'\')) OR qe.deleted = 1 ) AND sf.deleted = 0');

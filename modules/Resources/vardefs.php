@@ -1,5 +1,7 @@
 <?php
 
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['Resource'] = [
     'table' => 'resources',
     'audited' => true,
@@ -51,6 +53,6 @@ $dictionary['Resource'] = [
     'optimistic_lock' => true,
 ];
 
-require_once('include/SugarObjects/VardefManager.php');
 
-VardefManager::createVardef('Resources', 'Resource', array('default', 'assignable'));
+
+VardefManager::createVardef('Resources', 'Resource', ['default', 'assignable']);

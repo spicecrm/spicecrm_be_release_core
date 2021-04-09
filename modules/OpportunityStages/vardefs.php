@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,19 +34,21 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$dictionary['OpportunityStage'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['OpportunityStage'] = [
     'table' => 'opportunitystages',
     'comment' => 'track opportunity stage changes',
-    'fields' => array(
-        'name' => array(
+    'fields' => [
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_NAME',
             'type' => 'name',
             'dbType' => 'varchar',
             'len' => '50',
             'required' => false
-        ),
-        'amount' => array(
+        ],
+        'amount' => [
             'name' => 'amount',
             'vname' => 'LBL_AMOUNT',
             //'function'=>array('vname'=>'getCurrencyType'),
@@ -59,8 +60,8 @@ $dictionary['OpportunityStage'] = array(
             'required' => true,
             'options' => 'numeric_range_search_dom',
             'enable_range_search' => true,
-        ),
-        'amount_usdollar' => array(
+        ],
+        'amount_usdollar' => [
             'name' => 'amount_usdollar',
             'vname' => 'LBL_AMOUNT_USDOLLAR',
             'type' => 'currency',
@@ -68,63 +69,63 @@ $dictionary['OpportunityStage'] = array(
             'dbType' => 'double',
             'disable_num_format' => true,
             'audited' => true
-        ),
-        'forecast' => array(
+        ],
+        'forecast' => [
             'name' => 'forecast',
             'vname' => 'LBL_FORECAST',
             'type' => 'bool'
-        ),
-        'budget' => array(
+        ],
+        'budget' => [
             'name' => 'budget',
             'vname' => 'LBL_BUDGET',
             'type' => 'currency',
             'dbType' => 'double',
-        ),
-        'bestcase' => array(
+        ],
+        'bestcase' => [
             'name' => 'bestcase',
             'vname' => 'LBL_BESTCASE',
             'type' => 'currency',
             'dbType' => 'double',
-        ),
-        'worstcase' => array(
+        ],
+        'worstcase' => [
             'name' => 'worstcase',
             'vname' => 'LBL_WORSTCASE',
             'type' => 'currency',
             'dbType' => 'double',
-        ),
-        'currency_id' => array(
+        ],
+        'currency_id' => [
             'name' => 'currency_id',
             'type' => 'id',
             'group' => 'currency_id',
             'vname' => 'LBL_CURRENCY',
-        ),
-        'date_closed' => array(
+        ],
+        'date_closed' => [
             'name' => 'date_closed',
             'vname' => 'LBL_DATE_CLOSED',
             'type' => 'date',
             'audited' => true
-        ),
-        'sales_stage' => array(
+        ],
+        'sales_stage' => [
             'name' => 'sales_stage',
             'vname' => 'LBL_SALES_STAGE',
             'type' => 'enum',
             'options' => 'sales_stage_dom',
             'len' => '255',
             'audited' => true,
-        ),
-        'probability' => array(
+        ],
+        'probability' => [
             'name' => 'probability',
             'vname' => 'LBL_PROBABILITY',
             'type' => 'int',
             'dbtype' => 'double',
             'audited' => true,
-        ),
-        'opportunity_id' => array(
+        ],
+        'opportunity_id' => [
             'name' => 'opportunity_id',
             'type' => 'varchar',
             'len' => 36
-        ),
-        'opportunities' => array(
+        ],
+        'opportunities' => [
             'name' => 'opportunities',
             'type' => 'link',
             'relationship' => 'opportunity_opportunitystages',
@@ -133,17 +134,17 @@ $dictionary['OpportunityStage'] = array(
             'module' => 'Opportunities',
             'bean_name' => 'Opportunity',
             'vname' => 'LBL_OPPORTUNITY',
-        ),
-    ),
-    'indices' => array(
-        array(
+        ],
+    ],
+    'indices' => [
+        [
             'name' => 'idx_opp_id',
             'type' => 'index',
-            'fields' => array('opportunity_id'),
-        )
-    ),
-    'relationships' => array(
-        'opportunity_opportunitystages' => array(
+            'fields' => ['opportunity_id'],
+        ]
+    ],
+    'relationships' => [
+        'opportunity_opportunitystages' => [
             'lhs_module' => 'Opportunities',
             'lhs_table' => 'opportunities',
             'lhs_key' => 'id',
@@ -151,10 +152,10 @@ $dictionary['OpportunityStage'] = array(
             'rhs_table' => 'opportunitystages',
             'rhs_key' => 'opportunity_id',
             'relationship_type' => 'one-to-many',
-        )
-    )
+        ]
+    ]
     //This enables optimistic locking for Saves From EditView
 , 'optimistic_locking' => true,
-);
-VardefManager::createVardef('OpportunityStages', 'OpportunityStage', array('default', 'assignable',
-));
+];
+VardefManager::createVardef('OpportunityStages', 'OpportunityStage', ['default', 'assignable',
+]);

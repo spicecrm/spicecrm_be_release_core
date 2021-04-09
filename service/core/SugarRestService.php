@@ -1,5 +1,8 @@
 <?php
- if(!defined('sugarEntry'))define('sugarEntry', true);
+
+use SpiceCRM\includes\Logger\LoggerManager;
+
+if(!defined('sugarEntry'))define('sugarEntry', true);
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -46,7 +49,7 @@ require_once('service/core/SugarRestServiceImpl.php');
 class SugarRestService extends SugarWebService{
 	protected $implementationClass = 'SugarRestServiceImpl';
 	protected $restURL = "";
-	protected $registeredFunc = array();
+	protected $registeredFunc = [];
 
 	/**
 	 * Get Sugar REST class name for input/return type
@@ -84,14 +87,14 @@ class SugarRestService extends SugarWebService{
 	 * @param String $url - REST url
 	 */
 	function __construct($url){
-		$GLOBALS['log']->info('Begin: SugarRestService->__construct');
+		LoggerManager::getLogger()->info('Begin: SugarRestService->__construct');
 		$this->restURL = $url;
 
 		$this->responseClass = $this->_getTypeName(@$_REQUEST['response_type']);
 		$this->serverClass = $this->_getTypeName(@$_REQUEST['input_type']);
-		$GLOBALS['log']->info('SugarRestService->__construct serverclass = ' . $this->serverClass);
+		LoggerManager::getLogger()->info('SugarRestService->__construct serverclass = ' . $this->serverClass);
 		require_once('service/core/REST/'. $this->serverClass . '.php');
-		$GLOBALS['log']->info('End: SugarRestService->__construct');
+		LoggerManager::getLogger()->info('End: SugarRestService->__construct');
 	} // ctor
 
 	/**
@@ -112,7 +115,7 @@ class SugarRestService extends SugarWebService{
   	 */
 	function registerFunction($function, $input, $output){
 		if(in_array($function, $this->excludeFunctions))return;
-		$this->registeredFunc[$function] = array('input'=> $input, 'output'=>$output);
+		$this->registeredFunc[$function] = ['input'=> $input, 'output'=>$output];
 	} // fn
 
 	/**
@@ -120,7 +123,7 @@ class SugarRestService extends SugarWebService{
 	 * @access public
 	 */
 	function serve(){
-		$GLOBALS['log']->info('Begin: SugarRestService->serve');
+		LoggerManager::getLogger()->info('Begin: SugarRestService->serve');
 		require_once('service/core/REST/'. $this->responseClass . '.php');
 		$response  = $this->responseClass;
 
@@ -128,7 +131,7 @@ class SugarRestService extends SugarWebService{
 		$this->server->faultServer = $responseServer;
 		$responseServer->faultServer = $responseServer;
 		$responseServer->generateResponse($this->server->serve());
-		$GLOBALS['log']->info('End: SugarRestService->serve');
+		LoggerManager::getLogger()->info('End: SugarRestService->serve');
 	} // fn
 
 	/**
@@ -136,7 +139,7 @@ class SugarRestService extends SugarWebService{
 	 *
 	 * @param Array $excludeFunctions - All the functions you don't want to register
 	 */
-	function register($excludeFunctions = array()){
+	function register($excludeFunctions = []){
 
 	} // fn
 
@@ -178,12 +181,12 @@ class SugarRestService extends SugarWebService{
 	 * @access public
 	 */
 	function registerImplClass($className){
-		$GLOBALS['log']->info('Begin: SugarRestService->registerImplClass');
+		LoggerManager::getLogger()->info('Begin: SugarRestService->registerImplClass');
 		$this->implementationClass = $className;
 		$this->implementation = new $this->implementationClass();
 		$this->server = new $this->serverClass($this->implementation);
 		$this->server->registerd = $this->registeredFunc;
-		$GLOBALS['log']->info('End: SugarRestService->registerImplClass');
+		LoggerManager::getLogger()->info('End: SugarRestService->registerImplClass');
 	} // fn
 
 	/**
@@ -193,9 +196,9 @@ class SugarRestService extends SugarWebService{
 	 * @access public
 	 */
 	function error($errorObject){
-		$GLOBALS['log']->info('Begin: SugarRestService->error');
+		LoggerManager::getLogger()->info('Begin: SugarRestService->error');
 		$this->server->fault($errorObject);
-		$GLOBALS['log']->info('End: SugarRestService->error');
+		LoggerManager::getLogger()->info('End: SugarRestService->error');
 	} // fn
 
 	/**

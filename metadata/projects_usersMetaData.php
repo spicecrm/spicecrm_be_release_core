@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,24 +33,24 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['projects_users'] = array (
+global $dictionary;
+$dictionary['projects_users'] = [
     'table' => 'projects_users',
-    'fields' => array (
-        array('name' => 'id', 'type' => 'varchar', 'len' => '36'),
-        array('name' => 'user_id', 'type' => 'varchar', 'len' => '36'),
-        array('name' => 'project_id', 'type' => 'varchar', 'len' => '36'),
-        array('name' => 'date_modified', 'type' => 'datetime'),
-        array('name' => 'deleted', 'type' => 'bool', 'len' => '1', 'default' => '0', 'required' => false),
-    ),
-    'indices' => array (
-        array('name' => 'projects_users_pk', 'type' =>'primary', 'fields'=>array('id')),
-        array('name' => 'idx_proj_usr_proj', 'type' =>'index', 'fields'=>array('project_id')),
-        array('name' => 'idx_proj_usr_con', 'type' =>'index', 'fields'=>array('user_id')),
-        array('name' => 'projects_users_alt', 'type'=>'alternate_key', 'fields'=>array('project_id','user_id')),
-    ),
-    'relationships' => array (
-        'projects_users' => array(
+    'fields' => [
+        ['name' => 'id', 'type' => 'varchar', 'len' => '36'],
+        ['name' => 'user_id', 'type' => 'varchar', 'len' => '36'],
+        ['name' => 'project_id', 'type' => 'varchar', 'len' => '36'],
+        ['name' => 'date_modified', 'type' => 'datetime'],
+        ['name' => 'deleted', 'type' => 'bool', 'len' => '1', 'default' => '0', 'required' => false],
+    ],
+    'indices' => [
+        ['name' => 'projects_users_pk', 'type' =>'primary', 'fields'=> ['id']],
+        ['name' => 'idx_proj_usr_proj', 'type' =>'index', 'fields'=> ['project_id']],
+        ['name' => 'idx_proj_usr_con', 'type' =>'index', 'fields'=> ['user_id']],
+        ['name' => 'projects_users_alt', 'type'=>'alternate_key', 'fields'=> ['project_id','user_id']],
+    ],
+    'relationships' => [
+        'projects_users' => [
             'lhs_module' => 'Projects',
             'lhs_table' => 'projects',
             'lhs_key' => 'id',
@@ -62,6 +61,6 @@ $dictionary['projects_users'] = array (
             'join_table' => 'projects_users',
             'join_key_lhs' => 'project_id',
             'join_key_rhs' => 'user_id',
-        ),
-    ),
-);
+        ],
+    ],
+];

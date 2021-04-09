@@ -14,20 +14,19 @@
 
 
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$pluginmetadata = array(
+$pluginmetadata = [
     'id' => 'ktargetlistexport',
     'type' => 'integration',
     'category' => 'export',
     'displayname' => 'LBL_TARGETLIST_EXPORT',
-    'integration' => array(
+    'integration' => [
         'include' => 'ktargetlistexport.php',
         'class' => 'ktargetlistexport'
-    ),
-    'includes' => array(
+    ],
+    'includes' => [
         'view' => 'ktargetlistexportmenu.js',
         'viewItem' => 'SpiceCRM.KReporter.Viewer.integrationplugins.ktargetlistexport.menuitem'
-    )
-);
+    ]
+];
 

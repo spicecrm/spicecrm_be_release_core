@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,62 +33,62 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['meetings_contacts'] = array(
+global $dictionary;
+$dictionary['meetings_contacts'] = [
 	'table'=> 'meetings_contacts',
-	'fields'=> array(
-		array(	'name'			=> 'id', 
+	'fields'=> [
+		['name'			=> 'id',
 				'type'			=> 'varchar', 
 				'len'			=> '36'
-		),
-		array(	'name'			=> 'meeting_id', 
+        ],
+		['name'			=> 'meeting_id',
 				'type'			=> 'varchar', 
 				'len'			=> '36',
-		),
-		array(	'name'			=> 'contact_id', 
+        ],
+		['name'			=> 'contact_id',
 				'type'			=> 'varchar', 
 				'len'			=> '36',
-		),
-		array(	'name'			=> 'required', 
+        ],
+		['name'			=> 'required',
 				'type'			=> 'varchar', 
 				'len'			=> '1', 
 				'default'		=> '1',
-		),
-		array(	'name'			=> 'accept_status', 
+        ],
+		['name'			=> 'accept_status',
 				'type'			=> 'varchar', 
 				'len'			=> '25', 
 				'default'		=> 'none'
-		),
-		array(	'name'			=> 'date_modified',
+        ],
+		['name'			=> 'date_modified',
 				'type'			=> 'datetime'
-		),
-		array(	'name'			=> 'deleted', 
+        ],
+		['name'			=> 'deleted',
 				'type'			=> 'bool', 
 				'len'			=> '1', 
 				'default'		=> '0', 
 				'required'		=> false
-		),
- 	), 
-	'indices' => array(
- 		array(	'name'			=> 'meetings_contactspk', 
+        ],
+    ],
+	'indices' => [
+ 		['name'			=> 'meetings_contactspk',
 				'type'			=> 'primary', 
-				'fields'		=> array('id'),
-		),
-		array(	'name'			=> 'idx_con_mtg_mtg', 
+				'fields'		=> ['id'],
+        ],
+		['name'			=> 'idx_con_mtg_mtg',
 				'type'			=> 'index', 
-				'fields'		=> array('meeting_id'),
-		),
-		array(	'name'			=> 'idx_con_mtg_con', 
+				'fields'		=> ['meeting_id'],
+        ],
+		['name'			=> 'idx_con_mtg_con',
 				'type'			=> 'index', 
-				'fields'		=> array('contact_id'),
-		),
-		array(	'name'			=> 'idx_meeting_contact', 
+				'fields'		=> ['contact_id'],
+        ],
+		['name'			=> 'idx_meeting_contact',
 				'type'			=> 'alternate_key', 
-				'fields'		=> array('meeting_id','contact_id'),
-		),
-	),
-	'relationships' => array(
-		'meetings_contacts' => array(
+				'fields'		=> ['meeting_id','contact_id'],
+        ],
+    ],
+	'relationships' => [
+		'meetings_contacts' => [
 			'lhs_module'		=> 'Meetings', 
 			'lhs_table'			=> 'meetings', 
 			'lhs_key'			=> 'id',
@@ -100,7 +99,7 @@ $dictionary['meetings_contacts'] = array(
 			'join_table'		=> 'meetings_contacts', 
 			'join_key_lhs'		=> 'meeting_id', 
 			'join_key_rhs'		=> 'contact_id',
-		),
-	),
-);
+        ],
+    ],
+];
 ?>

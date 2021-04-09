@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,75 +33,75 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['contacts_users'] = array(
+global $dictionary;
+$dictionary['contacts_users'] = [
     'table' => 'contacts_users',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'contact_id' => array(
+        ],
+        'contact_id' => [
             'name' => 'contact_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'external_data' => array(
+        ],
+        'external_data' => [
             'name' => 'external_data',
             'type' => 'text'
-        ),
+        ],
         'external_id' => [
             'name' => 'external_id',
             'type' => 'varchar',
             'len'  => 165,
         ],
-        'date_modified' => array(
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'default' => '0',
             'required' => false
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'contacts_userspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_con_users_con',
             'type' => 'index',
-            'fields' => array('contact_id')
-        ),
-        array(
+            'fields' => ['contact_id']
+        ],
+        [
             'name' => 'idx_con_users_user',
             'type' => 'index',
-            'fields' => array('user_id')
-        ),
-        array(
+            'fields' => ['user_id']
+        ],
+        [
             'name' => 'idx_contacts_users',
             'type' => 'alternate_key',
-            'fields' => array('contact_id', 'user_id')
-        ),
-        array(
+            'fields' => ['contact_id', 'user_id']
+        ],
+        [
             'name'   => 'idx_contacts_users_external_id',
             'type'   => 'index',
             'fields' => ['external_id'],
-        )
-    ),
-    'relationships' => array(
-        'contacts_users' => array(
+        ]
+    ],
+    'relationships' => [
+        'contacts_users' => [
             'lhs_module' => 'Contacts',
             'lhs_table' => 'contacts',
             'lhs_key' => 'id',
@@ -113,6 +112,6 @@ $dictionary['contacts_users'] = array(
             'join_table' => 'contacts_users',
             'join_key_lhs' => 'contact_id',
             'join_key_rhs' => 'user_id'
-        )
-    )
-);
+        ]
+    ]
+];

@@ -1,93 +1,115 @@
 <?php
-use SpiceCRM\includes\Logger\LogViewer;
-use SpiceCRM\includes\Logger\RESTLogViewer;
-$RESTManager = \SpiceCRM\includes\RESTManager::getInstance();
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
+use SpiceCRM\includes\RESTManager;
+use SpiceCRM\includes\Logger\KREST\controllers\LogViewController;
+/**
+ * get a Rest Manager Instance
+ */
+$RESTManager = RESTManager::getInstance();
 
-$RESTManager->app->group('/crmlog', function () {
+$routes = [
 
-    $this->get('', function ($req, $res, $args) {
-        $viewer = new LogViewer();
-        $lines = $viewer->getLines($req->getQueryParams());
-        return $res->withJson([
-            'currentLogLevel' => @$GLOBALS['sugar_config']['logger']['level'],
-            'count' => count($lines),
-            'lines' => $lines,
-            'SpiceLogger' => @$GLOBALS['sugar_config']['logger']['default'] === 'SpiceLogger'
-        ]);
-    });
+    [
+        'method'      => 'get',
+        'route'       => '/crmlog',
+        'class'       => LogViewController::class,
+        'function'    => 'CRMLogGetLines',
+        'description' => 'get the lines of the crmlogger',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/crmlog/{begin:\d{10}}/{end:\d{10}}',
+        'class'       => LogViewController::class,
+        'function'    => 'CRMLogWithTime',
+        'description' => 'get the logs within a timeframe',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/crmlog/fullLine/{lineId}',
+        'class'       => LogViewController::class,
+        'function'    => 'CRMLogFullLine',
+        'description' => 'get the full line logs',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/crmlog/userlist',
+        'class'       => LogViewController::class,
+        'function'    => 'CRMLogGetAllUser',
+        'description' => 'get the log from all user',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/krestlog',
+        'class'       => LogViewController::class,
+        'function'    => 'SpiceLogGetLines',
+        'description' => 'get the lines of the spice logger',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/krestlog/{begin:\d{10}}/{end:\d{10}}',
+        'class'       => LogViewController::class,
+        'function'    => 'SpiceLogWithTime',
+        'description' => '',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/krestlog/fullLine/{lineId}',
+        'class'       => LogViewController::class,
+        'function'    => 'SpiceLogFullLine',
+        'description' => 'get the full line logs',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+         'method'      => 'get',
+         'route'       => '/krestlog/routes',
+         'class'       => LogViewController::class,
+         'function'    => 'SpiceLogRoutes',
+         'description' => 'get the log routes',
+         'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/krestlog/userlist',
+        'class'       => LogViewController::class,
+        'function'    => 'SpiceLogGetAllUser',
+        'description' => 'get the spice log from all users',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
 
-    $this->get( '/{begin:\d{10}}/{end:\d{10}}', function( $req, $res, $args ) {
-        $viewer = new LogViewer();
-        $lines =  $viewer->getLinesOfPeriod( $args['begin'], $args['end'], $req->getQueryParams() );
-        return $res->withJson([
-            'currentLogLevel' => @$GLOBALS['sugar_config']['logger']['level'],
-            'count' => count( $lines ),
-            'lines' => $lines,
-            'SpiceLogger' => @$GLOBALS['sugar_config']['logger']['default'] === 'SpiceLogger'
-        ]);
-    });
-
-    $this->get('/fullLine/{lineId}', function ($req, $res, $args) {
-        $viewer = new LogViewer();
-        $line = $viewer->getFullLine( $args['lineId'] );
-        return $res->withJson([
-            'currentLogLevel' => @$GLOBALS['sugar_config']['logger']['level'],
-            'line' => $line
-        ]);
-    });
-
-    $this->get('/userlist', function ($req, $res, $args) {
-        $response = [];
-        $viewer = new RESTLogViewer();
-        $response['list'] = $viewer->getAllUser();
-        $response['count'] = count( $response['list'] );
-        return $res->withJson( $response );
-    });
-
-});
-
-$RESTManager->app->group('/krestlog', function () {
-
-    $this->get('', function ($req, $res, $args) {
-        $viewer = new RESTLogViewer();
-        $lines = $viewer->getLines($req->getQueryParams());
-        return $res->withJson([
-            'count' => count($lines),
-            'lines' => $lines
-        ]);
-    });
-
-    $this->get( '/{begin:\d{10}}/{end:\d{10}}', function( $req, $res, $args ) {
-        $viewer = new RESTLogViewer();
-        $lines =  $viewer->getLinesOfPeriod( $args['begin'], $args['end'], $req->getQueryParams() );
-        return $res->withJson([
-            'count' => count($lines),
-            'lines' => $lines
-        ]);
-    });
-
-    $this->get('/fullLine/{lineId}', function ($req, $res, $args) {
-        $viewer = new RESTLogViewer();
-        $line = $viewer->getFullLine( $args['lineId'] );
-        return $res->withJson([
-            'line' => $line
-        ]);
-    });
-
-    $this->get('/routes', function ($req, $res, $args) {
-        $viewer = new RESTLogViewer();
-        $routes = $viewer->getRoutes();
-        return $res->withJson([
-            'routes' => $routes
-        ]);
-    });
-
-    $this->get('/userlist', function ($req, $res, $args) {
-        $response = [];
-        $viewer = new RESTLogViewer();
-        $response['list'] = $viewer->getAllUser();
-        $response['count'] = count( $response['list'] );
-        return $res->withJson( $response );
-    });
-
-});
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('crmlog', '1.0', [], $routes);

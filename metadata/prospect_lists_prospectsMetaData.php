@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,73 +33,73 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['prospect_lists_prospects'] = array (
+global $dictionary;
+$dictionary['prospect_lists_prospects'] = [
 
 	'table' => 'prospect_lists_prospects',
 
-	'fields' => array (
-		array (
+	'fields' => [
+		[
 			'name' => 'id',
 			'type' => 'varchar',
 			'len' => '36',
-		),
-		array (
+        ],
+		[
 			'name' => 'prospect_list_id',
 			'type' => 'varchar',
 			'len' => '36',
-		),
-		array (
+        ],
+		[
 			'name' => 'related_id',
 			'type' => 'varchar',
 			'len' => '36',
-		),
-		array (
+        ],
+		[
 			'name' => 'related_type',
 			'type' => 'varchar',
 			'len' => '25',  //valid values are Prospect, Contact, Lead, User
-		),
-		array (
+        ],
+		[
 			'name' => 'quantity',
 			'type' => 'varchar',
 			'len' => '25',
 			'default' => '0'
-		),
-        array (
+        ],
+        [
 			'name' => 'date_modified',
 			'type' => 'datetime'
-		),
-		array (
+        ],
+		[
 			'name' => 'deleted',
 			'type' => 'bool',
 			'len' => '1',
 			'default' => '0'
-		),
-	),
+        ],
+    ],
 
-	'indices' => array (
-		array (
+	'indices' => [
+		[
 			'name' => 'prospect_lists_prospectspk',
 			'type' => 'primary',
-			'fields' => array ( 'id' )
-		),
-		array (
+			'fields' => ['id']
+        ],
+		[
 			'name' => 'idx_plp_pro_id',
 			'type' => 'index',
-			'fields' => array ('prospect_list_id')
-		),
-		array (
+			'fields' => ['prospect_list_id']
+        ],
+		[
 			'name' => 'idx_plp_rel_id',
 			'type' => 'alternate_key',
-			'fields' => array (	'related_id',
+			'fields' => ['related_id',
 								'related_type',
 								'prospect_list_id'
-						)
-		),
-	),
+            ]
+        ],
+    ],
 
- 	'relationships' => array (
-		'prospect_list_contacts' => array(	'lhs_module'=> 'ProspectLists',
+ 	'relationships' => [
+		'prospect_list_contacts' => ['lhs_module'=> 'ProspectLists',
 											'lhs_table'=> 'prospect_lists',
 											'lhs_key' => 'id',
 											'rhs_module'=> 'Contacts',
@@ -112,9 +111,9 @@ $dictionary['prospect_lists_prospects'] = array (
 											'join_key_rhs'=>'related_id',
 											'relationship_role_column'=>'related_type',
 											'relationship_role_column_value'=>'Contacts'
-									),
+        ],
 
-		'prospect_list_prospects' =>array(	'lhs_module'=> 'ProspectLists',
+		'prospect_list_prospects' => ['lhs_module'=> 'ProspectLists',
 											'lhs_table'=> 'prospect_lists',
 											'lhs_key' => 'id',
 											'rhs_module'=> 'Prospects',
@@ -126,9 +125,9 @@ $dictionary['prospect_lists_prospects'] = array (
 											'join_key_rhs'=>'related_id',
 											'relationship_role_column'=>'related_type',
 											'relationship_role_column_value'=>'Prospects'
-									),
+        ],
 
-		'prospect_list_leads' =>array(	'lhs_module'=> 'ProspectLists',
+		'prospect_list_leads' => ['lhs_module'=> 'ProspectLists',
 										'lhs_table'=> 'prospect_lists',
 										'lhs_key' => 'id',
 										'rhs_module'=> 'Leads',
@@ -140,9 +139,9 @@ $dictionary['prospect_lists_prospects'] = array (
 										'join_key_rhs'=>'related_id',
 										'relationship_role_column'=>'related_type',
 										'relationship_role_column_value'=>'Leads',
-								),
+        ],
 
-		'prospect_list_users' =>array(	'lhs_module'=> 'ProspectLists',
+		'prospect_list_users' => ['lhs_module'=> 'ProspectLists',
 										'lhs_table'=> 'prospect_lists',
 										'lhs_key' => 'id',
 										'rhs_module'=> 'Users',
@@ -154,9 +153,9 @@ $dictionary['prospect_lists_prospects'] = array (
 										'join_key_rhs'=>'related_id',
 										'relationship_role_column'=>'related_type',
 										'relationship_role_column_value'=>'Users',
-								),
+        ],
 
-		'prospect_list_accounts' =>array(	'lhs_module'=> 'ProspectLists',
+		'prospect_list_accounts' => ['lhs_module'=> 'ProspectLists',
 											'lhs_table'=> 'prospect_lists',
 											'lhs_key' => 'id',
 											'rhs_module'=> 'Accounts',
@@ -168,8 +167,8 @@ $dictionary['prospect_lists_prospects'] = array (
 											'join_key_rhs'=>'related_id',
 											'relationship_role_column'=>'related_type',
 											'relationship_role_column_value'=>'Accounts',
-								),
-		'prospect_list_consumers' =>array(	'lhs_module'=> 'ProspectLists',
+        ],
+		'prospect_list_consumers' => ['lhs_module'=> 'ProspectLists',
 											'lhs_table'=> 'prospect_lists',
 											'lhs_key' => 'id',
 											'rhs_module'=> 'Consumers',
@@ -181,8 +180,8 @@ $dictionary['prospect_lists_prospects'] = array (
 											'join_key_rhs'=>'related_id',
 											'relationship_role_column'=>'related_type',
 											'relationship_role_column_value'=>'Consumers',
-								)
-	)
+        ]
+    ]
 
-)
+]
 ?>

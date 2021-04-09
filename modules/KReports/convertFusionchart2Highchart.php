@@ -21,9 +21,11 @@
  * Sugar6.x: yourSitePath.com/index.php?module=KReports&action=convertFusionchart2Highchart
  */
 
+use SpiceCRM\includes\database\DBManagerFactory;
+
 class KReporterFusionChartSupport {
 
-    public $mapFusion2HighchartType = array(
+    public $mapFusion2HighchartType = [
         'Area2D' => 'area',
         'MSArea' => 'area',
         'MSColumn2D' => 'column',
@@ -49,7 +51,7 @@ class KReporterFusionChartSupport {
         'Pareto2D' => '', //No type found
         'Pareto3D' => '' //No type found
 
-    );
+    ];
 
 
     public function convertFusionCharts2HighCharts(){
@@ -60,8 +62,8 @@ class KReporterFusionChartSupport {
         $res = $this->getKReportsWithFusionCharts();
 
         //create sql update
-        $uQ = array();
-        while($row = $GLOBALS['db']->fetchByAssoc($res)){
+        $uQ = [];
+        while($row = DBManagerFactory::getInstance()->fetchByAssoc($res)){
             $uQ[$row['id']] = "UPDATE kreports SET visualization_params = '".$this->mapFusion2Highchart($row['visualization_params'], $row['id'])."' WHERE id='".$row['id']."'";
         }
 
@@ -72,24 +74,24 @@ class KReporterFusionChartSupport {
 
     public function backupKReports(){
         $q = "SHOW TABLES LIKE 'kreports_backup'";
-        if(!$res = $GLOBALS['db']->query($q))
-            die('Could not check existence of kreports_backup table. DB error: '.$GLOBALS['db']->last_error);
-        if($GLOBALS['db']->getRowCount($res) <= 0){
-            if(!$GLOBALS['db']->query("CREATE TABLE kreports_backup LIKE kreports;"))
-                die('Could not create kreports_backup table. DB error: '.$GLOBALS['db']->last_error);
-            if(!$GLOBALS['db']->query("INSERT kreports_backup SELECT * FROM kreports;"))
-                die('Could not popoulate kreports_backup table. DB error: '.$GLOBALS['db']->last_error);
+        if(!$res = DBManagerFactory::getInstance()->query($q))
+            die('Could not check existence of kreports_backup table. DB error: '. DBManagerFactory::getInstance()->last_error);
+        if(DBManagerFactory::getInstance()->getRowCount($res) <= 0){
+            if(!DBManagerFactory::getInstance()->query("CREATE TABLE kreports_backup LIKE kreports;"))
+                die('Could not create kreports_backup table. DB error: '. DBManagerFactory::getInstance()->last_error);
+            if(!DBManagerFactory::getInstance()->query("INSERT kreports_backup SELECT * FROM kreports;"))
+                die('Could not popoulate kreports_backup table. DB error: '. DBManagerFactory::getInstance()->last_error);
         }
     }
 
 
     public function getKReportsWithFusionCharts(){
-        $uQ = array();
+        $uQ = [];
         $q = "SELECT id, visualization_params FROM kreports "
             . "WHERE visualization_params LIKE '%fusionchart%' AND "
             . "deleted=0";
-        if(!$res = $GLOBALS['db']->query($q))
-            die('DB error: '.$GLOBALS['db']->last_error);
+        if(!$res = DBManagerFactory::getInstance()->query($q))
+            die('DB error: '. DBManagerFactory::getInstance()->last_error);
 
         return $res;
     }
@@ -176,8 +178,8 @@ class KReporterFusionChartSupport {
         }
 
         foreach($sqls as $id => $q){
-            if(!$GLOBALS['db']->query($q))
-                die('DB error: '.$GLOBALS['db']->last_error);
+            if(!DBManagerFactory::getInstance()->query($q))
+                die('DB error: '. DBManagerFactory::getInstance()->last_error);
             else{
                 echo "<div>Report with ID ".$id." was updated.<br />".$q."<br /></div>";
             }

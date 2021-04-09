@@ -1,73 +1,150 @@
 <?php
-
-/*
- * deprectated fts routes
- * this has been moved to SpiceFTSManager/KREST/extensions/search.php and a new route search with post params
- */
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
 use SpiceCRM\includes\RESTManager;
-use SpiceCRM\includes\SpiceFTSManager\SpiceFTSHandler;
-use SpiceCRM\includes\ErrorHandlers\ServiceUnavailableException;
+use SpiceCRM\includes\SpiceFTSManager\KREST\controllers\SpiceFTSRESTController;
 
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
-$RESTManager->excludeFromAuthentication('/fts/check');
-$ftsManager = new SpiceFTSHandler();
 
-$RESTManager->app->group('/fts', function () use ($ftsManager) {
-//@deprecated
-//    $app->post('/search/{module}', function ($req, $res, $args) use ($app, $ftsManager) {
-//        $getParams = $_GET;
-//        $postBody = $req->getParsedBody();
-//        echo json_encode($ftsManager->getSearchResults($args['module'], $postBody['searchterm'], $postBody['page'], $postBody['aggregates']));
-//    });
-    $this->get('/globalsearch', function () use ($ftsManager) {
-        $getParams = $_GET;
-        echo json_encode($ftsManager->getGlobalSearchResults('', '', $getParams));
-    });
-    $this->post('/globalsearch', function () use ($ftsManager) {
-        $getParams = $_GET;
-        echo json_encode($ftsManager->getGlobalSearchResults('', '', $getParams));
-    });
-    $this->get('/globalsearch/{module}', function ($req, $res, $args) use ($ftsManager) {
-        $getParams = $_GET;
-        echo json_encode($ftsManager->getGlobalSearchResults($args['module'], '', $getParams));
-    });
-    $this->post('/globalsearch/{module}', function ($req, $res, $args) use ($ftsManager) {
-        $postBody = $req->getParsedBody();
-        $result = $ftsManager->getGlobalSearchResults($args['module'], '', $_GET, $postBody['aggregates'], $postBody['sort']);
-        echo json_encode($result);
-    });
-    $this->get('/globalsearch/{module}/{searchterm}', function ($req, $res, $args) use ($ftsManager) {
-        $getParams = $_GET;
-        echo json_encode($ftsManager->getGlobalSearchResults( $args['module'], urlencode( $args['searchterm'] ), $getParams));
-    });
-    $this->post('/globalsearch/{module}/{searchterm}', function ($req, $res, $args) use ($ftsManager) {
-        $getParams = $_GET;
-        $postBody = $req->getParsedBody();
-        echo json_encode($ftsManager->getGlobalSearchResults( $args['module'], urlencode( $args['searchterm'] ), $getParams, $postBody['aggregates'], $postBody['sort'] ));
-    });
-    $this->get('/searchmodules', function () use ($ftsManager) {
-        echo json_encode($ftsManager->getGlobalSearchModules());
-    });
-    $this->get('/searchterm/{searchterm}', function ($req, $res, $args) use ($ftsManager) {
-        $getParams = $_GET;
-        echo json_encode($ftsManager->searchTerm( urlencode( $args['searchterm'] ), [], $getParams['size'] ?: 10, $getParams['from'] ?: 0 ));
-    });
-    $this->get('/check', function ($req, $res, $args) use ($ftsManager) {
-        if(!$ftsManager->check()){
-            throw (new ServiceUnavailableException('FTS Service unavailable'));
-        }
-        return $res->withJson(['ftsstatus' => true]);
-    });
-    $this->get('/status', function () use ($ftsManager) {
-        echo json_encode(['version' => $ftsManager->getStatus(), 'stats' => $ftsManager->getStats(), 'settings' => $ftsManager->getSettings()]);
-    });
-    $this->get('/stats', function () use ($ftsManager) {
-        echo json_encode($ftsManager->getStats());
-    });
-    $this->put('/unblock', function () use ($ftsManager) {
-        echo json_encode($ftsManager->unblock());
-    });
-    $this->get('/fields/{module}', function ($req, $res, $args) use ($ftsManager) {
-        return $res->withJson($ftsManager->getFTSModuleFields($args['module']));
-    });
-});
+/**
+ * routes
+ */
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/fts/globalsearch',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getGlobalSearchResults',
+        'description' => 'get global search results',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/fts/globalsearch',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getGlobalSearchResults',
+        'description' => 'get global search results',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/fts/globalsearch/{module}',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getSearchResultsForModuleByGet',
+        'description' => 'get module search results',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/fts/globalsearch/{module}',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getSearchResultsForModuleByPost',
+        'description' => 'get module search results',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/fts/globalsearch/{module}/{searchterm}',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getGlobalSearchResultsForModuleSearchTermByGet',
+        'description' => 'get search term results',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/fts/globalsearch/{module}/{searchterm}',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getGlobalSearchResultsForModuleSearchTermByPost',
+        'description' => 'get search term results',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/fts/searchmodules',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getGlobalSearchModules',
+        'description' => 'all global search enabled modules',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/fts/searchterm/{searchterm}',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'searchTerm',
+        'description' => 'search in a module',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/fts/check',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'check',
+        'description' => 'check FTS connection',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/fts/status',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getStatus',
+        'description' => 'get some basic stats',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/fts/stats',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getStats',
+        'description' => 'get elasticsearch stats',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'put',
+        'route'       => '/fts/unblock}',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'unblock',
+        'description' => 'get indexes settings',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/fts/fields/{module}',
+        'class'       => SpiceFTSRESTController::class,
+        'function'    => 'getFTSModuleFields',
+        'description' => 'load fields for selected module',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+];
+
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('fts', '1.0', [], $routes);

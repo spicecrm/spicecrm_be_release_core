@@ -1,6 +1,9 @@
 <?php
 namespace SpiceCRM\modules\Administration\KREST;
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 class CleanUpHandler
 {
     public $scope = 'global';
@@ -44,7 +47,7 @@ class CleanUpHandler
 
     public function __construct()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $this->db = $db;
     }
 
@@ -199,14 +202,14 @@ class CleanUpHandler
         ];
         /*
         // not necessary needed to be in object repository...
-        $sql = "SELECT target.id FROM sysuicomponentdefaultconf target 
+        $sql = "SELECT target.id FROM sysuicomponentdefaultconf target
                 LEFT JOIN sysuiobjectrepository rel ON(target.component = rel.component)
                 WHERE rel.id IS NULL";
         $checks[] = [
             'table' => 'sysuicomponentdefaultconf',
             'sql' => $sql
         ];
-        $sql = "SELECT target.id FROM sysuicomponentmoduleconf target 
+        $sql = "SELECT target.id FROM sysuicomponentmoduleconf target
                 LEFT JOIN sysuiobjectrepository rel ON(target.component = rel.component)
                 WHERE rel.id IS NULL";
         $checks[] = [
@@ -254,7 +257,7 @@ class CleanUpHandler
             }
             $sql .= "WHERE ".implode(' AND ', $where_sqls).";";
             //var_dump($sql); exit;
-         }
+        }
     }
 
     /**
@@ -287,5 +290,16 @@ class CleanUpHandler
             return str_replace('sysui', 'sysuicustom', $name);
         }
         return static::$CUSTOM_TABLE_NAME_MAP[$name] ? static::$CUSTOM_TABLE_NAME_MAP[$name] : $name;
+    }
+
+
+    /**
+     * delete the following cache-file \vendor\dompdf\dompdf\lib\fonts\dompdf_font_family_cache.php (when it's there)
+     */
+    public function cleanDompdfStyleCacheFile()
+    {
+        $rootDir = realpath(__DIR__ . "/../../../");
+        $fontDir = isset(SpiceConfig::getInstance()->config['dompdf']['fontDir']) ? SpiceConfig::getInstance()->config['dompdf']['fontDir'] : 'dompdf/fonts/';
+        return unlink($rootDir.'/'.create_cache_directory($fontDir).'dompdf_font_family_cache.php');
     }
 }

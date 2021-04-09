@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,7 +34,12 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\data;
 
+use SpiceCRM\data\Relationships\SugarRelationship;
+use SpiceCRM\data\Relationships\SugarRelationshipFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\VardefManager;
 
 /*********************************************************************************
 
@@ -47,8 +51,7 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * All Rights Reserved.
  * Contributor(s): ______________________________________..
  ********************************************************************************/
-global $dictionary;
-require_once("data/Relationships/RelationshipFactory.php");
+
 
 /**
  * Represents a relationship from a single beans perspective.
@@ -64,9 +67,9 @@ class Link2
     protected $beans;  //beans on the other side of the link
     protected $rows;   //any additional fields on the relationship
     protected $loaded; //true if this link has been loaded from the database
-    protected $relationship_fields = array();
+    protected $relationship_fields = [];
     //Used to store unsaved beans on this relationship that will be combined with the ones pulled from the DB if getBeans() is called.
-    protected $tempBeans = array();
+    protected $tempBeans = [];
 
     /**
      * @param  $linkName String name of a link field in the module's vardefs
@@ -99,7 +102,7 @@ class Link2
                 }
             }
             if (empty($this->def['name'])) {
-                $GLOBALS['log']->fatal("failed to find link for $linkName");
+                LoggerManager::getLogger()->fatal("failed to find link for $linkName");
                 return false;
             }
 
@@ -116,7 +119,7 @@ class Link2
         $this->relationship_fields = (!empty($this->def['rel_fields'])) ? $this->def['rel_fields'] : array();
 
         if (!$this->loadedSuccesfully()) {
-            $GLOBALS['log']->fatal("{$this->name} for {$this->def['relationship']} failed to load\n");
+            LoggerManager::getLogger()->fatal("{$this->name} for {$this->def['relationship']} failed to load\n");
         }
         //Following behavior is tied to a property(ignore_role) value in the vardef. It alters the values of 2 properties, ignore_role_filter and add_distinct.
         //the property values can be altered again before any requests are made.
@@ -149,7 +152,7 @@ class Link2
      * Will be called internally when the $rows property is accessed or get() is called
      * @return void
      */
-    public function load($params = array())
+    public function load($params = [])
     {
         $data = $this->query($params);
         $this->rows = $data['rows'];
@@ -318,7 +321,7 @@ class Link2
                 return REL_LHS;
         }
 
-        $GLOBALS['log']->error("Unable to get proper side for link {$this->name} in {$this->focus->module_name}");
+        LoggerManager::getLogger()->error("Unable to get proper side for link {$this->name} in {$this->focus->module_name}");
     }
 
     /**
@@ -355,7 +358,7 @@ class Link2
      * 'return_as_array': returns the query broken into
      * @return String/Array query to grab just ids for this relationship
      */
-    function getQuery($params = array())
+    function getQuery($params = [])
     {
         return $this->relationship->getQuery($this, $params);
     }
@@ -380,12 +383,12 @@ class Link2
      * <li><b>deleted:</b> If deleted is set to 1, only deleted records related to the current record will be returned.</li></ul>
      * @return array of SugarBeans related through this link.
      */
-    function getBeans($params = array())
+    function getBeans($params = [])
     {
         //Some depricated code attempts to pass in the old format to getBeans with a large number of useless paramters.
         //reset the parameters if they are not in the new array format.
         if (!is_array($params))
-            $params = array();
+            $params = [];
 
         if (!$this->loaded && empty($params)) {
 
@@ -408,17 +411,17 @@ class Link2
             $rows = $data['rows'];
         }
 
-        $result = array();
+        $result = [];
         if (!$this->beansAreLoaded() || !empty($params)) {
             if (!is_array($this->beans))
-                $this->beans = array();
+                $this->beans = [];
 
             $rel_module = $this->getRelatedModuleName();
 
             //First swap in the temp loaded beans, only if we are doing a complete load (no params)
             if (empty($params)) {
                 $result = $this->tempBeans;
-                $this->tempBeans = array();
+                $this->tempBeans = [];
             }
 
             //now load from the rows
@@ -433,7 +436,7 @@ class Link2
 
                     if (!empty($idField) && $idField != 'id') {
                         $tmpBean = BeanFactory::getBean($rel_module);
-                        $tmpBean->retrieve_by_string_fields(array($idField => $id));
+                        $tmpBean->retrieve_by_string_fields([$idField => $id]);
                     } else {
                         $tmpBean = BeanFactory::getBean($rel_module, $id);
                     }
@@ -492,7 +495,7 @@ class Link2
         }
     }
 
-    function getBeanCount($params = array())
+    function getBeanCount($params = [])
     {
         //Some depricated code attempts to pass in the old format to getBeans with a large number of useless paramters.
         //reset the parameters if they are not in the new array format.
@@ -525,19 +528,19 @@ class Link2
      *
      * @return boolean|array          Return true if all relationships were added.  Return an array with the failed keys if any of them failed.
      */
-    function add($rel_keys, $additional_values = array())
+    function add($rel_keys, $additional_values = [])
     {
         if (!is_array($rel_keys))
-            $rel_keys = array($rel_keys);
+            $rel_keys = [$rel_keys];
 
-        $failures = array();
+        $failures = [];
 
         foreach ($rel_keys as $key) {
             //We must use beans for LogicHooks and other business logic to fire correctly
             if (!($key instanceof SugarBean)) {
                 $key = $this->getRelatedBean($key);
                 if (!($key instanceof SugarBean)) {
-                    $GLOBALS['log']->error("Unable to load related bean by id");
+                    LoggerManager::getLogger()->error("Unable to load related bean by id");
                     return false;
                 }
             }
@@ -595,7 +598,7 @@ class Link2
      */
     protected function getRelatedBean($id = false)
     {
-        $params = array('encode' => true, 'deleted' => true);
+        $params = ['encode' => true, 'deleted' => true];
         return BeanFactory::getBean($this->getRelatedModuleName(), $id, $params);
     }
 
@@ -672,7 +675,7 @@ class Link2
         //find the key values for the table.
         $dup_keys = $this->_get_alternate_key_fields($table_name);
         if (empty($dup_keys)) {
-            $GLOBALS['log']->debug("No alternate key define, skipping duplicate check..");
+            LoggerManager::getLogger()->debug("No alternate key define, skipping duplicate check..");
             return false;
         }
 
@@ -685,7 +688,7 @@ class Link2
                 $this->_duplicate_where .= $delimiter . ' ' . $field . "='" . $join_key_values[$field] . "'";
                 $delimiter = 'AND';
             } else {
-                $GLOBALS['log']->error('Duplicate checking aborted, Please supply a value for this column ' . $field);
+                LoggerManager::getLogger()->error('Duplicate checking aborted, Please supply a value for this column ' . $field);
                 return false;
             }
         }
@@ -694,7 +697,7 @@ class Link2
 
         $query = 'SELECT id FROM ' . $table_name . $this->_duplicate_where;
 
-        $GLOBALS['log']->debug("relationship_exists query(" . $query . ')');
+        LoggerManager::getLogger()->debug("relationship_exists query(" . $query . ')');
 
         $result = $this->_db->query($query, true);
         $row = $this->_db->fetchByAssoc($result);
@@ -726,7 +729,7 @@ class Link2
         //bug 32623, when the relationship is built in old version, there is no alternate_key. we have to use join_key_lhs and join_key_lhs.
         $relDef = $this->relationship->def;
         if (!empty($relDef['join_key_lhs']) && !empty($relDef['join_key_rhs']))
-            return array($relDef['join_key_lhs'], $relDef['join_key_rhs']);
+            return [$relDef['join_key_lhs'], $relDef['join_key_rhs']];
     }
 
 }

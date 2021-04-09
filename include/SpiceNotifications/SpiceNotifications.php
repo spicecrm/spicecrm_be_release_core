@@ -1,9 +1,12 @@
 <?php
 namespace SpiceCRM\includes\SpiceNotifications;
 
-use BeanFactory;
-use Mailbox;
-use UserPreference;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\modules\Mailboxes\Mailbox;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\UserPreferences\UserPreference;
 
 class SpiceNotifications
 {
@@ -34,7 +37,8 @@ class SpiceNotifications
     }
 
     public function saveNotification() {
-        global $db, $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
         $sql = "INSERT INTO spicenotifications (id, bean_module, bean_id, created_by, user_id, notification_date, notification_type)
                 VALUES ('{$this->id}', '{$this->beanModule}', '{$this->beanId}', '{$current_user->id}', '{$this->userId}', '{$this->notificationDate}', '{$this->notificationType}')";
@@ -46,14 +50,14 @@ class SpiceNotifications
     }
 
     private function sendEmailNotification() {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $parsedTpl = $this->getParsedTpl();
 
         if($parsedTpl === false) return;
 
         $sendToEmail = $this->assignedUser->emailAddress->getPrimaryAddress($this->assignedUser);
         if ( empty( $sendToEmail )) {
-            $GLOBALS['log']->warn("Notifications: No e-mail address set for user '{$this->assignedUser->user_name}', cancelling send.");
+            LoggerManager::getLogger()->warn("Notifications: No e-mail address set for user '{$this->assignedUser->user_name}', cancelling send.");
             return false;
         }
 
@@ -69,12 +73,12 @@ class SpiceNotifications
             $email->addEmailAddress( 'from', $current_user->emailAddress->getPrimaryAddress( $current_user ) );
             $sendResults = $email->sendEmail();
             if ( isset( $sendResults['errors'] ) ) {
-                $GLOBALS['log']->fatal('Error sending notification email over Mailbox in SugarBean on file '.__FILE__.', line '.__LINE__.'.');
-                $GLOBALS['log']->fatal( $sendResults );
+                LoggerManager::getLogger()->fatal('Error sending notification email over Mailbox in SugarBean on file '.__FILE__.', line '.__LINE__.'.');
+                LoggerManager::getLogger()->fatal( $sendResults );
             }
             return true;
         } catch (Exception $e) {
-            $GLOBALS['log']->fatal('Notifications: No Notification sent. Please check if default mailbox is set.');
+            LoggerManager::getLogger()->fatal('Notifications: No Notification sent. Please check if default mailbox is set.');
             return false;
         }
     }
@@ -91,7 +95,7 @@ class SpiceNotifications
         } else if (isset($_SESSION['notification_templates'][$this->beanModule]['en_us'])) {
             $tplId = $_SESSION['notification_templates'][$this->beanModule]['en_us']['id'];
         } else {
-            $GLOBALS['log']->fatal("Notifications: No suitable template available in DB (in the langue of the destination user or in english) for module '{$this->beanModule}', cancelling send.");
+            LoggerManager::getLogger()->fatal("Notifications: No suitable template available in DB (in the langue of the destination user or in english) for module '{$this->beanModule}', cancelling send.");
             return false;
         }
 
@@ -102,9 +106,9 @@ class SpiceNotifications
     }
 
     private function initNotificationTemplates() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         if ( !isset( $_SESSION['notification_templates'] ) || empty( $_SESSION['notification_templates'] )) {
-            $_SESSION['notification_templates'] = array();
+            $_SESSION['notification_templates'] = [];
             $restpl = $db->query('SELECT * FROM email_templates WHERE (type="notification" OR type="notification_custom") AND deleted=0 ORDER BY type ASC');
             while ( $row = $db->fetchByAssoc( $restpl )) {
                 $_SESSION['notification_templates'][$row['for_bean']][$row['language']] = $row;

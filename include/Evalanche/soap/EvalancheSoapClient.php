@@ -2,7 +2,9 @@
 
 namespace SpiceCRM\includes\Evalanche\soap;
 
-class EvalancheSoapClient extends \SoapClient
+use SoapClient;
+
+class EvalancheSoapClient extends SoapClient
 {
     public $wsdl;
     public $options;

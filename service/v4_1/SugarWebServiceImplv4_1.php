@@ -1,4 +1,11 @@
 <?php
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 if (!defined('sugarEntry')) define('sugarEntry', true);
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
@@ -80,36 +87,36 @@ class SugarWebServiceImplv4_1 extends SugarWebServiceImplv4
      */
     function get_relationships($session, $module_name, $module_id, $link_field_name, $related_module_query, $related_fields, $related_module_link_name_to_fields_array, $deleted, $order_by = '', $offset = 0, $limit = false)
     {
-        $GLOBALS['log']->info('Begin: SugarWebServiceImpl->get_relationships');
+        LoggerManager::getLogger()->info('Begin: SugarWebServiceImpl->get_relationships');
         self::$helperObject = new SugarWebServiceUtilv4_1();
-        global  $beanList, $beanFiles;
+        global $beanList, $beanFiles;
     	$error = new SoapError();
 
     	if (!self::$helperObject->checkSessionAndModuleAccess($session, 'invalid_session', $module_name, 'read', 'no_access', $error)) {
-    		$GLOBALS['log']->info('End: SugarWebServiceImpl->get_relationships');
+    		LoggerManager::getLogger()->info('End: SugarWebServiceImpl->get_relationships');
     		return;
     	} // if
 
     	$mod = BeanFactory::getBean($module_name, $module_id);
 
         if (!self::$helperObject->checkQuery($error, $related_module_query, $order_by)) {
-    		$GLOBALS['log']->info('End: SugarWebServiceImpl->get_relationships');
+    		LoggerManager::getLogger()->info('End: SugarWebServiceImpl->get_relationships');
         	return;
         } // if
 
         if (!self::$helperObject->checkACLAccess($mod, 'DetailView', $error, 'no_access')) {
-    		$GLOBALS['log']->info('End: SugarWebServiceImpl->get_relationships');
+    		LoggerManager::getLogger()->info('End: SugarWebServiceImpl->get_relationships');
         	return;
         } // if
 
-        $output_list = array();
-    	$linkoutput_list = array();
+        $output_list = [];
+    	$linkoutput_list = [];
 
     	// get all the related modules data.
         $result = self::$helperObject->getRelationshipResults($mod, $link_field_name, $related_fields, $related_module_query, $order_by, $offset, $limit);
 
         if (self::$helperObject->isLogLevelDebug()) {
-    		$GLOBALS['log']->debug('SoapHelperWebServices->get_relationships - return data for getRelationshipResults is ' . var_export($result, true));
+    		LoggerManager::getLogger()->debug('SoapHelperWebServices->get_relationships - return data for getRelationshipResults is ' . var_export($result, true));
         } // if
     	if ($result) {
 
@@ -140,8 +147,8 @@ class SugarWebServiceImplv4_1 extends SugarWebServiceImplv4
 
     	} // if
 
-    	$GLOBALS['log']->info('End: SugarWebServiceImpl->get_relationships');
-    	return array('entry_list'=>$output_list, 'relationship_list' => $linkoutput_list);
+    	LoggerManager::getLogger()->info('End: SugarWebServiceImpl->get_relationships');
+    	return ['entry_list'=>$output_list, 'relationship_list' => $linkoutput_list];
     }
 
 
@@ -169,60 +176,61 @@ class SugarWebServiceImplv4_1 extends SugarWebServiceImplv4
      *
      * @return Array records that match search criteria
      */
-    function get_modified_relationships($session, $module_name, $related_module, $from_date, $to_date, $offset, $max_results, $deleted=0, $module_user_id = '', $select_fields = array(), $relationship_name = '', $deletion_date = ''){
-        global  $beanList, $beanFiles, $current_user;
+    function get_modified_relationships($session, $module_name, $related_module, $from_date, $to_date, $offset, $max_results, $deleted=0, $module_user_id = '', $select_fields = [], $relationship_name = '', $deletion_date = ''){
+        global $beanList, $beanFiles;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
         $error = new SoapError();
-        $output_list = array();
+        $output_list = [];
 
         if(empty($from_date))
         {
             $error->set_error('invalid_call_error, missing from_date');
-            return array('result_count'=>0, 'next_offset'=>0, 'field_list'=>$select_fields, 'entry_list'=>array(), 'error'=>$error->get_soap_array());
+            return ['result_count'=>0, 'next_offset'=>0, 'field_list'=>$select_fields, 'entry_list'=>[], 'error'=>$error->get_soap_array()];
         }
 
         if(empty($to_date))
         {
             $error->set_error('invalid_call_error, missing to_date');
-            return array('result_count'=>0, 'next_offset'=>0, 'field_list'=>$select_fields, 'entry_list'=>array(), 'error'=>$error->get_soap_array());
+            return ['result_count'=>0, 'next_offset'=>0, 'field_list'=>$select_fields, 'entry_list'=>[], 'error'=>$error->get_soap_array()];
         }
 
         self::$helperObject = new SugarWebServiceUtilv4_1();
         if (!self::$helperObject->checkSessionAndModuleAccess($session, 'invalid_session', $module_name, 'read', 'no_access', $error))
         {
-       		$GLOBALS['log']->info('End: SugarWebServiceImpl->get_modified_relationships');
+       		LoggerManager::getLogger()->info('End: SugarWebServiceImpl->get_modified_relationships');
        		return;
        	} // if
 
         if(empty($beanList[$module_name]) || empty($beanList[$related_module]))
         {
             $error->set_error('no_module');
-            return array('result_count'=>0, 'next_offset'=>0, 'field_list'=>$select_fields, 'entry_list'=>array(), 'error'=>$error->get_soap_array());
+            return ['result_count'=>0, 'next_offset'=>0, 'field_list'=>$select_fields, 'entry_list'=>[], 'error'=>$error->get_soap_array()];
         }
 
         if(!self::$helperObject->check_modules_access($current_user, $module_name, 'read') || !self::$helperObject->check_modules_access($current_user, $related_module, 'read')){
             $error->set_error('no_access');
-            return array('result_count'=>0, 'next_offset'=>0, 'field_list'=>$select_fields, 'entry_list'=>array(), 'error'=>$error->get_soap_array());
+            return ['result_count'=>0, 'next_offset'=>0, 'field_list'=>$select_fields, 'entry_list'=>[], 'error'=>$error->get_soap_array()];
         }
 
         if($max_results > 0 || $max_results == '-99'){
-            global $sugar_config;
-            $sugar_config['list_max_entries_per_page'] = $max_results;
+
+            SpiceConfig::getInstance()->config['list_max_entries_per_page'] = $max_results;
         }
 
         // Cast to integer
         $deleted = (int)$deleted;
-        $query = "(m1.date_modified > " . $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($from_date)."'", 'datetime'). " AND m1.date_modified <= ". $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = $deleted)";
+        $query = "(m1.date_modified > " . DBManagerFactory::getInstance()->convert("'". DBManagerFactory::getInstance()->quote($from_date)."'", 'datetime'). " AND m1.date_modified <= ". DBManagerFactory::getInstance()->convert("'". DBManagerFactory::getInstance()->quote($to_date)."'", 'datetime')." AND {0}.deleted = $deleted)";
         if(isset($deletion_date) && !empty($deletion_date)){
-            $query .= " OR ({0}.date_modified > " . $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($deletion_date)."'", 'datetime'). " AND {0}.date_modified <= ". $GLOBALS['db']->convert("'".$GLOBALS['db']->quote($to_date)."'", 'datetime')." AND {0}.deleted = 1)";
+            $query .= " OR ({0}.date_modified > " . DBManagerFactory::getInstance()->convert("'". DBManagerFactory::getInstance()->quote($deletion_date)."'", 'datetime'). " AND {0}.date_modified <= ". DBManagerFactory::getInstance()->convert("'". DBManagerFactory::getInstance()->quote($to_date)."'", 'datetime')." AND {0}.deleted = 1)";
         }
 
         if(!empty($current_user->id))
         {
-            $query .= " AND m2.id = '".$GLOBALS['db']->quote($current_user->id)."'";
+            $query .= " AND m2.id = '". DBManagerFactory::getInstance()->quote($current_user->id)."'";
         }
 
         //if($related_module == 'Meetings' || $related_module == 'Calls' || $related_module = 'Contacts'){
-        $query = string_format($query, array('m1'));
+        $query = string_format($query, ['m1']);
         //}
 
         require_once('soap/SoapRelationshipHelper.php');
@@ -237,12 +245,12 @@ class SugarWebServiceImplv4_1 extends SugarWebServiceImplv4
 
         $next_offset = $offset + count($output_list);
 
-        return array(
+        return [
             'result_count'=> count($output_list),
             'next_offset' => $next_offset,
             'entry_list' => $output_list,
             'error' => $error->get_soap_array()
-        );
+        ];
     }
 
 }

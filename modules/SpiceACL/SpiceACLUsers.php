@@ -30,9 +30,13 @@
 
 namespace SpiceCRM\modules\SpiceACL;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 class SpiceACLUsers{
     function manageUsersHash($users){
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         // sort the users array and build the hash
         sort($users);
@@ -52,11 +56,11 @@ class SpiceACLUsers{
     }
 
     function getHashUsers($hash_id){
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $usersArray = [];
         $usersObject = $db->query("SELECT user_id FROM spiceaclusers_hash WHERE hash_id = '$hash_id' AND deleted = 0");
         while($userId = $db->fetchByAssoc($usersObject)){
-            $user = \BeanFactory::getBean('Users', $userId['user_id']);
+            $user = BeanFactory::getBean('Users', $userId['user_id']);
             $usersArray[] = [
                 'id' => $user->id,
                 'summary_text' => $user->summary_text,
@@ -72,7 +76,7 @@ class SpiceACLUsers{
      * @return array the fields to be added to the account
      */
     static function addFTSData($bean){
-        global $db;
+        $db = DBManagerFactory::getInstance();
         if(empty($bean->spiceacl_users_hash)) return [];
 
         $ftArray = [
@@ -86,9 +90,9 @@ class SpiceACLUsers{
     }
 
     static function generateCurrentUserWhereClause($table_name = '', $bean){
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-        $absences = \BeanFactory::getBean('UserAbsences');
+        $absences = BeanFactory::getBean('UserAbsences');
         $substituteIds = $absences->getSubstituteIDs();
         $userIDs = array_merge([$current_user->id], $substituteIds);
         $userIDs = "'". join("','", $userIDs) . "'";
@@ -105,7 +109,7 @@ class SpiceACLUsers{
     }
 
     static function generateCreatedByWhereClause($table_name = '', $bean){
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $absences = BeanFactory::getBean('UserAbsences');
         $substituteIds = $absences->getSubstituteIDs();
@@ -125,13 +129,14 @@ class SpiceACLUsers{
      * @return bool true if access is granted and the current user is consideren an owner
      */
     static function checkCurrentUserIsOwner($bean){
-        global $db, $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
         // check the assigned user first
         if($bean->assigned_user_id == $current_user->id) return true;
 
         // check absence substitutes
-        $absences = \BeanFactory::getBean('UserAbsences');
+        $absences = BeanFactory::getBean('UserAbsences');
         $substituteIds = $absences->getSubstituteIDs();
         if(array_search($bean->assigned_user_id, $substituteIds) !== false) return true;
 
@@ -149,7 +154,8 @@ class SpiceACLUsers{
      * @return bool true if access is granted and the current user is consideren an owner
      */
     static function checkCurrentUserIsCreator($bean){
-        global $db, $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
         // check the assigned user first
         if($bean->created_by == $current_user->id) return true;

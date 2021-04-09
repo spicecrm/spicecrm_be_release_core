@@ -28,18 +28,19 @@
 ********************************************************************************/
 namespace SpiceCRM\modules\SpiceACLObjects;
 
-use BeanFactory;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\KREST\handlers\ModuleHandler;
+use SpiceCRM\modules\SpiceACLObjects\SpiceACLObject;
 use stdClass;
-use SpiceACLObject;
 
 class SpiceACLObjectsRESTHandler
 {
     public function getAuthTypes()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array();
+        $retArray = [];
 
         $seed = BeanFactory::getBean('SpiceACLObjects');
         return $seed->generateTypes();
@@ -48,7 +49,7 @@ class SpiceACLObjectsRESTHandler
 
     public function deleteAuthType($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("DELETE FROM kauthtypes WHERE id = '$id'");
 
@@ -57,13 +58,13 @@ class SpiceACLObjectsRESTHandler
 
     public function getAuthType($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array(
+        $retArray = [
             'type' => $db->fetchByAssoc($db->query("SELECT sysmodules.id, sysmodules.module FROM sysmodules WHERE id = '$id' UNION SELECT syscustommodules.id, syscustommodules.module FROM syscustommodules WHERE id = '$id'")),
             'authtypefields' => [],
             'authtypeactions' => []
-        );
+        ];
 
         // get field values
         $authTypeFields = $db->query("SELECT id, name FROM spiceaclmodulefields WHERE sysmodule_id = '$id'");
@@ -82,73 +83,74 @@ class SpiceACLObjectsRESTHandler
 
     public function addAuthTypeField($typeId, $field)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $newId = create_guid();
         $db->query("INSERT INTO spiceaclmodulefields (id, sysmodule_id, name) VALUES('$newId','$typeId','$field')");
 
-        return array(
+        return [
             'id' => $newId,
             'name' => $field
-        );
+        ];
     }
 
     public function deleteAuthTypeField($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("DELETE FROM spiceaclmodulefields WHERE id = '$id'");
 
-        return array('success' => true);
+        return ['success' => true];
     }
 
     public function getAuthTypeAction($authhtypeid){
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $actions = [];
 
         $actionsObj = $db->query("SELECT * FROM spiceaclmoduleactions WHERE sysmodule_id ='$authhtypeid'");
         while($action = $db->fetchByassoc($actionsObj))
-            $actions[] = array(
+            $actions[] = [
                 'id' => $action['id'],
                 'action' => $action['action']
-            );
+            ];
 
         return $actions;
     }
 
     public function addAuthTypeAction($authhtypeid, $action)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $actionID = create_guid();
         $db->query("INSERT INTO spiceaclmoduleactions (id, sysmodule_id, action) VALUES('$actionID', '$authhtypeid', '$action')");
 
-        return array(
+        return [
             'id' => $actionID,
             'action' => $action
-        );
+        ];
     }
 
     public function deleteAuthTypeAction($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("DELETE FROM spiceaclmoduleactions WHERE id = '$id'");
 
-        return array('success' => true);
+        return ['success' => true];
     }
 
     public function getAuthObjects($params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $addFilter = '';
 
-        if ($params['sysmodule_id'])
+        if (isset($params['sysmodule_id'])){
             $addFilter= "spiceaclobjects.sysmodule_id = '" . $params['sysmodule_id'] . "'";
+        }
 
-        if ($params['searchterm']) {
+        if (isset($params['searchterm'])) {
             if($addFilter != '') $addFilter .= ' AND ';
             $addFilter .= "spiceaclobjects.name like '%" . $params['searchterm'] . "%'";
         }
@@ -156,7 +158,7 @@ class SpiceACLObjectsRESTHandler
         $seed = BeanFactory::getBean('SpiceACLObjects');
         $list = $seed->get_full_list('name', $addFilter);
 
-        $retArray = Array();
+        $retArray = [];
         $resthandler = new ModuleHandler();
         foreach($list as $aclObject){
             $retArray[] = $resthandler->mapBeanToArray('SpiceACLObjects', $aclObject);
@@ -168,11 +170,11 @@ class SpiceACLObjectsRESTHandler
 
     public function getAuthObject($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array(
+        $retArray = [
             'object' => $db->fetchByAssoc($db->query("SELECT * FROM kauthobjects WHERE id = '$id'"))
-        );
+        ];
 
         $orgValues = $db->query("SELECT value, korgobjectelement_id FROM kauthobjectorgelementvalues WHERE kauthobject_id = '$id'");
         while ($orgValue = $db->fetchByAssoc($orgValues)) {
@@ -194,7 +196,7 @@ class SpiceACLObjectsRESTHandler
 
     public function addAuthObject($id, $params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("INSERT INTO kauthobjects (id, kauthtype_id, kauthobjecttype, name, status, kauthorgassignment, kauthowner, allorgobjects, activity) values ('$id', '" . $params['kauthtype_id'] . "', '0', '" . $params['name'] . "', 'd', '0', '0', '0', '0' )");
 
@@ -203,9 +205,9 @@ class SpiceACLObjectsRESTHandler
 
     public function setAuthObject($id, $params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $setarray = array();
+        $setarray = [];
         foreach ($params as $name => $value) {
             if ($name != 'id')
                 $setarray[] = $name . "='" . $value . "'";
@@ -219,9 +221,9 @@ class SpiceACLObjectsRESTHandler
 
     public function getAuthObjectOrgValues($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array();
+        $retArray = [];
 
         $records = $db->query("SELECT * FROM kauthobjects WHERE kauthtype_id = '" . $id . "'");
         while ($record = $db->fetchByAssoc($records))
@@ -232,7 +234,7 @@ class SpiceACLObjectsRESTHandler
 
     public function setAuthObjectOrgValues($id, $params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         // delete all current records;
         $db->query("DELETE FROM kauthobjectorgelementvalues WHERE kauthobject_id = '$id'");
@@ -249,7 +251,7 @@ class SpiceACLObjectsRESTHandler
 
     public function addAuthObjectFieldControl($params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("INSERT INTO kauthobjectfields (kauthobject_id, field, control) VALUES('" . $params['kauthobject_id'] . "', '" . $params['field'] . "', '" . $params['control'] . "')");
 
@@ -258,7 +260,7 @@ class SpiceACLObjectsRESTHandler
 
     public function setAuthObjectFieldControl($params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("UPDATE kauthobjectfields SET control = '" . $params['control'] . "' WHERE field = '" . $params['field'] . "' AND kauthobject_id = '" . $params['kauthobject_id'] . "'");
 
@@ -267,7 +269,7 @@ class SpiceACLObjectsRESTHandler
 
     public function deleteAuthObjectFieldControl($params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("DELETE FROM kauthobjectfields WHERE field = '" . $params['field'] . "' AND kauthobject_id = '" . $params['kauthobject_id'] . "'");
 
@@ -276,15 +278,16 @@ class SpiceACLObjectsRESTHandler
 
     public function getAuthObjectFieldControlFields($params)
     {
-        global $db, $beanList;
+        global $beanList;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array();
+        $retArray = [];
 
         // determine the object we are on
         $object = $db->fetchByAssoc($db->query("SELECT kauthobjects.*, kauthtypes.bean FROM kauthobjects, kauthtypes WHERE kauthobjects.kauthtype_id = kauthtypes.id AND kauthobjects.id = '" . $params['authobjectid'] . "'"));
 
         // get all modules for which definitons exist
-        $fArray = array();
+        $fArray = [];
         $records = $db->query("SELECT field FROM kauthobjectfields WHERE kauthobject_id = '" . $params['authtypeid'] . "'");
         while ($record = $db->fetchByAssoc($records)) {
             $fArray[] = $record['name'];
@@ -295,7 +298,7 @@ class SpiceACLObjectsRESTHandler
         $seed = BeanFactory::getBean($module);
         foreach ($seed->field_name_map as $fieldname => $fielddata) {
             if (array_search($fieldname, $fArray) === false)
-                $retArray[] = array('name' => $fieldname);
+                $retArray[] = ['name' => $fieldname];
         }
 
         return $retArray;
@@ -316,9 +319,9 @@ class SpiceACLObjectsRESTHandler
 
     public function getAuthProfiles($params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array();
+        $retArray = [];
 
         $addFilter = '';
         if ($params['searchterm'])
@@ -333,10 +336,10 @@ class SpiceACLObjectsRESTHandler
 
         $count = $db->fetchByAssoc($db->query("SELECT count(*) totalcount FROM kauthprofiles WHERE deleted = 0 $addFilter"));
 
-        return array(
+        return [
             'records' => $retArray,
             'totalcount' => $count['totalcount']
-        );
+        ];
     }
 
 
@@ -361,7 +364,7 @@ class SpiceACLObjectsRESTHandler
 
     public function deleteAuthProfile($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("UPDATE kauthprofiles SET deleted = 1 WHERE id='$id'");
         $db->query("DELETE FROM  kauthprofiles_kauthobjects WHERE kauthprofile_id='$id'");
@@ -372,9 +375,9 @@ class SpiceACLObjectsRESTHandler
 
     public function getAuthProfileObjects($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array();
+        $retArray = [];
 
         $records = $db->query("SELECT kauthobjects.id, kauthobjects.name, kauthobjects.status, kauthtypes.bean  FROM kauthobjects, kauthprofiles_kauthobjects, kauthtypes WHERE kauthobjects.id = kauthprofiles_kauthobjects.kauthobject_id AND kauthtypes.id = kauthobjects.kauthtype_id AND kauthprofiles_kauthobjects.kauthprofile_id = '$id' ORDER BY kauthtypes.bean, kauthobjects.name");
         while ($record = $db->fetchByAssoc($records))
@@ -385,7 +388,7 @@ class SpiceACLObjectsRESTHandler
 
     public function addAuthProfileObject($id, $objectid)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("INSERT INTO kauthprofiles_kauthobjects (kauthprofile_id, kauthobject_id) VALUES('$id', '$objectid')");
         return true;
@@ -393,7 +396,7 @@ class SpiceACLObjectsRESTHandler
 
     public function deleteAuthProfileObject($id, $objectid)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("DELETE FROM  kauthprofiles_kauthobjects WHERE kauthprofile_id = '$id'AND kauthobject_id = '$objectid'");
 
@@ -418,13 +421,14 @@ class SpiceACLObjectsRESTHandler
 
     public function getAuthUsers($params)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array();
+        $retArray = [];
 
         $addFilter = '';
-        if ($params['searchterm'])
+        if (isset($params['searchterm'])){
             $addFilter = " AND (users.user_name like '%" . $params['searchterm'] . "%' OR users.last_name like '%" . $params['searchterm'] . "%' OR users.first_name like '%" . $params['searchterm'] . "%') ";
+        }
 
         $records = $db->limitQuery("SELECT * FROM users WHERE deleted = 0 $addFilter ORDER BY user_name", $params['start'], $params['limit']);
         while ($record = $db->fetchByAssoc($records))
@@ -432,17 +436,17 @@ class SpiceACLObjectsRESTHandler
 
         $count = $db->fetchByAssoc($db->query("SELECT count(*) totalcount FROM users WHERE deleted = 0 $addFilter"));
 
-        return array(
+        return [
             'records' => $retArray,
             'totalcount' => $count['totalcount']
-        );
+        ];
     }
 
     public function getAuthUserProfiles($id)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $retArray = array();
+        $retArray = [];
 
         $records = $db->query("SELECT kauthprofiles.id, kauthprofiles.name, kauthprofiles.status FROM kauthprofiles,  kauthprofiles_users WHERE kauthprofiles_users.kauthprofile_id = kauthprofiles.id AND kauthprofiles_users.user_id = '$id' ORDER BY kauthprofiles.name");
         while ($record = $db->fetchByAssoc($records))
@@ -454,7 +458,7 @@ class SpiceACLObjectsRESTHandler
 
     public function addAuthUserProfile($id, $profileid)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("INSERT INTO kauthprofiles_users (user_id, kauthprofile_id, deleted) VALUES('$id', '$profileid', 0)");
 
@@ -463,7 +467,7 @@ class SpiceACLObjectsRESTHandler
 
     public function deleteAuthUserProfile($id, $profileid)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $db->query("DELETE FROM kauthprofiles_users WHERE user_id = '$id' AND kauthprofile_id = '$profileid'");
 
@@ -527,44 +531,44 @@ class SpiceACLObjectsRESTHandler
         $accounts_manage_own = new SpiceACLObject();
         $accounts_manage_own->name = $module_name . ' manage own';
         $accounts_manage_own->spiceaclowner = '1';
-        $accounts_manage_own->objectactions = array($list, $listrelated, $view, $edit, $editrelated, $create, $deleterelated);
+        $accounts_manage_own->objectactions = [$list, $listrelated, $view, $edit, $editrelated, $create, $deleterelated];
 
         $accounts_access_all = new SpiceACLObject();
         $accounts_access_all->name = $module_name . ' access all';
         $accounts_access_all->spiceaclowner = '0';
-        $accounts_access_all->objectactions = array($list, $listrelated, $view);
+        $accounts_access_all->objectactions = [$list, $listrelated, $view];
 
         $accounts_manage_all = new SpiceACLObject();
         $accounts_manage_all->name = $module_name . ' manage all';
         $accounts_manage_all->spiceaclowner = '0';
-        $accounts_manage_all->objectactions = array($list, $listrelated, $view, $edit, $editrelated, $create, $deleterelated);
+        $accounts_manage_all->objectactions = [$list, $listrelated, $view, $edit, $editrelated, $create, $deleterelated];
 
         $accounts_import_all = new SpiceACLObject();
         $accounts_import_all->name = $module_name . ' import all';
         $accounts_import_all->spiceaclowner = '0';
-        $accounts_import_all->objectactions = array($list, $listrelated, $view, $edit, $editrelated, $create, $import);
+        $accounts_import_all->objectactions = [$list, $listrelated, $view, $edit, $editrelated, $create, $import];
 
         $accounts_export_own = new SpiceACLObject();
         $accounts_export_own->name = $module_name . ' export own';
         $accounts_export_own->spiceaclowner = '1';
-        $accounts_export_own->objectactions = array($list, $listrelated, $view, $export);
+        $accounts_export_own->objectactions = [$list, $listrelated, $view, $export];
 
         $accounts_export_all = new SpiceACLObject();
         $accounts_export_all->name = $module_name . ' export all';
         $accounts_export_all->spiceaclowner = '0';
-        $accounts_export_all->objectactions = array($list, $listrelated, $view, $export);
+        $accounts_export_all->objectactions = [$list, $listrelated, $view, $export];
 
         $accounts_delete_own = new SpiceACLObject();
         $accounts_delete_own->name = $module_name . ' manage+delete own';
         $accounts_delete_own->spiceaclowner = '1';
-        $accounts_delete_own->objectactions = array($list, $listrelated, $view, $edit, $editrelated, $create, $deleterelated, $delete);
+        $accounts_delete_own->objectactions = [$list, $listrelated, $view, $edit, $editrelated, $create, $deleterelated, $delete];
 
         $accounts_delete_all = new SpiceACLObject();
         $accounts_delete_all->name = $module_name . ' manage+delete all';
         $accounts_delete_all->spiceaclowner = '0';
-        $accounts_delete_all->objectactions = array($list, $listrelated, $view, $edit, $editrelated, $create, $deleterelated, $delete);
+        $accounts_delete_all->objectactions = [$list, $listrelated, $view, $edit, $editrelated, $create, $deleterelated, $delete];
 
-        $allObjects = array();
+        $allObjects = [];
         array_push($allObjects, $accounts_manage_own);
         array_push($allObjects, $accounts_delete_own);
         array_push($allObjects, $accounts_import_all);
@@ -574,7 +578,7 @@ class SpiceACLObjectsRESTHandler
         array_push($allObjects, $accounts_manage_all);
         array_push($allObjects, $accounts_export_all);
 
-        $returnArray = array();
+        $returnArray = [];
         // go through the objects and set the data, which are equal to all objects && save the objects
         foreach ($allObjects as $object) {
 

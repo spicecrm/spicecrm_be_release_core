@@ -1,5 +1,7 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\modules\Relationships\Relationship;
 
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
@@ -243,7 +245,7 @@ class RelationshipHandler extends Relationship
 
     function search_filter_rel_info(& $focus, $tar_rel_module, $relationship_name) {
 
-        $rel_list = array();
+        $rel_list = [];
 
         foreach ($focus->relationship_fields as $rel_key => $rel_value) {
             if ($rel_value == $relationship_name) {

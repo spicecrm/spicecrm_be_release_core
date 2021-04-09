@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -36,27 +35,29 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 ********************************************************************************/
 
 
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['Email'] = [
     'table' => 'emails',
     'acl_fields' => false,
     'comment' => 'Contains a record of emails sent to and from the Sugar application',
     'fields' => [
-        'file_mime_type' =>            array (
+        'file_mime_type' =>            [
                 'name' => 'file_mime_type',
                 'vname' => 'LBL_FILE_MIME_TYPE',
                 'type' => 'varchar',
                 'len' => '100',
                 'comment' => 'Attachment MIME type',
                 'importable' => false,
-            ),
-        'file_md5' =>            array (
+        ],
+        'file_md5' =>            [
                 'name' => 'file_md5',
                 'vname' => 'LBL_FILE_MD5',
                 'type' => 'char',
                 'len' => '32',
                 'comment' => 'the MD5 hash of the file attached'
-            ),
-        'file_name' =>            array (
+        ],
+        'file_name' =>            [
                 'name' => 'file_name',
                 'vname' => 'LBL_FILENAME',
                 'type' => 'file',
@@ -65,7 +66,7 @@ $dictionary['Email'] = [
                 'reportable'=>true,
                 'comment' => 'File name associated with the email (attachment)',
                 'importable' => false,
-            ),
+        ],
         'attachments_count' => [
             'name'       => 'attachments_count',
             'vname'      => 'LBL_ATTACHMENTS_COUNT',
@@ -222,7 +223,7 @@ $dictionary['Email'] = [
             'name'         => 'assigned_user_link',
             'type'         => 'link',
             'relationship' => 'emails_assigned_user',
-            'vname'        => 'LBL_ASSIGNED_TO_USER',
+            'vname'        => 'LBL_ASSIGNED_TO',
             'link_type'    => 'one',
             'module'       => 'Users',
             'bean_name'    => 'User',
@@ -329,13 +330,13 @@ $dictionary['Email'] = [
             'bean_name'    => 'Project',
             'source'       => 'non-db',
         ],
-        'projecttasks' => [
-            'name'         => 'projecttasks',
-            'vname'        => 'LBL_PROJECTTASKT',
+        'projectwbss' => [
+            'name'         => 'projectwbss',
+            'vname'        => 'LBL_PROJECTWBSS',
             'type'         => 'link',
-            'relationship' => 'emails_project_task_rel',
-            'module'       => 'ProjectTasks',
-            'bean_name'    => 'ProjectTask',
+            'relationship' => 'emails_projectwbss_rel',
+            'module'       => 'ProjectWBSs',
+            'bean_name'    => 'ProjectWBS',
             'source'       => 'non-db',
         ],
         'prospects' => [

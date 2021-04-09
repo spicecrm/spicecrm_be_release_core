@@ -17,7 +17,7 @@ abstract class ApiPdfHandler extends PdfHandler
             $filename = md5($this->content).'.pdf';
 
         if(!file_put_contents($destination_path.'/'.$filename, $this->content))
-            throw new Exception("Could not save file to $destination_path/$filename!");
+            throw new \Exception("Could not save file to $destination_path/$filename!");
 
         return ['name' => $filename, 'path' => $destination_path, 'mime_type' => 'application/pdf'];
     }

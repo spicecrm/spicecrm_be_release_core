@@ -1,3 +1,5 @@
 <?php
 
-\SpiceCRM\includes\RESTManager::getInstance()->registerExtension('googlemaps', '1.0');
+use SpiceCRM\includes\RESTManager;
+
+RESTManager::getInstance()->registerExtension('googlemaps', '1.0');

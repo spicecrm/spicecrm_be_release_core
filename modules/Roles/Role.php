@@ -1,5 +1,9 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\Roles;
+
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\modules\Users\User;
+
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -40,13 +44,6 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * Description:
  ********************************************************************************/
 
-
-
-
-
-
-
-
 class Role extends SugarBean {
 
 	var $field_name_map;
@@ -80,7 +77,7 @@ class Role extends SugarBean {
 		$query .= "role_id = '$this->id' AND allow = '$allow' AND deleted=0";
 		$result = $this->db->query($query);
 		
-		$return_array = array();
+		$return_array = [];
 		
 		while($row = $this->db->fetchByAssoc($result))
 		{
@@ -94,7 +91,7 @@ class Role extends SugarBean {
 		foreach($mod_ids as $mod_id)
 		{
 			if($mod_id != '')
-				$this->set_relationship('roles_modules', array( 'module_id'=>$mod_id, 'role_id'=>$role_id, 'allow'=>$allow ));
+				$this->set_relationship('roles_modules', ['module_id'=>$mod_id, 'role_id'=>$role_id, 'allow'=>$allow]);
 		}
 	}
 	
@@ -109,7 +106,7 @@ class Role extends SugarBean {
 		foreach($user_ids as $user_id)
 		{
 			if($user_id != '')
-				$this->set_relationship('roles_users', array( 'user_id'=>$user_id, 'role_id'=>$role_id ));
+				$this->set_relationship('roles_users', ['user_id'=>$user_id, 'role_id'=>$role_id]);
 		}
 	}
 
@@ -121,7 +118,7 @@ class Role extends SugarBean {
 
 	function query_user_allowed_modules($user_id)
 	{
-		$userArray = array();
+		$userArray = [];
 		global $app_list_strings;
 		
 		
@@ -153,7 +150,7 @@ class Role extends SugarBean {
 	{
 		global $moduleList;
 		
-		$returnArray = array();
+		$returnArray = [];
 		
 		foreach($moduleList as $key=>$val)
 		{

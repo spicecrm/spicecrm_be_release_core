@@ -1,28 +1,13 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
-* SugarCRM Community Edition is a customer relationship management program developed by
-* SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
 * 
-* This program is free software; you can redistribute it and/or modify it under
-* the terms of the GNU Affero General Public License version 3 as published by the
-* Free Software Foundation with the addition of the following permission added
-* to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
-* IN WHICH THE COPYRIGHT IS OWNED BY SUGARCRM, SUGARCRM DISCLAIMS THE WARRANTY
-* OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-* FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
-* details.
-* 
-* You should have received a copy of the GNU Affero General Public License along with
-* this program; if not, see http://www.gnu.org/licenses or write to the Free
-* Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301 USA.
-* 
-* You can contact SugarCRM, Inc. headquarters at 10050 North Wolfe Road,
-* SW2-130, Cupertino, CA 95014, USA. or at email address contact@sugarcrm.com.
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
 * 
 * The interactive user interfaces in modified source and object code versions
 * of this program must display Appropriate Legal Notices, as required under
@@ -33,24 +18,30 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * SugarCRM" logo. If the display of the logo is not reasonably feasible for
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+namespace SpiceCRM\modules\Mailboxes;
 
-/*********************************************************************************
-
- * Description:  Defines the Account SugarBean Account entity with the necessary
- * methods and variables.
- ********************************************************************************/
-
-require_once 'include/SpiceAttachments/SpiceAttachments.php';
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\modules\Mailboxes\processors\MailboxProcessor;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class Mailbox extends SugarBean {
 
-	public $module_dir  = 'Mailboxes';
-	public $table_name  = "mailboxes";
-	public $object_name = "Mailbox";
-	public $message_type;
+    public $module_dir  = 'Mailboxes';
+    public $table_name  = "mailboxes";
+    public $object_name = "Mailbox";
+    public $message_type;
 
-	public $transport_handler;
+    public $transport_handler;
 
     const LOG_NONE  = 0;
     const LOG_ERROR = 1;
@@ -67,24 +58,24 @@ class Mailbox extends SugarBean {
     /**
      * Mailbox constructor.
      */
-	public function __construct() {
+    public function __construct() {
         parent::__construct();
-	}
+    }
 
     /**
      * get the summary text. Will try to checkif the handler returns a specific mailbox name
      *
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
-	function get_mailbox_display_name()
-	{
-	    $this->initTransportHandler();
-	    if(method_exists($this->transport_handler, 'getMailboxName')){
-	        return $this->transport_handler->getMailboxName();
+    function get_mailbox_display_name()
+    {
+        $this->initTransportHandler();
+        if(method_exists($this->transport_handler, 'getMailboxName')){
+            return $this->transport_handler->getMailboxName();
         }
-		return $this->name;
-	}
+        return $this->name;
+    }
 
     /**
      * initTransportHandler
@@ -92,21 +83,21 @@ class Mailbox extends SugarBean {
      * Initializes the mailbox transport handler according to the transport setting
      *
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
-	public function initTransportHandler()
+    public function initTransportHandler()
     {
         if ($this->settings != '') {
             $this->initializeSettings();
         }
 
-        $class_name = "\\SpiceCRM\\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler";
-        
+        $class_name = "\SpiceCRM\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler";
+
         if (!class_exists($class_name)) {
-            $class_name = "\\SpiceCRM\\custom\\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler";
+            $class_name = "\SpiceCRM\custom\\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler";
             if (!class_exists($class_name)) {
                 throw new Exception('Transport Handler '
-                    . "\\SpiceCRM\\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler"
+                    . "\SpiceCRM\modules\\Mailboxes\\Handlers\\" . ucfirst($this->transport) . "Handler"
                     . ' or ' . $class_name . ' do not exist.');
             }
         }
@@ -125,8 +116,8 @@ class Mailbox extends SugarBean {
      *
      * @return string
      */
-    public function getSentFolder() {
-	    return $this->getRef() . $this->imap_sent_dir;
+    public function getSentFolder(): string {
+        return $this->getRef() . $this->imap_sent_dir;
     }
 
     /**
@@ -136,13 +127,17 @@ class Mailbox extends SugarBean {
      *
      * @return string
      */
-    public function getRef()
-    {
+    public function getRef(): string {
         $ref = '{' . $this->imap_pop3_host . ":" . $this->imap_pop3_port . '/' . $this->imap_pop3_protocol_type;
         if ($this->imap_pop3_encryption == 'ssl') {
             $ref .= '/ssl/novalidate-cert';
         } elseif ($this->imap_pop3_encryption == 'tls') {
             $ref .= '/tls/novalidate-cert';
+        }
+        if (isset($this->shared_mailbox_auth_user) && isset($this->shared_mailbox_user)) {
+            // shared mailbox
+            $ref .= "/authuser={$this->shared_mailbox_auth_user}";
+            $ref .= "/user={$this->shared_mailbox_user}";
         }
         $ref .= '}';
 
@@ -185,7 +180,7 @@ class Mailbox extends SugarBean {
     public function mapFromRestArray($beanDataArray)
     {
         foreach ($beanDataArray['mailbox_processors'] as $processorData) {
-            $processor = new \SpiceCRM\modules\Mailboxes\processors\MailboxProcessor($processorData);
+            $processor = new MailboxProcessor($processorData);
             if ($processor->deleted && $processor->id != '') {
                 $processor->delete();
                 continue;
@@ -227,9 +222,9 @@ class Mailbox extends SugarBean {
 
         if ( !empty( $GLOBALS['installing'] )) return false;
 
-//        global $db;
+//        $db = \SpiceCRM\includes\database\DBManagerFactory::getInstance();
 //        if(is_null($db)){
-//            $db = DBManagerFactory::getInstance();
+//            $db = \SpiceCRM\includes\database\DBManagerFactory::getInstance();
 //        }
 //        $defaultId = null;
 //        $q = "SELECT id FROM mailboxes WHERE is_default=1 AND deleted=0";
@@ -238,20 +233,16 @@ class Mailbox extends SugarBean {
 //            $defaultId = $row['id'];
 //        }
 
-//        $defaultMailbox =  BeanFactory::getBean('Mailboxes', $defaultId);
+//        $defaultMailbox =  \SpiceCRM\data\BeanFactory::getBean('Mailboxes', $defaultId);
 
         $defaultMailbox = BeanFactory::getBean('Mailboxes');
-        $defaultMailbox = $defaultMailbox->retrieve_by_string_fields(array('is_default' => true));
+        $defaultMailbox = $defaultMailbox->retrieve_by_string_fields(['is_default' => true]);
         //getBean will return Mailboxe object with empty properties if $defaultId is null
         //Check on property id
         if (is_null($defaultMailbox) || empty($defaultMailbox->id)) {
             # logging temporarily turned off to prevent messing sugarcrm.log:
-            # $GLOBALS['log']->fatal('No default Mailbox found');
-            if ( @$GLOBALS['isREST'] ) {
-                throw new Exception('No default Mailbox found');
-            } else {
-                return false;
-            }
+            # \SpiceCRM\includes\Logger\LoggerManager::getLogger()->fatal('No default Mailbox found');
+            throw new Exception('No default Mailbox found');
         } else {
             return $defaultMailbox;
         }
@@ -286,7 +277,7 @@ class Mailbox extends SugarBean {
             case self::TRANSPORT_GMAIL:
                 return $this->gmail_email_address ?? $this->gmail_user_name;
             case self::TRANSPORT_PERSONAL_GMAIL:
-                global $current_user;
+                $current_user = AuthenticationController::getInstance()->getCurrentUser();
                 return $current_user->user_name;
             default:
                 return $this->imap_pop3_username;
@@ -352,7 +343,7 @@ class Mailbox extends SugarBean {
      * @return bool|Mailbox
      */
     public static function findByPhoneNumber($phoneNo) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT id FROM mailboxes WHERE inbound_comm='1' AND (outbound_comm='single_sms' OR outbound_comm='mass_sms')";
         $q = $db->query($query);
@@ -371,10 +362,10 @@ class Mailbox extends SugarBean {
     }
 
     public function getUnreadEmailsCount() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT COUNT(*) as cnt from " . $this->getMessagesTable() . " WHERE mailbox_id='" . $this->id . "'"
-                . " AND status='unread'";
+            . " AND status='unread'";
         $q = $db->query($query);
         $result = $db->fetchByAssoc($q);
 
@@ -382,7 +373,7 @@ class Mailbox extends SugarBean {
     }
 
     public function getReadEmailsCount() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT COUNT(*) as cnt from " . $this->getMessagesTable() . " WHERE mailbox_id='" . $this->id . "'"
             . " AND status='read'";
@@ -393,7 +384,7 @@ class Mailbox extends SugarBean {
     }
 
     public function getClosedEmailsCount() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT COUNT(*) as cnt from " . $this->getMessagesTable() . " WHERE mailbox_id='" . $this->id . "'"
             . " AND status='closed'";

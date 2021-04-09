@@ -1,7 +1,5 @@
 <?php
 
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
 
 
 $dictionary ['SpiceACLModuleFields'] = [
@@ -206,7 +204,7 @@ $dictionary['spiceaclobjectvalues'] = [
             'name' => 'operator',
             'vname' => 'LBL_OPERATOR',
             'type' => 'varchar',
-            'len' => 2
+            'len' => 10
         ],
         'value1' => [
             'name' => 'value1',

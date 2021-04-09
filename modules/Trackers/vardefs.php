@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,11 +33,11 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['Tracker'] = array(
+global $dictionary;
+$dictionary['Tracker'] = [
     'table' => 'tracker',
-    'fields' => array(
-        'id'=>array(
+    'fields' => [
+        'id'=> [
             'name' => 'id',
             'vname' => 'LBL_ID',
             'type' => 'int',
@@ -46,88 +45,88 @@ $dictionary['Tracker'] = array(
             'isnull' => 'false',
             'auto_increment' => true,
             'reportable'=>true,
-        ),
-	    'monitor_id'=>array (
+        ],
+	    'monitor_id'=> [
 		    'name' => 'monitor_id',
 		    'vname' => 'LBL_MONITOR_ID',
 		    'type' => 'id',
 		    'required'=>true,
 		    'reportable'=>false,
-	    ),
-        'user_id'=>array(
+        ],
+        'user_id'=> [
             'name' => 'user_id',
             'vname' => 'LBL_USER_ID',
 			'type' => 'varchar',
             'len' => '36',
             'isnull' => 'false',
-        ),
-        'module_name'=>array(
+        ],
+        'module_name'=> [
             'name' => 'module_name',
             'vname' => 'LBL_MODULE_NAME',
             'type' => 'varchar',
             'len' => '255',
             'isnull' => 'false',
-        ),
-        'item_id'=>array(
+        ],
+        'item_id'=> [
             'name' => 'item_id',
             'vname' => 'LBL_ITEM_ID',
             'type' => 'varchar',
             'len' => '36',
             'isnull' => 'false',
-        ),
-        'item_summary'=>array(
+        ],
+        'item_summary'=> [
             'name' => 'item_summary',
             'vname' => 'LBL_ITEM_SUMMARY',
             'type' => 'varchar',
             'len' => '255',
             'isnull' => 'false',
-        ),
-        'date_modified'=>array(
+        ],
+        'date_modified'=> [
             'name' => 'date_modified',
             'vname' => 'LBL_DATE_LAST_ACTION',
             'type' => 'datetime',
             'isnull' => 'false',
-        ),
-        'action'=>array(
+        ],
+        'action'=> [
             'name' => 'action',
             'vname' => 'LBL_ACTION',
             'type' => 'varchar',
             'len' => '255',
             'isnull' => 'false',
-        ),
-        'session_id'=>array(
+        ],
+        'session_id'=> [
             'name' => 'session_id',
             'vname' => 'LBL_SESSION_ID',
             'type' => 'varchar',
             'len' => '36',
             'isnull' => 'true',
-        ),
-        'visible'=>array(
+        ],
+        'visible'=> [
             'name' => 'visible',
             'vname' => 'LBL_VISIBLE',
             'type' => 'bool',
             'len' => '1',
             'default' => '0',
-        ),
-	    'deleted' =>array (
+        ],
+	    'deleted' => [
 		    'name' => 'deleted',
 		    'vname' => 'LBL_DELETED',
 		    'type' => 'bool',
 		    'default' => '0',
 		    'reportable'=>false,
 		    'comment' => 'Record deletion indicator'
-		),
-		'assigned_user_link'=>array (
+        ],
+		'assigned_user_link'=> [
 		    'name' => 'assigned_user_link',
 		    'type' => 'link',
 		    'relationship' => 'tracker_user_id',
-		    'vname' => 'LBL_ASSIGNED_TO_USER',
+		    'vname' => 'LBL_ASSIGNED_TO',
 		    'link_type' => 'one',
 		    'module'=>'Users',
 		    'bean_name'=>'User',
 		    'source'=>'non-db',
-		),
-		'monitor_id_link'=>array (
+        ],
+		'monitor_id_link'=> [
 		    'name' => 'monitor_id_link',
 		    'type' => 'link',
 		    'relationship' => 'tracker_monitor_id',
@@ -136,68 +135,68 @@ $dictionary['Tracker'] = array(
 		    'module'=>'TrackerPerfs',
 		    'bean_name'=>'TrackerPerf',
 		    'source'=>'non-db',
-		),
-    ) ,
+        ],
+    ],
 
     //indices
-    'indices' => array(
-        array(
+    'indices' => [
+        [
             'name' => 'tracker_pk',
             'type' => 'primary',
-            'fields' => array(
+            'fields' => [
                 'id'
-            )
-        ) ,
-        array(
+            ]
+        ],
+        [
             'name' => 'idx_tracker_iid',
             'type' => 'index',
-            'fields' => array(
+            'fields' => [
                 'item_id',
-            ),
-        ),
-        array(
+            ],
+        ],
+        [
             // shortened name to comply with Oracle length restriction
             'name' => 'idx_tracker_userid_vis_id',
             'type' => 'index',
-            'fields' => array(
+            'fields' => [
                 'user_id',
                 'visible',
                 'id',
-            ),
-        ),
-        array(
+            ],
+        ],
+        [
         	// shortened name to comply with Oracle length restriction
             'name' => 'idx_tracker_userid_itemid_vis',
             'type' => 'index',
-            'fields' => array(
+            'fields' => [
                 'user_id',
                 'item_id',
                 'visible'
-            ),
-        ),
-        array(
+            ],
+        ],
+        [
             'name' => 'idx_tracker_monitor_id',
             'type' => 'index',
-            'fields' => array(
+            'fields' => [
                 'monitor_id',
-            ),
-        ),
-        array(
+            ],
+        ],
+        [
             'name' => 'idx_tracker_date_modified',
             'type' => 'index',
-            'fields' => array(
+            'fields' => [
                 'date_modified',
-            ),
-        ),
-    ),
+            ],
+        ],
+    ],
 
     //relationships
- 	'relationships' => array (
+ 	'relationships' => [
 	  'tracker_monitor_id' =>
-		   array(
+		   [
 				'lhs_module'=> 'TrackerPerfs', 'lhs_table'=> 'tracker_perf', 'lhs_key' => 'monitor_id',
 		   		'rhs_module'=> 'Trackers', 'rhs_table'=> 'tracker', 'rhs_key' => 'monitor_id',
 		   		'relationship_type'=>'one-to-one'
-		   )
-   	),
-);
+           ]
+    ],
+];

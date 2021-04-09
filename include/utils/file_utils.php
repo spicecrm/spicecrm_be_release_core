@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -36,6 +35,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 ********************************************************************************/
 
 
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 require_once('include/utils/array_utils.php');
 require_once('include/utils/sugar_file_utils.php');
 
@@ -44,7 +46,7 @@ require_once('include/utils/sugar_file_utils.php');
 function create_cache_directory($file)
 {
     $paths = explode('/',$file);
-    $dir = rtrim($GLOBALS['sugar_config']['cache_dir'], '/\\');
+    $dir = rtrim(SpiceConfig::getInstance()->config['cache_dir'], '/\\');
     if(!file_exists($dir))
     {
         sugar_mkdir($dir, 0775);
@@ -133,6 +135,62 @@ function sugar_rename( $old_filename, $new_filename){
     return $success;
 }
 
+
+function mkdir_recursive($path, $check_is_parent_dir = false)
+{
+    if(sugar_is_dir($path, 'instance')) {
+        return(true);
+    }
+    if(sugar_is_file($path, 'instance')) {
+        if(!empty(LoggerManager::getLogger())) {
+            LoggerManager::getLogger()->fatal("ERROR: mkdir_recursive(): argument $path is already a file.");
+        }
+        return false;
+    }
+
+    //make variables with file paths
+    $pathcmp = $path = rtrim(clean_path($path), '/');
+    $basecmp =$base = rtrim(clean_path(getcwd()), '/');
+    if(is_windows()) {
+        //make path variable lower case for comparison in windows
+        $pathcmp = strtolower($path);
+        $basecmp = strtolower($base);
+    }
+
+    if($basecmp == $pathcmp) {
+        return true;
+    }
+    $base .= "/";
+    if(strncmp($pathcmp, $basecmp, strlen($basecmp)) == 0) {
+        /* strip current path prefix */
+        $path = substr($path, strlen($base));
+    }
+    $thePath = '';
+    $dirStructure = explode("/", $path);
+    if($dirStructure[0] == '') {
+        // absolute path
+        $base = '/';
+        array_shift($dirStructure);
+    }
+    if(is_windows()) {
+        if(strlen($dirStructure[0]) == 2 && $dirStructure[0][1] == ':') {
+            /* C: prefix */
+            $base = array_shift($dirStructure)."\\";
+        } elseif ($dirStructure[0][0].$dirStructure[0][1] == "\\\\") {
+            /* UNC absolute path */
+            $base = array_shift($dirStructure)."\\".array_shift($dirStructure)."\\"; // we won't try to mkdir UNC share name
+        }
+    }
+    foreach($dirStructure as $dirPath) {
+        $thePath .= $dirPath."/";
+        $mkPath = $base.$thePath;
+
+        if(!is_dir($mkPath )) {
+            if(!sugar_mkdir($mkPath)) return false;
+        }
+    }
+    return true;
+}
 
 
 

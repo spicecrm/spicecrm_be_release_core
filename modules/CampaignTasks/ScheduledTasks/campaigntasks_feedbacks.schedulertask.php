@@ -1,6 +1,8 @@
 <?php
 
 
+use SpiceCRM\data\BeanFactory;
+
 $job_strings[] = 'sendCampaignTaskFeedbacks';
 
 function sendCampaignTaskFeedbacks()

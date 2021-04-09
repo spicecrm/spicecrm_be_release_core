@@ -1,6 +1,38 @@
 <?php
-
+/*********************************************************************************
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
 namespace SpiceCRM\includes\SpiceFTSManager;
+
+use SpiceCRM\includes\database\DBManagerFactory;
+
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class ElasticHandler
 {
@@ -14,26 +46,38 @@ class ElasticHandler
 
     var $version = '7';
 
-    var $standardSettings = array(
-        "analysis" => array(
-            "filter" => array(),
-            "tokenizer" => array(),
-            "analyzer" => array()
-        ),
-        'index' => array(
+    var $standardSettings = [
+        "analysis" => [
+            "filter" => [],
+            "tokenizer" => [],
+            "analyzer" => []
+        ],
+        'index' => [
             'max_ngram_diff' => 20,
-        )
-    );
+            'number_of_shards' => 2,
+            'number_of_replicas' => 1
+        ]
+    ];
 
     function __construct()
     {
-        global $sugar_config;
-        $this->server = $sugar_config['fts']['server'];
-        $this->port = $sugar_config['fts']['port'];
-        $this->indexPrefix = $sugar_config['fts']['prefix'];
-        if(isset($sugar_config['fts']['protocol'])){$this->protocol = $sugar_config['fts']['protocol'];}
-        if(isset($sugar_config['fts']['ssl_verifyhost'])){$this->ssl_verifyhost = $sugar_config['fts']['ssl_verifyhost'];}
-        if(isset($sugar_config['fts']['ssl_verifypeer'])){$this->ssl_verifypeer = $sugar_config['fts']['ssl_verifypeer'];}
+
+        $this->server = SpiceConfig::getInstance()->config['fts']['server'];
+        $this->port = SpiceConfig::getInstance()->config['fts']['port'];
+        $this->indexPrefix = SpiceConfig::getInstance()->config['fts']['prefix'];
+
+        if(AuthenticationController::getInstance()->systemtenantid){
+            $this->indexPrefix .=  AuthenticationController::getInstance()->systemtenantid . '_';
+        }
+
+        if(isset(SpiceConfig::getInstance()->config['fts']['protocol'])){$this->protocol = SpiceConfig::getInstance()->config['fts']['protocol'];}
+        if(isset(SpiceConfig::getInstance()->config['fts']['ssl_verifyhost'])){$this->ssl_verifyhost = SpiceConfig::getInstance()->config['fts']['ssl_verifyhost'];}
+        if(isset(SpiceConfig::getInstance()->config['fts']['ssl_verifypeer'])){$this->ssl_verifypeer = SpiceConfig::getInstance()->config['fts']['ssl_verifypeer'];}
+
+        if(isset($sugar_config['fts']['number_of_shards'])){$this->standardSettings['index']['number_of_shards'] = $sugar_config['fts']['number_of_shards'];}
+        if(isset($sugar_config['fts']['number_of_replicas'])){$this->standardSettings['index']['number_of_replicas'] = $sugar_config['fts']['number_of_replicas'];}
+
+
 
         // get the elastic version - only themajor number is important
         //$version = $this->getVersion();
@@ -132,14 +176,14 @@ class ElasticHandler
      */
     function buildSettings()
     {
-        $elasticAnalyzers = array();
+        $elasticAnalyzers = [];
         if (file_exists('custom/include/SpiceFTSManager/analyzers/spice_analyzers.php'))
             include 'custom/include/SpiceFTSManager/analyzers/spice_analyzers.php';
         else
             include 'include/SpiceFTSManager/analyzers/spice_analyzers.php';
         $this->standardSettings['analysis']['analyzer'] = $elasticAnalyzers;
 
-        $elasticNormalizers = array();
+        $elasticNormalizers = [];
         if (file_exists('custom/include/SpiceFTSManager/normalizers/spice_normalizers.php'))
             include 'custom/include/SpiceFTSManager/normalizers/spice_normalizers.php';
         else
@@ -147,14 +191,14 @@ class ElasticHandler
         $this->standardSettings['analysis']['normalizer'] = $elasticNormalizers;
 
 
-        $elasticTokenizers = array();
+        $elasticTokenizers = [];
         if (file_exists('custom/include/SpiceFTSManager/tokenizers/spice_tokenizers.php'))
             include 'custom/include/SpiceFTSManager/tokenizers/spice_tokenizers.php';
         else
             include 'include/SpiceFTSManager/tokenizers/spice_tokenizers.php';
         $this->standardSettings['analysis']['tokenizer'] = $elasticTokenizers;
 
-        $elasticFilters = array();
+        $elasticFilters = [];
         if (file_exists('custom/include/SpiceFTSManager/filters/spice_filters.php'))
             include 'custom/include/SpiceFTSManager/filters/spice_filters.php';
         else
@@ -164,13 +208,13 @@ class ElasticHandler
 
     private function getAllIndexes()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $indexes = array();
+        $indexes = [];
 
         //catch installation process and abort. table sysfts will not exist at the point during installation
         if( !empty( $GLOBALS['installing'] ))
-            return array();
+            return [];
 
         $indexObjects = $db->query("SELECT module FROM sysfts");
         while ($indexObject = $db->fetchByAssoc($indexObjects)) {
@@ -212,7 +256,7 @@ class ElasticHandler
      */
     function unblock()
     {
-        $response = json_decode($this->query('PUT',$this->indexPrefix . '*/_settings', array(), array('index.blocks.read_only_allow_delete' => null)), true);
+        $response = json_decode($this->query('PUT',$this->indexPrefix . '*/_settings', [], ['index.blocks.read_only_allow_delete' => null]), true);
         $response['_prefix'] = $this->indexPrefix;
         return $response;
     }
@@ -260,52 +304,52 @@ class ElasticHandler
         return $response;
     }
 
-    function search($module, $indexProperties = array(), $searchterm = '', $size = 25, $from = 0)
+    function search($module, $indexProperties = [], $searchterm = '', $size = 25, $from = 0)
     {
 
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $queryParam = array();
+        $queryParam = [];
 
         if (!empty($size)) $queryParam['size'] = $size;
         if (!empty($from)) $queryParam['from'] = $from;
         if (!empty($searchterm)) {
-            $queryParam['query'] = array(
-                "bool" => array(
-                    "should" => array(
-                        "wildcard" => array(
+            $queryParam['query'] = [
+                "bool" => [
+                    "should" => [
+                        "wildcard" => [
                             "_all" => "*$searchterm*"
-                        )
-                    )
-                )
-            );
+                        ]
+                    ]
+                ]
+            ];
         }
 
         foreach ($indexProperties as $indexProperty) {
             if ($indexProperty['aggregate'])
-                $queryParam{'aggs'}{$indexProperty['fieldname']} = array(
-                    'terms' => array(
+                $queryParam['aggs'][$indexProperty['fieldname']] = [
+                    'terms' => [
                         'field' => $indexProperty['indexfieldname']
-                    )
-                );
+                    ]
+                ];
         }
 
-        $response = json_decode($this->query('POST', $this->indexPrefix . strtolower($module) . '/_search', array(), $queryParam), true);
+        $response = json_decode($this->query('POST', $this->indexPrefix . strtolower($module) . '/_search', [], $queryParam), true);
         return $response;
     }
 
     function searchModule($module, $queryParam, $size = 25, $from = 0)
     {
 
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $response = json_decode($this->query('POST', $this->indexPrefix . strtolower($module) . '/_search', array(), $queryParam), true);
+        $response = json_decode($this->query('POST', $this->indexPrefix . strtolower($module) . '/_search', [], $queryParam), true);
         return $response;
     }
 
     function searchModules($modules, $queryParam, $size = 25, $from = 0)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $modString = '';
         foreach ($modules as $module) {
@@ -313,19 +357,19 @@ class ElasticHandler
             $modString .= $this->indexPrefix . strtolower($module);
         }
 
-        $response = json_decode($this->query('POST', $modString . '/_search', array(), $queryParam), true);
+        $response = json_decode($this->query('POST', $modString . '/_search', [], $queryParam), true);
         return $response;
     }
 
     function filter($filterfield, $filtervalue)
     {
-        $response = json_decode($this->query('POST', '/' . $this->indexPrefix . '*/_search', array(), array('query' => array('bool' => array('filter' => array('term' => array($filterfield => $filtervalue)))))), true);
+        $response = json_decode($this->query('POST', '/' . $this->indexPrefix . '*/_search', [], ['query' => ['bool' => ['filter' => ['term' => [$filterfield => $filtervalue]]]]]), true);
         return $response;
     }
 
     function createIndex()
     {
-        $response = $this->query('PUT', '', array(), array('settings' => $this->standardSettings));
+        $response = $this->query('PUT', '', [], ['settings' => $this->standardSettings]);
         return $response;
     }
 
@@ -373,27 +417,27 @@ class ElasticHandler
     function putMapping($module, $properties)
     {
         if($this->getMajorVersion() == '6'){
-            $mapping = array(
-                '_all' => array(
+            $mapping = [
+                '_all' => [
                     'analyzer' => 'spice_ngram'
-                ),
+                ],
                 'properties' => $properties
-            );
-            $response = $this->query('PUT', SpiceFTSUtils::getIndexNameForModule($module), array(), array(
+            ];
+            $response = $this->query('PUT', SpiceFTSUtils::getIndexNameForModule($module), [], [
                     'settings' => $this->standardSettings,
-                    'mappings' => array(
+                    'mappings' => [
                         $module => $mapping
-                    )
-                )
+                    ]
+                ]
             );
         } else {
-            $mapping = array(
+            $mapping = [
                 'properties' => $properties
-            );
-            $response = $this->query('PUT', SpiceFTSUtils::getIndexNameForModule($module), array(), array(
+            ];
+            $response = $this->query('PUT', SpiceFTSUtils::getIndexNameForModule($module), [], [
                     'settings' => $this->standardSettings,
                     'mappings' => $mapping
-                )
+                ]
             );
         }
         return $response;
@@ -408,9 +452,9 @@ class ElasticHandler
      * @param array $body
      * @return bool|string
      */
-    function query($method, $url, $params = array(), $body = array())
+    function query($method, $url, $params = [], $body = [])
     {
-        global $sugar_config;
+
 
         $data_string = !empty($body) ? json_encode($body) : '';
 
@@ -429,9 +473,9 @@ class ElasticHandler
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->ssl_verifyhost);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->ssl_verifypeer);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
-                'Content-Length: ' . strlen($data_string))
+                'Content-Length: ' . strlen($data_string)]
         );
 
 
@@ -442,7 +486,7 @@ class ElasticHandler
         $rt_local = microtime_diff($start, $end) * 1000;
         $resultdec = json_decode($result);
 
-        switch ($sugar_config['fts']['loglevel']) {
+        switch (SpiceConfig::getInstance()->config['fts']['loglevel']) {
             case '2':
                 $this->addLogEntry($method, $cURL, @$resultdec->status, $data_string, $result ); # , $rt_local, $resultdec->took);
                 break;
@@ -455,9 +499,9 @@ class ElasticHandler
         return $result;
     }
 
-    function bulk($lines = array())
+    function bulk($lines = [])
     {
-        global $sugar_config;
+
 
         $body = implode("\n", $lines) . "\n";
 
@@ -468,9 +512,9 @@ class ElasticHandler
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->ssl_verifyhost);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->ssl_verifypeer);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
-                'Content-Length: ' . strlen($body))
+                'Content-Length: ' . strlen($body)]
         );
 
         $start = microtime();
@@ -480,7 +524,7 @@ class ElasticHandler
         $rt_local = microtime_diff($start, $end) * 1000;
         $resultdec = json_decode($result);
 
-        switch ($sugar_config['fts']['loglevel']) {
+        switch (SpiceConfig::getInstance()->config['fts']['loglevel']) {
             case '2':
                 $this->addLogEntry('POST', $cURL, @$resultdec->status, $body, $result ); # , $rt_local, $resultdec->took);
                 break;
@@ -505,7 +549,8 @@ class ElasticHandler
      */
     private function addLogEntry($method, $url, $status=null, $request, $response ) # , $rtlocal, $rtremote )
     {
-        global $db, $timedate;
+        global $timedate;
+$db = DBManagerFactory::getInstance();
         //catch installation process and abort. table sysftslog will not exist at the point during installation
         if( !empty( $GLOBALS['installing'] ))
             return false;

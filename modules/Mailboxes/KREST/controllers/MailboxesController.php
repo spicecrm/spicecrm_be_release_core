@@ -1,8 +1,12 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\KREST\controllers;
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\modules\Emails\Email;
+use Exception;
 use SpiceCRM\modules\Mailboxes\processors\MailboxProcessor;
-use BeanFactory;
+use SpiceCRM\data\BeanFactory;
 
 class MailboxesController
 {
@@ -13,7 +17,7 @@ class MailboxesController
 
     function __construct()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $this->db = $db;
     }
     /**
@@ -31,7 +35,7 @@ class MailboxesController
 
         set_time_limit(300);
 
-        $mailbox = \BeanFactory::getBean('Mailboxes', $id, ['encode' => false]);
+        $mailbox = BeanFactory::getBean('Mailboxes', $id, ['encode' => false]);
 
         if ($mailbox->active == false) {
             return $res->write(json_encode([
@@ -44,7 +48,7 @@ class MailboxesController
 
         $result = $mailbox->transport_handler->fetchEmails();
 
-        return $res->write(json_encode($result));
+        return $res->withJson($result);
     }
 
     /**
@@ -60,7 +64,7 @@ class MailboxesController
 
         $type = $args['type'];
 
-        $mboxes = \BeanFactory::getBean('Mailboxes');
+        $mboxes = BeanFactory::getBean('Mailboxes');
 
         foreach ($mboxes->get_full_list("", "inbound_comm = 1 AND active = 1
         AND hidden <> 1") as $mbox) {
@@ -77,7 +81,7 @@ class MailboxesController
             ];
         }
 
-        return $res->write(json_encode($mailboxes));
+        return $res->withJson($mailboxes);
     }
 
     /**
@@ -91,14 +95,16 @@ class MailboxesController
      * @return mixed
      */
     public function testConnection($req, $res, $args) {
+        $controller = new MailboxesController();
+
         $params = $req->getParsedBody();
 
         /*
         if ($params['mailbox_id'] == null) {
-            return $res->write(json_encode([
+            return $res->withJson([
                 'result' => false,
                 'errors' => 'No mailbox selected',
-            ]));
+            ]);
         }*/
 
         $mailbox = BeanFactory::getBean('Mailboxes');
@@ -109,10 +115,10 @@ class MailboxesController
         }
 
         if (($mailbox->outbound_comm == 'single' || $mailbox->outbound_comm == 'mass') && $params['test_email'] == null) {
-            return $res->write(json_encode([
+            return $res->withJson([
                 'result' => false,
                 'errors' => 'No test email selected',
-            ]));
+            ]);
         }
 
         $result = false;
@@ -121,7 +127,7 @@ class MailboxesController
             $result = $mailbox->transport_handler->testConnection($params['test_email']);
         }
 
-        return $res->write(json_encode($result));
+        return $res->withJson($result);
     }
 
     /**
@@ -135,10 +141,10 @@ class MailboxesController
      * @return mixed
      */
     public function getMailboxProcessors($req, $res, $args) {
-        return $res->write(json_encode([
+        return $res->withJson([
             'result' => true,
             'processors' => MailboxProcessor::all(),
-        ]));
+        ]);
     }
 
     /**
@@ -152,7 +158,7 @@ class MailboxesController
      * @return mixed
      */
     public function getMailboxTransports($req, $res, $args) {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $transports = [];
         $transportsObj = $db->query("SELECT name, label, component FROM sysmailboxtransports UNION SELECT name, label, component FROM syscustommailboxtransports");
@@ -175,7 +181,7 @@ class MailboxesController
      */
     public function getMailboxes($req, $res, $args) {
         $result = [];
-        $params = $req->getParams();
+        $params = $req->getQueryParams();
 
         $where = 'hidden=0 AND active=1';
         switch ($params['scope']) {
@@ -202,7 +208,7 @@ class MailboxesController
                 break;
         }
 
-        $mailboxes = \BeanFactory::getBean('Mailboxes')
+        $mailboxes = BeanFactory::getBean('Mailboxes')
             ->get_full_list(
                 'mailboxes.name',
                 $where
@@ -217,14 +223,14 @@ class MailboxesController
             if ($mailbox->isConnected()) {
                 array_push($result, [
                     'value'     => $mailbox->id,
-                    'display'   => $mailbox->get_mailbox_display_name(),
+                    'display'   => $mailbox->name,
                     'actionset' => $mailbox->actionset,
                     'type'      => $type,
                 ]);
             }
         }
 
-        return $res->write(json_encode($result));
+        return $res->withJson($result);
     }
 
     /**
@@ -241,10 +247,10 @@ class MailboxesController
         $params = $req->getQueryParams();
 
         try {
-            $mailbox = \BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
-            return $res->write(json_encode($mailbox->setAsDefault()));
-        } catch (\Exception $e) {
-            return $res->write(json_encode($e));
+            $mailbox = BeanFactory::getBean('Mailboxes', $params['mailbox_id']);
+            return $res->withJson($mailbox->setAsDefault());
+        } catch (Exception $e) {
+            return $res->withJson($e);
         }
     }
 
@@ -254,11 +260,11 @@ class MailboxesController
 
         foreach ($events as $event) {
             try {
-                $email = \Email::findByMessageId($event['smtp-id']);
+                $email = Email::findByMessageId($event['smtp-id']);
                 $email->status = $event['event'];
                 $email->save();
-            } catch (\Exception $e) {
-                $GLOBALS['log']->info($e->getMessage());
+            } catch (Exception $e) {
+                LoggerManager::getLogger()->info($e->getMessage());
             }
 
             /*switch ($event['event']) {

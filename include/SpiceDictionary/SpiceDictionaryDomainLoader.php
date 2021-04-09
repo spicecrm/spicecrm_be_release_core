@@ -1,7 +1,7 @@
 <?php
-
-
 namespace SpiceCRM\includes\SpiceDictionary;
+
+use SpiceCRM\includes\database\DBManagerFactory;
 
 /**
  * a loader for the domains and domain validations
@@ -13,7 +13,7 @@ class SpiceDictionaryDomainLoader
 {
     public function loadDomainValidations()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $validationsArray = [];
         $domainfields = $db->query("SELECT * FROM sysdomainfieldvalidations WHERE deleted = 0 AND status = 'a'");
         while($domainfield = $db->fetchByAssoc($domainfields)){
@@ -39,6 +39,7 @@ class SpiceDictionaryDomainLoader
             $domainvalues = $db->query("SELECT * FROM sysdomainfieldvalidationvalues WHERE sysdomainfieldvalidation_id = '{$valdata['id']}' AND deleted = 0 AND status = 'a'");
             while($domainvalue = $db->fetchByAssoc($domainvalues)){
                 $validationsArray[$valname]['validationvalues'][] = [
+                    'enumvalue' => $domainvalue['enumvalue'],
                     'minvalue' => $domainvalue['minvalue'],
                     'maxvalue' => $domainvalue['maxvalue'],
                     'label' => $domainvalue['label'],
@@ -51,4 +52,33 @@ class SpiceDictionaryDomainLoader
 
     }
 
+    public function loadValidationValuesForDomain(string $domain): array {
+        $db = DBManagerFactory::getInstance();
+        $enumValues = [];
+
+        // get the domain field
+        $query = "SELECT * FROM sysdomainfields WHERE name ='{$domain}' AND deleted = 0 AND status='a'";
+        $result = $db->query($query);
+        $domainField = $db->fetchRow($result);
+
+        // get the domain field validation
+        if ($domainField['fieldtype'] != 'enum') {
+            return $enumValues;
+        }
+        $query2 = "SELECT * FROM sysdomainfieldvalidations WHERE id ='{$domainField['sysdomainfieldvalidation_id']}' AND deleted = 0 AND status='a'";
+        $result2 = $db->query($query2);
+        $domainValidation = $db->fetchRow($result2);
+
+        // get the domain field validation values (i.e. the enum values)
+        if ($domainValidation['validation_type'] != 'enum') {
+            return $enumValues;
+        }
+        $query3 = "SELECT * FROM sysdomainfieldvalidationvalues WHERE sysdomainfieldvalidation_id ='{$domainValidation['id']}' AND deleted = 0 AND status='a'";
+        $result3 = $db->query($query3);
+        while ($row = $db->fetchRow($result3)) {
+            $enumValues[] = $row['enumvalue'];
+        }
+
+        return $enumValues;
+    }
 }

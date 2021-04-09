@@ -3,16 +3,18 @@
 /**
  * determine if we have a lgnauge specific filter set to be applied
  */
-global $sugar_config;
+
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 $languagefilter = [];
-if($sugar_config['fts']['languagefilter']){
-    $languagefilter[] = $sugar_config['fts']['languagefilter'];
+if(SpiceConfig::getInstance()->config['fts']['languagefilter']){
+    $languagefilter[] = SpiceConfig::getInstance()->config['fts']['languagefilter'];
 }
 
 
-$elasticNormalizers = array(
-    "spice_lowercase" => array(
+$elasticNormalizers = [
+    "spice_lowercase" => [
         "type" => "custom",
         "filter" => array_merge(["lowercase"],$languagefilter)
-    )
-);
+    ]
+];

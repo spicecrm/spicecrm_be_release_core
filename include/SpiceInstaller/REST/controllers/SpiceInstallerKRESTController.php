@@ -8,16 +8,16 @@ class SpiceInstallerKRESTController {
 
     public function getSysInfo($req, $res, $args)
     {
-        return 'spiceinstaller';
+        $res->getBody()->write('spiceinstaller');
+        return $res;
     }
     public function checkSystem($req, $res, $args)
     {
-
         $spiceInstaller = new SpiceInstaller();
         return $res->withJson($spiceInstaller->checkSystem());
     }
 
-    public function checkDB($req, $res, $args) {
+    public function checkDB($req, $res,  $args) {
         $spiceInstaller = new SpiceInstaller();
         return $res->withJson($spiceInstaller->checkDatabase($req));
     }

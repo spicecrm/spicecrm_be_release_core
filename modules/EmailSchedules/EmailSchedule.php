@@ -1,8 +1,9 @@
 <?php
+namespace SpiceCRM\modules\EmailSchedules;
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-
-require_once('data/SugarBean.php');
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 
 class EmailSchedule extends SugarBean
 {
@@ -63,7 +64,7 @@ class EmailSchedule extends SugarBean
         // clone the attachments
         $email->id = create_guid();
         $email->new_with_id = true;
-        \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::cloneAtatchmentsForBean('Emails', $email->id, 'EmailSchedules', $id);
+        SpiceAttachments::cloneAtatchmentsForBean('Emails', $email->id, 'EmailSchedules', $id);
 
         // save or only send the email
         if($saveEmail){

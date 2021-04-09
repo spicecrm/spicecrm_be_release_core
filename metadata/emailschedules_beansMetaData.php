@@ -1,6 +1,5 @@
 <?php
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,79 +34,79 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['emailschedules_beans'] = array (
+global $dictionary;
+$dictionary['emailschedules_beans'] = [
 // TODO: EMAIL ID
     'table' => 'emailschedules_beans',
-    'fields' => array(
-        array (
+    'fields' => [
+        [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36',
-        ),
-        array(
+        ],
+        [
             'name' => 'emailschedule_status',
             'type' => 'enum',
             'options' => 'emailschedule_status_dom',
             'len' => 50,
             'comment' 	=> 'Status of the email schedule',
-        ),
-        array(
+        ],
+        [
             'name'		=> 'emailschedule_id',
             'type'		=> 'varchar',
             'dbType'	=> 'id',
             'len'		=> '36',
             'comment' 	=> 'FK to emailschedules table',
-        ),
-        array(
+        ],
+        [
             'name'		=> 'bean_module',
             'type'		=> 'varchar',
             'len'		=> '100',
             'comment' 	=> 'bean\'s module',
-        ),
-        array(
+        ],
+        [
             'name'		=> 'bean_id',
             'dbType'	=> 'id',
             'type'		=> 'varchar',
             'len'		=> '36',
             'comment' 	=> 'FK to various beans\'s tables',
-        ),
-        array(
+        ],
+        [
             'name'		=> 'email_id',
             'type'		=> 'varchar',
             'dbType'	=> 'id',
             'len'		=> '36',
             'comment' 	=> 'FK to email table',
-        ),
-        array (
+        ],
+        [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        array (
+        ],
+        [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'default' => '0'
-        ),
+        ],
 
-    ),
-    'relationships' => array(
-    ),
-    'indices' => array(
-        array(
+    ],
+    'relationships' => [
+    ],
+    'indices' => [
+        [
             'name'		=> 'emailschedules_beanspk',
             'type'		=> 'primary',
-            'fields'	=> array('id')
-        ),
-        array(
+            'fields'	=> ['id']
+        ],
+        [
             'name'		=> 'idx_emailschedules_beans_bean_id',
             'type'		=> 'index',
-            'fields'	=> array('bean_id')
-        ),
-        array(
+            'fields'	=> ['bean_id']
+        ],
+        [
             'name'		=> 'idx_emailschedules_beans_emailschedule_bean',
             'type'		=> 'alternate_key',
-            'fields'	=> array('emailschedule_id', 'bean_id', 'deleted')
-        ),
-    )
-);
+            'fields'	=> ['emailschedule_id', 'bean_id', 'deleted']
+        ],
+    ]
+];

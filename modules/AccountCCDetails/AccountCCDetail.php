@@ -26,9 +26,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
+namespace SpiceCRM\modules\AccountCCDetails;
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-
+use SpiceCRM\data\SugarBean;
 
 class AccountCCDetail extends SugarBean
 {
@@ -59,7 +59,7 @@ class AccountCCDetail extends SugarBean
 
     public $companycode_name;
 
-    public $relationship_fields = Array('companycode_id' => 'companycodes');
+    public $relationship_fields = ['companycode_id' => 'companycodes'];
 
     function bean_implements($interface)
     {

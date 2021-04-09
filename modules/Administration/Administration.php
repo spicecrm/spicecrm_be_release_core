@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,15 +34,10 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-/*********************************************************************************
+namespace SpiceCRM\modules\Administration;
 
- * Description:  TODO: To be written.
- * Portions created by SugarCRM are Copyright (C) SugarCRM, Inc.
- * All Rights Reserved.
- * Contributor(s): ______________________________________..
- ********************************************************************************/
-require_once('data/SugarBean.php');
-// require_once('include/OutboundEmail/OutboundEmail.php');
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\SugarCache\SugarCache;
 
 class Administration extends SugarBean {
     var $settings;
@@ -51,7 +45,7 @@ class Administration extends SugarBean {
     var $object_name = "Administration";
     var $new_schema = true;
     var $module_dir = 'Administration';
-    var $config_categories = array(
+    var $config_categories = [
         // 'mail', // cn: moved to include/OutboundEmail
         'disclosure', // appended to all outbound emails
         'notify',
@@ -61,24 +55,15 @@ class Administration extends SugarBean {
         'massemailer',
         'ldap',
         'captcha',
-        'sugarpdf',
-
-    );
-    var $checkbox_fields = Array("notify_send_by_default", "mail_smtpauth_req", "notify_on", 'portal_on', 'skypeout_on', 'system_mailmerge_on', 'proxy_auth', 'proxy_on', 'system_ldap_enabled','captcha_on');
-
-    function __construct() {
-        parent::__construct();
-
-// CR1000452
-//        $this->setupCustomFields('Administration');
-    }
+        'sugarpdf'
+    ];
 
     function retrieveSettings($category = FALSE, $clean=false) {
         // declare a cache for all settings
-        $settings_cache = sugar_cache_retrieve('admin_settings_cache');
+        $settings_cache = SugarCache::sugar_cache_retrieve('admin_settings_cache');
 
         if($clean) {
-            $settings_cache = array();
+            $settings_cache = [];
         }
 
         // Check for a cache hit
@@ -110,52 +95,12 @@ class Administration extends SugarBean {
         }
         $this->settings[$category] = true;
 
-        // outbound email settings
-//        $oe = new OutboundEmail();
-//        $oe->getSystemMailerSettings();
-//
-//        foreach($oe->field_defs as $def) {
-//            if (strpos($def, "mail_") !== false)
-//                $this->settings[$def] = $oe->$def;
-//        }
-
-        /*$outboundEmailSettings = \Mailbox::getSystemMailerSettings();
-
-        foreach($outboundEmailSettings as $field => $value) {
-                $this->settings[$field] = $value;
-        }*/
-
         // At this point, we have built a new array that should be cached.
-        sugar_cache_put('admin_settings_cache',$this->settings);
+        SugarCache::sugar_cache_put('admin_settings_cache',$this->settings);
         return $this;
     }
 
     function saveConfig() {
-
-
-        // outbound email settings
-//        $oe = new OutboundEmail();
-
-//        foreach($_POST as $key => $val) {
-//            $prefix = $this->get_config_prefix($key);
-//            if(in_array($prefix[0], $this->config_categories)) {
-//                if(is_array($val)){
-//                    $val=implode(",",$val);
-//                }
-//                $this->saveSetting($prefix[0], $prefix[1], $val);
-//            }
-//            if(strpos($key, "mail_") !== false) {
-//                if(in_array($key, $oe->field_defs)) {
-//                    $oe->$key = $val;
-//                }
-//            }
-//        }
-
-        //saving outbound email from here is probably redundant, adding a check to make sure
-        //smtpserver name is set.
-//        if (!empty($oe->mail_smtpserver)) {
-//            $oe->saveSystem();
-//        }
 
         $this->retrieveSettings(false, true);
     }
@@ -174,12 +119,11 @@ class Administration extends SugarBean {
         else{
             $result = $this->db->query("UPDATE config SET value = '{$value}' WHERE category = '{$category}' AND name = '{$key}'");
         }
-        sugar_cache_clear('admin_settings_cache');
+        SugarCache::sugar_cache_clear('admin_settings_cache');
         return $this->db->getAffectedRowCount($result);
     }
 
     function get_config_prefix($str) {
-        return Array(substr($str, 0, strpos($str, "_")), substr($str, strpos($str, "_")+1));
+        return [substr($str, 0, strpos($str, "_")), substr($str, strpos($str, "_")+1)];
     }
 }
-?>

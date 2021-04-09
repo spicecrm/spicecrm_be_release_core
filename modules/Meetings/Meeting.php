@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,6 +33,17 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\Meetings;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use DateTime;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\includes\utils\SpiceUtils;
+use SpiceCRM\modules\Contacts\Contact;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
+
 // todo move functions from GoogleCalendarEventInterface
 class Meeting extends SugarBean
 {
@@ -91,7 +101,7 @@ class Meeting extends SugarBean
 
     public function removeGcalId()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "UPDATE meetings SET external_id = NULL WHERE id = '" . $this->id . "'";
         $result = $db->query($query);
@@ -100,7 +110,7 @@ class Meeting extends SugarBean
     }
 
 
-    function get_contacts($params = array())
+    function get_contacts($params = [])
     {
         // First, get the list of IDs.
         $query = "SELECT contact_id as id from meetings_contacts where meeting_id='$this->id' AND deleted=0 ";
@@ -174,7 +184,7 @@ class Meeting extends SugarBean
 
         $result = $this->db->query($invitedquery . ' UNION ' . $myquery, true);
 
-        $list = array();
+        $list = [];
 
         while ($row = $this->db->fetchByAssoc($result)) {
             $record = BeanFactory::getBean('Meetings', $row['id']);
@@ -191,18 +201,18 @@ class Meeting extends SugarBean
     function set_accept_status(&$user, $status)
     {
         if ($user->object_name == 'User') {
-            $relate_values = array('user_id' => $user->id, 'meeting_id' => $this->id);
-            $data_values = array('accept_status' => $status);
+            $relate_values = ['user_id' => $user->id, 'meeting_id' => $this->id];
+            $data_values = ['accept_status' => $status];
             $this->set_relationship($this->rel_users_table, $relate_values, true, true, $data_values);
-            global $current_user;
+            $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         } else if ($user->object_name == 'Contact') {
-            $relate_values = array('contact_id' => $user->id, 'meeting_id' => $this->id);
-            $data_values = array('accept_status' => $status);
+            $relate_values = ['contact_id' => $user->id, 'meeting_id' => $this->id];
+            $data_values = ['accept_status' => $status];
             $this->set_relationship($this->rel_contacts_table, $relate_values, true, true, $data_values);
         } else if ($user->object_name == 'Lead') {
-            $relate_values = array('lead_id' => $user->id, 'meeting_id' => $this->id);
-            $data_values = array('accept_status' => $status);
+            $relate_values = ['lead_id' => $user->id, 'meeting_id' => $this->id];
+            $data_values = ['accept_status' => $status];
             $this->set_relationship($this->rel_leads_table, $relate_values, true, true, $data_values);
         }
     }
@@ -216,12 +226,12 @@ class Meeting extends SugarBean
                 //if the global soap_server_object variable is not empty (as in from a soap/OPI call), then process the assigned_user_id relationship, otherwise
                 //add assigned_user_id to exclude list and let the logic from MeetingFormBase determine whether assigned user id gets added to the relationship
                 if (!empty($GLOBALS['soap_server_object'])) {
-                    $exclude = array('contact_id', 'user_id');
+                    $exclude = ['contact_id', 'user_id'];
                 } else {
-                    $exclude = array('contact_id', 'user_id', 'assigned_user_id');
+                    $exclude = ['contact_id', 'user_id', 'assigned_user_id'];
                 }
             } else {
-                $exclude = array('user_id');
+                $exclude = ['user_id'];
             }
         }
         parent::save_relationship_changes($is_update, $exclude);
@@ -232,7 +242,7 @@ class Meeting extends SugarBean
      */
     function get_activities_query($parentModule, $parentId, $own = false)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $query = "SELECT DISTINCT(meetings.id), date_start sortdate, 'Meetings' module FROM meetings LEFT JOIN meetings_contacts on meetings.id = meetings_contacts.meeting_id where ((parent_type = '$parentModule' and parent_id = '$parentId') OR meetings_contacts.contact_id='$parentId') and meetings.deleted = 0 and status in ('Planned')";
 
         switch ($own) {
@@ -249,14 +259,14 @@ class Meeting extends SugarBean
 
     function get_history_query($parentModule, $parentId, $own = false)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-        $queryArray = array(
+        $queryArray = [
             'select' => "SELECT meetings.id, date_start sortdate, 'Meetings' module",
             'from' => "FROM meetings LEFT JOIN meetings_contacts on meetings.id = meetings_contacts.meeting_id",
             'where' => "WHERE ((parent_type = '$parentModule' AND parent_id = '$parentId') OR meetings_contacts.contact_id='$parentId') AND meetings.deleted = 0 AND status NOT IN ('Planned')",
             'order_by' => ""
-        );
+        ];
 
         switch ($own) {
             case 'assigned':
@@ -267,11 +277,21 @@ class Meeting extends SugarBean
                 break;
         }
 
-        if ($GLOBALS['ACLController'] && method_exists($GLOBALS['ACLController'], 'addACLAccessToListArray')) {
-            $GLOBALS['ACLController']->addACLAccessToListArray($queryArray, $this);
+        if (SpiceACL::getInstance() && method_exists(SpiceACL::getInstance(), 'addACLAccessToListArray')) {
+            SpiceACL::getInstance()->addACLAccessToListArray($queryArray, $this);
         }
 
         return $queryArray['select'] . ' ' . $queryArray['from'] . ' ' . $queryArray['where'] . ' ' . $queryArray['order_by'];
     }
+
+    /**
+     * Returns a translated abbreviation for a week day of date_start.
+     *
+     * @return string
+     */
+    function getShortWeekdayName__date_start(): string {
+        return SpiceUtils::getShortWeekdayName( new \DateTime($this->date_start, new \DateTimeZone('UTC')));
+    }
+
 } // end class def
 

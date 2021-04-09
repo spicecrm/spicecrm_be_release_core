@@ -1,4 +1,7 @@
 <?php
+
+use SpiceCRM\includes\Logger\LoggerManager;
+
 if(!defined('sugarEntry'))define('sugarEntry', true);
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
@@ -73,7 +76,7 @@ class SugarRestJSON extends SugarRestSerialize{
 	 * @return unknown
 	 */
 	function serve(){
-		$GLOBALS['log']->info('Begin: SugarRestJSON->serve');
+		LoggerManager::getLogger()->info('Begin: SugarRestJSON->serve');
 		$json_data = !empty($_REQUEST['rest_data'])? $GLOBALS['RAW_REQUEST']['rest_data']: '';
 		if(empty($_REQUEST['method']) || !method_exists($this->implementation, $_REQUEST['method'])){
 			$er = new SoapError();
@@ -82,9 +85,9 @@ class SugarRestJSON extends SugarRestSerialize{
 		}else{
 			$method = $_REQUEST['method'];
 			$data = json_decode($json_data);
-			if(!is_array($data))$data = array($data);
-			$res = call_user_func_array(array( $this->implementation, $method),$data);
-			$GLOBALS['log']->info('End: SugarRestJSON->serve');
+			if(!is_array($data))$data = [$data];
+			$res = call_user_func_array([$this->implementation, $method],$data);
+			LoggerManager::getLogger()->info('End: SugarRestJSON->serve');
 			return $res;
 		} // else
 	} // fn
@@ -101,7 +104,7 @@ class SugarRestJSON extends SugarRestSerialize{
 
 	function generateFaultResponse($errorObject){
 		$error = $errorObject->number . ': ' . $errorObject->name . '<br>' . $errorObject->description;
-		$GLOBALS['log']->error($error);
+		LoggerManager::getLogger()->error($error);
 		ob_clean();
 		// JSONP support
 		if ( isset($_GET["jsoncallback"]) ) {

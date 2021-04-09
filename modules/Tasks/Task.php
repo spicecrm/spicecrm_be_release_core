@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,6 +33,13 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\Tasks;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use DateTime;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 // Task is used to store customer information.
 class Task extends SugarBean
 {
@@ -142,7 +148,7 @@ class Task extends SugarBean
 
         $result = $this->db->query($myquery, true);
 
-        $list = Array();
+        $list = [];
 
         while ($row = $this->db->fetchByAssoc($result)) {
             $record = BeanFactory::getBean('Tasks', $row['id']);
@@ -161,7 +167,7 @@ class Task extends SugarBean
      */
     function get_activities_query($parentModule, $parentId, $own = false)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $query = "SELECT id, date_due sortdate, 'Tasks' module FROM tasks where ((parent_type = '$parentModule' and parent_id = '$parentId') or contact_id = '$parentId') and deleted = 0 and status in ('In Progress', 'Not Started', 'Pending Input')";
 
         switch ($own) {
@@ -178,7 +184,7 @@ class Task extends SugarBean
 
     function get_history_query($parentModule, $parentId, $own = false)
     {
-        global $current_user;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $query = "SELECT DISTINCT(id), date_due sortdate, 'Tasks' module FROM tasks where ((parent_type = '$parentModule' and parent_id = '$parentId') or contact_id = '$parentId') and deleted = 0 and status not in ('In Progress', 'Not Started', 'Pending Input')";
 
         switch ($own) {

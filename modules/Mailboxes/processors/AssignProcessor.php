@@ -1,6 +1,8 @@
 <?php
-
 namespace SpiceCRM\modules\Mailboxes\processors;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
 
 class AssignProcessor extends Processor
 {
@@ -9,7 +11,7 @@ class AssignProcessor extends Processor
         $this->email->addressesToArray();
 
         foreach ($this->email->recipient_addresses as $address) {
-            global $db;
+            $db = DBManagerFactory::getInstance();
 
             $capAddress = strtoupper($address->email_address);
             $query = "SELECT * FROM email_addresses WHERE email_address_caps='{$capAddress}' AND deleted = 0";
@@ -19,7 +21,7 @@ class AssignProcessor extends Processor
                 $query2 = "SELECT * FROM email_addr_bean_rel WHERE email_address_id='" . $email_address['id'] . "' AND deleted = 0";
                 $q2 = $db->query($query2);
                 while ($bean = $db->fetchByAssoc($q2)) {
-                    $seed = \BeanFactory::getBean($bean['bean_module'], $bean['bean_id']);
+                    $seed = BeanFactory::getBean($bean['bean_module'], $bean['bean_id']);
                     if($seed) {
                         $this->email->assignBeanToEmail($seed, $bean["bean_module"]);
                     }
@@ -30,7 +32,7 @@ class AssignProcessor extends Processor
 
     public function assignAllAddressesToBeans()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $this->email->addressesToArray();
 
@@ -53,7 +55,7 @@ class AssignProcessor extends Processor
             $query2 = "SELECT * FROM email_addr_bean_rel WHERE email_address_id='" . $email_address['id'] . "' AND deleted = 0";
             $q2 = $db->query($query2);
             while ($bean = $db->fetchByAssoc($q2)) {
-                $seed = \BeanFactory::getBean($bean['bean_module'], $bean['bean_id']);
+                $seed = BeanFactory::getBean($bean['bean_module'], $bean['bean_id']);
                 if($seed) {
                     $this->email->assignBeanToEmail($seed, $bean["bean_module"]);
                 }

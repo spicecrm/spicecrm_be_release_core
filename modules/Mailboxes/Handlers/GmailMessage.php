@@ -1,16 +1,18 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
-use BeanFactory;
+use DateTimeZone;
+use SpiceCRM\data\BeanFactory;
 use DateTime;
-use Email;
-use UploadFile;
+use SpiceCRM\modules\Emails\Email;
+use SpiceCRM\includes\UploadFile;
 
 class GmailMessage
 {
     private $email;
     private $message;
     private $handler;
+    private $contentTransferEncoding; // may remove it after multibyte support is present
 
     public function __construct(GmailHandler $handler, $message, $mailboxId) {
         $this->handler = $handler;
@@ -68,6 +70,9 @@ class GmailMessage
                 case 'Message-ID':
                     $this->email->message_id = $header->value;
                     break;
+                case 'Content-Transfer-Encoding':
+                    $this->contentTransferEncoding = $header->value;
+                    break;
             }
         }
     }
@@ -112,18 +117,18 @@ class GmailMessage
         switch ($encoding) {
             case 'iso-8859-1':
             case 'windows-1252':
-                $data = base64_decode(str_replace(array('-', '_'), array('+', '/'), $data));
+                $data = base64_decode(str_replace(['-', '_'], ['+', '/'], $data));
                 //from php.net/manual/es/function.base64-decode.php#118244
                 $data = imap_qprint($data);
 //                $data = mb_convert_encoding($data, 'Windows-1252', 'UTF-8');
 //                $data = utf8_encode($data);
                 break;
             default:
-                $data = base64_decode(str_replace(array('-', '_'), array('+', '/'), $data));
+                $data = base64_decode(str_replace(['-', '_'], ['+', '/'], $data));
                 $data = imap_qprint($data);
 
                 // todo remove the following part after we have multibyte support
-                if ($this->detectMultibyte($data)) {
+                if ($this->detectMultibyte($data) && $this->contentTransferEncoding != '8bit') {
                     $data = utf8_decode($data);
                     $data = utf8_encode($data);
                 }
@@ -135,7 +140,7 @@ class GmailMessage
 
     private function gmailAttachmentDecode($rawData) {
         $rawData = imap_qprint($rawData);
-        $rawData = base64_decode(str_replace(array('-', '_'), array('+', '/'), $rawData));
+        $rawData = base64_decode(str_replace(['-', '_'], ['+', '/'], $rawData));
         return $rawData;
     }
 
@@ -155,10 +160,13 @@ class GmailMessage
         if(!$date){
             $date = DateTime::createFromFormat('d M y H:i:s O', $dateString);
         }
+        if (!$date) {
+            $date = DateTime::createFromFormat('d M Y H:i:s O', $dateString);
+        }
         if(!$date){
             $date = new DateTime();
         }
-        $date->setTimezone(new \DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone('UTC'));
         return $date->format('Y-m-d H:i:s');
     }
 

@@ -1,43 +1,44 @@
-<?php 
- 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+<?php
 
-$dictionary['SpiceImportTemplate'] = array(
+
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['SpiceImportTemplate'] = [
     'table' => 'spiceimporttemplates',
     'comment' => 'SpiceImportTemplates Module',
     'duplicate_merge' =>  false,
     'unified_search' =>  false,
     'audited' =>  false,
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'module' => array(
+        ],
+        'module' => [
             'name' => 'module',
             'type' => 'varchar'
-        ),
-        'name' => array(
+        ],
+        'name' => [
             'name' => 'name',
             'type' => 'varchar',
             'len' => 100
-        ),
-        'mappings' => array(
+        ],
+        'mappings' => [
             'name' => 'mappings',
             'type' => 'text'
-        ),
-        'fixed' => array(
+        ],
+        'fixed' => [
             'name' => 'fixed',
             'type' => 'text'
-        ),
-        'checks' => array(
+        ],
+        'checks' => [
             'name' => 'checks',
             'type' => 'text'
-        )
-    ),
-    'indices' => array(
+        ]
+    ],
+    'indices' => [
 
-    )
-);
+    ]
+];
 
-VardefManager::createVardef('SpiceImportTemplates', 'SpiceImportTemplate', array('default', 'assignable'));
+VardefManager::createVardef('SpiceImportTemplates', 'SpiceImportTemplate', ['default', 'assignable']);

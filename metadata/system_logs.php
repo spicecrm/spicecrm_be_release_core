@@ -5,134 +5,134 @@
  * Date: 06.06.2018
  * Time: 18:30
  */
-$dictionary['syslogs'] = array(
+$dictionary['syslogs'] = [
     'table' => 'syslogs',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'date_entered' => array(
+        ],
+        'date_entered' => [
             'name' => 'date_entered',
             'type' => 'datetime',
-        ),
-        'microtime' => array(
+        ],
+        'microtime' => [
             'name' => 'microtime',
             'type' => 'varchar',
             'len' => 50
-        ),
-        'created_by' => array(
+        ],
+        'created_by' => [
             'name' => 'created_by',
             'type' => 'id',
-        ),
-        'pid' => array(
+        ],
+        'pid' => [
             'name' => 'pid',
             'type' => 'int'
-        ),
-        'log_level' => array(
+        ],
+        'log_level' => [
             'name' => 'log_level',
             'type' => 'varchar',
-        ),
-        'level_value' => array(
+        ],
+        'level_value' => [
             'name' => 'level_value',
             'type' => 'tinyint'
-        ),
-        'description' => array(
+        ],
+        'description' => [
             'name' => 'description',
             'type' => 'text',
-        ),
-        'transaction_id' => array(
+        ],
+        'transaction_id' => [
             'name' => 'transaction_id',
             'type' => 'varchar',
             'len' => 36
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'syslogspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_syslogslevel',
             'type' => 'index',
-            'fields' => array('log_level')
-        ),
-        array(
+            'fields' => ['log_level']
+        ],
+        [
             'name' => 'idx_syslogscreatedby',
             'type' => 'index',
-            'fields' => array('created_by')
-        ),
-        array(
+            'fields' => ['created_by']
+        ],
+        [
             'name' => 'idx_syslogslogcreatedbylevel',
             'type' => 'index',
-            'fields' => array('created_by', 'log_level')
-        ),
-        array(
+            'fields' => ['created_by', 'log_level']
+        ],
+        [
             'name' => 'idx_syslogs_microtime',
             'type' => 'index',
-            'fields' => array('microtime')
-        ),
-        array(
+            'fields' => ['microtime']
+        ],
+        [
             'name' => 'idx_syslogs_pid',
             'type' => 'index',
-            'fields' => array('pid')
-        ),
-        array(
+            'fields' => ['pid']
+        ],
+        [
             'name' => 'idx_syslogs_level_value',
             'type' => 'index',
-            'fields' => array('level_value')
-        ),
-        array(
+            'fields' => ['level_value']
+        ],
+        [
             'name' => 'idx_syslogs_transaction_id',
             'type' => 'index',
-            'fields' => array('transaction_id')
-        )
-    )
-);
+            'fields' => ['transaction_id']
+        ]
+    ]
+];
 
 
-$dictionary['syslogusers'] = array(
+$dictionary['syslogusers'] = [
     'table' => 'syslogusers',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'id'
-        ),
-        'user_id' => array(
+        ],
+        'user_id' => [
             'name' => 'user_id',
             'type' => 'id',
-        ),
-        'log_level' => array(
+        ],
+        'log_level' => [
             'name' => 'log_level',
             'type' => 'varchar',
-        ),
-        'logstatus' => array(
+        ],
+        'logstatus' => [
             'name' => 'logstatus',
             'type' => 'bool',
             'default' => 0
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'sysloguserspk',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_sysloguserslevel',
             'type' => 'index',
-            'fields' => array('log_level')
-        ),
-        array(
+            'fields' => ['log_level']
+        ],
+        [
             'name' => 'idx_syslogsuseridstatus',
             'type' => 'index',
-            'fields' => array('user_id', 'logstatus')
-        ),
-        array(
+            'fields' => ['user_id', 'logstatus']
+        ],
+        [
             'name' => 'idx_syslogsuseridlevelstatus',
             'type' => 'index',
-            'fields' => array('user_id', 'log_level', 'logstatus')
-        )
-    )
-);
+            'fields' => ['user_id', 'log_level', 'logstatus']
+        ]
+    ]
+];

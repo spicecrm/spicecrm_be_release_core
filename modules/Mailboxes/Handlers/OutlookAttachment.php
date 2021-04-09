@@ -1,6 +1,10 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\modules\Emails\Email;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 class OutlookAttachment
 {
     public $id;
@@ -21,8 +25,8 @@ class OutlookAttachment
 
     private $table = 'spiceattachments';
 
-    public function __construct($rawData, \Email $email) {
-        global $current_user;
+    public function __construct($rawData, Email $email) {
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         $this->id             = create_guid();
         $this->fileName       = filter_var($rawData['name'], FILTER_SANITIZE_STRING);
@@ -60,7 +64,7 @@ class OutlookAttachment
     }
 
     public function save() {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $insertQuery = "INSERT INTO " . $this->table
             . " (`id`, `bean_type`, `bean_id`, `user_id`, `trdate`, `filename`, `filesize`, `filemd5`,"

@@ -9,7 +9,7 @@ class SpicePhoneNumberHooks{
 
     public function hook_before_save(&$bean, $event, $arguments)
     {
-        global $sugar_config;
+        
 
         $country = '';
         $phoneFields = [];

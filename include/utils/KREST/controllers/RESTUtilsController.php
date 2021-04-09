@@ -14,19 +14,85 @@
  * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-namespace SpiceCRM\includes\utils\controllers;
+namespace SpiceCRM\includes\utils\KREST\controllers;
+
+
+use Imagick;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use Slim\Routing\RouteCollectorProxy;
+use Psr\Http\Message\RequestInterface;
+use SpiceCRM\includes\SpiceSlim\SpiceResponse;
 
 class RESTUtilsController
 {
 
+    /**
+     * convert a pdf to a base64 image
+     * @param $req RequestInterface
+     * @param $res SpiceResponse
+     * @param $args
+     * @return mixed
+     */
+
+    public function RestPDFToBaseImage($req,$res,$args){
+        $RESTUtilsHandler = new RESTUtilsController();
+        $data = $RESTUtilsHandler->pdfToBase64Image($args['filepath']);
+        return $res->withJson($data);
+    }
+
+    /**
+     * converts a pdf to Url image
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     */
+
+    public function RestPDFToUrlImage($req,$res,$args){
+        $RESTUtilsHandler = new RESTUtilsController();
+        $urls = $RESTUtilsHandler->pdfToUrlImage($args['filepath']);
+        return $res->withJson($urls);
+    }
+
+    /**
+     * Puts the content to a temppath
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     */
+
+    public function PutToTmpPdfPath($req,$res,$args){
+        $postBody = $req->getParsedBody();
+        $temppath = sys_get_temp_dir();
+        $filename = create_guid() . '.pdf';
+        file_put_contents($temppath . '/' . $filename, base64_decode($postBody));
+        return $res->withJson($temppath . '/' . $filename);
+    }
+
+    /**
+     * puts the content to an upload path
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     */
+
+    public function PutToUpPath($req,$res,$args){
+        $postBody = $req->getParsedBody();
+        $filename = create_guid() . '.pdf';
+        file_put_contents(SpiceConfig::getInstance()->config['upload_dir'] . $filename, base64_decode($postBody));
+        return $res->withJson(SpiceConfig::getInstance()->config['upload_dir'] . $filename);
+    }
+
     public function pdfToUrlImage($filepath, $thumbnail = false)
     {
-        global $sugar_config;
+        
         $im = new Imagick();
         $im->setResolution(300, 300);
         $im->readImage($filepath);
         $count = $im->getNumberImages();
-        $urls = array();
+        $urls = [];
         for ($x = 1; $x <= $count; $x++) {
             $pageindex = $x - 1;
             $im->readImage($filepath . "[" . $pageindex . "]");
@@ -35,8 +101,8 @@ class RESTUtilsController
                 $im->thumbnailImage(400, null);
             }
             $im->setImageFormat('jpeg');
-            $im->writeImage($sugar_config['upload_dir'] . basename($filepath) . '_' . $x . '.pdf');
-            $urls[] = $sugar_config['upload_dir'] . basename($filepath, '_' . $x . '.pdf');
+            $im->writeImage(SpiceConfig::getInstance()->config['upload_dir'] . basename($filepath) . '_' . $x . '.pdf');
+            $urls[] = SpiceConfig::getInstance()->config['upload_dir'] . basename($filepath, '_' . $x . '.pdf');
         }
 
         return $urls;
@@ -48,7 +114,7 @@ class RESTUtilsController
         $im->setResolution(300, 300);
         $im->readImage($filepath);
         $count = $im->getNumberImages();
-        $data = array();
+        $data = [];
         for ($x = 1; $x <= $count; $x++) {
             $pageindex = $x - 1;
             $im->readImage($filepath . "[" . $pageindex . "]");

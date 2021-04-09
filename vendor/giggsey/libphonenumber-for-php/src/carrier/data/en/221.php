@@ -13,6 +13,10 @@
 return array (
   22170 => 'Expresso',
   22172 => 'HAYO',
+  221754 => 'Promobile',
+  221755 => 'Promobile',
+  221756 => 'Promobile',
+  221757 => 'Origines',
   22176 => 'Tigo',
   22177 => 'Orange',
   22178 => 'Orange',

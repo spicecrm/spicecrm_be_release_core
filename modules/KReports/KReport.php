@@ -11,14 +11,17 @@
 *
 * You can contact us at info@kreporter.org
 ******************************************************************************* */
+namespace SpiceCRM\modules\KReports;
 
-
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\Campaigns\Campaign;
+use SpiceCRM\modules\ProspectLists\ProspectList;
 
 require_once('modules/KReports/utils.php');
-require_once('modules/KReports/KReportQuery.php');
-require_once('modules/KReports/KReportUtil.php');
 
 global $dictionary;
 
@@ -33,283 +36,6 @@ if (file_exists('./custom/modules/KReports/includes')) {
     }
 }
 
-class KReportPluginManager
-{
-
-    // constructor
-    var $plugins = array();
-
-    public function __construct()
-    {
-        if (file_exists('modules/KReports/plugins.dictionary')) {
-            $plugins = array();
-            include('modules/KReports/plugins.dictionary');
-
-            foreach ($plugins as $thisPlugin => $thisPluginData) {
-
-                // write to the Object varaible so we have all plugins by ID
-                $this->plugins[$thisPlugin] = $thisPluginData;
-
-                // add specific plugins metadata to the array
-                switch ($thisPluginData['type']) {
-                    case 'presentation':
-                        $this->plugins[$thisPlugin]['plugindirectory'] = 'modules/KReports/Plugins/Presentation/' . $thisPluginData['directory'];
-                        if (file_exists('modules/KReports/Plugins/Presentation/' . $thisPluginData['directory'] . '/pluginmetadata.php')) {
-                            $pluginmetadata = array();
-                            include('modules/KReports/Plugins/Presentation/' . $thisPluginData['directory'] . '/pluginmetadata.php');
-                            $this->plugins[$thisPlugin]['metadata'] = $pluginmetadata;
-                        }
-                        break;
-                    case 'visualization':
-                        $this->plugins[$thisPlugin]['plugindirectory'] = 'modules/KReports/Plugins/Visualization/' . $thisPluginData['directory'];
-                        if (file_exists('modules/KReports/Plugins/Visualization/' . $thisPluginData['directory'] . '/pluginmetadata.php')) {
-                            $pluginmetadata = array();
-                            include('modules/KReports/Plugins/Visualization/' . $thisPluginData['directory'] . '/pluginmetadata.php');
-                            $this->plugins[$thisPlugin]['metadata'] = $pluginmetadata;
-                        }
-                        break;
-                    case 'integration':
-                        $this->plugins[$thisPlugin]['plugindirectory'] = 'modules/KReports/Plugins/Integration/' . $thisPluginData['directory'];
-                        if (file_exists('modules/KReports/Plugins/Integration/' . $thisPluginData['directory'] . '/pluginmetadata.php')) {
-                            $pluginmetadata = array();
-                            include('modules/KReports/Plugins/Integration/' . $thisPluginData['directory'] . '/pluginmetadata.php');
-                            $this->plugins[$thisPlugin]['metadata'] = $pluginmetadata;
-                        }
-                        break;
-                }
-            }
-        }
-
-
-        // read the plugin metadata
-        if (file_exists('custom/modules/KReports/plugins.dictionary')) {
-            $plugins = array();
-            include('custom/modules/KReports/plugins.dictionary');
-
-            foreach ($plugins as $thisPlugin => $thisPluginData) {
-
-                // write to the Object varaible so we have all plugins by ID
-                $this->plugins[$thisPlugin] = $thisPluginData;
-
-                // add specific plugins metadata to the array
-                switch ($thisPluginData['type']) {
-                    case 'presentation':
-                        $this->plugins[$thisPlugin]['plugindirectory'] = 'custom/modules/KReports/Plugins/Presentation/' . $thisPluginData['directory'];
-                        if (file_exists('custom/modules/KReports/Plugins/Presentation/' . $thisPluginData['directory'] . '/pluginmetadata.php')) {
-                            $pluginmetadata = array();
-                            include('custom/modules/KReports/Plugins/Presentation/' . $thisPluginData['directory'] . '/pluginmetadata.php');
-                            $this->plugins[$thisPlugin]['metadata'] = $pluginmetadata;
-                        }
-                        break;
-                    case 'visualization':
-                        $this->plugins[$thisPlugin]['plugindirectory'] = 'custom/modules/KReports/Plugins/Visualization/' . $thisPluginData['directory'];
-                        if (file_exists('custom/modules/KReports/Plugins/Visualization/' . $thisPluginData['directory'] . '/pluginmetadata.php')) {
-                            $pluginmetadata = array();
-                            include('custom/modules/KReports/Plugins/Visualization/' . $thisPluginData['directory'] . '/pluginmetadata.php');
-                            $this->plugins[$thisPlugin]['metadata'] = $pluginmetadata;
-                        }
-                        break;
-                    case 'integration':
-                        $this->plugins[$thisPlugin]['plugindirectory'] = 'custom/modules/KReports/Plugins/Integration/' . $thisPluginData['directory'];
-                        if (file_exists('custom/modules/KReports/Plugins/Integration/' . $thisPluginData['directory'] . '/pluginmetadata.php')) {
-                            $pluginmetadata = array();
-                            include('custom/modules/KReports/Plugins/Integration/' . $thisPluginData['directory'] . '/pluginmetadata.php');
-                            $this->plugins[$thisPlugin]['metadata'] = $pluginmetadata;
-                        }
-                        break;
-                }
-            }
-        }
-    }
-
-    public function getPlugins($report = '')
-    {
-
-        if ($report) {
-            $thisReport = BeanFactory::getBean('KReports', $report);
-            $integrationParams = json_decode(html_entity_decode($thisReport->integration_params, ENT_QUOTES, 'UTF-8'));
-        }
-
-        foreach ($this->plugins as $pluginId => $pluginData) {
-            /*
-            if (isset($pluginData['metadata']['includes']['edit']))
-                $jsIncludes .= "<script type='text/javascript' src='" . $pluginData['plugindirectory'] . '/' . $pluginData['metadata']['includes']['edit'] . "'></script>";
-            */
-
-            switch ($pluginData['type']) {
-                case 'presentation':
-                    $presentationPlugins[$pluginId] = array(
-                        'id' => $pluginId,
-                        'plugindirectory' => $pluginData['plugindirectory'],
-                        'displayname' => $pluginData['metadata']['displayname'],
-                        'metadata' => $pluginData['metadata']
-                    );
-                    break;
-                case 'visualization':
-                    $visualizationPlugins[$pluginId] = array(
-                        'id' => $pluginId,
-                        'plugindirectory' => $pluginData['plugindirectory'],
-                        'displayname' => $pluginData['metadata']['displayname'],
-                        'metadata' => $pluginData['metadata']
-                    );
-                    break;
-                case 'integration':
-                    if ($report) {
-                        if ($integrationParams->activePlugins->$pluginId == 1) {
-                            // for export plugins check export right
-                            if ($pluginData['category'] === 'export' && !$GLOBALS['ACLController']->checkAccess('KReports', 'export', false))
-                                continue;
-
-                            // plugin specific checks
-                            if (isset($pluginData['metadata']['integration']['include'])) {
-                                require_once($pluginData['plugindirectory'] . '/' . $pluginData['metadata']['integration']['include']);
-                                $pluginClass = $pluginData['metadata']['integration']['class'];
-                                $thisPlugin = new $pluginClass();
-                                if (method_exists($thisPlugin, 'checkAccess') && !$thisPlugin->checkAccess($thisReport))
-                                    continue;
-                            }
-
-                            $integrationPlugins[$pluginId] = array(
-                                'id' => $pluginId,
-                                'plugindirectory' => $pluginData['plugindirectory'],
-                                'displayname' => $pluginData['metadata']['displayname'],
-                                'metadata' => $pluginData['metadata']
-                            );
-                        }
-                    } else {
-                        $integrationPlugins[$pluginId] = array(
-                            'id' => $pluginId,
-                            'plugindirectory' => $pluginData['plugindirectory'],
-                            'displayname' => $pluginData['metadata']['displayname'],
-                            'metadata' => $pluginData['metadata']
-                        );
-                    }
-                    break;
-            }
-        }
-
-        return array(
-            'presentation' => $presentationPlugins,
-            'visualization' => $visualizationPlugins,
-            'integration' => $integrationPlugins
-        );
-    }
-
-    public function getEditViewPlugins($thisView)
-    {
-        $jsIncludes = '';
-        $presentationPlugins = array();
-        $visualizationPlugins = array();
-        $integrationPlugins = array();
-        foreach ($this->plugins as $pluginId => $pluginData) {
-            if (isset($pluginData['metadata']['includes']['edit']))
-                $jsIncludes .= "<script type='text/javascript' src='" . $pluginData['plugindirectory'] . '/' . $pluginData['metadata']['includes']['edit'] . "'></script>";
-
-            switch ($pluginData['type']) {
-                case 'presentation':
-                    $presentationPlugins[$pluginId] = array(
-                        'id' => $pluginId,
-                        'displayname' => $pluginData['metadata']['displayname'],
-                        'panel' => $pluginData['metadata']['pluginpanel']
-                    );
-                    break;
-                case 'visualization':
-                    $visualizationPlugins[$pluginId] = array(
-                        'id' => $pluginId,
-                        'displayname' => $pluginData['metadata']['displayname'],
-                        'panel' => $pluginData['metadata']['pluginpanel']
-                    );
-                    break;
-                case 'integration':
-                    $integrationPlugins[$pluginId] = array(
-                        'id' => $pluginId,
-                        'panel' => $pluginData['metadata']['includes']['editPanel'],
-                        'displayname' => $pluginData['metadata']['displayname']
-                    );
-                    break;
-            }
-        }
-        $pluginData = '<script type="text/javascript">';
-
-        if (count($presentationPlugins) > 0)
-            $pluginData .= 'var kreporterPresentationPlugins = \'' . json_encode($presentationPlugins) . '\';';
-
-        if (count($visualizationPlugins) > 0)
-            $pluginData .= 'var kreporterVisualizationPlugins = \'' . json_encode($visualizationPlugins) . '\';';
-
-        if (count($integrationPlugins) > 0)
-            $pluginData .= 'var kreporterIntegrationPlugins = \'' . json_encode($integrationPlugins) . '\';';
-
-        $pluginData .= "</script>";
-
-        $thisView->ss->assign('pluginJS', $jsIncludes);
-        $thisView->ss->assign('pluginData', $pluginData);
-    }
-
-    public function getPresentationObject($pluginId)
-    {
-        if (isset($this->plugins[$pluginId])) {
-            if (file_exists('custom/modules/KReports/Plugins/Presentation/' . $this->plugins[$pluginId]['directory'] . '/' . $this->plugins[$pluginId]['metadata']['phpinclude'])) {
-                require_once('custom/modules/KReports/Plugins/Presentation/' . $this->plugins[$pluginId]['directory'] . '/' . $this->plugins[$pluginId]['metadata']['phpinclude']);
-
-                // eval($this->plugins[$pluginId]['id'] . 'detailviewdisplay($view);');
-                $className = 'kreportpresentation' . $this->plugins[$pluginId]['id'];
-                return new $className();
-
-                return true;
-            }
-            if (file_exists('modules/KReports/Plugins/Presentation/' . $this->plugins[$pluginId]['directory'] . '/' . $this->plugins[$pluginId]['metadata']['phpinclude'])) {
-                require_once('modules/KReports/Plugins/Presentation/' . $this->plugins[$pluginId]['directory'] . '/' . $this->plugins[$pluginId]['metadata']['phpinclude']);
-
-                //eval($this->plugins[$pluginId]['id'] . 'detailviewdisplay($view);');
-                $className = 'kreportpresentation' . $this->plugins[$pluginId]['id'];
-                return new $className();
-            }
-        }
-
-        return false;
-    }
-
-    public function getVisualizationObject($plugin)
-    {
-        if (isset($this->plugins[$plugin])) {
-            $file = $this->plugins[$plugin]['plugindirectory'] . '/' . $this->plugins[$plugin]['metadata']['visualization']['include'];
-            require_once($this->plugins[$plugin]['plugindirectory'] . '/' . $this->plugins[$plugin]['metadata']['visualization']['include']);
-            $visualizationClass = $this->plugins[$plugin]['metadata']['visualization']['class'];
-            return new $visualizationClass();
-        } else
-            return false;
-    }
-
-    public function getIntegrationPlugins($thisReport)
-    {
-
-        return '';
-
-    }
-
-    public function processPluginAction($pluginId, $pluginAction, $getParams)
-    {
-        // the namespace way
-        $namespaceclass = "\\SpiceCRM\\".preg_replace("|\/|", "\\", $this->plugins[$pluginId]['plugindirectory']);
-        $namespaceclass.= "\\controller\\plugin".$this->plugins[$pluginId]['id']."controller";
-
-        if(class_exists($namespaceclass)){
-            $pluginController = new $namespaceclass();
-        } else{
-            // the old way
-            $controllerclass = 'plugin' . $this->plugins[$pluginId]['id'] . 'controller';
-            if(!class_exists($controllerclass)){
-                require_once($this->plugins[$pluginId]['plugindirectory'] . '/controller/plugin' . $this->plugins[$pluginId]['id'] . 'controller.php');
-            }
-
-            $pluginController = new $controllerclass();
-        }
-
-        return $pluginController->$pluginAction($getParams);
-    }
-
-}
 
 class KReport extends SugarBean
 {
@@ -366,11 +92,11 @@ class KReport extends SugarBean
     // varaible to hold the depth of the join tree
     public $maxDepth;
     // var to hold an array of all list fields with index fieldid
-    public $listFieldArrayById = array();
+    public $listFieldArrayById = [];
     // for the context handling
     public $hasContext = false;
-    public $contextFields = array();
-    public $contexts = array();
+    public $contextFields = [];
+    public $contexts = [];
     //for csv export
     public $tocsv = false;
     public $presentation_params;
@@ -378,20 +104,6 @@ class KReport extends SugarBean
     public $integration_params;
     public $listfields;
     public $whereconditions;
-
-    function __construct()
-    {
-        // call the parent constructor
-        //BEGIN Sugar 7.8 and higher compatiblity: SugarBean Constructor is now __construct()
-        //and no longer SugarBean()
-        //ORIGINAL: parent::SugarBean();
-        //get name of SugarBean constructor to support older Sugar Versions
-        $class = new ReflectionClass('SugarBean');
-        $constructor = $class->getConstructor();
-        $constructorName = $constructor->name;
-        parent::$constructorName();
-        //END
-    }
 
     function bean_implements($interface)
     {
@@ -416,7 +128,10 @@ class KReport extends SugarBean
     function retrieve($id = -1, $encode = false, $deleted = true, $relationships = true)
     {
 
-        parent::retrieve($id, $encode, $deleted, $relationships);
+        // return false just like parent
+        if(!parent::retrieve($id, $encode, $deleted, $relationships)){
+            return false;
+        }
 
         if(empty($this->wheregroups))
             $this->wheregroups = "[]";
@@ -444,7 +159,7 @@ class KReport extends SugarBean
 
     function save($notify = true, $fts_index_bean = true)
     {
-        global $sugar_config;
+
 
         // just to make sure ... PRO needs this .. if we are not in PRO it does not hurt
         // just to make sure ... PRO needs this .. if we are not in PRO it does not hurt
@@ -481,7 +196,7 @@ class KReport extends SugarBean
           }
          */
         // loop over all kquery entries in teh query array and merge Options from the $app_list_strings
-        $retArray = array();
+        $retArray = [];
         foreach ($this->kQueryArray->queryArray as $unionid => $unionkQuery) {
             if (isset($unionkQuery ['kQuery']->fieldNameMap [$fieldId] ['fields_name_map_entry'] ['options'])
                 //Begin BugFix 2017-01-18: Opportunities.date_closed has options set! Check on field type!
@@ -533,9 +248,10 @@ class KReport extends SugarBean
         return substr($pathName, 0, strrpos($pathName, "::"));
     }
 
-    function get_report_main_sql_query($evalSQLFunctions = true, $additionalFilter = '', $additionalGroupBy = array(), $parameters = array())
+    function get_report_main_sql_query($evalSQLFunctions = true, $additionalFilter = '', $additionalGroupBy = [], $parameters = [])
     {
-        //global $db, $app_list_strings, $beanList, $beanFiles;
+        //global $app_list_strings;
+        $db = DBManagerFactory::getInstance();
         // bugfix add ENT_QUOTES so we get proper translation of also single quotes 2010-25-12
         $arrayWhere = json_decode(html_entity_decode($this->whereconditions, ENT_QUOTES), true);
         $arrayList = json_decode(html_entity_decode($this->listfields, ENT_QUOTES), true);
@@ -566,14 +282,11 @@ class KReport extends SugarBean
 
         if (isset($parameters['start']) && isset($parameters['limit'])) {
             //handle start not set and start content (added maretval 2019-05-03)
-            if (!KReportUtil::KReportValueIsIntegerOnly($parameters['start']))
-                $parameters['start'] = 0;
+            if (isset($parameters['start']) && !KReportUtil::KReportValueIsIntegerOnly($parameters['start']))
+                $paramsArray['start'] = 0;
             //handle limit not set and limit content (added maretval 2019-05-03)
-            if (!KReportUtil::KReportValueIsIntegerOnly($parameters['limit']))
-                $parameters['limit'] = 0;
-
-            $paramsArray['start'] = $parameters['start'];
-            $paramsArray['limit'] = $parameters['limit'];
+            if (isset($parameters['limit']) && !KReportUtil::KReportValueIsIntegerOnly($parameters['limit']))
+                $paramsArray['limit'] = 0;
         }
 
 
@@ -593,7 +306,8 @@ class KReport extends SugarBean
 
     function build_sql_string()
     {
-        global $db, $app_list_strings, $beanList, $beanFiles;
+        global $app_list_strings;
+        $db = DBManagerFactory::getInstance();
 
         $arrayWhere = json_decode(html_entity_decode($this->whereconditions, ENT_QUOTES, 'UTF-8'), true);
         $arrayList = json_decode(html_entity_decode($this->listfields, ENT_QUOTES, 'UTF-8'), true);
@@ -604,7 +318,7 @@ class KReport extends SugarBean
         $kQuery->build_query_strings();
         $this->fieldNameMap = $kQuery->fieldNameMap;
 
-        return array('select' => $kQuery->selectString, 'from' => $kQuery->fromString, 'where' => $kQuery->whereString, 'fields' => '', 'groupby' => $kQuery->groupbyString, 'orderby' => $kQuery->orderbyString);
+        return ['select' => $kQuery->selectString, 'from' => $kQuery->fromString, 'where' => $kQuery->whereString, 'fields' => '', 'groupby' => $kQuery->groupbyString, 'orderby' => $kQuery->orderbyString];
     }
 
     // 2010-12-18 added function for formatting based on FieldType
@@ -615,7 +329,7 @@ class KReport extends SugarBean
         return $this->fieldNameMap [$fieldID] ['type'];
     }
 
-    function buildLinks($fieldArray, $excludeFields = array())
+    function buildLinks($fieldArray, $excludeFields = [])
     {
 
         foreach ($fieldArray as $fieldID => $fieldValue) {
@@ -640,18 +354,18 @@ class KReport extends SugarBean
     {
         global $app_list_strings, $timedate;
 
-        $linkArray = array();
+        $linkArray = [];
 
         foreach ($fieldArray as $fieldId => $fieldName) {
             if (isset($this->fieldNameMap [$fieldId]) && $this->fieldNameMap [$fieldId] ['islink']) {
-                $linkFieldArray = array();
+                $linkFieldArray = [];
 
                 foreach ($this->kQueryArray->queryArray as $unionid => $unionQuery) {
-                    $linkFieldArray[$unionid] = array(
+                    $linkFieldArray[$unionid] = [
                         'module' => $unionQuery['kQuery']->fieldNameMap[$fieldId]['module'],
                         // 2013-08-21 BUG #491 .. check if custom field and trake root path alias
                         'idfield' => ($unionQuery['kQuery']->fieldNameMap[$fieldId]['fields_name_map_entry']['source'] == 'custom_fields' ? $unionQuery['kQuery']->fieldNameMap[$fieldId]['pathalias'] : $unionQuery['kQuery']->fieldNameMap[$fieldId]['tablealias']) . 'id'
-                    );
+                    ];
                 }
 
                 $linkArray[$fieldId] = $linkFieldArray;
@@ -678,7 +392,7 @@ class KReport extends SugarBean
     }
     */
 
-    function calculateValueOfTotal($fieldArray, &$cumulatedArray = array())
+    function calculateValueOfTotal($fieldArray, &$cumulatedArray = [])
     {
         // set the returnarray
         $returnArray = $fieldArray;
@@ -715,9 +429,9 @@ class KReport extends SugarBean
         return $returnArray;
     }
 
-    function formatFields($fieldArray, $excludeFields = array(), $toPdf = false, $forceUTF8 = false)
+    function formatFields($fieldArray, $excludeFields = [], $toPdf = false, $forceUTF8 = false)
     {
-        require_once('modules/Currencies/Currency.php');
+        //require_once('modules/Currencies/Currency.php');
 
         global $app_list_strings, $mod_strings, $timedate;
 
@@ -748,9 +462,9 @@ class KReport extends SugarBean
      * only render enums to the language depended values - if we do not format
      */
 
-    function formatEnums($fieldArray, $excludeFields = array())
+    function formatEnums($fieldArray, $excludeFields = [])
     {
-        require_once('modules/Currencies/Currency.php');
+        //require_once('modules/Currencies/Currency.php');
 
         global $app_list_strings, $current_language;
 
@@ -767,7 +481,7 @@ class KReport extends SugarBean
                     case 'radioenum' :
                     case 'dynamicenum' :  //added 2019-02-13 contribution by fibrecrm for SuiteCRM dynamic dropdowns support
                         //2013-03-15 check if we have a group concat then translate the individual values
-                        if (in_array($this->fieldNameMap [$fieldID]['sqlFunction'], array('GROUP_CONCAT', 'GROUP_CONASC', 'GROUP_CONDSC'))) {
+                        if (in_array($this->fieldNameMap [$fieldID]['sqlFunction'], ['GROUP_CONCAT', 'GROUP_CONASC', 'GROUP_CONDSC'])) {
                             $valArray = explode(',', $fieldValue);
                             $fieldValue = '';
                             foreach ($valArray as $thisValue) {
@@ -835,7 +549,7 @@ class KReport extends SugarBean
      * only render time Fields
      */
 
-    function formateDateTime($fieldArray, $excludeFields = array())
+    function formateDateTime($fieldArray, $excludeFields = [])
     {
 
         global $app_list_strings, $timedate;
@@ -852,7 +566,8 @@ class KReport extends SugarBean
 
     function getXtypeRenderer($fieldType, $fieldID = '')
     {
-        global $current_user, $mod_strings;
+        global $mod_strings;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         // check if we have a custom SQL function -- then reset the value .. we do  not know how to format
         if($this->kQueryArray->queryArray['root']['kQuery']){
@@ -921,8 +636,8 @@ class KReport extends SugarBean
     {
 
         // check if we have a custom SQL function -- then reset the value .. we do  not know how to format
-		if($this->kQueryArray->queryArray['root']['kQuery']) //fix 20171128 check if object!
-			$listFieldArray = $this->kQueryArray->queryArray['root']['kQuery']->get_listfieldentry_by_fieldid($fieldID);
+        if($this->kQueryArray->queryArray['root']['kQuery']) //fix 20171128 check if object!
+            $listFieldArray = $this->kQueryArray->queryArray['root']['kQuery']->get_listfieldentry_by_fieldid($fieldID);
 
         //2013-03-01 maual alignmetn setting rules
         if (!empty($listFieldArray ['overridealignment']) && $listFieldArray ['overridealignment'] != "-")
@@ -943,8 +658,8 @@ class KReport extends SugarBean
 
         // get XtypeAlignment config if available
         $configXtypeAlignment = "";
-        if(isset($GLOBALS['sugar_config']['KReports']['getXtypeAlignment'][$fieldType])){
-            $configXtypeAlignment = $GLOBALS['sugar_config']['KReports']['getXtypeAlignment'][$fieldType];
+        if(isset(SpiceConfig::getInstance()->config['KReports']['getXtypeAlignment'][$fieldType])){
+            $configXtypeAlignment = SpiceConfig::getInstance()->config['KReports']['getXtypeAlignment'][$fieldType];
         }
 
         // process the fieldtypes
@@ -967,16 +682,16 @@ class KReport extends SugarBean
 
     function createCSV($dynamicolsOverride = '', $parentbean = null)
     {
-        global $current_user, $sugar_config;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $this->tocsv = true;
 
         $header = '';
         $rows = '';
 
         // SPICEUI-325 fallback delimiter when user pref is not set
-        $export_delimiter = (!empty($current_user->getPreference('export_delimiter')) ? $current_user->getPreference('export_delimiter') : $sugar_config['export_delimiter']);
+        $export_delimiter = (!empty($current_user->getPreference('export_delimiter')) ? $current_user->getPreference('export_delimiter') : (SpiceConfig::getInstance()->config['export_delimiter'] ?: ";"));
 
-        $reportParams = array('toCSV' => true);
+        $reportParams = ['toCSV' => true];
         if ($dynamicolsOverride != '') {
             if(!is_array($dynamicolsOverride))
                 $dynamicolsOverride = json_decode(html_entity_decode($dynamicolsOverride), true);
@@ -992,7 +707,6 @@ class KReport extends SugarBean
         if($parentbean) $reportParams['parentbean'] = $parentbean;
 
         $results = $this->getSelectionResults($reportParams);
-
         //handel the selection parameters for Excel
         $selParam = '';
         $whereSelectionArray = $this->kQueryArray->get_where_array();
@@ -1006,10 +720,10 @@ class KReport extends SugarBean
         $arrayList = json_decode(html_entity_decode($this->listfields, ENT_QUOTES, 'UTF-8'), true);
 
         //see if we have dynamic cols in the Request ...
-        $dynamicolsOverrid = array();
+        $dynamicolsOverrid = [];
         if ($dynamicolsOverride != '') {
             $dynamicolsOverride = json_decode(html_entity_decode($dynamicolsOverride, ENT_QUOTES, 'UTF-8'), true);
-            $overrideMap = array();
+            $overrideMap = [];
             foreach ($dynamicolsOverride as $thisOverrideKey => $thisOverrideEntry) {
                 $overrideMap[$thisOverrideEntry['dataIndex']] = $thisOverrideKey;
             }
@@ -1035,15 +749,16 @@ class KReport extends SugarBean
             usort($arrayList, 'sortFieldArrayBySequence');
         }
 
-        $fieldArray = array();
-        $fieldIdArray = array();
+        $fieldArray = [];
+        $fieldIdArray = [];
         foreach ($arrayList as $thisList) {
             if ($thisList['display'] == 'yes') {
-                $fieldArray[] = array('label' => utf8_decode($thisList ['name']), 'width' => (isset($thisList['width']) && $thisList ['width']!= '' && $thisList['width'] != '0') ? $thisList['width'] : '100', 'display' => $thisList['display']);
+                $fieldArray[] = ['label' => utf8_decode($thisList ['name']), 'width' => (isset($thisList['width']) && $thisList ['width']!= '' && $thisList['width'] != '0') ? $thisList['width'] : '100', 'display' => $thisList['display']];
                 $fieldIdArray[] = $thisList['fieldid'];
             }
         }
 
+        $spiceLanguageHandler = new \SpiceCRM\includes\SpiceLanguages\SpiceLanguagesRESTHandler();
         if (count($results) > 0) {
             foreach ($results as $record) {
                 $getHeader = ($header == '') ? true : false;
@@ -1054,11 +769,13 @@ class KReport extends SugarBean
                     if (array_search($key, $fieldIdArray) !== false) {
                         if ($getHeader) {
                             foreach ($arrayList as $fieldId => $fieldArray)
-                                if ($fieldArray['fieldid'] == $key)
-                                    $header .= '"' .iconv("UTF-8", $current_user->getPreference('default_export_charset'), $fieldArray ['name']) . '"' . $export_delimiter;
+                                if ($fieldArray['fieldid'] == $key){
+                                    $translation = $spiceLanguageHandler->getTranslationLabelDataByName($fieldArray['name'], $current_language);
+                                    $header .= '"' .iconv("UTF-8", $current_user->getPreference('default_export_charset'), $translation) . '"' . $export_delimiter;
+                                }
                         }
 
-                        $rows .= '"' . iconv("UTF-8", $current_user->getPreference('default_export_charset') . '//IGNORE', preg_replace(array('/"/'), array('""'), strip_tags(html_entity_decode($value, ENT_QUOTES)))) . '"' . $export_delimiter;
+                        $rows .= '"' . iconv("UTF-8", $current_user->getPreference('default_export_charset') . '//IGNORE', preg_replace(['/"/'], ['""'], strip_tags(html_entity_decode($value, ENT_QUOTES)))) . '"' . $export_delimiter;
                     }
                 }
                 if ($getHeader)
@@ -1072,9 +789,10 @@ class KReport extends SugarBean
 
     function createTargeList($listname, $campaign_id = '')
     {
-        global $current_user, $db;
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $db = DBManagerFactory::getInstance();
 
-        $results = $this->getSelectionResults(array());
+        $results = $this->getSelectionResults([]);
 
         if (count($results > 0)) {
             require_once('modules/ProspectLists/ProspectList.php');
@@ -1119,7 +837,7 @@ class KReport extends SugarBean
      * function to fetch Selection Results based on switch of Context
      */
 
-    function getContextselectionResult($parameters, $getcount = false, $additionalFilter = '', $additionalGroupBy = array())
+    function getContextselectionResult($parameters, $getcount = false, $additionalFilter = '', $additionalGroupBy = [])
     {
         $query = '';
 
@@ -1131,20 +849,21 @@ class KReport extends SugarBean
             $parameters['limit'] = 0;
 
 
-        if (!empty($GLOBALS['sugar_config']['k_dbconfig_clone'])) {
-            $db = new $GLOBALS['sugar_config']['k_dbconfig_clone']['db_manager']();
+        if (!empty(SpiceConfig::getInstance()->config['k_dbconfig_clone'])) {
+            $dbManagerName= SpiceConfig::getInstance()->config['k_dbconfig_clone']['db_manager'];
+            $db = new $dbManagerName();
 
             // switch the db
-            $db->connect($GLOBALS['sugar_config']['k_dbconfig_clone']);
+            $db->connect(SpiceConfig::getInstance()->config['k_dbconfig_clone']);
         } else {
-            global $db;
+            $db = DBManagerFactory::getInstance();
         }
 
         // disable ONLY_FULL_GROUP_BY if this is set
         $db->query("SET sql_mode=(SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
 
         // retun an empty array
-        $retArray = array();
+        $retArray = [];
 
         // process the list
         /*
@@ -1262,7 +981,7 @@ class KReport extends SugarBean
         $this->preProcessFormulas();
 
         // 2013-02-12 for cumulated fields
-        $cumulatedArray = array();
+        $cumulatedArray = [];
 
         // get the restul rows and process them
         while ($queryRow = $db->fetchByAssoc($queryResults)) {
@@ -1278,11 +997,11 @@ class KReport extends SugarBean
 
             // format the Fields
             if (!isset($parameters ['noFormat']) || (isset($parameters ['noFormat']) && !$parameters ['noFormat']))
-                $formattedRow = $this->formatFields($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : array(), isset($parameters ['toPDF']) || isset($parameters ['toCSV']) ? true : false, isset($parameters ['toPDF']) ? true : false);
+                $formattedRow = $this->formatFields($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : [], isset($parameters ['toPDF']) || isset($parameters ['toCSV']) ? true : false, isset($parameters ['toPDF']) ? true : false);
             else {
                 // bug 2011-03-07 ... for charts enums should not be translated - Chart is handling this
                 if (!isset($parameters ['noEnumTranslation']) || (isset($parameters ['noEnumTranslation']) && !$parameters ['noEnumTranslation']))
-                    $formattedRow = $this->formatEnums($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : array());
+                    $formattedRow = $this->formatEnums($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : []);
 
                 // 2011-12-07 translate times to local time per usersetting
                 // $formattedRow = $this->formatDates($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : array());
@@ -1291,7 +1010,7 @@ class KReport extends SugarBean
             //build the links
             //bugfix 2011-05-18 for links in export .. changed || to &&
             //     if ((!isset($parameters ['toPDF']) || (isset($parameters ['toPDF']) && !$parameters ['toPDF'])) && (!isset($parameters ['toCSV']) || (isset($parameters ['toCSV']) && !$parameters ['noLinks'])) && (!isset($parameters ['noLinks']) || (isset($parameters ['noLinks']) && !$parameters ['noLinks'])))
-            //         $formattedRow = $this->buildLinks($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : array() );
+            //         $formattedRow = $this->buildLinks($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : [] );
             // widget formatting
             //2013-09-07 Widgets only if explicitly set in Sugar Config Bug #497
 
@@ -1322,16 +1041,16 @@ class KReport extends SugarBean
      *    e.g. nbeeded for geocoding
      */
 
-    function getSelectionResults($parameters, $snapshotid = '0', $getcount = false, $additionalFilter = '', $additionalGroupBy = array())
+    function getSelectionResults($parameters, $snapshotid = '0', $getcount = false, $additionalFilter = '', $additionalGroupBy = [])
     {
 
         // parameter overrid listtype used for Charts
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         // set a configurable time limit ...
         //set_time_limit(10);
         // return an empty array if we have nothing else
-        $retArray = array();
+        $retArray = [];
 
         //handle start not set and start content (added maretval 2019-05-03)
         if (!isset($parameters['start']) || !KReportUtil::KReportValueIsIntegerOnly($parameters['start']))
@@ -1395,7 +1114,7 @@ class KReport extends SugarBean
 
                 // format the Fields
                 if (!isset($parameters ['noFormat']) || (isset($parameters ['noFormat']) && !$parameters ['noFormat']))
-                    $formattedRow = $this->formatFields($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : array());
+                    $formattedRow = $this->formatFields($formattedRow, isset($parameters ['dontFormat']) ? $parameters ['dontFormat'] : []);
 
                 //build the links unless we can conserve the ids with the snapshot this will not work ...
                 //if(!isset($parameters['toPDF']) || (isset($parameters['toPDF']) && !$parameters['toPDF']))
@@ -1412,7 +1131,7 @@ class KReport extends SugarBean
      * @param $snapshot_id
      */
     public static function getSnapshotWhereClause($snapshot_id){
-        global $db;
+        $db = DBManagerFactory::getInstance();
         if($res = $db->query("SELECT snapshotquery FROM kreportsnapshots WHERE id='".$snapshot_id."'")){
             while($row = $db->fetchByAssoc($res)){
                 if(!empty($row['snapshotquery'])){
@@ -1455,7 +1174,7 @@ class KReport extends SugarBean
     {
         $arrayList = json_decode(html_entity_decode($this->listfields, ENT_QUOTES), true);
 
-        $logicalNameToIdMap = array();
+        $logicalNameToIdMap = [];
 
         // map the fields to ids
         foreach ($arrayList as $thisListEntry) {
@@ -1463,8 +1182,8 @@ class KReport extends SugarBean
                 $logicalNameToIdMap[$thisListEntry['assigntovalue']] = $thisListEntry['fieldid'];
         }
 
-        $sequencedFormulas = array();
-        $unsequencedFormulas = array();
+        $sequencedFormulas = [];
+        $unsequencedFormulas = [];
 
         // get the formulas
         foreach ($arrayList as $thisListEntry) {
@@ -1519,17 +1238,17 @@ class KReport extends SugarBean
 
     function takeSnapshot()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $snapshotID = create_guid();
 
         // go get the results
-        $results = $this->getSelectionResults(array('toPDF' => true, 'noFormat' => true));
+        $results = $this->getSelectionResults(['toPDF' => true, 'noFormat' => true]);
 
         $i = 0;
         foreach ($results as $resultsrow) {
             //2017-06-28 bug fix save data to DB by using bsae64_encode
-            $query = 'INSERT INTO kreportsnapshotsdata SET record_id=\'' . $i . '\', snapshot_id = \'' . $snapshotID . '\', data=\'' . $GLOBALS['db']->quote(base64_encode(json_encode($resultsrow) )). '\'';
+            $query = 'INSERT INTO kreportsnapshotsdata SET record_id=\'' . $i . '\', snapshot_id = \'' . $snapshotID . '\', data=\'' . DBManagerFactory::getInstance()->quote(base64_encode(json_encode($resultsrow) )). '\'';
             $db->query($query);
             $i++;
         }
@@ -1537,7 +1256,7 @@ class KReport extends SugarBean
         // create the snapshot record
         //2017-06-28 bug fix missing id matching for snapshotdata. Save queryArray
         $queryArray = $this->kQueryArray->queryArray;
-        $query = 'INSERT INTO kreportsnapshots SET id=\'' . $snapshotID . '\', snapshotdate =\'' . gmdate('Y-m-d H:i:s') . '\', report_id=\'' . $this->id . '\', data=\''.$GLOBALS['db']->quote(base64_encode(serialize($queryArray) )).'\', snapshotquery = '.(!empty($this->whereOverride) ? '\''.$db->quote(json_encode($this->whereOverride)).'\'' : 'NULL');
+        $query = 'INSERT INTO kreportsnapshots SET id=\'' . $snapshotID . '\', snapshotdate =\'' . gmdate('Y-m-d H:i:s') . '\', report_id=\'' . $this->id . '\', data=\''. DBManagerFactory::getInstance()->quote(base64_encode(serialize($queryArray) )).'\', snapshotquery = '.(!empty($this->whereOverride) ? '\''.$db->quote(json_encode($this->whereOverride)).'\'' : 'NULL');
         $db->query($query);
     }
 
@@ -1547,7 +1266,7 @@ class KReport extends SugarBean
         global $mod_strings;
         $mod_strings = return_module_language($_SESSION['authenticated_user_language'], 'KReports');
 
-        $retArray = array();
+        $retArray = [];
 
         $query = 'SELECT id, snapshotdate FROM kreportsnapshots WHERE report_id = \'' . $this->id . '\' ORDER BY snapshotdate DESC';
 
@@ -1555,10 +1274,10 @@ class KReport extends SugarBean
 
         // 2012-11-21 change so a label can be used
         if ($withoutActual == 'true')
-            $retArray [] = array('snapshot' => '0', 'description' => $mod_strings['LBL_CURRENT_SNAPSHOT']);
+            $retArray [] = ['snapshot' => '0', 'description' => $mod_strings['LBL_CURRENT_SNAPSHOT']];
 
         while ($thisSnapshot = $this->db->fetchByAssoc($snapShotsResults)) {
-            $retArray [] = array('snapshot' => $thisSnapshot ['id'], 'description' => $thisSnapshot ['snapshotdate']);
+            $retArray [] = ['snapshot' => $thisSnapshot ['id'], 'description' => $thisSnapshot ['snapshotdate']];
         }
         return $retArray;
     }
@@ -1580,14 +1299,14 @@ class KReport extends SugarBean
 
         $arrayList = json_decode(html_entity_decode($this->listfields, ENT_QUOTES, 'UTF-8'), true);
 
-        $retArray [] = array('fieldid' => '-', 'fieldname' => '-');
+        $retArray [] = ['fieldid' => '-', 'fieldname' => '-'];
 
         if (is_array($arrayList)) {
             foreach ($arrayList as $thisList) {
                 //$pathName = $this->getPathNameFromPath($thisList['path']);
                 //$fieldName = explode(':', $this->getFieldNameFromPath($thisList['path']));
                 //if($this->joinSegments[$pathName]['object']->field_name_map[$fieldname[1]]->type == 'currency')
-                $retArray [] = array('fieldid' => $thisList ['fieldid'], 'fieldname' => $thisList ['name']);
+                $retArray [] = ['fieldid' => $thisList ['fieldid'], 'fieldname' => $thisList ['name']];
             }
         } else {
             $retArray = '';
@@ -1610,7 +1329,7 @@ class KReport extends SugarBean
     // for the GeoCoding
     function massGeoCode()
     {
-        global $app_list_strings, $mod_strings, $beanList, $beanFiles;
+        global $app_list_strings, $mod_strings;
 
         require_once('modules/KReports/BingMaps/BingMaps.php');
 
@@ -1646,7 +1365,7 @@ class KReport extends SugarBean
                 if (($thisResult [$mapDetails->latitude] == '' || $thisResult [$mapDetails->latitude] == null || $thisResult [$mapDetails->latitude] == '0,00') || ($thisResult [$mapDetails->longitude] == '' || $thisResult [$mapDetails->longitude] == null || $thisResult [$mapDetails->longitude] == '0,00')) {
 
                     //$query = $thisResult[$mapDetails->geocodeStreet] . ', ' .  $thisResult[$mapDetails->geocodePostalcode] . ' ' .  $thisResult[$mapDetails->geocodeCity] . ' ' .  $thisResult[$mapDetails->geocodeCountry];
-                    $addressArray = array('AddressLine' => $thisResult [$mapDetails->geocodeStreet], 'PostalCode' => $thisResult [$mapDetails->geocodePostalcode], 'Locality' => $thisResult [$mapDetails->geocodeCity], 'CountryRegion' => $thisResult [$mapDetails->geocodeCountry]);
+                    $addressArray = ['AddressLine' => $thisResult [$mapDetails->geocodeStreet], 'PostalCode' => $thisResult [$mapDetails->geocodePostalcode], 'Locality' => $thisResult [$mapDetails->geocodeCity], 'CountryRegion' => $thisResult [$mapDetails->geocodeCountry]];
                     $geoCodeResult = $mapService->geocode($addressArray);
 
                     // update object
@@ -1693,15 +1412,15 @@ class KReport extends SugarBean
         }
 
         // an empty array to return
-        $returnArray = array();
+        $returnArray = [];
 
         // get the report results
-        $results = $this->getSelectionResults(array('dontFormat' => array($mapDetails->longitude, $mapDetails->latitude)));
+        $results = $this->getSelectionResults(['dontFormat' => [$mapDetails->longitude, $mapDetails->latitude]]);
 
-        $categoryArray = array();
+        $categoryArray = [];
         $categoryCount = 1;
 
-        $mapBounds = array('topLeft' => array('x' => 0, 'y' => 0), 'bottomRight' => array('x' => 0, 'y' => 0));
+        $mapBounds = ['topLeft' => ['x' => 0, 'y' => 0], 'bottomRight' => ['x' => 0, 'y' => 0]];
 
         if (count($results > 0)) {
             foreach ($results as $thisRecord) {
@@ -1713,12 +1432,12 @@ class KReport extends SugarBean
                         $categoryArray [$thisRecord [$mapDetails->type]] = $categoryCount;
                         $categoryCount++;
                     }
-                    $returnArray ['data'] [] = array('id' => $thisRecord ['sugarRecordId'], 'geox' => $thisRecord [$mapDetails->longitude], 'geoy' => $thisRecord [$mapDetails->latitude], 'category_id' => (string)$categoryArray [$thisRecord [$mapDetails->type]], 'category' => $thisRecord [$mapDetails->type], 'image' => $imageMapRecArray[$thisRecord [$mapDetails->type]], 'line1' => /* $thisRecord[$mapDetails->longitude] . '/' . $thisRecord[$mapDetails->latitude] . '<br>' . */
-                        $thisRecord [$mapDetails->line1] . '<br>' . $thisRecord [$mapDetails->line2] . '<br>' . $thisRecord [$mapDetails->line3] . '<br>' . $thisRecord [$mapDetails->line4] . '<br>');
+                    $returnArray ['data'] [] = ['id' => $thisRecord ['sugarRecordId'], 'geox' => $thisRecord [$mapDetails->longitude], 'geoy' => $thisRecord [$mapDetails->latitude], 'category_id' => (string)$categoryArray [$thisRecord [$mapDetails->type]], 'category' => $thisRecord [$mapDetails->type], 'image' => $imageMapRecArray[$thisRecord [$mapDetails->type]], 'line1' => /* $thisRecord[$mapDetails->longitude] . '/' . $thisRecord[$mapDetails->latitude] . '<br>' . */
+                        $thisRecord [$mapDetails->line1] . '<br>' . $thisRecord [$mapDetails->line2] . '<br>' . $thisRecord [$mapDetails->line3] . '<br>' . $thisRecord [$mapDetails->line4] . '<br>'];
                 } else {
                     // $elementRecord[] = $thisRecord['sugarRecordId'];
-                    $returnArray ['data'] [] = array('id' => $thisRecord ['sugarRecordId'], 'geox' => $thisRecord [$mapDetails->longitude], 'geoy' => $thisRecord [$mapDetails->latitude], 'category' => '', 'image' => '', 'line1' => /* $thisRecord[$mapDetails->longitude] . '/' . $thisRecord[$mapDetails->latitude] . '<br>' . */
-                        $thisRecord [$mapDetails->line1] . '<br>' . $thisRecord [$mapDetails->line2] . '<br>' . $thisRecord [$mapDetails->line3] . '<br>' . $thisRecord [$mapDetails->line4] . '<br>');
+                    $returnArray ['data'] [] = ['id' => $thisRecord ['sugarRecordId'], 'geox' => $thisRecord [$mapDetails->longitude], 'geoy' => $thisRecord [$mapDetails->latitude], 'category' => '', 'image' => '', 'line1' => /* $thisRecord[$mapDetails->longitude] . '/' . $thisRecord[$mapDetails->latitude] . '<br>' . */
+                        $thisRecord [$mapDetails->line1] . '<br>' . $thisRecord [$mapDetails->line2] . '<br>' . $thisRecord [$mapDetails->line3] . '<br>' . $thisRecord [$mapDetails->line4] . '<br>'];
                 }
 
                 // set bounds
@@ -1738,9 +1457,9 @@ class KReport extends SugarBean
             }
 
             // add two record for the bounds
-            $returnArray ['data'] [] = array('id' => 'topLeft', 'geox' => $mapBounds ['topLeft'] ['x'], 'geoy' => $mapBounds ['topLeft'] ['y'], 'category' => 'TL', 'line1' => 'topLeft' . $mapBounds ['topLeft'] ['x'] . '/' . $mapBounds ['topLeft'] ['y']);
+            $returnArray ['data'] [] = ['id' => 'topLeft', 'geox' => $mapBounds ['topLeft'] ['x'], 'geoy' => $mapBounds ['topLeft'] ['y'], 'category' => 'TL', 'line1' => 'topLeft' . $mapBounds ['topLeft'] ['x'] . '/' . $mapBounds ['topLeft'] ['y']];
 
-            $returnArray ['data'] [] = array('id' => 'bottomRight', 'geox' => $mapBounds ['bottomRight'] ['x'], 'geoy' => $mapBounds ['bottomRight'] ['y'], 'category' => 'BR', 'line1' => 'bottomRight' . $mapBounds ['bottomRight'] ['x'] . '/' . $mapBounds ['bottomRight'] ['y']);
+            $returnArray ['data'] [] = ['id' => 'bottomRight', 'geox' => $mapBounds ['bottomRight'] ['x'], 'geoy' => $mapBounds ['bottomRight'] ['y'], 'category' => 'BR', 'line1' => 'bottomRight' . $mapBounds ['bottomRight'] ['x'] . '/' . $mapBounds ['bottomRight'] ['y']];
         }
 
         return json_encode($returnArray);
@@ -1753,7 +1472,7 @@ class KReport extends SugarBean
     function get_runtime_wherefilters()
     {
         // return Array
-        $editableWhereFields = array();
+        $editableWhereFields = [];
 
         // get the Where Fields
         $whereFieldsList = json_decode(html_entity_decode($this->whereconditions, ENT_QUOTES), true);
@@ -1862,7 +1581,7 @@ class KReport extends SugarBean
     function getDashletWhereClause()
     {
         //generic return array
-        $returnArray = array();
+        $returnArray = [];
 
         // get the where fields
         $arrayWhere = $this->get_runtime_wherefilters(); // json_decode( html_entity_decode($this->whereconditions, ENT_QUOTES), true);
@@ -1884,7 +1603,7 @@ class KReport extends SugarBean
                 }
 
                 // get a return array
-                $returnArray [] = array('fieldid' => $thisWhereField ['fieldid'], 'operator' => $thisWhereField ['operator'], 'sequence' => isset($thisWhereField ['sequence']) ? $thisWhereField ['sequence'] : '', 'options' => in_array($thisWhereField ['type'], array('enum', 'radioenum', 'multienum', 'user_name', 'assigned_user_name')) ? $this->get_enum_from_path($thisWhereField ['path']) : '', 'type' => $thisWhereField ['type'], 'renderType' => $thisWhereField ['usereditable'] == 'yo1' || $thisWhereField ['usereditable'] == 'yo2' ? 'checkbox' : '', 'name' => $thisWhereField ['name'], 'value' => (isset($thisWhereField ['valuekey']) && $thisWhereField ['valuekey'] != '' ? $thisWhereField ['valuekey'] : $thisWhereField ['value']));
+                $returnArray [] = ['fieldid' => $thisWhereField ['fieldid'], 'operator' => $thisWhereField ['operator'], 'sequence' => isset($thisWhereField ['sequence']) ? $thisWhereField ['sequence'] : '', 'options' => in_array($thisWhereField ['type'], ['enum', 'radioenum', 'multienum', 'user_name', 'assigned_user_name']) ? $this->get_enum_from_path($thisWhereField ['path']) : '', 'type' => $thisWhereField ['type'], 'renderType' => $thisWhereField ['usereditable'] == 'yo1' || $thisWhereField ['usereditable'] == 'yo2' ? 'checkbox' : '', 'name' => $thisWhereField ['name'], 'value' => (isset($thisWhereField ['valuekey']) && $thisWhereField ['valuekey'] != '' ? $thisWhereField ['valuekey'] : $thisWhereField ['value'])];
             }
         }
 
@@ -1894,7 +1613,8 @@ class KReport extends SugarBean
     function get_enum_from_path($path)
     {
 
-        global $app_list_strings, $beanFiles, $beanList, $db;
+        global $app_list_strings;
+        $db = DBManagerFactory::getInstance();
 
         // explode the path
         $pathArray = explode('::', $path);
@@ -1923,16 +1643,16 @@ class KReport extends SugarBean
                 case 'radioenum' :
                 case 'multienum' :
                     foreach ($app_list_strings [$thisModule->field_name_map [$fieldArray [1]] ['options']] as $value => $text) {
-                        $returnArray [] = array('value' => $value, 'text' => $text);
+                        $returnArray [] = ['value' => $value, 'text' => $text];
                     }
                     break;
                 case 'user_name' :
                 case 'assigned_user_name' :
-                    $returnArray [] = array('value' => 'current_user_id', 'text' => 'active user');
+                    $returnArray [] = ['value' => 'current_user_id', 'text' => 'active user'];
                     $usersResult = $db->query('SELECT id, user_name FROM users WHERE deleted = \'0\' AND status = \'Active\'');
                     while ($userRecord = $db->fetchByAssoc($usersResult)) {
                         // bugfix 2010-09-28 since id was asisgned and not user name ..  no properly evaluates active user
-                        $returnArray [] = array('value' => $userRecord ['user_name'], 'text' => $userRecord ['user_name']);
+                        $returnArray [] = ['value' => $userRecord ['user_name'], 'text' => $userRecord ['user_name']];
                     }
                     break;
             }
@@ -1943,16 +1663,16 @@ class KReport extends SugarBean
                 case 'radioenum' :
                 case 'multienum' :
                     foreach ($app_list_strings [$parentModule->field_name_map [$fieldArray [1]] ['options']] as $value => $text) {
-                        $returnArray [] = array('value' => $value, 'text' => $text);
+                        $returnArray [] = ['value' => $value, 'text' => $text];
                     }
                     break;
                 case 'user_name' :
                 case 'assigned_user_name' :
-                    $returnArray [] = array('value' => 'current_user_id', 'text' => 'active user');
+                    $returnArray [] = ['value' => 'current_user_id', 'text' => 'active user'];
                     $usersResult = $db->query('SELECT id, user_name FROM users WHERE deleted = \'0\' AND status = \'Active\'');
                     while ($userRecord = $db->fetchByAssoc($usersResult)) {
                         // bugfix 2010-09-28 since id was asisgned and not user name ..  no properly evaluates active user
-                        $returnArray [] = array('value' => $userRecord ['user_name'], 'text' => $userRecord ['user_name']);
+                        $returnArray [] = ['value' => $userRecord ['user_name'], 'text' => $userRecord ['user_name']];
                     }
                     break;
             }
@@ -1963,11 +1683,11 @@ class KReport extends SugarBean
 
     static function getMenuReports($module, &$module_menu)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $thisReport = new KReport();
 
-        $reportsArray = array();
+        $reportsArray = [];
 
 
         $repQuery = "select kreports.id, name from kreports ";
@@ -1976,19 +1696,19 @@ class KReport extends SugarBean
 
 
         while ($report = $db->fetchByAssoc($reportsObj)) {
-            $module_menu[] = array(
+            $module_menu[] = [
                 "index.php?module=KReports&action=DetailView&record=" . $report['id'],
                 $report['name'],
                 "KReports",
-                'KReports');
+                'KReports'];
         }
 
         return true;
     }
 
     // for the listing (exclude utility Reports unless we ae admin
-    function create_new_list_query($order_by, $where, $filter = array(), $params = array(), $show_deleted = 0, $join_type = '', $return_array = false, $parentbean = null, $singleSelect = false, $ifListForExport = false)
-        {
+    function create_new_list_query($order_by, $where, $filter = [], $params = [], $show_deleted = 0, $join_type = '', $return_array = false, $parentbean = null, $singleSelect = false, $ifListForExport = false)
+    {
         $ret_array = parent::create_new_list_query($order_by, $where, $filter, $params, $show_deleted, $join_type, true, $parentbean, $singleSelect, $ifListForExport);
 
         // add selection clause to $ret:array['where']
@@ -1997,155 +1717,6 @@ class KReport extends SugarBean
             return $ret_array;
         }
         return $ret_array['select'] . $ret_array['from'] . $ret_array['where'] . $ret_array['order_by'];
-    }
-
-}
-
-/*
- * separate class that handles formatting fd field bnased on the fieldrenderer and the record
- * renderes are returned from getXtyperenderer and are the sames as in the userinterface in Sencha
- */
-
-class KReportRenderer
-{
-
-    var $report = null;
-
-    public function __construct($thisReport = null)
-    {
-        $this->report = $thisReport;
-    }
-
-    public static function kcurrencyRenderer($fieldid, $record)
-    {
-        if ($record[$fieldid] == '' || $record[$fieldid] == 0)
-            return '';
-        // 2014-02-25 .. set teh default system currency .. otherwise sugar might take the default users currency
-        if (empty($record [$fieldid . '_curid']))
-            $record [$fieldid . '_curid'] = '-99';
-        return currency_format_number($record[$fieldid], array('currency_id' => $record [$fieldid . '_curid'], 'currency_symbol' => true));
-    }
-
-    public static function kcurrencyintRenderer($fieldid, $record)
-    {
-        if ($record[$fieldid] == '' || $record[$fieldid] == 0)
-            return '';
-        // 2014-02-25 .. set teh default system currency .. otherwise sugar might take the default users currency
-        if (empty($record [$fieldid . '_curid']))
-            $record [$fieldid . '_curid'] = '-99';
-        return currency_format_number($record[$fieldid], array('round' => 0, 'decimals'=> 0, 'currency_id' => $record [$fieldid . '_curid'], 'currency_symbol' => true));
-    }
-
-    public function kenumRenderer($fieldid, $record)
-    {
-        global $app_list_strings;
-        //2013-03-15 check if we have a group concat then translate the individual values
-        if (in_array($this->report->fieldNameMap [$fieldid]['sqlFunction'], array('GROUP_CONCAT', 'GROUP_CONASC', 'GROUP_CONDSC'))) {
-            $valArray = explode(',', $record[$fieldid]);
-            $fieldValue = '';
-            foreach ($valArray as $thisValue) {
-                if ($fieldValue != '')
-                    $fieldValue .= ', ';
-                if (trim($thisValue) != '' && isset($this->report->kQueryArray->queryArray [(isset($record ['unionid']) ? $record ['unionid'] : 'root')] ['kQuery']->fieldNameMap [$fieldid] ['fields_name_map_entry'] ['options'])) {
-                    if (is_array($this->report->fieldNameMap[$fieldid]['fields_name_map_entry']['function']) && isset($this->report->fieldNameMap[$fieldid]['fields_name_map_entry']['function']['include'])) {
-                        $fielName = $this->report->fieldNameMap[$fieldid]['fields_name_map_entry']['function']['include'];
-                        require_once($fielName);
-                        $functionName = $this->report->fieldNameMap[$fieldid]['fields_name_map_entry']['function']['name'];
-                        $fieldValue = $functionName(null, $this->report->fieldNameMap [$fieldid]['fieldname'], $record[$thisValue]);
-                    } else
-                        $fieldValue .= $app_list_strings [$this->report->kQueryArray->queryArray [(isset($record ['unionid']) ? $record ['unionid'] : 'root')]['kQuery']->fieldNameMap[$fieldid]['fields_name_map_entry']['options']][trim($thisValue)];
-                }
-            }
-        } else {
-            if (is_array($this->report->fieldNameMap[$fieldid]['fields_name_map_entry']['function']) && isset($this->report->fieldNameMap[$fieldid]['fields_name_map_entry']['function']['include'])) {
-                $fielName = $this->report->fieldNameMap [$fieldid]['fields_name_map_entry'] ['function']['include'];
-                require_once($fielName);
-                $functionName = $this->report->fieldNameMap [$fieldid]['fields_name_map_entry'] ['function']['name'];
-                $fieldValue = $functionName(null, $this->report->fieldNameMap [$fieldid]['fieldname'], $record[$fieldid]);
-            } else
-                $fieldValue = $app_list_strings [$this->report->kQueryArray->queryArray [(isset($record ['unionid']) ? $record ['unionid'] : 'root')] ['kQuery']->fieldNameMap[$fieldid]['fields_name_map_entry']['options']][$record[$fieldid]];
-        }
-
-        // if value is empty we return the original value
-        if (empty($fieldValue))
-            $fieldValue = $record [$fieldid];
-
-        return $fieldValue;
-    }
-
-    public function kradioenumRenderer($fieldid, $record)
-    {
-        return $this->kenumRenderer($fieldid, $record);
-    }
-
-    public function kmultienumRenderer($fieldid, $record)
-    {
-        global $app_list_strings;
-        if ($this->report->fieldNameMap [$fieldid] ['sqlFunction'] == '') {
-            $fieldArray = preg_split('/\^,\^/', $record [$fieldid]);
-            //bugfix 2010-09-22 if only one value is selected
-            if (is_array($fieldArray) && count($fieldArray) > 1) {
-                $fieldValue = '';
-                foreach ($fieldArray as $thisFieldValue) {
-                    if ($fieldValue != '')
-                        $fieldValue .= ', ';
-                    $fieldValue .= $app_list_strings [$this->report->kQueryArray->queryArray [(isset($fieldArray ['unionid']) ? $fieldArray ['unionid'] : 'root')] ['kQuery']->fieldNameMap [$fieldid] ['fields_name_map_entry'] ['options']] [trim($thisFieldValue, '^')];
-                }
-            } else {
-                $fieldValue = $app_list_strings [$this->report->kQueryArray->queryArray [(isset($fieldArray ['unionid']) ? $fieldArray ['unionid'] : 'root')] ['kQuery']->fieldNameMap [$fieldid] ['fields_name_map_entry'] ['options']] [trim($record [$fieldid], '^')];
-            }
-        }
-        return $fieldValue;
-    }
-
-    public static function kpercentageRenderer($fieldid, $record)
-    {
-        return round($record[$fieldid], 2) . '%';
-    }
-
-    public static function knumberRenderer($fieldid, $record)
-    {
-        return round($record[$fieldid], 2);
-//        return format_number($record[$fieldid], $GLOBALS['current_user']->getPreference('default_currency_significant_digits'));
-    }
-
-    public static function kintRenderer($fieldid, $record)
-    {
-
-//        return round($record[$fieldid]);
-        return format_number($record[$fieldid], 0, 0);
-    }
-
-    public static function kdateRenderer($fieldid, $record)
-    {
-        global $timedate;
-        // 2013-10-03 no Date TZ Conversion Bug#504
-        return ($record[$fieldid] != '' ? $timedate->to_display_date($record[$fieldid], false) : '');
-    }
-
-    public static function kdatetimeRenderer($fieldid, $record)
-    {
-        global $timedate, $db;
-        return ($record[$fieldid] != '' ? $db->fromConvert($record[$fieldid], 'datetime') : '');
-    }
-
-    public static function kdatetutcRenderer($fieldid, $record)
-    {
-        global $timedate;
-        return ($record[$fieldid] != '' ? $record[$fieldid] : '');
-    }
-
-    public function kboolRenderer($fieldid, $record)
-    {
-        if($this->report->tocsv)
-            return $record[$fieldid];
-        global $mod_strings;
-        return ($record[$fieldid] == '1' ? ($mod_strings['LBL_BOOL_1'] ?: 1) : ($mod_strings['LBL_BOOL_0'] ?: 0));
-    }
-
-    public static function ktextRenderer($fieldid, $record)
-    {
-        return $record[$fieldid];
     }
 
 }

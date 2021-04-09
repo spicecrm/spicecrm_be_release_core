@@ -1,6 +1,4 @@
 <?php
-namespace SpiceCRM\includes\Logger;
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -36,13 +34,18 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\includes\Logger;
+
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
 /**
  * Log management
  * Modifications introduced in spicecrm 20180900 to support SpiceLogger
  * @api
  */
-require_once('include/database/DBManagerFactory.php');
-require_once('include/TimeDate.php');
+
 
 class LoggerManager
 {
@@ -50,18 +53,19 @@ class LoggerManager
 	private $_level = 'fatal';
 
 	//this is a list of different loggers that have been loaded
-	protected static $_loggers = array();
+	protected static $_loggers = [];
 
 	//this is the instance of the LoggerManager
 	private static $_instance = NULL;
 
 	//these are the mappings for levels to different log types
-	private static $_logMapping = array(
-		'default' => 'SpiceLogger',
-	);
+	private static $_logMapping = [
+		'default' => '\SpiceCRM\includes\Logger\SpiceLogger',
+		'fatal' => '\SpiceCRM\includes\Logger\SpiceLogger',
+    ];
 
 	//these are the log level mappings anything with a lower value than your current log level will be logged
-	private static $_levelMapping = array(
+	private static $_levelMapping = [
 		'debug'      => 100,
 		'info'       => 70,
 		'warn'       => 50,
@@ -71,49 +75,29 @@ class LoggerManager
 		'fatal'      => 10,
 		'security'   => 5,
 		'off'        => 0,
-	);
+    ];
 
-    private static $_levelCategories = array(
+    private static $_levelCategories = [
 
-    );
-    private static $_dbconfig = array(
+    ];
+    private static $_dbconfig = [
 
-    );
+    ];
 
-    public static $db = null;
 
 	//only let the getLogger instantiate this object
 	private function __construct()
 	{
-		$level = \SpiceConfig::getInstance()->get('logger.level', $this->_level);
+		$level = SpiceConfig::getInstance()->get('logger.level', $this->_level);
 		if (!empty($level))
 			$this->setLevel($level);
 
 		if ( empty(self::$_loggers) )
 		    $this->_findAvailableLoggers();
+
 	}
 
-    /**
-     * SpiceCRM enhancement
-     * @param $db
-     */
-	public static function setDbManager($db){
-	    self::$db = clone $db;
-    }
 
-    /**
-     * SpiceCRM enhancement
-     * @param $db
-     */
-    public static function getDbManager(){
-        if ( is_null( self::$db ) && empty( $GLOBALS['installing'] )) {
-            if ( isset( $GLOBALS['db'] )) {
-                self::$db = $GLOBALS['db'];
-            } else {
-                self::$db = \DBManagerFactory::getTypeInstance(self::$_dbconfig['db_type'], self::$_dbconfig);
-            }
-        }
-    }
 	/**
 	 * Overloaded method that handles the logging requests.
 	 *
@@ -140,16 +124,20 @@ class LoggerManager
 //                    && self::$_levelMapping[$this->_level] >= self::$_levelMapping[$method]) ) {
 
         //check levelcategorie for logging
-        $logparams = array();
+        $logparams = [];
         $all = false;
         if( @self::$_levelCategories[$method]['*'] > 0 ) {
             $all = true;
             $logparams['users'] = '*';
         }
         $user = false;
-        if( @self::$_levelCategories[$method][$GLOBALS['current_user']->id] > 0) {
+        $currentUser=AuthenticationController::getInstance()->getCurrentUser();
+        // set user ID for log
+        if( $currentUser !== null){
+            $logparams['user'] = $currentUser->id;
+        }
+        if( $currentUser !== null && @self::$_levelCategories[$method][$currentUser->id] > 0) {
             $user = true;
-            $logparams['user'] = $GLOBALS['current_user']->id;
         }
 
         //log
@@ -245,7 +233,7 @@ class LoggerManager
      * @param string $categories
      */
     public static function setLevelCategories(
-        $categories = array()
+        $categories = []
     )
     {
         if(!empty($categories))
@@ -258,12 +246,11 @@ class LoggerManager
      *
      */
     public static function getLevelCategories(){
-        if(empty(self::$_levelCategories) && isset( $GLOBALS['sugar_config']['logger']['default'] ) && $GLOBALS['sugar_config']['logger']['default'] === 'SpiceLogger'){
-            $levelCategories = array();
-            self::getDbManager();
-            if(self::$db) {
-                $res = self::$db->queryOnly("SELECT * FROM syslogusers WHERE logstatus > 0 ORDER BY level");
-                while ($row = self::$db->fetchByAssoc($res)) {
+        if(empty(self::$_levelCategories) && isset( SpiceConfig::getInstance()->config['logger']['default'] ) && SpiceConfig::getInstance()->config['logger']['default'] === '\SpiceCRM\includes\Logger\SpiceLogger'){
+            $levelCategories = [];
+            if(DBManagerFactory::getInstance()) {
+                $res = DBManagerFactory::getInstance()->queryOnly("SELECT * FROM syslogusers WHERE logstatus > 0 ORDER BY level");
+                while ($row = DBManagerFactory::getInstance()->fetchByAssoc($res)) {
                     $levelCategories[$row['level']][$row['user_id']] = true;
                 }
 
@@ -280,6 +267,9 @@ class LoggerManager
 	{
 		if(!LoggerManager::$_instance){
 			LoggerManager::$_instance = new LoggerManager();
+            self::setLogger('default',(SpiceConfig::getInstance()->get('logger.default') ?: '\SpiceCRM\includes\Logger\SpiceLogger'));
+            self::setDbConfig(SpiceConfig::getInstance()->get('dbconfig'));
+            self::getLevelCategories();
 		}
 		return LoggerManager::$_instance;
 	}

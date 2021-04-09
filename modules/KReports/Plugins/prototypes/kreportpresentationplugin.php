@@ -15,7 +15,6 @@
 
 
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 
 /*
@@ -36,14 +35,14 @@ class kreportpresentationplugin {
     }
     
     public function buildFieldArray($thisReport){
-        return array();
+        return [];
     }
     
     public function buildColumnArray($thisReport){
-       return array();
+       return [];
     }
     
     public function getPresentationMetaData($thisReport){
-        return array();
+        return [];
     }
 }

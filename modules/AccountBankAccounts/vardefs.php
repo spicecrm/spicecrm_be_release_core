@@ -1,13 +1,16 @@
 <?php
-$dictionary['AccountBankAccount'] = array(
+
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['AccountBankAccount'] = [
     'table' => 'accountbankaccounts',
-    'fields' => array(
-        'account_id' => array(
+    'fields' => [
+        'account_id' => [
             'name' => 'account_id',
             'type' => 'id',
             'vname' => 'LBL_ACCOUNTS_ID'
-        ),
-        'account_name' => array(
+        ],
+        'account_name' => [
             'source' => 'non-db',
             'name' => 'account_name',
             'vname' => 'LBL_ACCOUNT',
@@ -18,8 +21,8 @@ $dictionary['AccountBankAccount'] = array(
             'link' => 'accounts',
             'join_name' => 'accounts',
             'rname' => 'name'
-        ),
-        'accounts' => array(
+        ],
+        'accounts' => [
             'name' => 'accounts',
             'module' => 'Accounts',
             'type' => 'link',
@@ -28,34 +31,34 @@ $dictionary['AccountBankAccount'] = array(
             'side' => 'right',
             'source' => 'non-db',
             'vname' => 'LBL_ACCOUNTS',
-        ),
-        'accountnr' => array(
+        ],
+        'accountnr' => [
             'name' => 'accountnr',
             'type' => 'varchar',
             'len' => 50,
             'vname' => 'LBL_BANKACCOUNTNUMBER'
-        ),
-        'swift' => array(
+        ],
+        'swift' => [
             'name' => 'swift',
             'type' => 'varchar',
             'len' => 20,
             'vname' => 'LBL_SWIFT'
-        ),
-        'street' => array(
+        ],
+        'street' => [
             'name' => 'street',
             'type' => 'varchar',
             'len' => 50,
             'vname' => 'LBL_STREET'
-        ),
-        'postalcode' => array(
+        ],
+        'postalcode' => [
             'name' => 'postalcode',
             'type' => 'varchar',
             'len' => 10,
             'vname' => 'LBL_POSTALCODE'
-        )
-    ),
-    'relationships' => array(
-        'accounts_bankaccounts' => array(
+        ]
+    ],
+    'relationships' => [
+        'accounts_bankaccounts' => [
             'lhs_module' => 'Accounts',
             'lhs_table' => 'accounts',
             'lhs_key' => 'id',
@@ -63,13 +66,12 @@ $dictionary['AccountBankAccount'] = array(
             'rhs_table' => 'accountbankaccounts',
             'rhs_key' => 'account_id',
             'relationship_type' => 'one-to-many'
-        )
-    ),
-    'indices' => array(
-        'id' => array('name' => 'accountbakaccounts_pk', 'type' => 'primary', 'fields' => array('id')),
-        'accounts_accountbankaccounts_account_id' => array('name' => 'accounts_accountbankaccounts_account_id', 'type' => 'index', 'fields' => array('account_id'))
-    ),
-);
+        ]
+    ],
+    'indices' => [
+        'id' => ['name' => 'accountbakaccounts_pk', 'type' => 'primary', 'fields' => ['id']],
+        'accounts_accountbankaccounts_account_id' => ['name' => 'accounts_accountbankaccounts_account_id', 'type' => 'index', 'fields' => ['account_id']]
+    ],
+];
 
-require_once('include/SugarObjects/VardefManager.php');
-VardefManager::createVardef('AccountBankAccounts', 'AccountBankAccount', array('default', 'assignable'));
+VardefManager::createVardef('AccountBankAccounts', 'AccountBankAccount', ['default', 'assignable']);

@@ -1,8 +1,8 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry)
-    die('Not A Valid Entry Point');
 /* * *** SPICE-SUGAR-HEADER-SPACEHOLDER **** */
 
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['Task'] = ['table' => 'tasks',
     'unified_search'   => true,
     'full_text_search' => true,
@@ -179,6 +179,13 @@ $dictionary['Task'] = ['table' => 'tasks',
             'vname' => 'LBL_WORKLOG',
             'type'  => 'text',
         ],
+//        'checklist' => [
+//            'name'  => 'checklist',
+//            'vname' => 'LBL_CHECKLIST',
+//            'type'  => 'checklist',
+//            'dbtype'  => 'text',
+//            'comment' => 'stores the checklist for the task to detail the task in more granular actions'
+//        ],
         'contacts' => [
             'name'         => 'contacts',
             'type'         => 'link',
@@ -208,6 +215,20 @@ $dictionary['Task'] = ['table' => 'tasks',
             'relationship' => 'opportunity_tasks',
             'source'       => 'non-db',
             'vname'        => 'LBL_OPPORTUNITY',
+        ],
+        'calls' => [
+            'name'         => 'calls',
+            'type'         => 'link',
+            'relationship' => 'calls_tasks',
+            'source'       => 'non-db',
+            'vname'        => 'LBL_CALLS',
+        ],
+        'meetings' => [
+            'name'         => 'meetings',
+            'type'         => 'link',
+            'relationship' => 'meetings_tasks',
+            'source'       => 'non-db',
+            'vname'        => 'LBL_MEETINS',
         ],
 // CR1000426 cleanup backend, module Cases removed
 //        'cases' => [
@@ -239,13 +260,20 @@ $dictionary['Task'] = ['table' => 'tasks',
             'source'       => 'non-db',
             'vname'        => 'LBL_PROJECTS',
         ],
-        'project_tasks' => [
-            'name'         => 'project_tasks',
+        'projectwbss' => [
+            'name'         => 'projectwbss',
             'type'         => 'link',
-            'relationship' => 'project_tasks_tasks',
+            'relationship' => 'projectwbss_tasks',
             'source'       => 'non-db',
-            'vname'        => 'LBL_PROJECT_TASKS',
+            'vname'        => 'LBL_PROJECTWBSS',
         ],
+//        'projectplannedactivities' => [
+//            'name'         => 'projectplannedactivities',
+//            'type'         => 'link',
+//            'relationship' => 'projectplannedactivities_tasks',
+//            'source'       => 'non-db',
+//            'vname'        => 'LBL_PROJECTPLANNEDACTIVITY',
+//        ],
         'notes' => [
             'name'         => 'notes',
             'type'         => 'link',
@@ -270,6 +298,13 @@ $dictionary['Task'] = ['table' => 'tasks',
             'vname'        => 'LBL_USERS',
             'module'       => 'Users',
             'default'      => true
+        ],
+        'checklists' => [
+            'name'         => 'checklists',
+            'type'         => 'json',
+            'dbtype'         => 'text',
+            'vname'        => 'LBL_CHECKLISTS',
+            'comment' => 'stores the checklist for the task to detail the task in more granular actions'
         ],
     ]
     ,
@@ -355,7 +390,7 @@ $dictionary['Task'] = ['table' => 'tasks',
 
 // CE version has not all modules...
 //set global else error with PHP7.1: Uncaught Error: Cannot use string offset as an array
-global  $dictionary;
+global $dictionary;
 if(is_file("modules/ServiceTickets/ServiceTicket.php")) {
     $dictionary['Task']['fields']['servicetickets'] = [
         'name'         => 'servicetickets',

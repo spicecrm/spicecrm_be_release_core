@@ -1,9 +1,13 @@
 <?php
-
 namespace SpiceCRM\modules\CampaignTasks\KREST\controllers;
+
+use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\ErrorHandlers\Exception;
 use SpiceCRM\includes\ErrorHandlers\ForbiddenException;
-use \SpiceCRM\KREST\handlers;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\KREST\handlers\ModuleHandler;
+use SpiceCRM\includes\authentication\AuthenticationController;
+use SpiceCRM\modules\SpiceACL\SpiceACL;
 
 class CampaignTasksKRESTController
 {
@@ -11,12 +15,12 @@ class CampaignTasksKRESTController
     {
         global $timedate;
 
-        if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'detail', true))
+        if (!SpiceACL::getInstance()->checkAccess('CampaignTasks', 'detail', true))
             throw (new ForbiddenException("Forbidden for details in module CampaignTasks."))->setErrorCode('noModuleDetails');
 
-        $getParams = $_GET;
+        $getParams = $req->getQueryParams();
         $now = $timedate->nowDb();
-        $campaignLog = \BeanFactory::getBean('CampaignLog');
+        $campaignLog = BeanFactory::getBean('CampaignLog');
         $list = $campaignLog->get_list(
             "planned_activity_date DESC",
             "campaigntask_id = '{$args['campaignid']}' AND IFNULL(planned_activity_date, '$now') <= '$now' AND activity_type != 'completed'",
@@ -25,14 +29,14 @@ class CampaignTasksKRESTController
             $getParams['limit'] ?: -1);
 
         // get a KREST Handler
-        $KRESTModuleHandler = new \SpiceCRM\KREST\handlers\ModuleHandler();
+        $KRESTModuleHandler = new ModuleHandler();
 
         // empty items structure for the return
         $items = [];
 
         foreach ($list['list'] as $item) {
-            $seed = \BeanFactory::getBean($item->target_type, $item->target_id);
-            $items[] = array(
+            $seed = BeanFactory::getBean($item->target_type, $item->target_id);
+            $items[] = [
                 'campaignlog_id' => $item->id,
                 'campaignlog_activity_type' => $item->activity_type,
                 'campaignlog_activity_date' => $item->activity_date,
@@ -42,10 +46,10 @@ class CampaignTasksKRESTController
                 'campaignlog_hits' => $item->hits,
                 // tbd
                 'data' => $KRESTModuleHandler->mapBeanToArray($item->target_type, $seed)
-            );
+            ];
         }
 
-        echo json_encode(array('items' => $items, 'row_count' => $list['row_count']));
+        return $res->withJson(['items' => $items, 'row_count' => $list['row_count']]);
     }
 
     /**
@@ -59,11 +63,11 @@ class CampaignTasksKRESTController
     function activateCampaignTask($req, $res, $args)
     {
         // ACL Check
-        if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'edit', true))
+        if (!SpiceACL::getInstance()->checkAccess('CampaignTasks', 'edit', true))
             throw (new ForbiddenException("Forbidden to edit in module CampaignTasks."))->setErrorCode('noModuleEdit');
 
         // load the campaign task
-        $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
+        $campaignTask = BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
 
         $status = 'targeted';
         switch($campaignTask->campaigntask_type){
@@ -77,18 +81,18 @@ class CampaignTasksKRESTController
 
         // activate the campaigntask
         $campaignTask->activate($status);
-        echo json_encode(array('success' => true, 'id' => $args['campaigntaskid']));
+        return $res->withJson(['success' => true, 'id' => $args['campaigntaskid']]);
     }
 
 
     function exportCampaignTask($req, $res, $args)
     {
         // ACL Check
-        if (!$GLOBALS['ACLController']->checkAccess('CampaignTasks', 'export', true))
+        if (!SpiceACL::getInstance()->checkAccess('CampaignTasks', 'export', true))
             throw (new ForbiddenException("Forbidden to export for module CampaignTasks."));
 
         // load the campaign task
-        $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaignid']);
+        $campaignTask = BeanFactory::getBean('CampaignTasks', $args['campaignid']);
 
         // activate the campaigntask
         $campaignTask->export();
@@ -104,7 +108,7 @@ class CampaignTasksKRESTController
      */
     function sendCampaignTaskTestEmail($req, $res, $args)
     {
-        $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
+        $campaignTask = BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
         return $res->withJson($campaignTask->sendTestEmail());
     }
 
@@ -117,10 +121,11 @@ class CampaignTasksKRESTController
      */
     function queueCampaignTaskEmail($req, $res, $args)
     {
-        global $db, $current_user;
-        $campaignTask = \BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
+        $campaignTask = BeanFactory::getBean('CampaignTasks', $args['campaigntaskid']);
         $campaignTask->activate('queued');
-        echo json_encode(array('success' => true));
+        return $res->withJson(['success' => true]);
     }
 
     /**
@@ -132,9 +137,9 @@ class CampaignTasksKRESTController
      */
     public function liveCompileEmailBody($req, $res, $args) {
     $params = $req->getParsedBody();
-    $emailTemplate = \BeanFactory::getBean('EmailTemplates');
+    $emailTemplate = BeanFactory::getBean('EmailTemplates');
     $emailTemplate->body_html = $params['html'];
-    $bean = \BeanFactory::getBean($args['module'], $args['parent']);
+    $bean = BeanFactory::getBean($args['module'], $args['parent']);
     $parsedTpl = $emailTemplate->parse($bean);
 
     return $res->withJson(['html' => from_html(wordwrap($parsedTpl['body_html'], true))]);
@@ -144,7 +149,7 @@ class CampaignTasksKRESTController
     {
         $retArray = [];
 
-        $report = \BeanFactory::getBean('KReports');
+        $report = BeanFactory::getBean('KReports');
         $reports = $report->get_full_list('name', "report_module = 'CampaignTasks' AND ( integration_params LIKE '%\"kexcelexport\":1%' OR integration_params LIKE '%\"kcsvexport\":1%')");
         foreach($reports as $report){
             $integrationPramns = json_decode(html_entity_decode($report->integration_params));

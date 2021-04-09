@@ -2,6 +2,9 @@
 
 namespace SpiceCRM\modules\Administration\KREST\controllers;
 
+use ReflectionClass;
+use ReflectionMethod;
+
 class adminPHPClassController
 {
     public static function checkClass($req, $res, $args)
@@ -10,12 +13,12 @@ class adminPHPClassController
         $classExists = class_exists($class);
         $publicMethods = [];
         if ($classExists) {
-            $class = new \ReflectionClass($class);
-            $methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
+            $class = new ReflectionClass($class);
+            $methods = $class->getMethods(ReflectionMethod::IS_PUBLIC);
             foreach($methods as $method)
                 $publicMethods[] = $method->name;
         }
 
-        return $res->write(json_encode(['classexists' => $classExists, 'methods' => $publicMethods]));
+        return $res->withJson(['classexists' => $classExists, 'methods' => $publicMethods]);
     }
 }

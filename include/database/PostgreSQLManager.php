@@ -1,39 +1,36 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
- * SugarCRM Community Edition is a customer relationship management program developed by
- * SugarCRM, Inc. Copyright (C) 2004-2012 SugarCRM Inc.
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License version 3 as published by the
- * Free Software Foundation with the addition of the following permission added
- * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
- * IN WHICH THE COPYRIGHT IS OWNED BY SUGARCRM, SUGARCRM DISCLAIMS THE WARRANTY
- * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
- * details.
- *
- * You should have received a copy of the GNU Affero General Public License along with
- * this program; if not, see http://www.gnu.org/licenses or write to the Free
- * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- *
- * You can contact SugarCRM, Inc. headquarters at 10050 North Wolfe Road,
- * SW2-130, Cupertino, CA 95014, USA. or at email address contact@sugarcrm.com.
- *
- * The interactive user interfaces in modified source and object code versions
- * of this program must display Appropriate Legal Notices, as required under
- * Section 5 of the GNU Affero General Public License version 3.
- *
- * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
- * these Appropriate Legal Notices must retain the display of the "Powered by
- * SugarCRM" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by SugarCRM".
- ********************************************************************************/
+* This file is part of SpiceCRM. SpiceCRM is an enhancement of SugarCRM Community Edition
+* and is developed by aac services k.s.. All rights are (c) 2016 by aac services k.s.
+* You can contact us at info@spicecrm.io
+* 
+* SpiceCRM is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version
+* 
+* The interactive user interfaces in modified source and object code versions
+* of this program must display Appropriate Legal Notices, as required under
+* Section 5 of the GNU Affero General Public License version 3.
+* 
+* In accordance with Section 7(b) of the GNU Affero General Public License version 3,
+* these Appropriate Legal Notices must retain the display of the "Powered by
+* SugarCRM" logo. If the display of the logo is not reasonably feasible for
+* technical reasons, the Appropriate Legal Notices must display the words
+* "Powered by SugarCRM".
+* 
+* SpiceCRM is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************/
+namespace SpiceCRM\includes\database;
+
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 /*********************************************************************************
 
@@ -73,12 +70,12 @@ class PostgreSQLManager extends DBManager
      * @link Chapter 4. SQL Syntax http://www.postgresql.org/docs/8.4/static/sql-syntax.html#SQL-SYNTAX-IDENTIFIERS
      * @var array
      */
-    protected $maxNameLengths = array(
+    protected $maxNameLengths = [
         'table' => 63,
         'column' => 63,
         'index' => 63,
         'alias' => 63
-    );
+    ];
 
     /**
      * Data type mapping
@@ -86,7 +83,7 @@ class PostgreSQLManager extends DBManager
      * @link Chapter 8. Data Types http://www.postgresql.org/docs/8.4/static/datatype.html
      * @var array
      */
-    protected $type_map = array(
+    protected $type_map = [
         'int'      => 'integer',
         'double'   => 'double precision',
         'float'    => 'double precision',
@@ -122,9 +119,9 @@ class PostgreSQLManager extends DBManager
         'file'     => 'varchar',
         'decimal_tpl' => 'decimal(%d, %d)',
 
-    );
+    ];
 
-    protected $capabilities = array(
+    protected $capabilities = [
         "affected_rows" => true,
         "select_rows" => true,
         "create_user" => true,
@@ -132,7 +129,7 @@ class PostgreSQLManager extends DBManager
         "collation" => false,
         "create_db" => true,
         "auto_increment_sequence" => true,
-    );
+    ];
 
     /**
      * (non-PHPdoc)
@@ -145,14 +142,14 @@ class PostgreSQLManager extends DBManager
         }
 
         parent::countQuery($sql);
-        $GLOBALS['log']->info('Query:' . $sql);
+        LoggerManager::getLogger()->info('Query:' . $sql);
         $this->checkConnection();
         $this->query_time = microtime(true);
         $this->lastsql = $sql;
         $result = $suppress?@pg_query($this->database, $sql):pg_query($this->database, $sql);
 
         $this->query_time = microtime(true) - $this->query_time;
-        $GLOBALS['log']->info('Query Execution Time:'.$this->query_time);
+        LoggerManager::getLogger()->info('Query Execution Time:'.$this->query_time);
 
 
         if($keepResult)
@@ -198,7 +195,7 @@ class PostgreSQLManager extends DBManager
      */
     public function disconnect()
     {
-        $GLOBALS['log']->debug('Calling PgSQL::disconnect()');
+        LoggerManager::getLogger()->debug('Calling PgSQL::disconnect()');
         if(!empty($this->database)){
             $this->freeResult();
             pg_close($this->database);
@@ -249,12 +246,12 @@ class PostgreSQLManager extends DBManager
 
         if ($start < 0)
             $start = 0;
-        $GLOBALS['log']->debug('Limit Query:' . $sql. ' Start: ' .$start . ' count: ' . $count);
+        LoggerManager::getLogger()->debug('Limit Query:' . $sql. ' Start: ' .$start . ' count: ' . $count);
 
         $sql = "$sql LIMIT $count OFFSET $start";
         $this->lastsql = $sql;
 
-        if(!empty($GLOBALS['sugar_config']['check_query'])){
+        if(!empty(SpiceConfig::getInstance()->config['check_query'])){
             $this->checkQuery($sql);
         }
 
@@ -281,7 +278,7 @@ class PostgreSQLManager extends DBManager
 			FROM information_schema.columns 
 			WHERE table_name = '$tablename';");
 
-        $columns = array();
+        $columns = [];
 
         while (($row=$this->fetchByAssoc($result)) !=null) {
             $name = strtolower($row['column_name']);
@@ -294,13 +291,13 @@ class PostgreSQLManager extends DBManager
                     $columns[$name]['len'].=','.$row['data_scale'];
             }
             elseif ( in_array($columns[$name]['type']
-                ,array('date','text','time')) ) {
+                ,['date','text','time']) ) {
                 // do nothing
             }
             else
                 $columns[$name]['len']=strtolower($row['char_length']);
             if ( !empty($row['data_default']) ) {
-                $matches = array();
+                $matches = [];
                 $row['data_default'] = html_entity_decode($row['data_default'],ENT_QUOTES);
                 if ( preg_match("/'(.*)'/i",$row['data_default'],$matches) )
                     $columns[$name]['default'] = $matches[1];
@@ -326,7 +323,7 @@ class PostgreSQLManager extends DBManager
     public function get_columns_list($tablename, $delimiter= ', ', $fallback ='*')
     {
         $columns = $this->get_columns($tablename);
-        $cols = array();
+        $cols = [];
         foreach($columns as $c => $col){
             $cols[] = $col['name'];
         }
@@ -345,7 +342,7 @@ class PostgreSQLManager extends DBManager
      */
     public function getFieldsArray($result, $make_lower_case=false)
     {
-        $field_array = array();
+        $field_array = [];
 
         if(empty($result))
             return 0;
@@ -354,7 +351,7 @@ class PostgreSQLManager extends DBManager
         for ($i=0; $i < $fields; $i++) {
             $meta = pg_field_name($result, $i);
             if (!$meta)
-                return array();
+                return [];
 
             if($make_lower_case)
                 $meta = strtolower($meta);
@@ -386,7 +383,7 @@ class PostgreSQLManager extends DBManager
         $this->log->debug('Fetching table list');
 
         if ($this->getDatabase()) {
-            $tables = array();
+            $tables = [];
             $r = $this->query("SELECT
 								  c.relname as Tables_in
 								FROM pg_catalog.pg_class c
@@ -463,7 +460,7 @@ class PostgreSQLManager extends DBManager
     public function tablesLike($like)
     {
         if ($this->getDatabase()) {
-            $tables = array();
+            $tables = [];
 
             $r = $this->query("SELECT n.nspname as Schema,
 										  c.relname as Name,
@@ -512,10 +509,10 @@ class PostgreSQLManager extends DBManager
      */
     public function connect(array $configOptions = null, $dieOnError = false)
     {
-        global $sugar_config;
+        
 
         if(is_null($configOptions))
-            $configOptions = $sugar_config['dbconfig'];
+            $configOptions = SpiceConfig::getInstance()->config['dbconfig'];
 
         if ($this->getOption('persistent')) {
             $this->database = @pg_pconnect(
@@ -534,7 +531,7 @@ class PostgreSQLManager extends DBManager
                 " dbname=".$configOptions['db_name']
             );
             if(empty($this->database)) {
-                $GLOBALS['log']->fatal("Could not connect to server ".$configOptions['db_host_name']." as ".$configOptions['db_user_name']);
+                LoggerManager::getLogger()->fatal("Could not connect to server ".$configOptions['db_host_name']." as ".$configOptions['db_user_name']);
                 if($dieOnError) {
                     if(isset($GLOBALS['app_strings']['ERR_NO_DB'])) {
                         sugar_die($GLOBALS['app_strings']['ERR_NO_DB']);
@@ -548,8 +545,7 @@ class PostgreSQLManager extends DBManager
             // Do not pass connection information because we have not connected yet
             if($this->database  && $this->getOption('persistent')){
                 $_SESSION['administrator_error'] = "<b>Severe Performance Degradation: Persistent Database Connections "
-                    . "not working.  Please set \$sugar_config['dbconfigoption']['persistent'] to false "
-                    . "in your config.php file</b>";
+                    . "not working.  Please set ". SpiceConfig::getInstance()->config['dbconfigoption']['persistent']." to false in your config.php file</b>";
             }
         }
 
@@ -557,10 +553,10 @@ class PostgreSQLManager extends DBManager
         pg_set_client_encoding($this->database, "UNICODE");
 
         if(!$this->checkError('Could Not Connect:', $dieOnError))
-            $GLOBALS['log']->info("connected to db");
+            LoggerManager::getLogger()->info("connected to db");
 
         $this->connectOptions = $configOptions;
-        $GLOBALS['log']->info("Connect:".$this->database);
+        LoggerManager::getLogger()->info("Connect:".$this->database);
 
         return true;
     }
@@ -584,7 +580,7 @@ class PostgreSQLManager extends DBManager
      * @see DBManager::convert()
      * @link 9.9. Date/Time Functions and Operators http://www.postgresql.org/docs/8.4/static/functions-datetime.html
      */
-    public function convert($string, $type, array $additional_parameters = array())
+    public function convert($string, $type, array $additional_parameters = [])
     {
         if (!empty($additional_parameters)) {
             $additional_parameters_string = ','.implode(',',$additional_parameters);
@@ -701,7 +697,7 @@ class PostgreSQLManager extends DBManager
         $ref = parent::oneColumnSQLRep($fieldDef, $ignoreRequired, $table, true);
 
         if ( isset($ref['default']) &&
-            in_array($ref['colBaseType'], array('text', 'blob', 'longtext', 'longblob')))
+            in_array($ref['colBaseType'], ['text', 'blob', 'longtext', 'longblob']))
             $ref['default'] = '';
 
         if ( $return_as_array )
@@ -716,11 +712,11 @@ class PostgreSQLManager extends DBManager
      */
     protected function changeColumnSQL($tablename, $fieldDefs, $action, $ignoreRequired = false)
     {
-        $columns = array();
-        $columnsAlter = array();
+        $columns = [];
+        $columnsAlter = [];
 
         if ($this->isFieldArray($fieldDefs)){
-            $GLOBALS['log']->debug("is fieldArray");
+            LoggerManager::getLogger()->debug("is fieldArray");
             foreach ($fieldDefs as $def){
                 if ($action == 'drop') {
                     $columnsAlter[] = $def['name'];
@@ -842,7 +838,7 @@ class PostgreSQLManager extends DBManager
 										c.relname='$tablename'
 									ORDER BY i.indisprimary DESC, i.indisunique DESC, c2.relname");
 
-        $indices = array();
+        $indices = [];
         while (($row=$this->fetchByAssoc($result)) !=null) {
             $index_type='index';
             if ($row['indisprimary'] =='t') {
@@ -1002,7 +998,7 @@ class PostgreSQLManager extends DBManager
     {
         $q = "SHOW lc_collate";
         $r = $this->query($q);
-        $res = array();
+        $res = [];
         while($a = $this->fetchByAssoc($r)) {
             $res[] = $a['lc_collate'];
         }
@@ -1017,7 +1013,7 @@ class PostgreSQLManager extends DBManager
     {
         $q = "SHOW lc_collate";
         $r = $this->query($q);
-        $res = array();
+        $res = [];
         while($a = $this->fetchByAssoc($r)) {
             $res[] = $a['lc_collate'];
         }
@@ -1098,9 +1094,9 @@ class PostgreSQLManager extends DBManager
      * (non-PHPdoc)
      * @see DBManager::getFulltextQuery()
      */
-    public function getFulltextQuery($field, $terms, $must_terms = array(), $exclude_terms = array())
+    public function getFulltextQuery($field, $terms, $must_terms = [], $exclude_terms = [])
     {
-        $condition = $or_condition = array();
+        $condition = $or_condition = [];
         foreach($must_terms as $term) {
             $condition[] = $this->quoteTerm($term);
         }
@@ -1127,7 +1123,7 @@ class PostgreSQLManager extends DBManager
      */
     protected function getCharsetInfo()
     {
-        $charsets = array();
+        $charsets = [];
         $res = $this->query("SHOW lc_ctype");
         while($row = $this->fetchByAssoc($res)) {
             $charsets['character_set_system'] = $row['lc_ctype'];
@@ -1142,17 +1138,17 @@ class PostgreSQLManager extends DBManager
     public function getDbInfo()
     {
         $charsets = $this->getCharsetInfo();
-        $charset_str = array();
+        $charset_str = [];
         foreach($charsets as $name => $value) {
             $charset_str[] = "$name = $value";
         }
-        return array(
+        return [
             "PgSQL Version" => @pg_version($this->database),
             "PgSQL Host Info" => @pg_host($this->database),
             "PgSQL Server Info" => $this->getOne("SELECT VERSION()"),
             "PgSQL Client Encoding" =>  @pg_client_encoding($this->database),
             "PgSQL Character Set Settings" => join(", ", $charset_str),
-        );
+        ];
     }
 
     /**
@@ -1248,14 +1244,14 @@ class PostgreSQLManager extends DBManager
     public function canInstall()
     {
         $db_version = $this->version();
-        $GLOBALS['log']->info("PostgreSQL Server Info:" . $db_version);
+        LoggerManager::getLogger()->info("PostgreSQL Server Info:" . $db_version);
 
         if(empty($db_version)) {
-            return array('ERR_DB_VERSION_FAILURE');
+            return ['ERR_DB_VERSION_FAILURE'];
         }
 
         if(version_compare($db_version, '8.4') < 0) {
-            return array('ERR_DB_PGSQL_VERSION', $db_version);
+            return ['ERR_DB_PGSQL_VERSION', $db_version];
         }
         return true;
     }
@@ -1266,19 +1262,19 @@ class PostgreSQLManager extends DBManager
      */
     public function installConfig()
     {
-        return array(
-            'LBL_DBCONFIG_MSG3' =>  array(
-                "setup_db_database_name" => array("label" => 'LBL_DBCONF_DB_NAME', "required" => true),
-            ),
-            'LBL_DBCONFIG_MSG2' =>  array(
-                "setup_db_host_name" => array("label" => 'LBL_DBCONF_HOST_NAME', "required" => true),
-            ),
-            'LBL_DBCONF_TITLE_USER_INFO' => array(),
-            'LBL_DBCONFIG_B_MSG1' => array(
-                "setup_db_admin_user_name" => array("label" => 'LBL_DBCONF_DB_ADMIN_USER', "required" => true),
-                "setup_db_admin_password" => array("label" => 'LBL_DBCONF_DB_ADMIN_PASSWORD', "type" => "password"),
-            )
-        );
+        return [
+            'LBL_DBCONFIG_MSG3' =>  [
+                "setup_db_database_name" => ["label" => 'LBL_DBCONF_DB_NAME', "required" => true],
+            ],
+            'LBL_DBCONFIG_MSG2' =>  [
+                "setup_db_host_name" => ["label" => 'LBL_DBCONF_HOST_NAME', "required" => true],
+            ],
+            'LBL_DBCONF_TITLE_USER_INFO' => [],
+            'LBL_DBCONFIG_B_MSG1' => [
+                "setup_db_admin_user_name" => ["label" => 'LBL_DBCONF_DB_ADMIN_USER', "required" => true],
+                "setup_db_admin_password" => ["label" => 'LBL_DBCONF_DB_ADMIN_PASSWORD', "type" => "password"],
+            ]
+        ];
     }
 
 

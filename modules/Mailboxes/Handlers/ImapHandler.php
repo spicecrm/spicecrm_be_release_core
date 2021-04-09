@@ -1,14 +1,29 @@
 <?php
 namespace SpiceCRM\modules\Mailboxes\Handlers;
 
-use Mailbox;
+use Exception;
+use Swift_Attachment;
+use Swift_Mailer;
+use Swift_Message;
+use Swift_Mime_ContentEncoder_PlainContentEncoder;
+use Swift_RfcComplianceException;
+use Swift_SmtpTransport;
+use Swift_TransportException;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
 use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\modules\Emails\Email;
+use SpiceCRM\modules\Mailboxes\Mailbox;
 
 /**
  * Class ImapHandler
  */
 class ImapHandler extends TransportHandler
 {
+    use SwiftInlineImagesTrait;
+
     private $transport;
 
     private $message_ids = [];
@@ -57,7 +72,7 @@ class ImapHandler extends TransportHandler
     {
         if ($this->checkConfiguration($this->outgoing_settings)['result']) {
             //initialize transport
-            $this->transport = (new \Swift_SmtpTransport(
+            $this->transport = (new Swift_SmtpTransport(
                 $this->mailbox->smtp_host,
                 $this->mailbox->smtp_port,
                 ($this->mailbox->smtp_encryption == 'none') ? null : $this->mailbox->smtp_encryption
@@ -71,7 +86,7 @@ class ImapHandler extends TransportHandler
                 ]);
 
             // initialize mailer
-            $this->transport_handler = new \Swift_Mailer($this->transport);
+            $this->transport_handler = new Swift_Mailer($this->transport);
         }
     }
 
@@ -105,7 +120,7 @@ class ImapHandler extends TransportHandler
      */
     public function fetchEmails()
     {
-        global $sugar_config;
+
 
         $imap_status = $this->checkConfiguration($this->incoming_settings);
         if (!$imap_status['result']) {
@@ -125,17 +140,17 @@ class ImapHandler extends TransportHandler
         $imapErrors = imap_errors();
 
         if ($imapErrors) {
-            $GLOBALS['log']->error('IMAP connection failure: ' . implode(';', $imapErrors));
+            LoggerManager::getLogger()->error('IMAP connection failure: ' . implode(';', $imapErrors));
         }
 
         $this->initMessageIDs();
 
         if ($this->mailbox->last_checked != '') {
-            if (isset($sugar_config['mailboxes']['delta_t'])) {
+            if (isset(SpiceConfig::getInstance()->config['mailboxes']['delta_t'])) {
                 $dateSince = date(
                     'd-M-Y',
                     strtotime(
-                        '-' . (int) $sugar_config['mailboxes']['delta_t'] . ' day',
+                        '-' . (int) SpiceConfig::getInstance()->config['mailboxes']['delta_t'] . ' day',
                         strtotime($this->mailbox->last_checked)
                     )
                 );
@@ -148,7 +163,7 @@ class ImapHandler extends TransportHandler
             $items = imap_search($stream, 'ALL');
         }
 
-        $this->log(\Mailbox::LOG_DEBUG, count($items) . ' emails in mailbox since '
+        $this->log(Mailbox::LOG_DEBUG, count($items) . ' emails in mailbox since '
             . date('d-M-Y', strtotime($dateSince)));
 
         $new_mail_count = 0;
@@ -157,7 +172,7 @@ class ImapHandler extends TransportHandler
         if (is_array($items)) {
             foreach ($items as $item) {
                 ++$checked_mail_count;
-                $email = \BeanFactory::getBean('Emails');
+                $email = BeanFactory::getBean('Emails');
                 $overview = imap_fetch_overview($stream, $item);
                 $header = imap_headerinfo($stream, $item);
 
@@ -177,9 +192,9 @@ class ImapHandler extends TransportHandler
                 if (isset($header->bccaddress)) {
                     $email->bcc_addrs = $header->bccaddress;
                 }
-                $email->type = \Email::TYPE_INBOUND;
-                $email->status = \Email::STATUS_UNREAD;
-                $email->openness = \Email::OPENNESS_OPEN;
+                $email->type = Email::TYPE_INBOUND;
+                $email->status = Email::STATUS_UNREAD;
+                $email->openness = Email::OPENNESS_OPEN;
 
                 $structure = new ImapStructure($stream, $item);
                 $structure->parseStructure();
@@ -187,8 +202,8 @@ class ImapHandler extends TransportHandler
                 $email->body = $structure->getEmailBody();
                 try {
                     $email->save();
-                } catch (\Exception $e) {
-                    $GLOBALS['log']->error('Could not save email: ' . $email->name);
+                } catch (Exception $e) {
+                    LoggerManager::getLogger()->error('Could not save email: ' . $email->name);
                     continue;
                 }
 
@@ -225,8 +240,8 @@ class ImapHandler extends TransportHandler
 
         imap_close($stream);
 
-        $this->log(\Mailbox::LOG_DEBUG, $checked_mail_count . ' emails checked');
-        $this->log(\Mailbox::LOG_DEBUG, $new_mail_count . ' emails fetched');
+        $this->log(Mailbox::LOG_DEBUG, $checked_mail_count . ' emails checked');
+        $this->log(Mailbox::LOG_DEBUG, $new_mail_count . ' emails fetched');
 
 
         if (isset($this->mailbox->allow_external_delete) && $this->mailbox->allow_external_delete == true) {
@@ -253,7 +268,7 @@ class ImapHandler extends TransportHandler
         if (is_array($items) || is_object($items)) {
             foreach ($items as $item) {
                 $overview = imap_fetch_overview($stream, $item);
-                $email = \BeanFactory::getBean('Emails')
+                $email = BeanFactory::getBean('Emails')
                     ->get_full_list(
                         '',
                         'message_id= "' . $overview[0]->message_id . '"'
@@ -356,7 +371,7 @@ class ImapHandler extends TransportHandler
         }
 
         // Check if the Email exists for a different mailbox
-        global $db;
+        $db = DBManagerFactory::getInstance();
         $query = "SELECT DISTINCT id FROM emails WHERE message_id='" . $message_id . "'";
         $q = $db->query($query);
         $result = $db->fetchByAssoc($q);
@@ -379,7 +394,7 @@ class ImapHandler extends TransportHandler
      */
     private function initMessageIDs()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $query = "SELECT DISTINCT message_id FROM emails WHERE mailbox_id = '" . $this->mailbox->id . "'";
 
@@ -444,15 +459,15 @@ class ImapHandler extends TransportHandler
         try {
             $this->transport_handler->getTransport()->start();
 
-            $this->sendMail(\Email::getTestEmail($this->mailbox, $testEmail));
+            $this->sendMail(Email::getTestEmail($this->mailbox, $testEmail));
             $response['result'] = true;
-        } catch (\Swift_TransportException $e) {
+        } catch (Swift_TransportException $e) {
             $response['errors'] = $e->getMessage();
-            $GLOBALS['log']->info($e->getMessage());
+            LoggerManager::getLogger()->info($e->getMessage());
             $response['result'] = false;
         } catch (Exception $e) {
             $response['errors'] = $e->getMessage();
-            $GLOBALS['log']->info($e->getMessage());
+            LoggerManager::getLogger()->info($e->getMessage());
             $response['result'] = false;
         }
 
@@ -465,14 +480,15 @@ class ImapHandler extends TransportHandler
      * Converts the Email bean object into the structure used by the transport handler
      *
      * @param $email
-     * @return \Swift_Message
-     * @throws \Exception
+     * @return Swift_Message
+     * @throws Exception
      */
     protected function composeEmail($email)
     {
         $this->checkEmailClass($email);
 
-        $message = (new \Swift_Message($email->name))
+        $message = (new Swift_Message($email->name))
+            ->setEncoder(new Swift_Mime_ContentEncoder_PlainContentEncoder('7bit'))
             ->setFrom([$this->mailbox->imap_pop3_username => $this->mailbox->imap_pop3_display_name])
             ->setBody($email->body, 'text/html')
         ;
@@ -515,12 +531,14 @@ class ImapHandler extends TransportHandler
             $message->setReplyTo($this->mailbox->reply_to);
         }
 
-        if($email->id){
+        if ($email->id) {
             foreach (json_decode (SpiceAttachments::getAttachmentsForBean('Emails', $email->id)) as $att) {
                 $message->attach(
-                    \Swift_Attachment::fromPath('upload://' . $att->filemd5)->setFilename($att->filename)
+                    Swift_Attachment::fromPath('upload://' . $att->filemd5)->setFilename($att->filename)
                 );
             }
+
+            $this->handleInlineImages($message, $email);
         }
 
         return $message;
@@ -544,19 +562,19 @@ class ImapHandler extends TransportHandler
                 'message_id' => $message->getId(),
             ];
 
-        } catch (\Swift_RfcComplianceException $exception) {
+        } catch (Swift_RfcComplianceException $exception) {
             $result = [
                 'result' => false,
                 'errors' => $exception->getMessage(),
             ];
             $this->log(Mailbox::LOG_DEBUG, $this->mailbox->name . ': ' . $exception->getMessage());
-        } catch (\Swift_TransportException $exception) {
+        } catch (Swift_TransportException $exception) {
             $result = [
                 'result' => false,
                 'errors' => "Cannot inititalize connection.",
             ];
             $this->log(Mailbox::LOG_DEBUG, $this->mailbox->name . ': ' . $exception->getMessage());
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $result = [
                 'result' => false,
                 'errors' => $exception->getMessage(),

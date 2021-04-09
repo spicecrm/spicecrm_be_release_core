@@ -1,5 +1,12 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\OutputTemplates;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
+use SpiceCRM\includes\SpiceTemplateCompiler\Compiler;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -84,7 +91,7 @@ class OutputTemplate extends SugarBean
         if(!$bean)
             throw new Exception("No Bean found, translation aborted!");
 
-        $templateCompiler = new \SpiceCRM\includes\SpiceTemplateCompiler\Compiler();
+        $templateCompiler = new Compiler();
         if ($bodyOnly) {
             $html = $templateCompiler->compile(html_entity_decode( $this->body), $bean, $this->language );
         } else {
@@ -101,7 +108,7 @@ class OutputTemplate extends SugarBean
     }
 
     private function setPDFHandler(){
-        $class = @$GLOBALS['sugar_config']['outputtemplates']['pdf_handler_class'];
+        $class = @SpiceConfig::getInstance()->config['outputtemplates']['pdf_handler_class'];
         if(!$class) $class = '\SpiceCRM\modules\OutputTemplates\handlers\pdf\DomPdfHandler';
         $this->pdf_handler = new $class($this);
     }
@@ -132,13 +139,13 @@ class OutputTemplate extends SugarBean
     public function convertToSpiceAttatchment()
     {
         $file = $this->saveAsTmpFile();
-        return \SpiceCRM\includes\SpiceAttachments\SpiceAttachments::saveAttachmentLocalFile($this->module_name, $this->bean_id, $file);
+        return SpiceAttachments::saveAttachmentLocalFile($this->module_name, $this->bean_id, $file);
     }
 
     private function retrieveBean()
     {
         if ($this->bean_id) {
-            $this->bean = \BeanFactory::getBean($this->module_name, $this->bean_id);
+            $this->bean = BeanFactory::getBean($this->module_name, $this->bean_id);
         }
 
         return $this->bean;

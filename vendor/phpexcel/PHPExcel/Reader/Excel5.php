@@ -1859,7 +1859,7 @@ class PHPExcel_Reader_Excel5 extends PHPExcel_Reader_Abstract implements PHPExce
 
 		// offset: 0; size: 2; 0 = base 1900, 1 = base 1904
 		PHPExcel_Shared_Date::setExcelCalendar(PHPExcel_Shared_Date::CALENDAR_WINDOWS_1900);
-		if (ord($recordData{0}) == 1) {
+		if (ord(substr($recordData, 0, 1)) == 1) {
 			PHPExcel_Shared_Date::setExcelCalendar(PHPExcel_Shared_Date::CALENDAR_MAC_1904);
 		}
 	}

@@ -18,10 +18,6 @@ $dictionary['sysdomaindefinitions'] = [
                 'type' => 'varchar',
                 'len' => 100
             ],
-//            'sysdomainvalidation_id' => [
-//                'name' => 'sysdomainvalidation_id',
-//                'type' => 'id',
-//            ],
             'fieldtype' => [
                 'name' => 'fieldtype',
                 'type' => 'varchar',
@@ -132,6 +128,16 @@ $dictionary['sysdomainfields'] = [
                 'type' => 'id',
                 'comment' => 'id of related sysdomainfieldvalidation'
             ],
+            'exclude_from_index' => [
+                'name' => 'exclude_from_index',
+                'type' => 'bool',
+                'comment' => 'do not use a field for a table index in database'
+            ],
+            'defaultvalue' => [
+                'name' => 'defaultvalue',
+                'type' => 'varchar',
+                'comment' => 'the default value to set on save where field is not set'
+            ],
             'description' => [
                 'name' => 'description',
                 'type' => 'text'
@@ -152,6 +158,12 @@ $dictionary['sysdomainfields'] = [
                 'len' => 1,
                 'default' => 'd',
                 'comment' => 'the status of the item, d for draft, a for active, i for inactive'
+            ],
+            'label' => [
+                'name' => 'label',
+                'vname' => 'LBL_LABEL',
+                'type' => 'varchar',
+                'len' => 100
             ],
             'deleted' => [
                 'name' => 'deleted',
@@ -281,6 +293,11 @@ $dictionary['sysdomainfieldvalidationvalues'] = [
                 'name' => 'sysdomainfieldvalidation_id',
                 'type' => 'id',
             ],
+            'enumvalue' => [
+                'name' => 'enumvalue',
+                'type' => 'varchar',
+                'len' => 160
+            ],
             'minvalue' => [
                 'name' => 'minvalue',
                 'type' => 'varchar',
@@ -298,7 +315,9 @@ $dictionary['sysdomainfieldvalidationvalues'] = [
             ],
             'label' => [
                 'name' => 'label',
+                'vname' => 'LBL_LABEL',
                 'type' => 'varchar',
+                'len' => 100
             ],
             'description' => [
                 'name' => 'description',
@@ -369,15 +388,17 @@ $dictionary['sysdictionarydefinitions'] = [
                 'type' => 'varchar',
                 'len' => 200
             ],
+            'tabletype' => [
+                'name' => 'tabletype',
+                'type' => 'varchar',
+                'len' => 32,
+                'comment' => 'categorize tables'
+            ],
             'audited' => [
                 'name' => 'audited',
                 'type' => 'bool',
                 'default' => '1'
             ],
-//            'sysdictionarydefinition_id' => [
-//                'name' => 'sysdictionarydefinition_id',
-//                'type' => 'id',
-//            ],
             'sysdictionary_type' => [
                 'name' => 'sysdictionary_type',
                 'type' => 'enum',
@@ -415,6 +436,16 @@ $dictionary['sysdictionarydefinitions'] = [
             'type' => 'primary',
             'fields' => ['id']
         ],
+        [
+            'name' => 'idx_sysdictionarydefinition_del_status_type',
+            'type' => 'index',
+            'fields' => ['deleted', 'status', 'sysdictionary_type']
+        ],
+        [
+            'name' => 'idx_sysdictionarydefinition_del_status',
+            'type' => 'index',
+            'fields' => ['deleted', 'status']
+        ],
     ]
 ];
 
@@ -427,6 +458,16 @@ $dictionary['syscustomdictionarydefinitions'] = [
             'name' => 'syscustomdictionarydefinitionspk',
             'type' => 'primary',
             'fields' => ['id']
+        ],
+        [
+            'name' => 'idx_syscustomdictionarydefinitions_del_status_type',
+            'type' => 'index',
+            'fields' => ['deleted', 'status', 'sysdictionary_type']
+        ],
+        [
+            'name' => 'idx_syscustomdictionarydefinitions_del_status',
+            'type' => 'index',
+            'fields' => ['deleted', 'status']
         ],
     ]
 ];
@@ -462,8 +503,9 @@ $dictionary['sysdictionaryitems'] = [
             ],
             'label' => [
                 'name' => 'label',
+                'vname' => 'LBL_LABEL',
                 'type' => 'varchar',
-                'len' => 50
+                'len' => 100
             ],
             'non_db' => [
                 'name' => 'non_db',
@@ -482,10 +524,6 @@ $dictionary['sysdictionaryitems'] = [
                 'name' => 'default_value',
                 'type' => 'varchar',
                 'comment' => 'The default value to set when field is empty'
-            ],
-            'field_comment' => [
-                'name' => 'field_comment',
-                'type' => 'varchar',
             ],
             'sequence' => [
                 'name' => 'sequence',
@@ -512,6 +550,11 @@ $dictionary['sysdictionaryitems'] = [
                 'len' => 1,
                 'default' => 'd',
                 'comment' => 'the status of the item, d for draft, a for active, i for inactive'
+            ],
+            'internal_only' => [
+                'name' => 'internal_only',
+                'type' => 'bool',
+                'default' => 0
             ],
             'deleted' => [
                 'name' => 'deleted',
@@ -598,6 +641,11 @@ $dictionary['sysdictionaryindexes'] = [
             'type' => 'primary',
             'fields' => ['id']
         ],
+        [
+            'name' => 'idx_sysdictionaryindexes_sysdictionarydef',
+            'type' => 'index',
+            'fields' => ['sysdictionarydefinition_id']
+        ],
     ]
 ];
 
@@ -611,7 +659,11 @@ $dictionary['syscustomdictionaryindexes'] = [
             'type' => 'primary',
             'fields' => ['id']
         ],
-
+        [
+            'name' => 'idx_syscustomdictionaryindexes_sysdictionarydef',
+            'type' => 'index',
+            'fields' => ['sysdictionarydefinition_id']
+        ],
     ]
 ];
 
@@ -713,29 +765,6 @@ $dictionary['sysdictionaryrelationships'] = [
             'len' => 150,
             'comment' => 'the technical name for the relationship'
         ],
-//        'sysdictionarydefinition_id' => [
-//            'name' => 'sysdictionarydefinition_id',
-//            'vname' => 'LBL_SYSDICTIONARY_ID',
-//            'type' => 'id',
-//            'required' => true,
-//            'comment' => 'Dictionary ID'
-//        ],
-//        'lhs_module' => [
-//            'name' => 'lhs_module',
-//            'vname' => 'LBL_LHS_MODULE',
-//            'type' => 'varchar',
-//            'required'=>true,
-//            'len' => 100,
-//            'comment' => 'deprecated Replaced by rhs_sysdictionarydefinition_id'
-//        ],
-//        'lhs_table' => [
-//            'name' => 'lhs_table',
-//            'vname' => 'LBL_LHS_TABLE',
-//            'type' => 'varchar',
-//            'required'=>true,
-//            'len' => 64,
-//            'comment' => 'deprecated. Replaced by lhs_sysdictionarydefinition_id'
-//        ],
         'lhs_sysdictionarydefinition_id' => [
             'name' => 'lhs_sysdictionarydefinition_id',
             'vname' => 'LBL_LHS_TABLE',
@@ -743,14 +772,6 @@ $dictionary['sysdictionaryrelationships'] = [
             'required' => true,
             'comment' => 'Dictionary reference for left side'
         ],
-//        'lhs_key' => [
-//            'name' => 'lhs_key',
-//            'vname' => 'LBL_LHS_KEY',
-//            'type' => 'varchar',
-//            'required'=>true,
-//            'len' => 64,
-//            'comment' => '@deprecated. Will be replaced by lhs_sysdictionaryitem_id'
-//        ],
         'lhs_sysdictionaryitem_id' => [
             'name' => 'lhs_sysdictionaryitem_id',
             'vname' => 'LBL_LHS_KEY',
@@ -765,22 +786,19 @@ $dictionary['sysdictionaryrelationships'] = [
             'required' => false,
             'len' => 100
         ],
-//        'rhs_module' => [
-//            'name' => 'rhs_module',
-//            'vname' => 'LBL_RHS_MODULE',
-//            'type' => 'varchar',
-//            'required'=>true,
-//            'len' => 100,
-//            'comment' => 'deprecated Replaced by rhs_sysdictionarydefinition_id'
-//        ],
-//        'rhs_table' => [
-//            'name' => 'rhs_table',
-//            'vname' => 'LBL_RHS_TABLE',
-//            'type' => 'varchar',
-//            'required'=>true,
-//            'len' => 64,
-//            'comment' => 'deprecated. Replaced by rhs_sysdictionarydefinition_id'
-//        ],
+        'lhs_linklabel' => [
+            'name' => 'lhs_linklabel',
+            'vname' => 'LBL_LABEL',
+            'type' => 'varchar',
+            'len' => 100
+        ],
+        'lhs_linkdefault' => [
+            'name' => 'lhs_linkdefault',
+            'vname' => 'LBL_DEFAULT',
+            'type' => 'bool',
+            'default' => false,
+            'comment' => 'load link per default'
+        ],
         'rhs_sysdictionarydefinition_id' => [
             'name' => 'rhs_sysdictionarydefinition_id',
             'vname' => 'LBL_RHS_TABLE',
@@ -788,14 +806,6 @@ $dictionary['sysdictionaryrelationships'] = [
             'required' => true,
             'comment' => 'Dictionary reference for right side'
         ],
-//        'rhs_key' => [
-//            'name' => 'rhs_key',
-//            'vname' => 'LBL_RHS_KEY',
-//            'type' => 'varchar',
-//            'required'=>true,
-//            'len' => 64,
-//            'comment' => '@deprecated. Replaced by rhs_sysdictionaryitem_id'
-//        ],
         'rhs_sysdictionaryitem_id' => [
             'name' => 'rhs_sysdictionaryitem_id',
             'vname' => 'LBL_RHS_KEY',
@@ -817,45 +827,43 @@ $dictionary['sysdictionaryrelationships'] = [
             'required' => false,
             'len' => 100
         ],
+        'rhs_linklabel' => [
+            'name' => 'rhs_linklabel',
+            'vname' => 'LBL_LABEL',
+            'type' => 'varchar',
+            'len' => 100
+        ],
+        'rhs_linkdefault' => [
+            'name' => 'rhs_linkdefault',
+            'vname' => 'LBL_DEFAULT',
+            'type' => 'bool',
+            'default' => false,
+            'comment' => 'load link per default'
+        ],
         'rhs_relatename' => [
             'name' => 'rhs_relatename',
             'vname' => 'LBL_RHS_RELATENAME',
             'type' => 'varchar',
             'comment' => 'name of non db field for relate'
         ],
-//        'join_table' => [
-//            'name' => 'join_table',
-//            'vname' => 'LBL_JOIN_TABLE',
-//            'type' => 'varchar',
-//            'len' => 64,
-//            'comment' => '@deprecated.Replaced by join_sysdictionary_id'
-//		],
+        'rhs_relatelabel' => [
+            'name' => 'rhs_relatelabel',
+            'vname' => 'LBL_LABEL',
+            'type' => 'varchar',
+            'len' => 100
+        ],
 		'join_sysdictionarydefinition_id' => [
             'name' => 'join_sysdictionarydefinition_id',
             'vname' => 'LBL_JOIN_TABLE',
             'type' => 'id',
             'comment' => 'metadata definition is now to be found in a dictionary'
         ],
-//        'join_key_lhs' => [
-//            'name' => 'join_key_lhs',
-//            'vname' => 'LBL_JOIN_KEY_LHS',
-//            'type' => 'varchar',
-//            'len' => 64,
-//            'comment' => '@deprecated. Will be replaced by join_lhs_sysdictionary_id'
-//        ],
         'join_lhs_sysdictionaryitem_id' => [
             'name' => 'join_lhs_sysdictionaryitem_id',
             'vname' => 'LBL_DICTIONARYITEM_ID',
             'type' => 'id',
             'comment' => 'dictionary item id corresponding join key in join table'
         ],
-//        'join_key_rhs' => [
-//            'name' => 'join_key_rhs',
-//            'vname' => 'LBL_JOIN_KEY_RHS',
-//            'type' => 'varchar',
-//            'len' => 64,
-//            'comment' => '@deprecated. Will be replaced by join_rhs_sysdictionary_id'
-//        ],
         'join_rhs_sysdictionaryitem_id' => [
             'name' => 'join_rhs_sysdictionaryitem_id',
             'vname' => 'LBL_DICTIONARYITEM_ID',
@@ -867,7 +875,8 @@ $dictionary['sysdictionaryrelationships'] = [
             'vname' => 'LBL_RELATIONSHIP_TYPE',
             'type' => 'enum',
             'options' => 'relationship_type_dom',
-            'len' => 32
+            'len' => 32,
+            'comment' => 'relationship type like one-to-many, many-to-many...'
         ],
         'relationship_role_column' => [
             'name' => 'relationship_role_column',
@@ -885,7 +894,7 @@ $dictionary['sysdictionaryrelationships'] = [
             'name' => 'reverse',
             'vname' => 'LBL_REVERSE',
             'type' => 'bool',
-            'default' => '0'
+            'default' => false
         ],
         'status' => [
             'name' => 'status',
@@ -898,8 +907,7 @@ $dictionary['sysdictionaryrelationships'] = [
             'name' => 'deleted',
             'vname' => 'LBL_DELETED',
             'type' => 'bool',
-            'reportable'=>false,
-            'default' => '0'
+            'default' => false
         ],
         'description' => [
             'name' => 'description',
@@ -919,6 +927,7 @@ $dictionary['sysdictionaryrelationships'] = [
     'indices' => [
         ['name' =>'sysdictionaryrelationshipspk', 'type' =>'primary', 'fields'=>['id']],
         ['name' =>'idx_sysdictionaryrelationship_name', 'type' =>'index', 'fields'=>['relationship_name']],
+        ['name' =>'idx_sysdictionaryrelationship_del', 'type' =>'index', 'fields'=>['deleted']],
     ]
 ];
 
@@ -929,6 +938,7 @@ $dictionary['syscustomdictionaryrelationships'] = [
     'indices' => [
         ['name' =>'syscustomdictionaryrelationshipspk', 'type' =>'primary', 'fields'=>['id']],
         ['name' =>'idx_syscustomdictionaryrelationships_name', 'type' =>'index', 'fields'=>['relationship_name']],
+        ['name' =>'idx_syscustomdictionaryrelationships_del', 'type' =>'index', 'fields'=>['deleted']],
     ]
 ];
 
@@ -947,27 +957,27 @@ $dictionary['sysdictionaryrelationshipfields'] = [
             'vname' => 'LBL_RELATIONSHIP_ID',
             'type' => 'char',
             'len' => '36',
-            'comment' => 'id of relationship'
+            'comment' => 'id of the m-2-m relationship'
         ],
         'map_to_fieldname' => [
             'name' => 'map_to_fieldname',
             'vname' => 'LBL_MAP_TO_FIELDNAME',
             'type' => 'varchar',
-            'comment' => 'name of the non-db field from  sysdictionarydefinition_id'
+            'comment' => 'name of the non-db field to add to dictionary related to sysdictionarydefinition_id'
         ],
         'sysdictionarydefinition_id' => [
             'name' => 'sysdictionarydefinition_id',
             'vname' => 'LBL_SYSDICTIONARYDEFINITIONS_ID',
             'type' => 'char',
             'len' => '36',
-            'comment' => 'the dictionary ID for left or right module'
+            'comment' => 'the dictionary ID to which we add the non-db fields '
         ],
         'sysdictionaryitem_id' => [
             'name' => 'sysdictionaryitem_id',
             'vname' => 'LBL_SYSDICTIONARYITEM_ID',
             'type' => 'char',
             'len' => '36',
-            'comment' => 'the field item to map relationship_fieldname to'
+            'comment' => 'the field item ID corresponding to field name in m-2-m join table'
         ],
         'description' => [
             'name' => 'description',
@@ -997,7 +1007,9 @@ $dictionary['sysdictionaryrelationshipfields'] = [
         ]
     ],
     'indices' => [
-        ['name' =>'sysdictionaryrelationshipfieldspk', 'type' =>'primary', 'fields'=>['id']],
+        ['name' =>'sysdictionaryrelationshipfieldspk', 'type' => 'primary', 'fields' => ['id']],
+        ['name' =>'idx_sysdictionaryrelationshipfields_delstatus', 'type' => 'index', 'fields' => ['deleted', 'status']],
+        ['name' =>'idx_sysdictionaryrelationshipfields_delpackage', 'type' => 'index', 'fields' => ['deleted', 'package']],
     ]
 ];
 
@@ -1006,6 +1018,8 @@ $dictionary['syscustomdictionaryrelationshipfields'] = [
     'fields' => $dictionary['sysdictionaryrelationshipfields']['fields'],
     'indices' => [
         ['name' =>'syscustomdictionaryrelationshipfieldspk', 'type' =>'primary', 'fields'=>['id']],
+        ['name' =>'idx_syscustomdictionaryrelationshipfields_delstatus', 'type' => 'index', 'fields' => ['deleted', 'status']],
+        ['name' =>'idx_syscustomdictionaryrelationshipfields_delpackage', 'type' => 'index', 'fields' => ['deleted', 'package']],
     ]
 ];
 
@@ -1024,12 +1038,6 @@ $dictionary['sysdictionaryrelationshiprelatefields'] = [
             'type' => 'varchar',
             'comment' => 'id of relationship'
         ],
-//        'related_table_field' => [
-//            'name' => 'related_table_field',
-//            'vname' => 'LBL_RELATED_TABLE_FIELD',
-//            'type' => 'id',
-//            'comment' => 'the field name in related table to retrieve from'
-//        ],
         'sysdictionaryitem_id' => [
             'name' => 'sysdictionaryitem_id',
             'type' => 'id'
@@ -1075,5 +1083,39 @@ $dictionary['syscustomdictionaryrelationshiprelatefields'] = [
     'fields' => $dictionary['sysdictionaryrelationshiprelatefields']['fields'],
     'indices' => [
         ['name' =>'syscustomdictionaryrelationshiprelatefieldspk', 'type' =>'primary', 'fields'=>['id']],
+    ]
+];
+
+$dictionary['sysdictionaryfields'] = [
+    'table' => 'sysdictionaryfields',
+    'comment' => 'used to cache parsed dictionary field definitions',
+    'fields' => [
+        'id' => [
+            'name' => 'id',
+            'type' => 'id'
+        ],
+        'sysdictionarydefinition_id' => [
+            'name' => 'sysdictionarydefinition_id',
+            'type' => 'id'
+        ],
+        'fieldname' => [
+            'name' => 'fieldname',
+            'type' => 'varchar'
+        ],
+        'fieldtype' => [
+            'name' => 'fieldtype',
+            'type' => 'varchar',
+            'len' => 20,
+        ],
+        'fielddefinition' => [
+            'name' => 'fielddefinition',
+            'type' => 'json',
+            'dbtype' => 'text',
+        ]
+
+    ],
+    'indices' => [
+        ['name' =>'sysdictionaryfieldspk', 'type' =>'primary', 'fields'=>['id']],
+        ['name' =>'idx_sysdictionaryfields_defid', 'type' =>'index', 'fields'=>['sysdictionarydefinition_id']],
     ]
 ];

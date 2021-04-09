@@ -1,5 +1,12 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+namespace SpiceCRM\modules\Relationships;
+
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\Relationships\SugarRelationshipFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SpiceDictionary\SpiceDictionaryVardefs;use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -196,7 +203,7 @@ class Relationship extends SugarBean {
 			}
 		}
 		else {
-			$GLOBALS['log']->fatal('Error fetching relationship from cache '.$relationship_name);
+			LoggerManager::getLogger()->fatal('Error fetching relationship from cache '.$relationship_name);
 			return false;
 		}
 	}
@@ -205,6 +212,7 @@ class Relationship extends SugarBean {
 		if (!file_exists(Relationship::cache_file_dir().'/'.Relationship::cache_file_name_only())) {
 			$this->build_relationship_cache();
 		}
+		$relationships = [];
 		include(Relationship::cache_file_dir().'/'.Relationship::cache_file_name_only());
 		$GLOBALS['relationships']=$relationships;
 	}
@@ -221,8 +229,20 @@ class Relationship extends SugarBean {
         $out = "<?php \n \$relationships = " . var_export($relationships, true) . ";";
         sugar_file_put_contents_atomic(Relationship::cache_file_dir() . '/' . Relationship::cache_file_name_only(), $out);
 		
-        require_once("data/Relationships/RelationshipFactory.php");
         SugarRelationshipFactory::rebuildCache();
+	}
+
+	/**
+	 * rebuild relationship table
+     * cache table for relationships when using ['systemvardefs']['dictionary']
+	 */
+	function build_dictionary_relationship_cache() {
+	    if (isset(SpiceConfig::getInstance()->config['systemvardefs']['dictionary']) && SpiceConfig::getInstance()->config['systemvardefs']['dictionary']) {
+            SpiceDictionaryVardefs::deleteAllRelationshipsCacheFromDb();
+            $relationships = SpiceDictionaryVardefs::loadRelationships();
+            SpiceDictionaryVardefs::saveRelationshipsCacheToDb($relationships);
+            $GLOBALS['relationships'] = $relationships;
+        }
 	}
 
 
@@ -238,7 +258,6 @@ class Relationship extends SugarBean {
 		if (file_exists($filename)) {
 			unlink($filename);
 		}
-        require_once("data/Relationships/RelationshipFactory.php");
         SugarRelationshipFactory::deleteCache();
 	}
 
@@ -254,9 +273,6 @@ class Relationship extends SugarBean {
 		$rel_module1_bean = BeanFactory::getBean($rel_module1);
 
 		if($rel_module2_name!=""){
-			if($rel_module2_name == 'ProjectTask'){
-				$rel_module2_name = strtolower($rel_module2_name);
-			}
 			$rel_attribute2_name = $rel_module1_bean->field_defs[strtolower($rel_module2_name)]['relationship'];
 			$rel_module2 = $this->get_other_module($rel_attribute2_name, $rel_module1_bean->module_dir, $rel_module1_bean->db);
 			$rel_module2_bean = BeanFactory::getBean($rel_module2);

@@ -34,8 +34,10 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\includes\SugarCache;
 
-require_once('include/SugarCache/SugarCacheAbstract.php');
+use Redis;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 /**
  * Redis SugarCache backend, using the PHP Redis C library at http://github.com/nicolasff/phpredis
@@ -71,7 +73,7 @@ class SugarCacheRedis extends SugarCacheAbstract
             return false;
         
         if ( extension_loaded("redis")
-                && empty($GLOBALS['sugar_config']['external_cache_disabled_redis'])
+                && empty(SpiceConfig::getInstance()->config['external_cache_disabled_redis'])
                 && $this->_getRedisObject() )
             return true;
             

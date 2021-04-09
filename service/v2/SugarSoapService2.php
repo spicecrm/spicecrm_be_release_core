@@ -1,5 +1,8 @@
 <?php
- if(!defined('sugarEntry'))define('sugarEntry', true);
+
+use SpiceCRM\includes\Logger\LoggerManager;
+
+if(!defined('sugarEntry'))define('sugarEntry', true);
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -47,13 +50,13 @@ class SugarSoapService2 extends NusoapSoap{
 	 *
 	 * @param array $excludeFunctions - All the functions you don't want to register
 	 */
-	public function register($excludeFunctions = array()){
-		$GLOBALS['log']->info('Begin: SugarSoapService2->register');
+	public function register($excludeFunctions = []){
+		LoggerManager::getLogger()->info('Begin: SugarSoapService2->register');
 		$this->excludeFunctions = $excludeFunctions;
 		$registryObject = new $this->registryClass($this);
 		$registryObject->register();
-		$this->excludeFunctions = array();
-		$GLOBALS['log']->info('End: SugarSoapService2->register');
+		$this->excludeFunctions = [];
+		LoggerManager::getLogger()->info('End: SugarSoapService2->register');
 	} // fn
 			
 } // clazz

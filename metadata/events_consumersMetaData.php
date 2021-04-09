@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,56 +33,56 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
-
-$dictionary['events_consumers'] = array(
+global $dictionary;
+$dictionary['events_consumers'] = [
     'table' => 'events_consumers',
-    'fields' => array(
-        'id' => array(
+    'fields' => [
+        'id' => [
             'name' => 'id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'event_id' => array(
+        ],
+        'event_id' => [
             'name' => 'event_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'consumer_id' => array(
+        ],
+        'consumer_id' => [
             'name' => 'consumer_id',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'consumer_role' => array(
+        ],
+        'consumer_role' => [
             'name' => 'consumer_role',
             'type' => 'varchar',
             'len' => '36'
-        ),
-        'date_modified' => array(
+        ],
+        'date_modified' => [
             'name' => 'date_modified',
             'type' => 'datetime'
-        ),
-        'deleted' => array(
+        ],
+        'deleted' => [
             'name' => 'deleted',
             'type' => 'bool',
             'len' => '1',
             'required' => false,
             'default' => '0'
-        )
-    ),
-    'indices' => array(
-        array(
+        ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_events_consumers_primary',
             'type' => 'primary',
-            'fields' => array('id')
-        ),
-        array(
+            'fields' => ['id']
+        ],
+        [
             'name' => 'idx_events_consumer',
             'type' => 'alternate_key',
-            'fields' => array('event_id', 'consumer_id')
-        )
-    ),
-    'relationships' => array(
-        'events_consumers' => array(
+            'fields' => ['event_id', 'consumer_id']
+        ]
+    ],
+    'relationships' => [
+        'events_consumers' => [
             'lhs_module' => 'Events',
             'lhs_table' => 'events',
             'lhs_key' => 'id',
@@ -94,6 +93,6 @@ $dictionary['events_consumers'] = array(
             'join_table' => 'events_consumers',
             'join_key_lhs' => 'event_id',
             'join_key_rhs' => 'consumer_id'
-        )
-    )
-);
+        ]
+    ]
+];

@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,8 +34,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-require_once 'include/SugarQueue/SugarJobQueue.php';
-require_once 'modules/Schedulers/Scheduler.php';
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\SugarQueue\SugarJobQueue;
 
 /**
  * CRON driver for job queue
@@ -94,14 +94,14 @@ class SugarCronJobs
     {
         $this->queue = new SugarJobQueue();
         $this->lockfile = sugar_cached("modules/Schedulers/lastrun");
-        if(!empty($GLOBALS['sugar_config']['cron']['max_cron_jobs'])) {
-            $this->max_jobs = $GLOBALS['sugar_config']['cron']['max_cron_jobs'];
+        if(!empty(SpiceConfig::getInstance()->config['cron']['max_cron_jobs'])) {
+            $this->max_jobs = SpiceConfig::getInstance()->config['cron']['max_cron_jobs'];
         }
-        if(!empty($GLOBALS['sugar_config']['cron']['max_cron_runtime'])) {
-            $this->max_runtime = $GLOBALS['sugar_config']['cron']['max_cron_runtime'];
+        if(!empty(SpiceConfig::getInstance()->config['cron']['max_cron_runtime'])) {
+            $this->max_runtime = SpiceConfig::getInstance()->config['cron']['max_cron_runtime'];
         }
-        if(isset($GLOBALS['sugar_config']['cron']['min_cron_interval'])) {
-            $this->min_interval = $GLOBALS['sugar_config']['cron']['min_cron_interval'];
+        if(isset(SpiceConfig::getInstance()->config['cron']['min_cron_interval'])) {
+            $this->min_interval = SpiceConfig::getInstance()->config['cron']['min_cron_interval'];
         }
     }
 
@@ -111,7 +111,7 @@ class SugarCronJobs
     protected function markLastRun()
     {
         if(!file_put_contents($this->lockfile, time())) {
-            $GLOBALS['log']->fatal('Scheduler cannot write PID file.  Please check permissions on '.$this->lockfile);
+            LoggerManager::getLogger()->fatal('Scheduler cannot write PID file.  Please check permissions on '.$this->lockfile);
         }
     }
 
@@ -148,7 +148,7 @@ class SugarCronJobs
     {
         $this->runOk = false;
         if(!empty($job)) {
-            $GLOBALS['log']->fatal("Job {$job->id} ({$job->name}) failed in CRON run");
+            LoggerManager::getLogger()->fatal("Job {$job->id} ({$job->name}) failed in CRON run");
             if($this->verbose) {
                 printf(translate('ERR_JOB_FAILED_VERBOSE', 'SchedulersJobs'), $job->id, $job->name);
             }
@@ -173,7 +173,7 @@ class SugarCronJobs
      */
     public function getMyId()
     {
-        return 'CRON'.$GLOBALS['sugar_config']['unique_key'].':'.getmypid();
+        return 'CRON'. SpiceConfig::getInstance()->config['unique_key'].':'.getmypid();
     }
 
     /**
@@ -202,7 +202,7 @@ class SugarCronJobs
     {
         // throttle
         if(!$this->throttle()) {
-            $GLOBALS['log']->fatal("Job runs too frequently, throttled to protect the system.");
+            LoggerManager::getLogger()->fatal("Job runs too frequently, throttled to protect the system.");
             return;
         }
         // clean old stale jobs
@@ -215,7 +215,7 @@ class SugarCronJobs
         }
         // run jobs
         $cutoff = time()+$this->max_runtime;
-        register_shutdown_function(array($this, "unexpectedExit"));
+        register_shutdown_function([$this, "unexpectedExit"]);
         $myid = $this->getMyId();
         for($count=0;$count<$this->max_jobs;$count++) {
             $this->job = $this->queue->nextJob($myid);

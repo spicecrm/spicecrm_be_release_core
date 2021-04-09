@@ -2,6 +2,9 @@
 
 namespace SpiceCRM\includes\SpiceNumberRanges;
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+
 /**
  * Class SpiceNumberRanges
  *
@@ -20,11 +23,11 @@ class SpiceNumberRanges
      */
     public static function getNextNumber($range, $options = [])
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $numberRange = $db->fetchByAssoc($db->query(sprintf('SELECT * FROM sysnumberranges WHERE id = "%s"', $db->quote($range))));
         if (!$numberRange) {
-            $GLOBALS['log']->error('Number range (ID: ' . $range . ' not found');
+            LoggerManager::getLogger()->error('Number range (ID: ' . $range . ' not found');
             return false;
         }
 
@@ -34,7 +37,7 @@ class SpiceNumberRanges
 
         # Does the next created number exceed the maximum?
         if ($nextNumber > $numberRange['range_to']) {
-            $GLOBALS['log']->error('Created next number (' . $nextNumber . ') exceeds the maxium (' . $numberRange['range_to'] . ') of number range (ID: ' . $range . ').');
+            LoggerManager::getLogger()->error('Created next number (' . $nextNumber . ') exceeds the maxium (' . $numberRange['range_to'] . ') of number range (ID: ' . $range . ').');
             return false; # Why?! We still have a valid number. Only one, but at least one.
         }
 
@@ -44,7 +47,7 @@ class SpiceNumberRanges
         $number = $numberRange['next_number'] ?: $numberRange['range_from'];
 
         # If desired (options) set a padding to the number:
-        if (@options['withPadding'] and !empty($numberRange['length'])) {
+        if (@$options['withPadding'] and !empty($numberRange['length'])) {
             $number = str_pad($number, $numberRange['length'], '0', STR_PAD_LEFT);
         }
 
@@ -63,11 +66,11 @@ class SpiceNumberRanges
      */
     public static function getNextNumberForField($module, $field)
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
         $numberRange = $db->fetchByAssoc($db->query("SELECT sysnumberranges.* FROM sysnumberranges, sysnumberrangeallocation WHERE sysnumberranges.id = sysnumberrangeallocation.numberrange AND sysnumberrangeallocation.module = '$module' AND sysnumberrangeallocation.field = '$field'"));
         if (!$numberRange) {
-            $GLOBALS['log']->error('Number range (module: ' . $module . ', field: ' . $field . ' not found.');
+            LoggerManager::getLogger()->error('Number range (module: ' . $module . ', field: ' . $field . ' not found.');
             return false;
         }
 
@@ -77,7 +80,7 @@ class SpiceNumberRanges
 
         # Does the created number exceed the maximum?
         if ($nextNumber > $numberRange['range_to']) {
-            $GLOBALS['log']->error('Created next number (' . $nextNumber . ') exceeds the maxium (' . $numberRange['range_to'] . ') of number range (module: ' . $module . ', field: ' . $field . ').');
+            LoggerManager::getLogger()->error('Created next number (' . $nextNumber . ') exceeds the maxium (' . $numberRange['range_to'] . ') of number range (module: ' . $module . ', field: ' . $field . ').');
             return false; # Why?! We still have a valid number. Only one, but at least one.
         }
 

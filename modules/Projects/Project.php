@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,65 +33,82 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\modules\Projects;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\utils\SpiceUtils;
 
 class Project extends SugarBean {
+    // basic definition
+    public $object_name = 'Project';
+    public $module_dir = 'Projects';
+    public $table_name = 'projects';
+    public $new_schema = true;
 
-	var $object_name = 'Project';
-	var $module_dir = 'Projects';
-	var $table_name = 'projects';
+    // calculated information
+    public $total_estimated_effort;
+    public $total_actual_effort;
+    public $estimated_start_date;
+    public $estimated_end_date;
 
-	// This is used to retrieve related fields from form posts.
-	var $additional_column_fields = array(
-		'account_id',
-		'contact_id',
-		'opportunity_id',
-	);
 
-	var $relationship_fields = array(
-		'account_id' => 'accounts',
-		'contact_id'=>'contacts',
-		'opportunity_id'=>'opportunities',
-		'email_id' => 'emails',
-	);
+    /**
+     * add some calculated values on retrieve
+     * @param int $id
+     * @param false $encode
+     * @param bool $deleted
+     * @param bool $relationships
+     * @return Project|null
+     */
+    public function retrieve($id = -1, $encode = false, $deleted = true, $relationships = true)
+    {
+        $bean =  parent::retrieve($id, $encode, $deleted, $relationships);
 
-	//////////////////////////////////////////////////////////////////
-	// METHODS
-	//////////////////////////////////////////////////////////////////
+        // calculations
+        if($bean){
+            // calculate planned & actual efforts using wbs elements
+            $this->total_estimated_effort = 0;
+            $this->total_actual_effort = 0;
+            $wbsElements = $this->get_linked_beans('projectwbss');
+            foreach($wbsElements as $wbs){
+                // handle planned efforts
+                $this->total_estimated_effort += $wbs->planned_effort;
+                // handle actual efforts
+                $this->total_actual_effort += $wbs->consumed_effort;
+            }
 
-	/**
-	 *
-	 */
-	function __construct()
-	{
-		parent::__construct();
-	}
+            // calculate start and end dates according to earliest WBS element start date and lastest WBS end date
+            if(count($wbsElements) > 0) {
+                $this->estimated_start_date = SpiceUtils::getMinDate($wbsElements, 'date_start');
+                $this->estimated_end_date = SpiceUtils::getMaxDate($wbsElements, 'date_end');
+            }
+                    }
 
-	/**
-	 * overriding the base class function to do a join with users table
-	 */
+        return $bean;
+    }
 
-	/**
-	 *
-	 */
-	function fill_in_additional_detail_fields()
-	{
-	    parent::fill_in_additional_detail_fields();
 
-		$this->assigned_user_name = get_assigned_user_name($this->assigned_user_id);
-		//$this->total_estimated_effort = $this->_get_total_estimated_effort($this->id);
-		//$this->total_actual_effort = $this->_get_total_actual_effort($this->id);
-	}
 
-	/**
-	 *
-	 */
-	function fill_in_additional_list_fields()
-	{
-	    parent::fill_in_additional_list_fields();
-		$this->assigned_user_name = get_assigned_user_name($this->assigned_user_id);
-		//$this->total_estimated_effort = $this->_get_total_estimated_effort($this->id);
-		//$this->total_actual_effort = $this->_get_total_actual_effort($this->id);
-	}
+
+    /**
+     *
+     */
+    function get_summary_text()
+    {
+        return $this->name;
+    }
+
+
+
+    function bean_implements($interface){
+        switch($interface){
+            case 'ACL':return true;
+        }
+        return false;
+    }
+
+
 
 }
+

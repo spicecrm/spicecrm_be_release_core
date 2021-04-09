@@ -1,6 +1,11 @@
 <?php
-if (! defined ( 'sugarEntry' ) || ! sugarEntry)
-    die ( 'Not A Valid Entry Point' ) ;
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\SugarObjects\VardefManager;
+
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -36,10 +41,11 @@ if (! defined ( 'sugarEntry' ) || ! sugarEntry)
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-global $db, $sugar_config, $mod_strings ;
+global  $mod_strings ;
+$db = DBManagerFactory::getInstance();
 $log = & $GLOBALS [ 'log' ] ;
 
-if(!isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) || !$GLOBALS['sugar_config']['systemvardefs']['dictionary']) {
+if(!isset(SpiceConfig::getInstance()->config['systemvardefs']['dictionary']) || !SpiceConfig::getInstance()->config['systemvardefs']['dictionary']) {
 
     $query = "DELETE FROM relationships";
     $db->query($query);
@@ -54,7 +60,7 @@ if(!isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) || !$GLOBALS[
         $focus = BeanFactory::getBean($module);
         if ($focus instanceof SugarBean) {
             $table_name = $focus->table_name;
-            $empty = array();
+            $empty = [];
             if (empty ($_REQUEST ['silent']))
                 echo $mod_strings ['LBL_REBUILD_REL_PROC_META'] . $focus->table_name . "...";
             SugarBean::createRelationshipMeta($focus->getObjectName(), $db, $table_name, $empty, $focus->module_dir);
@@ -68,7 +74,7 @@ if(!isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) || !$GLOBALS[
         $focus = BeanFactory::getBean($module);
         if ($focus instanceof SugarBean) {
             $table_name = $focus->table_name;
-            $empty = array();
+            $empty = [];
             if (empty ($_REQUEST ['silent']))
                 echo $mod_strings ['LBL_REBUILD_REL_PROC_C_META'] . $focus->table_name . "...";
             SugarBean::createRelationshipMeta($focus->getObjectName(), $db, $table_name, $empty, $focus->module_dir, true);
@@ -78,7 +84,7 @@ if(!isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) || !$GLOBALS[
     }
 
 // finally, whip through the list of relationships defined in TableDictionary.php, that is all the relationships in the metadata directory, and install those
-    $dictionary = array();
+    $dictionary = [];
     require('modules/TableDictionary.php');
     //for module installer incase we already loaded the table dictionary
     if (file_exists('custom/application/Ext/TableDictionary/tabledictionary.ext.php')) {
@@ -115,7 +121,7 @@ if(!isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) || !$GLOBALS[
 // insert a new database row to show the rebuild relationships is done
     $id = create_guid();
     $gmdate = gmdate('Y-m-d H:i:s');
-    $date_entered = $GLOBALS['db']->convert("'$gmdate'", 'datetime');
+    $date_entered = DBManagerFactory::getInstance()->convert("'$gmdate'", 'datetime');
     $query = 'INSERT INTO versions (id, deleted, date_entered, date_modified, modified_user_id, created_by, name, file_version, db_version) ' . "VALUES ('$id', '0', $date_entered, $date_entered, '1', '1', 'Rebuild Relationships', '4.0.0', '4.0.0')";
     $log->info($query);
     $db->query($query);
@@ -135,9 +141,9 @@ if(!isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) || !$GLOBALS[
 }
 
 // BEGIN CR1000108 vardefs to db. Grab directly from db
-if(isset($GLOBALS['sugar_config']['systemvardefs']['dictionary']) && $GLOBALS['sugar_config']['systemvardefs']['dictionary']) {
-    $relationships = \SpiceCRM\modules\SystemVardefs\SystemVardefs::loadRelationships();
-    \SpiceCRM\modules\SystemVardefs\SystemVardefs::saveCacheRelationships($relationships);
-
-}
+//if(isset(\SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['systemvardefs']['dictionary']) && \SpiceCRM\includes\SugarObjects\SpiceConfig::getInstance()->config['systemvardefs']['dictionary']) {
+//    $relationships = \SpiceCRM\modules\SystemVardefs\SystemVardefs::loadRelationships();
+//    \SpiceCRM\modules\SystemVardefs\SystemVardefs::saveRelationshipsCache($relationships);
+//
+//}
 // END CR1000108

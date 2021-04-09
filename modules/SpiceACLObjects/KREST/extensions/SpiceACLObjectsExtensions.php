@@ -26,121 +26,117 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-use SpiceCRM\modules\SpiceACLObjects\SpiceACLObjectsRESTHandler;
 use SpiceCRM\includes\RESTManager;
+use SpiceCRM\modules\SpiceACLObjects\KREST\controllers\SpiceACLObjectsController;
+
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
-$spiceACLObjectsRESTHandler = new SpiceACLObjectsRESTHandler();
 
-$RESTManager->app->group('/spiceaclobjects', function () use ($spiceACLObjectsRESTHandler, $RESTManager) {
-    $this->get('', function () use ($spiceACLObjectsRESTHandler) {
-        $getParams = $_GET;
-        echo json_encode($spiceACLObjectsRESTHandler->getAuthObjects($getParams));
-    });
-    $this->post('/createdefaultobjects', function () use ($spiceACLObjectsRESTHandler, $RESTManager) {
-        $getParams = $_GET;
-        echo json_encode($spiceACLObjectsRESTHandler->createDefaultACLObjectsForModule($RESTManager->app, $getParams));
-    });
-    $this->group('/authtypes', function () use ($spiceACLObjectsRESTHandler) {
-        $this->get('', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-            echo json_encode($spiceACLObjectsRESTHandler->getAuthTypes());
-        });
-        $this->group('/{id}', function () use ($spiceACLObjectsRESTHandler) {
-            $this->delete('', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-                echo json_encode($spiceACLObjectsRESTHandler->deleteAuthType($args['id']));
-            });
-            $this->get('', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-                echo json_encode($spiceACLObjectsRESTHandler->getAuthType($args['id']));
-            });
-            $this->group('/authtypefields', function () use ($spiceACLObjectsRESTHandler) {
-                $this->post('/{field}', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-                    return $res->withJson($spiceACLObjectsRESTHandler->addAuthTypeField($args['id'], $args['field']));
-                });
-                $this->delete('/{fieldid}', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-                    return $res->withJson($spiceACLObjectsRESTHandler->deleteAuthTypeField($args['fieldid']));
-                });
-            });
-            $this->group('/authtypeactions', function () use ($spiceACLObjectsRESTHandler) {
-                $this->get('', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-                    return $res->withJson($spiceACLObjectsRESTHandler->getAuthTypeAction($args['id']));
-                });
-                $this->post('/{action}', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-                    $postParams = json_decode($_POST, true);
-                    return $res->withJson($spiceACLObjectsRESTHandler->addAuthTypeAction($args['id'], $args['action']));
-                });
-                $this->delete('/{actionid}', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-                    return $res->withJson($spiceACLObjectsRESTHandler->deleteAuthTypeAction($args['actionid']));
-                });
-            });
-        });
-    });
-
-    $this->group('/activation/{id}', function () use ($spiceACLObjectsRESTHandler) {
-        $this->post('', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-            echo json_encode($spiceACLObjectsRESTHandler->activateObject($args['id']));
-        });
-        $this->delete('', function ($req, $res, $args) use ($spiceACLObjectsRESTHandler) {
-            echo json_encode($spiceACLObjectsRESTHandler->deactivateObject($args['id']));
-        });
-
-    });
-
-    /*
-    $app->group('/authobjects', function () use ($app, $spiceACLObjectsRESTHandler) {
-        $app->get('/', function ($req, $res, $args) use ($app, $spiceACLObjectsRESTHandler) {
-            $getParams = $_GET;
-            return $res->withJson($spiceACLObjectsRESTHandler->getAuthObjects($getParams));
-        });
+/**
+ * register the Extension
+ */
+$RESTManager->registerExtension('spiceaclobjects', '1.0');
 
 
-        $app->group('/fieldcontrol', function () use ($app, $spiceACLObjectsRESTHandler) {
-            $app->get('/fields', function () use ($app, $spiceACLObjectsRESTHandler) {
-                $getParams = $_GET;
-                echo json_encode($spiceACLObjectsRESTHandler->getAuthObjectFieldControlFields($getParams));
-            });
-            $app->post('/', function () use ($app, $spiceACLObjectsRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLObjectsRESTHandler->addAuthObjectFieldControl($postParams));
-            });
-            $app->put('/', function () use ($app, $spiceACLObjectsRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLObjectsRESTHandler->setAuthObjectFieldControl($postParams));
-            });
-            $app->delete('/', function () use ($app, $spiceACLObjectsRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLObjectsRESTHandler->deleteAuthObjectFieldControl($postParams));
-            });
-        });
+$routes = [
+    [
+        'method'      => 'get',
+        'route'       => '/spiceaclobjects',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'spiceAclObjects',
+        'description' => 'Get Spice Auth Object',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclobjects/createdefaultobjects',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'createDefaultObjects',
+        'description' => 'Create default objects',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/spiceaclobjects/authtypes',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'authTypes',
+        'description' => 'Get Auth Types',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/spiceaclobjects/authtypes/{id}',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'deleteAuthType',
+        'description' => 'Delete Auth Type',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/spiceaclobjects/authtypes/{id}',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'getAuthType',
+        'description' => 'Get Auth Type',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclobjects/authtypes/{id}/authtypefields/{field}',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'createAuthTypeField',
+        'description' => 'Create Auth Type Field',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/spiceaclobjects/authtypes/{id}/authtypefields/{fieldid}',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'deleteAuthTypeField',
+        'description' => 'Delete Auth Type Field',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/spiceaclobjects/authtypes/{id}/authtypeactions',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'getAuthTypeAction',
+        'description' => 'Get Auth Type Action',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclobjects/authtypes/{id}/authtypeactions/{action}',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'createAuthTypeAction',
+        'description' => 'Create Auth Type Action',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/spiceaclobjects/authtypes/{id}/authtypeactions/{actionid}',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'deleteAuthTypeAction',
+        'description' => 'Delete Auth Type Action',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclobjects/activation/{id}',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'activate',
+        'description' => 'Activate',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/spiceaclobjects/activation/{id}',
+        'class'       => SpiceACLObjectsController::class,
+        'function'    => 'deleteActivation',
+        'description' => 'Delete Activacion',
+        'options'     => ['noAuth' => false, 'adminOnly' => false],
+    ],
+];
 
-        $app->group('/orgvalues/{id}', function () use ($app, $spiceACLObjectsRESTHandler) {
-            $app->get('', function ($req, $res, $args) use ($app, $spiceACLObjectsRESTHandler) {
-                echo json_encode($spiceACLObjectsRESTHandler->getAuthObjectOrgValues($args['id']));
-            });
-            $app->post('', function ($req, $res, $args) use ($app, $spiceACLObjectsRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLObjectsRESTHandler->setAuthObjectOrgValues($args['id'], $postParams));
-            });
-        });
-
-        $app->group('/{id}', function () use ($app, $spiceACLObjectsRESTHandler) {
-            $app->get('/', function ($req, $res, $args) use ($app, $spiceACLObjectsRESTHandler) {
-                $getParams = $_GET;
-                echo json_encode($spiceACLObjectsRESTHandler->getAuthObject($args['id']));
-            });
-            $app->post('/', function ($req, $res, $args) use ($app, $spiceACLObjectsRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLObjectsRESTHandler->addAuthObject($args['id'], $postParams));
-            });
-            $app->put('/', function ($req, $res, $args) use ($app, $spiceACLObjectsRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLObjectsRESTHandler->setAuthObject($args['id'], $postParams));
-            });
-            $app->post('/activate', function ($req, $res, $args) use ($app, $spiceACLObjectsRESTHandler) {
-                echo json_encode($spiceACLObjectsRESTHandler->activateAuthObject($args['id']));
-            });
-            $app->post('/deactivate', function ($req, $res, $args) use ($app, $spiceACLObjectsRESTHandler) {
-                echo json_encode($spiceACLObjectsRESTHandler->deactivateAuthObject($args['id']));
-            });
-        });
-    });
-    */
-});
+$RESTManager->registerRoutes($routes);

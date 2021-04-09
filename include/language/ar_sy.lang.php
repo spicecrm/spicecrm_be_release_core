@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -37,19 +36,19 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 /*********************************************************************************
  * Description:  Defines the Arabic language pack for the base application.
- * Portions created by SugarCRM are Copyright (C) SugarCRM, Inc.
+ * Portions created by SugarCRM are Copyright (C] SugarCRM, Inc.
  * All Rights Reserved.
- * Contributor(s): Mehyar Sawas-Donauer (mehyar.sawas@twentyreasons.com)
+ * Contributor(s]: Mehyar Sawas-Donauer (mehyar.sawas@twentyreasons.com]
  ********************************************************************************/
-$app_list_strings = array(
+$app_list_strings = [
     'language_pack_name' => 'SY Arabic',
-    'checkbox_dom' => array(
+    'checkbox_dom' => [
         '' => '',
         '1' => 'نعم',
         '2' => 'لا',
-    ),
+    ],
 
-    'account_type_dom' =>        array(
+    'account_type_dom' =>        [
         '' => '',
         'Analyst' => 'محلل',
         'Competitor' => 'منافس',
@@ -61,39 +60,39 @@ $app_list_strings = array(
         'Prospect' => 'محتمل',
         'Reseller' => 'موزع',
         'Other' => 'أخرى',
-    ),
-    'account_user_roles_dom' =>        array(
+    ],
+    'account_user_roles_dom' =>        [
         '' => '',
         'am' => 'مدير حسابات',
         'se' => 'مهندس دعم',
         'es' => 'راعي تنفيذي'
-    ),
-    'events_account_roles_dom' =>        array(
+    ],
+    'events_account_roles_dom' =>        [
         '' => '',
         'organizer' => 'منظّم',
         'sponsor' => 'راع',
         'caterer' => 'متعهد حفلات'
-    ),
-    'events_contact_roles_dom' =>        array(
+    ],
+    'events_contact_roles_dom' =>        [
         '' => '',
         'organizer' => 'منظّم',
         'speaker' => 'متحدث',
         'moderator' => 'مشرف',
-    ),
-    'events_contact_roles_dom' =>        array(
+    ],
+    'events_contact_roles_dom' =>        [
         '' => '',
         'organizer' => 'منظّم',
         'speaker' => 'متحدث',
         'moderator' => 'مشرف',
-    ),
-    'userabsences_type_dom' =>        array(
+    ],
+    'userabsences_type_dom' =>        [
         '' => '',
         'Sick leave' => 'مرض',
         'Vacation' => 'إجازة',
         'HomeOffice' => 'من المنزل',
-    ),
+    ],
     'industry_dom' =>
-        array(
+        [
             '' => '',
             'Apparel' => 'ملابس',
             'Banking' => 'خدمات مصرفية',
@@ -125,10 +124,10 @@ $app_list_strings = array(
             'Transportation' => 'وسائل النقل',
             'Utilities' => 'خدمات',
             'Other' => 'أخرى',
-        ),
+        ],
     'lead_source_default_key' => 'ولد نفسه',
     'lead_source_dom' =>
-        array(
+        [
             '' => '',
             'Cold Call' => 'نداء بارد',
             'Existing Customer' => 'زبون موجود',
@@ -144,25 +143,25 @@ $app_list_strings = array(
             'Email' => 'أيميل',
             'Campaign' => 'حملة إعلانية',
             'Other' => 'أخرى',
-        ),
+        ],
     'opportunity_type_dom' =>
-        array(
+        [
             '' => '',
             'Existing Business' => 'أعمال قائمة',
             'New Business' => 'أعمال جديدة',
-        ),
+        ],
     'roi_type_dom' =>
-        array(
+        [
             'Revenue' => 'إيرادات',
             'Investment' => 'استثمار',
             'Expected_Revenue' => 'الإيرادات المتوقعة',
             'Budget' => 'ميزانية',
 
-        ),
+        ],
     //Note:  do not translate opportunity_relationship_type_default_key
 //       it is the key for the default opportunity_relationship_type_dom value
     'opportunity_relationship_type_dom' =>
-        array(
+        [
             '' => '',
             'Primary Decision Maker' => 'صانع القرار الرئيسي',
             'Business Decision Maker' => 'صانع القرار التجاري',
@@ -173,14 +172,14 @@ $app_list_strings = array(
             'Influencer' => 'مؤثر',
             'Project Manager' => 'مدير المشاريع',
             'Other' => 'أخرى',
-        ),
+        ],
     'payment_terms' =>
-        array(
+        [
             '' => '',
             'Net 15' => 'صافي 15',
             'Net 30' => 'صافي 30',
-        ),
-    'sales_stage_dom' => array(
+        ],
+    'sales_stage_dom' => [
 // CR1000302 adapt to match opportunity spicebeanguidestages
 //        'Prospecting' => 'تقصّي',
         'Qualification' => 'مؤهل',
@@ -193,20 +192,20 @@ $app_list_strings = array(
         'Closed Won' => 'مغلق رابح',
         'Closed Lost' => 'مغلق خاسر',
         'Closed Discontinued' => 'مغلق متوقف'
-    ),
-    'opportunityrevenuesplit_dom' => array(
+    ],
+    'opportunityrevenuesplit_dom' => [
         'none' => 'لا شيء',
         'split' => 'شق',
         'rampup' => 'تكثيف'
-    ),
-    'opportunity_relationship_buying_center_dom' => array(
+    ],
+    'opportunity_relationship_buying_center_dom' => [
         '++' => 'إيجابي جدا',
         '+' => 'إيجابي',
         'o' => 'حيادي',
         '-' => 'سلبي',
         '--' => 'سلبي جداً'
-    ),
-    'in_total_group_stages' => array(
+    ],
+    'in_total_group_stages' => [
         'Draft' => 'مسودة',
         'Negotiation' => 'تفاوض',
         'Delivered' => 'تم إيصاله',
@@ -215,50 +214,50 @@ $app_list_strings = array(
         'Closed Accepted' => 'مغلق مقبول',
         'Closed Lost' => 'مغلق خاسر',
         'Closed Dead' => 'مغلق ميت',
-    ),
-    'competitive_threat_dom' => array(
+    ],
+    'competitive_threat_dom' => [
         '++' => 'عال جداً',
         '+' => 'عال',
         'o' => 'حيادي',
         '-' => 'منخفض',
         '--' => 'منخفض جداً'
-    ),
-    'competitive_status_dom' => array(
+    ],
+    'competitive_status_dom' => [
         'active' => 'نشط في دورة المبيعات',
         'withdrawn' => 'سحبت من قبل المنافس',
         'rejected' => 'رفض من قبل العملاء'
-    ),
-    'activity_dom' => array(
+    ],
+    'activity_dom' => [
         'Call' => 'إتصال',
         'Meeting' => 'إجتماع',
         'Task' => 'مهمة',
         'Email' => 'أيميل',
         'Note' => 'ملاحظة',
-    ),
-    'salutation_dom' => array(
+    ],
+    'salutation_dom' => [
         '' => '',
         'Mr.' => 'السيد',
         'Ms.' => 'الآنسة',
-    ),
-    'salutation_letter_dom' => array(
+    ],
+    'salutation_letter_dom' => [
         '' => '',
         'Mr.' => 'عزيزي السيد',
         'Ms.' => 'عزيزتي السيدة',
-    ),
-    'gdpr_marketing_agreement_dom' => array(
+    ],
+    'gdpr_marketing_agreement_dom' => [
         '' => '',
         'r' => 'مرفوض',
         'g' => 'تم منحه',
-    ),
-    'uom_unit_dimensions_dom' => array(
+    ],
+    'uom_unit_dimensions_dom' => [
         '' => '',
         'none' => 'لاشيئ',
         'weight' => 'وزن',
         'volume' => 'كمية',
         'area' => 'منطقة',
         'time' => 'Time',
-    ),
-    'contacts_title_dom' => array(
+    ],
+    'contacts_title_dom' => [
         '' => '',
         'ceo' => 'المدير التنفيذي',
         'cfo' => 'المدير المالي',
@@ -276,8 +275,8 @@ $app_list_strings = array(
         'procurement' => 'مشتريات',
         'finance' => 'مالية',
         'marketing' => 'تسويق'
-    ),
-    'personalinterests_dom' => array(
+    ],
+    'personalinterests_dom' => [
         'sports' => 'رياضة',
         'food' => 'طعام',
         'wine' => 'نبيذ',
@@ -290,27 +289,28 @@ $app_list_strings = array(
         'fashion' => 'موضة',
         'music' => 'موسيقى',
         'fitness' => 'لياقة بدنية'
-    ),
-    'questionstypes_dom' => array(
+    ],
+    'questionstypes_dom' => [
         'rating' => 'تقييم',
+        'ratinggroup' => 'Rating Group',
         'binary' => 'اختيار ثنائي',
         'single' => 'اختيار واحد',
         'multi' => 'إختيار متعدد',
         'text' => 'نصل إدخال',
         'ist' => 'يكون',
-        'nps' => 'NPS (تقييم درجة الرضى)'
-    ),
-    'evaluationtypes_dom' => array(
+        'nps' => 'NPS (تقييم درجة الرضى]'
+    ],
+    'evaluationtypes_dom' => [
         'default' => 'إفتراضي',
         'avg_core' => 'Average',
         'spiderweb' => 'الشبكة العنكبوتية'
-    ),
-    'evaluationsorting_dom' => array(
-        'categories' => 'حسب الفئات (أبجدي)',
+    ],
+    'evaluationsorting_dom' => [
+        'categories' => 'حسب الفئات (أبجدي]',
         'points asc' => 'حسب النقاط, تصاعدي',
         'points desc' => 'حسب النقاط, تنازلي'
-    ),
-    'interpretationsuggestions_dom' => array(
+    ],
+    'interpretationsuggestions_dom' => [
         'top3' => 'أعلى 3',
         'top5' => 'أعلى 5',
         'over20' => 'أعلى من 20 نقطة',
@@ -324,10 +324,10 @@ $app_list_strings = array(
         'top5_upfrom40' => 'أعلى 5 أو أعلى من 40 نقطة',
         'all' => 'كل التفسيرات',
         'mbti' => 'MBTI'
-    ),
+    ],
     //time is in seconds; the greater the time the longer it takes;
     'reminder_max_time' => 90000,
-    'reminder_time_options' => array(
+    'reminder_time_options' => [
         -1 => 'no reminder',
         60 => '1 minute prior',
         300 => 'قبل 5 دقائق',
@@ -339,55 +339,55 @@ $app_list_strings = array(
         10800 => 'قبل 3 ساعة',
         18000 => 'قبل 5 ساعة',
         86400 => 'قبل 1 يوم',
-    ),
+    ],
 
     'task_priority_default' => 'Medium',
     'task_priority_dom' =>
-        array(
+        [
             'High' => 'عال',
             'Medium' => 'متوسط',
             'Low' => 'منخفض',
-        ),
+        ],
     'task_status_default' => 'لم يبدء',
     'task_status_dom' =>
-        array(
+        [
             'Not Started' => 'لم يبدء',
             'In Progress' => 'جار العمل عليه',
             'Completed' => 'مكتمل',
             'Pending Input' => 'بانتظار مدخل',
             'Deferred' => 'مؤجل',
-        ),
+        ],
     'meeting_status_default' => 'مخطط له',
     'meeting_status_dom' =>
-        array(
+        [
             'Planned' => 'مخطط له',
             'Held' => 'تم عقده',
             'Not Held' => 'لم يعقد',
-        ),
+        ],
     'extapi_meeting_password' =>
-        array(
+        [
             'WebEx' => 'WebEx',
-        ),
+        ],
     'meeting_type_dom' =>
-        array(
+        [
             'Other' => 'أخرى',
             'Spice' => 'SpiceCRM',
-        ),
+        ],
     'call_status_default' => 'مخطط له',
     'call_status_dom' =>
-        array(
+        [
             'Planned' => 'مخطط له',
             'Held' => 'تم عقده',
             'Not Held' => 'لم يعقد',
-        ),
+        ],
     'call_direction_default' => 'صادر',
     'call_direction_dom' =>
-        array(
+        [
             'Inbound' => 'وارد',
             'Outbound' => 'صادر',
-        ),
+        ],
     'lead_status_dom' =>
-        array(
+        [
             '' => '',
             'New' => 'جديد',
             'Assigned' => 'تم تعيينه',
@@ -395,99 +395,100 @@ $app_list_strings = array(
             'Converted' => 'تم تحويله',
             'Recycled' => 'أعيد تدويره',
             'Dead' => 'ميت',
-        ),
+        ],
     'lead_classification_dom' =>
-        array(
+        [
             'cold' => 'بارد',
             'warm' => 'دافئ',
             'hot' => 'ساخن'
-        ),
+        ],
     'gender_list' =>
-        array(
+        [
             'male' => 'ذكر',
             'female' => 'أنثى',
-        ),
+        ],
     //Note:  do not translate case_status_default_key
 //       it is the key for the default case_status_dom value
     'case_status_default_key' => 'جديد',
     'case_status_dom' =>
-        array(
+        [
             'New' => 'جديد',
             'Assigned' => 'تم تعيينه',
             'Closed' => 'مغلق',
             'Pending Input' => 'بانتظار مدخل',
             'Rejected' => 'تم رفضه',
             'Duplicate' => 'مكرر',
-        ),
+        ],
     'case_priority_default_key' => 'P2',
     'case_priority_dom' =>
-        array(
+        [
             'P1' => 'عال',
             'P2' => 'متوسط',
             'P3' => 'منخفض',
-        ),
+        ],
     'user_type_dom' =>
-        array(
+        [
             'RegularUser' => 'مستخدم عادي',
             'PortalUser' => 'مستخدم البوابة',
             'Administrator' => 'مدير',
-        ),
+        ],
     'user_status_dom' =>
-        array(
+        [
             'Active' => 'نشط',
             'Inactive' => 'غير نشط',
-        ),
+        ],
     'calendar_type_dom' =>
-        array(
+        [
             'Full' => 'كامل',
             'Day' => 'يوم',
-        ),
+        ],
     'knowledge_status_dom' =>
-        array(
+        [
             'Draft' => 'مسودة',
             'Released' => 'تم إصداره',
             'Retired' => 'متقاعد',
-        ),
+        ],
     'employee_status_dom' =>
-        array(
+        [
             'Active' => 'نشط',
             'Terminated' => 'تم إنهاءه',
             'Leave of Absence' => 'إجازة الغياب',
-        ),
+        ],
     'messenger_type_dom' =>
-        array(
+        [
             '' => '',
             'MSN' => 'MSN',
             'Yahoo!' => 'Yahoo!',
             'AOL' => 'AOL',
-        ),
-    'project_task_priority_options' => array(
+        ],
+    'project_task_priority_options' => [
         'High' => 'عال',
         'Medium' => 'متوسط',
         'Low' => 'منخفض',
-    ),
+    ],
     'project_task_priority_default' => 'Medium',
 
-    'project_task_status_options' => array(
+    'project_task_status_options' => [
         'Not Started' => 'لم يبدء',
         'In Progress' => 'جار العمل عليه',
         'Completed' => 'مكتمل',
         'Pending Input' => 'بانتظار مدخل',
         'Deferred' => 'مؤجل',
-    ),
-    'project_task_utilization_options' => array(
+    ],
+    'project_task_utilization_options' => [
         '0' => 'لاشيئ',
         '25' => '25',
         '50' => '50',
         '75' => '75',
         '100' => '100',
-    ),
-    'project_type_dom' => array(
+    ],
+    'project_type_dom' => [
         'customer' => 'زبون',
         'development' => 'تطوير',
-        'sales' => 'مبيعات'
-    ),
-    'project_status_dom' => array(
+        'sales' => 'مبيعات',
+        'admin' => 'إدارة',
+    ],
+    'project_status_dom' => [
         'planned' => 'مخطط له',
         'active' => 'نشط',
         'completed' => 'مكتمل',
@@ -495,47 +496,46 @@ $app_list_strings = array(
         'Draft' => 'مسودة',
         'In Review' => 'في مراجعة',
         'Published' => 'تم نشره',
-    ),
+    ],
     'project_status_default' => 'مسودة',
 
-    'project_duration_units_dom' => array(
+    'project_duration_units_dom' => [
         'Days' => 'أيام',
         'Hours' => 'ساعات',
-    ),
+    ],
 
-    'project_priority_options' => array(
+    'project_priority_options' => [
         'High' => 'عال',
         'Medium' => 'متوسط',
         'Low' => 'منخفض',
-    ),
+    ],
     'project_priority_default' => 'متوسط',
     //Note:  do not translate record_type_default_key
 //       it is the key for the default record_type_module value
     'record_type_default_key' => 'Accounts',
     'record_type_display' =>
-        array(
+        [
             '' => '',
             'Accounts' => 'حساب',
             'Opportunities' => 'فرصة',
             'Proposals' => 'إقتراح',
             'Cases' => 'قضية',
             'Leads' => 'جهة مهتمة',
-            'Contacts' => 'جهاة اتصال', // cn (11/22/2005) added to support Emails
+            'Contacts' => 'جهاة اتصال', // cn (11/22/2005] added to support Emails
 
 
             'Bugs' => 'خلل',
             'Projects' => 'مشروع',
 
             'Prospects' => 'هدف',
-            'ProjectTasks' => 'مهمة مشروع',
 
 
             'Tasks' => 'مهمة',
 
-        ),
+        ],
 
     'record_type_display_notes' =>
-        array(
+        [
             'Accounts' => 'حساب',
             'Contacts' => 'جهة إتصال',
             'Opportunities' => 'فرصة',
@@ -545,17 +545,16 @@ $app_list_strings = array(
 
             'Bugs' => 'خلل',
             'Projects' => 'مشروع',
-            'ProjectTasks' => 'مهمة مشروع',
             'Prospects' => 'هدف',
             'Cases' => 'قضية',
             'Leads' => 'جهة مهتمة',
 
             'Meetings' => 'إجتماع',
             'Calls' => 'إتصال',
-        ),
+        ],
 
     'parent_type_display' =>
-        array(
+        [
             'Accounts' => 'حساب',
             'Contacts' => 'جهة إتصال',
             'Tasks' => 'مهمة',
@@ -567,53 +566,52 @@ $app_list_strings = array(
             'Leads' => 'جهة مهتمة',
 
             'Projects' => 'مشروع',
-            'ProjectTasks' => 'مهمة مشروع',
 
             'Prospects' => 'هدف',
             'Events' => 'حدث',
 
-        ),
+        ],
 
     'issue_priority_default_key' => 'Medium',
     'issue_priority_dom' =>
-        array(
+        [
             'Urgent' => 'طارئ',
             'High' => 'عال',
             'Medium' => 'متوسط',
             'Low' => 'منخفض',
-        ),
+        ],
     'issue_resolution_default_key' => '',
     'issue_resolution_dom' =>
-        array(
+        [
             '' => '',
             'Accepted' => 'مقبول',
             'Duplicate' => 'مكرر',
             'Closed' => 'مغلق',
             'Out of Date' => 'انتهت صلاحيته',
             'Invalid' => 'غير صالح',
-        ),
+        ],
 
     'issue_status_default_key' => 'New',
     'issue_status_dom' =>
-        array(
+        [
             'New' => 'جديد',
             'Assigned' => 'معين',
             'Closed' => 'مغلق',
             'Pending' => 'قيد الانتظار',
             'Rejected' => 'مرفوض',
-        ),
+        ],
 
     'bug_priority_default_key' => 'Medium',
     'bug_priority_dom' =>
-        array(
+        [
             'Urgent' => 'طارئ',
             'High' => 'عال',
             'Medium' => 'متوسط',
             'Low' => 'منخفض',
-        ),
+        ],
     'bug_resolution_default_key' => '',
     'bug_resolution_dom' =>
-        array(
+        [
             '' => '',
             'Accepted' => 'مقبول',
             'Duplicate' => 'مكرر',
@@ -621,42 +619,42 @@ $app_list_strings = array(
             'Out of Date' => 'انتهت صلاحيته',
             'Invalid' => 'غير صالح',
             'Later' => 'لاحقاً',
-        ),
+        ],
     'bug_status_default_key' => 'New',
     'bug_status_dom' =>
-        array(
+        [
             'New' => 'جديد',
             'Assigned' => 'معين',
             'Closed' => 'مغلق',
             'Pending' => 'قيد الانتظار',
             'Rejected' => 'مرفوض',
-        ),
+        ],
     'bug_type_default_key' => 'Bug',
     'bug_type_dom' =>
-        array(
+        [
             'Defect' => 'عطل',
             'Feature' => 'خاصية',
-        ),
+        ],
     'case_type_dom' =>
-        array(
+        [
             'Administration' => 'إدارة',
             'Product' => 'منتج',
             'User' => 'مستخدم',
-        ),
+        ],
 
     'source_default_key' => '',
     'source_dom' =>
-        array(
+        [
             '' => '',
             'Internal' => 'داخلي',
             'Forum' => 'منتدى',
             'Web' => 'موقع إلكتروني',
             'InboundEmail' => 'بريد وارد'
-        ),
+        ],
 
     'product_category_default_key' => '',
     'product_category_dom' =>
-        array(
+        [
             '' => '',
             'Accounts' => 'حسابات',
             'Activities' => 'نشاطات',
@@ -686,19 +684,19 @@ $app_list_strings = array(
             'Studio' => 'ستوديو',
             'Upgrade' => 'تحسين',
             'Users' => 'مستخدمين',
-        ),
-    'product_types_dom' => array(
+        ],
+    'product_types_dom' => [
         'service' => 'خدمة',
         'license' => 'رخصة',
         'product' => 'منتج'
-    ),
-    'product_occurence_dom' => array(
+    ],
+    'product_occurence_dom' => [
         'onetime' => 'مرة واحدة',
         'recurring' => 'تناوبي'
-    ),
+    ],
     /*Added entries 'Queued' and 'Sending' for 4.0 release..*/
     'campaign_status_dom' =>
-        array(
+        [
             '' => '',
             'Planning' => 'تخطيط',
             'Active' => 'نشط',
@@ -706,8 +704,8 @@ $app_list_strings = array(
             'Complete' => 'مكتمل',
             'In Queue' => 'في قائمة الانتظار',
             'Sending' => 'جار الإرسال',
-        ),
-    'campaign_type_dom' => array(
+        ],
+    'campaign_type_dom' => [
         '' => '',
         'Event' => 'حدث',
         'Telesales' => 'مبيعات عبر الهاتف',
@@ -718,8 +716,8 @@ $app_list_strings = array(
         'Radio' => 'راديو',
         'Television' => 'تلفزيون',
         'NewsLetter' => 'نشرة إخبارية',
-    ),
-    'campaigntask_type_dom' => array(
+    ],
+    'campaigntask_type_dom' => [
         '' => '',
         'Event' => 'حدث',
         'Telesales' => 'مبيعات عبر الهاتف',
@@ -730,27 +728,27 @@ $app_list_strings = array(
         'Radio' => 'راديو',
         'Television' => 'تلفزيون',
         'NewsLetter' => 'نشرة إخبارية',
-    ),
+    ],
     'newsletter_frequency_dom' =>
-        array(
+        [
             '' => '',
             'Weekly' => 'أسبوعي',
             'Monthly' => 'شهري',
             'Quarterly' => 'فصلي',
             'Annually' => 'سنوي',
-        ),
+        ],
 
     'notifymail_sendtype' =>
-        array(
+        [
             'SMTP' => 'SMTP',
-        ),
-    'servicecall_type_dom' => array(
+        ],
+    'servicecall_type_dom' => [
         'info' => 'طلب معلومات',
         'complaint' => 'شكوى',
         'return' => 'إرجاع',
         'service' => 'طلب خدمة',
-    ),
-    'dom_cal_month_long' => array(
+    ],
+    'dom_cal_month_long' => [
         '0' => "",
         '1' => "كانون الثاني",
         '2' => "شباط",
@@ -764,8 +762,8 @@ $app_list_strings = array(
         '10' => "تشرين الأول",
         '11' => "تشرين الثاني",
         '12' => "كانون الأول",
-    ),
-    'dom_cal_month_short' => array(
+    ],
+    'dom_cal_month_short' => [
         '0' => "",
         '1' => "كانون الثاني",
         '2' => "شباط",
@@ -779,8 +777,8 @@ $app_list_strings = array(
         '10' => "تشرين الأول",
         '11' => "تشرين الثاني",
         '12' => "كانون الأول",
-    ),
-    'dom_cal_day_long' => array(
+    ],
+    'dom_cal_day_long' => [
         '0' => "",
         '1' => "الأحد",
         '2' => "الأثنين",
@@ -789,8 +787,8 @@ $app_list_strings = array(
         '5' => "الخميس",
         '6' => "الجمعة",
         '7' => "السبت",
-    ),
-    'dom_cal_day_short' => array(
+    ],
+    'dom_cal_day_short' => [
         '0' => "",
         '1' => "الأحد",
         '2' => "الأثنين",
@@ -799,32 +797,32 @@ $app_list_strings = array(
         '5' => "الخميس",
         '6' => "الجمعة",
         '7' => "السبت",
-    ),
-    'dom_meridiem_lowercase' => array(
+    ],
+    'dom_meridiem_lowercase' => [
         'am' => "ص",
         'pm' => "م"
-    ),
-    'dom_meridiem_uppercase' => array(
+    ],
+    'dom_meridiem_uppercase' => [
         'AM' => 'ص',
         'PM' => 'م'
-    ),
+    ],
 
-    'dom_report_types' => array(
+    'dom_report_types' => [
         'tabular' => 'الصفوف والأعمدة',
         'summary' => 'خلاصة',
         'detailed_summary' => 'خلاصة مع التفاصيل',
         'Matrix' => 'مصفوفة',
-    ),
+    ],
 
 
-    'dom_email_types' => array(
+    'dom_email_types' => [
         'out' => 'إرسال',
         'archived' => 'مأرشف',
         'draft' => 'مسودة',
         'inbound' => 'وارد',
         'campaign' => 'حملة إعلانية'
-    ),
-    'dom_email_status' => array(
+    ],
+    'dom_email_status' => [
         'archived' => 'مأرشف',
         'closed' => 'مغلق',
         'draft' => 'مسودة',
@@ -833,8 +831,8 @@ $app_list_strings = array(
         'sent' => 'مرسل',
         'send_error' => 'خطأ بالإرسال',
         'unread' => 'غير مقروء',
-    ),
-    'dom_textmessage_status' => array(
+    ],
+    'dom_textmessage_status' => [
         'archived' => 'مأرشف',
         'closed' => 'مغلق',
         'draft' => 'مسودة',
@@ -843,164 +841,164 @@ $app_list_strings = array(
         'sent' => 'مرسل',
         'send_error' => 'خطأ بالإرسال',
         'unread' => 'غير مقروء',
-    ),
-    'dom_email_archived_status' => array(
+    ],
+    'dom_email_archived_status' => [
         'archived' => 'مأرشف',
-    ),
-    'dom_email_openness' => array(
+    ],
+    'dom_email_openness' => [
         'open' => 'مفتوح',
         'user_closed' => 'مغلق من قبل المستخدم',
         'system_closed' => 'مغلق من قبل النظام'
-    ),
-    'dom_textmessage_openness' => array(
+    ],
+    'dom_textmessage_openness' => [
         'open' => 'مفتوح',
         'user_closed' => 'مغلق من قبل المستخدم',
         'system_closed' => 'مغلق من قبل النظام'
-    ),
-    'dom_email_server_type' => array(
+    ],
+    'dom_email_server_type' => [
         '' => '--غير محدد--',
         'imap' => 'IMAP',
-    ),
-    'dom_mailbox_type' => array(
+    ],
+    'dom_mailbox_type' => [
         'pick' => '--غير محدد--',
         'createcase' => 'إنشاء قضية',
         'bounce' => 'معالجمة الخطوات',
-    ),
-    'dom_email_distribution' => array(
+    ],
+    'dom_email_distribution' => [
         '' => '--غير محدد--',
         'direct' => 'تعيين مباشر',
         'roundRobin' => 'جولة منافسة',
         'leastBusy' => 'إقل إنشغالاً',
-    ),
-    'dom_email_distribution_for_auto_create' => array(
+    ],
+    'dom_email_distribution_for_auto_create' => [
         'roundRobin' => 'جولة منافسة',
         'leastBusy' => 'إقل إنشغالاً',
-    ),
-    'dom_email_errors' => array(
+    ],
+    'dom_email_errors' => [
         1 => 'حدد مستخدمًا واحدًا فقط عند تحديد العناصر مباشرة.',
         2 => 'يجب عليك تعيين العناصر المحددة فقط عند تحديد عناصر المباشرة.',
-    ),
-    'dom_email_bool' => array(
+    ],
+    'dom_email_bool' => [
         'bool_true' => 'نعم',
         'bool_false' => 'لا',
-    ),
-    'dom_int_bool' => array(
+    ],
+    'dom_int_bool' => [
         1 => 'نعم',
         0 => 'لا',
-    ),
-    'dom_switch_bool' => array(
+    ],
+    'dom_switch_bool' => [
         '' => '',
         'on' => 'نعم',
         'off' => 'لا',
-    ),
+    ],
 
-    'dom_email_link_type' => array(
+    'dom_email_link_type' => [
         'sugar' => 'Spice عميل الإيميل',
-        'mailto' => 'عميل الأيميل الخارجي'),
+        'mailto' => 'عميل الأيميل الخارجي'],
 
 
-    'dom_email_editor_option' => array('' => 'Default Email Format',
+    'dom_email_editor_option' => ['' => 'Default Email Format',
         'html' => 'HTML أيميل',
-        'plain' => 'إيميل نص بدون تنسيق'),
+        'plain' => 'إيميل نص بدون تنسيق'],
 
-    'schedulers_times_dom' => array(
+    'schedulers_times_dom' => [
         'not run' => 'وقت التشغيل الماضي ، لم يتم التنفيذ',
         'ready' => 'جاهز',
         'in progress' => 'جار العمل عليه',
         'failed' => 'أخفق',
         'completed' => 'مكتمل',
         'no curl' => 'لا يعمل: لاتوجد cURL متاحة',
-    ),
+    ],
 
     'scheduler_status_dom' =>
-        array(
+        [
             'Active' => 'نشط',
             'Inactive' => 'غير نشط',
-        ),
+        ],
 
     'scheduler_period_dom' =>
-        array(
+        [
             'min' => 'دقائق',
             'hour' => 'ساعات',
-        ),
+        ],
     'forecast_schedule_status_dom' =>
-        array(
+        [
             'Active' => 'نشط',
             'Inactive' => 'غير نشط',
-        ),
+        ],
     'forecast_type_dom' =>
-        array(
+        [
             'Direct' => 'مباشر',
             'Rollup' => 'تراكمي',
-        ),
+        ],
     'document_category_dom' =>
-        array(
+        [
             '' => '',
             'Marketing' => 'تسويق',
             'Knowledege Base' => 'قاعدة المعرفة',
             'Sales' => 'مبيعات',
-        ),
+        ],
 
     'document_subcategory_dom' =>
-        array(
+        [
             '' => '',
             'Marketing Collateral' => 'ضمان التسويق',
             'Product Brochures' => 'كتيبات المنتجات',
             'FAQ' => 'أسئلة المتكررة',
-        ),
+        ],
 
     'document_status_dom' =>
-        array(
+        [
             'Active' => 'نشط',
             'Draft' => 'مسودة',
             'FAQ' => 'أسئلة المتكررة',
             'Expired' => 'منتهية الصلاحية',
             'Under Review' => 'تحت المراجعة',
             'Pending' => 'قيد الانتظار',
-        ),
+        ],
     'document_template_type_dom' =>
-        array(
+        [
             '' => '',
             'mailmerge' => 'دمج البريد',
             'eula' => 'EULA',
             'nda' => 'NDA',
             'license' => 'اتفاقية الترخيص',
-        ),
+        ],
     'dom_meeting_accept_options' =>
-        array(
+        [
             'accept' => 'قبول',
             'decline' => 'رفض',
             'tentative' => 'مؤقت',
-        ),
+        ],
     'dom_meeting_accept_status' =>
-        array(
+        [
             'accept' => 'مقبول',
             'decline' => 'مرفوض',
             'tentative' => 'مؤقت',
             'none' => 'لا شيئ',
-        ),
-    'duration_intervals' => array('0' => '00',
+        ],
+    'duration_intervals' => ['0' => '00',
         '15' => '15',
         '30' => '30',
-        '45' => '45'),
+        '45' => '45'],
 
-    'repeat_type_dom' => array(
+    'repeat_type_dom' => [
         '' => 'None',
         'Daily' => 'يومي',
         'Weekly' => 'أسبوعي',
         'Monthly' => 'شهري',
         'Yearly' => 'سنوي',
-    ),
+    ],
 
-    'repeat_intervals' => array(
+    'repeat_intervals' => [
         '' => '',
         'Daily' => 'أيام',
         'Weekly' => 'أسابيع',
         'Monthly' => 'أشهر',
         'Yearly' => 'سنوات',
-    ),
+    ],
 
-    'duration_dom' => array(
+    'duration_dom' => [
         '' => 'لا شيئ',
         '900' => '15 دقيقة',
         '1800' => '30 دقيقة',
@@ -1014,41 +1012,41 @@ $app_list_strings = array(
         '172800' => '2 يوم',
         '259200' => '3 أيام',
         '604800' => '1 أسبوع',
-    ),
+    ],
 
 // deferred
     /*// QUEUES MODULE DOMs
-    'queue_type_dom' => array(
+    'queue_type_dom' => [
         'Users' => 'Users',
         'Mailbox' => 'Mailbox',
-    ),
+    ],
     */
 //prospect list type dom
     'prospect_list_type_dom' =>
-        array(
+        [
             'default' => 'إفتراضي',
             'seed' => 'بذرة',
             'exempt_domain' => 'قائمة إخماد - حسب الدومين',
             'exempt_address' => 'قائمة إخماد - حسب الأيميل',
             'exempt' => 'قائمة إخماد - حسب حقل الهوية',
             'test' => 'فحص',
-        ),
+        ],
 
     'email_settings_num_dom' =>
-        array(
+        [
             '10' => '10',
             '20' => '20',
             '50' => '50'
-        ),
+        ],
     'email_marketing_status_dom' =>
-        array(
+        [
             '' => '',
             'active' => 'نشط',
             'inactive' => 'غير نشط'
-        ),
+        ],
 
     'campainglog_activity_type_dom' =>
-        array(
+        [
             '' => '',
             'queued' => 'في قائمة الانتظار',
             'sent' => 'مرسل',
@@ -1067,59 +1065,59 @@ $app_list_strings = array(
             'blocked' => 'حظرت حسب العنوان أو الدومين',
             'error' => 'خطأ عام',
             'noemail' => 'لا يوجد عنوان بريد الكتروني'
-        ),
+        ],
 
     'campainglog_target_type_dom' =>
-        array(
+        [
             'Contacts' => 'جهات إتصال',
             'Users' => 'مستخدمين',
             'Prospects' => 'أهداف',
             'Leads' => 'جهات مهتمة',
             'Accounts' => 'حسابات',
-        ),
-    'merge_operators_dom' => array(
+        ],
+    'merge_operators_dom' => [
         'like' => 'يحتوي',
         'exact' => 'تحديداً',
         'start' => 'يبدأ بـ',
-    ),
+    ],
 
-    'custom_fields_importable_dom' => array(
+    'custom_fields_importable_dom' => [
         'true' => 'نعم',
         'false' => 'لا',
         'required' => 'مطلوب',
-    ),
+    ],
 
-    'Elastic_boost_options' => array(
+    'Elastic_boost_options' => [
         '0' => 'معطل',
         '1' => 'تحفيز متدني',
         '2' => 'تحفيز متوسط',
         '3' => 'تحفيز عال',
-    ),
+    ],
 
-    'custom_fields_merge_dup_dom' => array(
+    'custom_fields_merge_dup_dom' => [
         0 => 'معطل',
         1 => 'مفعل',
-    ),
+    ],
 
-    'navigation_paradigms' => array(
+    'navigation_paradigms' => [
         'm' => 'وحدات',
         'gm' => 'وحدات مجمّعة',
-    ),
+    ],
 
 
-    'projects_priority_options' => array(
+    'projects_priority_options' => [
         'high' => 'عال',
         'medium' => 'متوسط',
         'low' => 'منخفض',
-    ),
+    ],
 
-    'projects_status_options' => array(
+    'projects_status_options' => [
         'notstarted' => 'لم يبدأ',
         'inprogress' => 'جار العمل عليه',
         'completed' => 'مكتمل',
-    ),
+    ],
     // strings to pass to Flash charts
-    'chart_strings' => array(
+    'chart_strings' => [
         'expandlegend' => 'توسيع الأسطورة',
         'collapselegend' => 'طي الأسطورة',
         'clickfordrilldown' => 'نقر للتنقيب باتجاه الأسفل',
@@ -1134,27 +1132,27 @@ $app_list_strings = array(
         'noData' => 'البيانات غير متوفرة',
         'print' => 'طباعة',
         'pieWedgeName' => 'الأقسام',
-    ),
+    ],
     'release_status_dom' =>
-        array(
+        [
             'Active' => 'نشط',
             'Inactive' => 'غير نشط',
-        ),
+        ],
     'email_settings_for_ssl' =>
-        array(
+        [
             '0' => '',
             '1' => 'SSL',
             '2' => 'TLS',
-        ),
+        ],
     'import_enclosure_options' =>
-        array(
-            '\'' => 'علامة إقتباس مفردة (\')',
-            '"' => 'علامة إقتباس مزدوجة (")',
+        [
+            '\'' => 'علامة إقتباس مفردة (\']',
+            '"' => 'علامة إقتباس مزدوجة ("]',
             '' => 'لا شيئ',
             'other' => 'أخرى:',
-        ),
+        ],
     'import_delimeter_options' =>
-        array(
+        [
             ',' => ',',
             ';' => ';',
             '\t' => '\t',
@@ -1162,32 +1160,32 @@ $app_list_strings = array(
             ':' => ':',
             '|' => '|',
             'other' => 'أخرى:',
-        ),
+        ],
     'link_target_dom' =>
-        array(
+        [
             '_blank' => 'نافذة جديدة',
             '_self' => 'في نفس النافذة',
-        ),
+        ],
     'dashlet_auto_refresh_options' =>
-        array(
+        [
             '-1' => 'لا تقم بالتحديث التلقائي',
             '30' => 'كل 30 ثانية',
             '60' => 'كل 1 دقيقة',
             '180' => 'كل 3 دقائق',
             '300' => 'كل 5 دقائق',
             '600' => 'كل 10 دقائق',
-        ),
+        ],
     'dashlet_auto_refresh_options_admin' =>
-        array(
+        [
             '-1' => 'أبداً',
             '30' => 'كل 30 ثانية',
             '60' => 'كل 1 دقيقة',
             '180' => 'كل 3 دقائق',
             '300' => 'كل 5 دقائق',
             '600' => 'كل 10 دقائق',
-        ),
+        ],
     'date_range_search_dom' =>
-        array(
+        [
             '=' => 'يساوي',
             'not_equal' => 'لا يساوي',
             'greater_than' => 'بعد',
@@ -1203,9 +1201,9 @@ $app_list_strings = array(
             'this_year' => 'هذه السنة',
             'next_year' => 'السنة القادمة',
             'between' => 'بين',
-        ),
+        ],
     'numeric_range_search_dom' =>
-        array(
+        [
             '=' => 'يساوي',
             'not_equal' => 'لا يساوي',
             'greater_than' => 'أكبر من',
@@ -1213,61 +1211,61 @@ $app_list_strings = array(
             'less_than' => 'أقل من',
             'less_than_equals' => 'أقل من أو يساوي',
             'between' => 'بين',
-        ),
+        ],
     'lead_conv_activity_opt' =>
-        array(
+        [
             'copy' => 'نسخ',
             'move' => 'نقل',
             'donothing' => 'لا تفعل شيئ'
-        ),
-    'salesdoc_doctypes' => array(
+        ],
+    'salesdoc_doctypes' => [
         'QT' => 'اقتباس',
         'OR' => 'طلب',
         'IV' => 'فاتورة'
-    ),
-    'salesdoc_docparties' => array(
+    ],
+    'salesdoc_docparties' => [
         'I' => 'شخصي',
         'B' => 'اعمال'
-    ),
-    'salesdoc_uoms' => array(
+    ],
+    'salesdoc_uoms' => [
         'm2' => 'm²',
         'PC' => 'PC'
-    ),
-    'salesdocs_paymentterms' => array(
+    ],
+    'salesdocs_paymentterms' => [
         '7DN' => '7 أيام صافي',
         '14DN' => '14 يوم صافي',
         '30DN' => '30 يوم صافي',
         '30DN7D3' => '30 يوم صافي, 7 أيام 3%',
         '60DN' => '60 يوم صافي',
         '60DN7D3' => '60 يوم صافي, 7 أيام 3%',
-    ),
+    ],
     // currently not necessary:
     /*
-    'mediatypes_dom' => array(
+    'mediatypes_dom' => [
         1 => 'صورة',
         2 => 'صوت',
         3 => 'فيديو'
-    ),
+    ],
     */
-    'workflowftastktypes_dom' => array(
+    'workflowftastktypes_dom' => [
         'task' => 'مهمة',
         'decision' => 'قرار',
         'email' => 'أيميل',
         'system' => 'نظام',
-    ),
-    'workflowdefinition_status' => array(
+    ],
+    'workflowdefinition_status' => [
         'active' => 'نشط',
-        'active_once' => 'نشط (تشغيل مرة واحدة)',
+        'active_once' => 'نشط (تشغيل مرة واحدة]',
         'active_scheduled' => 'نشط مقرر',
-        'active_scheduled_once' => 'نشط مقرر (تشغيل مرة واحدة)',
+        'active_scheduled_once' => 'نشط مقرر (تشغيل مرة واحدة]',
         'inactive' => 'غير نشط'
-    ),
-    'workflowdefinition_precondition' => array(
+    ],
+    'workflowdefinition_precondition' => [
         'a' => 'دائماً',
         'u' => 'عند التحديث',
         'n' => 'عند إدخال جديد'
-    ),
-    'workflowdefinition_emailtypes' => array(
+    ],
+    'workflowdefinition_emailtypes' => [
         '1' => 'المستخدم مخصص إلى المهمة',
         '2' => 'المستخدم مخصص إلى السجل',
         '3' => 'المستخدم أنشأ سجل',
@@ -1276,65 +1274,65 @@ $app_list_strings = array(
         '6' => 'عنوان بريد الكتروني',
         '7' => 'روتين النظام',
         '8' => 'المستخدم creator إلى السجل'
-    ),
-    'workflowdefinition_assgintotypes' => array(
+    ],
+    'workflowdefinition_assgintotypes' => [
         '1' => 'مستخدم',
         '2' => 'مجموعة العمل',
         '3' => 'المستخدم مخصص لعنصر والد ',
         '4' => ' مدير المستخدم مخصص لعنصر والد ',
         '5' => 'روتين النظام',
         '6' => 'Creator'
-    ),
-    'workflowdefinition_conditionoperators' => array(
+    ],
+    'workflowdefinition_conditionoperators' => [
         'EQ' => '=',
         'NE' => '≠',
         'GT' => '>',
         'GE' => '≥',
         'LT' => '<',
         'LE' => '≤',
-    ),
-    'workflowtask_status' => array(
+    ],
+    'workflowtask_status' => [
         '5' => 'Scheduled',
         '10' => 'جديد',
         '20' => 'جار العمل عليه',
         '30' => 'مكتمل',
         '40' => 'مغلق من قبل النظام'
-    ),
-    'page_sizes_dom' => array(
+    ],
+    'page_sizes_dom' => [
         'A3' => 'A3',
         'A4' => 'A4',
         'A5' => 'A5',
         'A6' => 'A6'
-    ),
-    'page_orientation_dom' => array(
+    ],
+    'page_orientation_dom' => [
         'P' => 'طولي',
         'L' => 'عرضي'
-    )
-);
+    ]
+];
 
-$app_list_strings['library_type'] = array(
+$app_list_strings['library_type'] = [
     'Books' => 'كتاب',
     'Music' => 'موسيقى',
     'DVD' => 'دي في دي',
     'Magazines' => 'مجلات'
-);
+];
 $app_list_strings['project_priority_default'] = 'متوسط';
 
-$app_list_strings['project_priority_options'] = array(
+$app_list_strings['project_priority_options'] = [
     'High' => 'مرتفع',
     'Medium' => 'متوسط',
     'Low' => 'منخفض',
-);
+];
 
-$app_list_strings['kbdocument_status_dom'] = array(
+$app_list_strings['kbdocument_status_dom'] = [
     'Draft' => 'مسودة',
     'Expired' => 'منتهي',
     'In Review' => 'في المراجعة',
     'Published' => 'تم نشره',
-);
+];
 
 $app_list_strings['kbadmin_actions_dom'] =
-    array(
+    [
         '' => '--إجراءات المشرف--',
         'Create New Tag' => 'إنشاء تاغ جديد',
         'Delete Tag' => 'حذف تاغ',
@@ -1342,19 +1340,19 @@ $app_list_strings['kbadmin_actions_dom'] =
         'Move Selected Articles' => 'نقل المقالة المختارة',
         'Apply Tags On Articles' => 'تطبيق التاغ للمقالة',
         'Delete Selected Articles' => 'حذف المقالات المحددة',
-    );
+    ];
 
 $app_list_strings['kbdocument_attachment_option_dom'] =
-    array(
+    [
         '' => '',
         'some' => 'لديه مرفقات',
         'none' => 'لا شيئ',
         'mime' => 'حدد تنوع Mime',
         'name' => 'حدد إسم',
-    );
+    ];
 
 $app_list_strings['kbdocument_viewing_frequency_dom'] =
-    array(
+    [
         '' => '',
         'Top_5' => 'أعلى 5',
         'Top_10' => 'أعلى 10',
@@ -1362,18 +1360,18 @@ $app_list_strings['kbdocument_viewing_frequency_dom'] =
         'Bot_5' => 'أدنى 5',
         'Bot_10' => 'أدنى 10',
         'Bot_20' => 'أدنى 20',
-    );
+    ];
 
 $app_list_strings['kbdocument_canned_search'] =
-    array(
+    [
         'all' => 'الكل',
         'added' => 'أضيفت آخر 30 يوم',
         'pending' => 'في انتظار موافقتي',
         'updated' => 'تحديث آخر 30 يوما',
         'faqs' => 'أسئلة وأجوبة',
-    );
+    ];
 $app_list_strings['kbdocument_date_filter_options'] =
-    array(
+    [
         '' => '',
         'on' => 'عند',
         'before' => 'قبل',
@@ -1390,9 +1388,9 @@ $app_list_strings['kbdocument_date_filter_options'] =
         'this_year' => 'هذه السنة',
         'next_year' => 'السنة القادمة',
         'isnull' => 'باطل',
-    );
+    ];
 
-$app_list_strings['countries_dom'] = array(
+$app_list_strings['countries_dom'] = [
     '' => '',
     'ABU DHABI' => 'أبو ظبي',
     'ADEN' => 'عدن',
@@ -1446,7 +1444,7 @@ $app_list_strings['countries_dom'] = array(
     'CHILE' => 'تشيلي',
     'CHINA' => 'الصين',
     'CHRISTMAS ISLAND' => 'جزيرة عيد الميلاد',
-    'COCOS (KEELING) ISLAND' => 'جزيرة كوكوس (كيلينغ)',
+    'COCOS (KEELING] ISLAND' => 'جزيرة كوكوس (كيلينغ]',
     'COLOMBIA' => 'كولومبيا',
     'COMORO ISLANDS' => 'جزر القمر',
     'CONGO' => 'الكونغو',
@@ -1629,38 +1627,38 @@ $app_list_strings['countries_dom'] = array(
     'ZAIRE' => 'زائير',
     'ZAMBIA' => 'زامبيا',
     'ZIMBABWE' => 'زيمبابوي',
-);
+];
 
-$app_list_strings['charset_dom'] = array(
-    'BIG-5' => 'BIG-5 (تايوان وهونج كونج)',
-    'CP1251' => 'CP1251 (MS السيريلية)',
-    'CP1252' => 'CP1252 (MS أوروبا الغربية والولايات المتحدة)',
-    'EUC-CN' => 'EUC-CN (GB2312 الصينية المبسطة)',
-    'EUC-JP' => 'EUC-JP (يونكس يابانية)',
-    'EUC-KR' => 'EUC-KR (الكورية)',
-    'EUC-TW' => 'EUC-TW (تايواني)',
-    'ISO-2022-JP' => 'ISO-2022-JP (اليابانية)',
-    'ISO-2022-KR' => 'ISO-2022-KR (الكورية)',
-    'ISO-8859-1' => 'ISO-8859-1 (أوروبا الغربية والولايات المتحدة)',
-    'ISO-8859-2' => 'ISO-8859-2 (وسط وشرق أوروبا)',
-    'ISO-8859-3' => "ISO-8859-3 (اللاتينية 3)",
-    'ISO-8859-4' => 'ISO-8859-4 (اللاتينية 4)',
-    'ISO-8859-5' => 'ISO-8859-5 (السيريلية)',
-    'ISO-8859-6' => 'ISO-8859-6 (العربية)',
-    'ISO-8859-7' => 'ISO-8859-7 (اليونانية)',
-    'ISO-8859-8' => 'ISO-8859-8 (العبرية)',
-    'ISO-8859-9' => 'ISO-8859-9 (اللاتينية 5)',
-    'ISO-8859-10' => 'ISO-8859-10 (اللاتينية 6)',
-    'ISO-8859-13' => 'ISO-8859-13 (اللاتينية 7)',
-    'ISO-8859-14' => 'ISO-8859-14 (اللاتينية 8)',
-    'ISO-8859-15' => 'ISO-8859-15 (اللاتينية 9)',
-    'KOI8-R' => 'KOI8-R (السيريلية الروسية)',
-    'KOI8-U' => 'KOI8-U (السيريلية الأوكرانية)',
-    'SJIS' => 'SJIS (MS اليابانية)',
+$app_list_strings['charset_dom'] = [
+    'BIG-5' => 'BIG-5 (تايوان وهونج كونج]',
+    'CP1251' => 'CP1251 (MS السيريلية]',
+    'CP1252' => 'CP1252 (MS أوروبا الغربية والولايات المتحدة]',
+    'EUC-CN' => 'EUC-CN (GB2312 الصينية المبسطة]',
+    'EUC-JP' => 'EUC-JP (يونكس يابانية]',
+    'EUC-KR' => 'EUC-KR (الكورية]',
+    'EUC-TW' => 'EUC-TW (تايواني]',
+    'ISO-2022-JP' => 'ISO-2022-JP (اليابانية]',
+    'ISO-2022-KR' => 'ISO-2022-KR (الكورية]',
+    'ISO-8859-1' => 'ISO-8859-1 (أوروبا الغربية والولايات المتحدة]',
+    'ISO-8859-2' => 'ISO-8859-2 (وسط وشرق أوروبا]',
+    'ISO-8859-3' => "ISO-8859-3 (اللاتينية 3]",
+    'ISO-8859-4' => 'ISO-8859-4 (اللاتينية 4]',
+    'ISO-8859-5' => 'ISO-8859-5 (السيريلية]',
+    'ISO-8859-6' => 'ISO-8859-6 (العربية]',
+    'ISO-8859-7' => 'ISO-8859-7 (اليونانية]',
+    'ISO-8859-8' => 'ISO-8859-8 (العبرية]',
+    'ISO-8859-9' => 'ISO-8859-9 (اللاتينية 5]',
+    'ISO-8859-10' => 'ISO-8859-10 (اللاتينية 6]',
+    'ISO-8859-13' => 'ISO-8859-13 (اللاتينية 7]',
+    'ISO-8859-14' => 'ISO-8859-14 (اللاتينية 8]',
+    'ISO-8859-15' => 'ISO-8859-15 (اللاتينية 9]',
+    'KOI8-R' => 'KOI8-R (السيريلية الروسية]',
+    'KOI8-U' => 'KOI8-U (السيريلية الأوكرانية]',
+    'SJIS' => 'SJIS (MS اليابانية]',
     'UTF-8' => 'UTF-8',
-);
+];
 
-$app_list_strings['timezone_dom'] = array(
+$app_list_strings['timezone_dom'] = [
 
     'Africa/Algiers' => 'أفريقيا / الجزائر',
     'Africa/Luanda' => 'إفريقيا / لواندا',
@@ -2037,9 +2035,9 @@ $app_list_strings['timezone_dom'] = array(
     'America/Port_of_Spain' => 'أمريكا / بورت أوف سبين',
     'America/Montevideo' => 'أمريكا / مونتيفيديو',
     'America/Caracas' => 'أمريكا / كاراكاس',
-);
+];
 
-$app_list_strings['eapm_list'] = array(
+$app_list_strings['eapm_list'] = [
     'Spice' => 'Spice',
     'WebEx' => 'WebEx',
     'GoToMeeting' => 'GoToMeeting',
@@ -2048,84 +2046,84 @@ $app_list_strings['eapm_list'] = array(
     'Box' => 'Box.net',
     'Facebook' => 'فيسبوك',
     'Twitter' => 'تويتر',
-);
-$app_list_strings['eapm_list_import'] = array(
+];
+$app_list_strings['eapm_list_import'] = [
     'Google' => 'جهات إتصال غوغل',
-);
-$app_list_strings['eapm_list_documents'] = array(
+];
+$app_list_strings['eapm_list_documents'] = [
     'Google' => 'غوغل درايف',
-);
-$app_list_strings['token_status'] = array(
+];
+$app_list_strings['token_status'] = [
     1 => 'الطلب',
     2 => 'الوصول',
     3 => 'غير صالح',
-);
+];
 
-$app_list_strings['emailTemplates_type_list'] = array(
+$app_list_strings['emailTemplates_type_list'] = [
     '' => '',
     'campaign' => 'حملة إعلانية',
     'email' => 'أيميل',
     'bean2mail' => 'أرسل المدخل عبر البريد الألكتروني',
     'sendCredentials' => 'إرسال بيانات الاعتماد',
     'sendTokenForNewPassword' => 'إرسال الرمز المميز ، عند فقدان كلمة المرور'
-);
+];
 
-$app_list_strings ['emailTemplates_type_list_campaigns'] = array(
+$app_list_strings ['emailTemplates_type_list_campaigns'] = [
     '' => '',
     'campaign' => 'حملة إعلانية',
-);
+];
 
-$app_list_strings ['emailTemplates_type_list_no_workflow'] = array(
+$app_list_strings ['emailTemplates_type_list_no_workflow'] = [
     '' => '',
     'campaign' => 'حملة إعلانية',
     'email' => 'إيميل',
-);
-$app_strings ['documentation'] = array(
+];
+$app_strings ['documentation'] = [
     'LBL_DOCS' => 'الوثائق',
     'ULT' => '02_Spice النهائي',
     'ENT' => '02_Spice مؤسساتي',
     'CORP' => '03_Spice التشاركي',
     'PRO' => '04_Spice الأحترافي',
     'COM' => '05_Spice نسخة المجتمع'
-);
+];
 
 /** KReporter **/
-$app_list_strings['kreportstatus'] = array(
+$app_list_strings['kreportstatus'] = [
     '1' => 'مسودة',
     '2' => 'إصدار محدود',
     '3' => 'إصدار عام'
-);
+];
 
-$app_list_strings['report_type_dom'] = array(
+$app_list_strings['report_type_dom'] = [
     'standard' => 'افتراضي',
     'admin' => 'اداري',
     'system' => 'نظام'
-);
+];
 
 /** Proposals */
-$app_list_strings['proposalstatus_dom'] = array(
+$app_list_strings['proposalstatus_dom'] = [
     '1' => 'مسودة',
     '2' => 'تم إرساله',
     '3' => 'تمت الموافقة عليه',
     '4' => 'تم رفضه',
-);
+];
 
-$app_list_strings['crstatus_dom'] = array(
+$app_list_strings['crstatus_dom'] = [
     '0' => 'تم إنشائه',
     '1' => 'جار العمل عليه',
     '2' => 'جار تجربته',
     '3' => 'تم إكماله',
     '4' => 'تم إلغائه/تأجيله'
-);
+];
 
-$app_list_strings['crtype_dom'] = array(
+$app_list_strings['crtype_dom'] = [
     '0' => 'خلل',
     '1' => 'طلب خاصية جديدة',
     '2' => 'طلب تغيير',
     '3' => 'إصلاح فوري'
-);
+];
 
-$app_list_strings['rpstatus_dom'] = array(
+$app_list_strings['rpstatus_dom'] = [
     '0' => 'تم إنشائه',
     '1' => 'جار العمل عليه',
     '2' => 'تم إكماله',
@@ -2134,17 +2132,17 @@ $app_list_strings['rpstatus_dom'] = array(
     '5' => 'تم جلبه',
     '6' => 'تم نشره',
     '7' => 'تم إصداره'
-);
+];
 
-$app_list_strings['rptype_dom'] = array(
+$app_list_strings['rptype_dom'] = [
     '0' => 'تصحيح',
     '1' => 'باقة خاصية',
     '2' => 'إصدار',
     '3' => 'باقة سوفتوير',
     '4' => 'مستورد'
-);
+];
 
-$app_list_strings['systemdeploymentpackage_repair_dom'] = array(
+$app_list_strings['systemdeploymentpackage_repair_dom'] = [
     'repairDatabase' => 'إصلاح قاعدة البيانات',
     'rebuildExtensions' => 'إعادة بناء ملحقات',
     'clearTpls' => 'تنظيف القوالب',
@@ -2157,96 +2155,96 @@ $app_list_strings['systemdeploymentpackage_repair_dom'] = array(
     'rebuildAuditTables' => 'إعادة بناء جداول التدقيق',
     'clearSearchCache' => 'تنظيف تغذية ذاكرة التخزين المؤقت للبحث',
     'clearAll' => 'تنظيف الكل',
-);
+];
 
-//include('modules/Administration/');
-$app_list_strings['systemdeploymentpackage_repair_modules_dom'] = array(
+//include('modules/Administration/'];
+$app_list_strings['systemdeploymentpackage_repair_modules_dom'] = [
     translate('LBL_ALL_MODULES', 'Administration') => translate('LBL_ALL_MODULES', 'الإدارة')
-);
+];
 foreach ($beanList as $module => $bean) {
     $app_list_strings['systemdeploymentpackage_repair_modules_dom'][$module] = $module;
 }
 
-$app_list_strings['mwstatus_dom'] = array(
+$app_list_strings['mwstatus_dom'] = [
     'planned' => 'تم التخطيط له',
     'active' => 'نشط',
     'completed' => 'مكتمل'
-);
+];
 
-$app_list_strings['kdeploymentsystems_type_dom'] = array(
+$app_list_strings['kdeploymentsystems_type_dom'] = [
     "repo" => "مستودع البرمجيات",
     "ext" => "خارجي",
     "dev" => "تطوير",
     "test" => "تجربة",
     "qc" => "جودة",
     "prod" => "إنتاج"
-);
+];
 
 //EventRegistrations module
-$app_list_strings['eventregistration_status_dom'] = array(
+$app_list_strings['eventregistration_status_dom'] = [
     'interested' => 'غير متاح',
     'tentative' => 'مؤقت',
     'registered' => 'مسجل',
     'unregistered' => 'غير مسجل',
     'attended' => 'تم حضوره',
     'notattended' => 'لم يتم حضوره'
-);
+];
 
 //ProjectWBSs module
-$app_list_strings['wbs_status_dom'] = array(
+$app_list_strings['wbs_status_dom'] = [
     '0' => 'تم إنشائه',
     '1' => 'بدأ به',
     '2' => 'تم إكماله'
-);
+];
 //Projectactivities
-$app_list_strings['projects_activity_types_dom'] = array(
+$app_list_strings['projects_activity_types_dom'] = [
     'consulting' => 'استشارات',
     'dev' => 'تطوير',
     'support' => 'دعم'
-);
-$app_list_strings['projects_activity_levels_dom'] = array(
+];
+$app_list_strings['projects_activity_levels_dom'] = [
     'standard' => 'إفتراضي',
     'senior' => 'متقدّم',
-);
+];
 //Projectmilestones
-$app_list_strings['projects_milestone_status_dom'] = array(
+$app_list_strings['projects_milestone_status_dom'] = [
     'not startet' => 'إفتراضي',
     'senior' => 'متقدّم',
-);
-$app_list_strings['projects_activity_status_dom'] = array(
+];
+$app_list_strings['projects_activity_status_dom'] = [
     'created' => 'تم إنشائه',
     'billed' => 'مفوتر',
-);
+];
 
 //ProductAttributes
-$app_list_strings['productattributedatatypes_dom'] = array(
+$app_list_strings['productattributedatatypes_dom'] = [
     'di' => 'قائمة منسدلة',
     'f' => 'مربع إختيار',
     'n' => 'رقمي',
     's' => 'إختيار متعدد',
     'vc' => 'نصّي'
-);
-$app_list_strings['productattribute_usage_dom'] = array(
+];
+$app_list_strings['productattribute_usage_dom'] = [
     'required' => 'مطلوب',
     'optional' => 'إختياري',
     'none' => 'غير مدخل',
     'hidden' => 'مخفي'
-);
+];
 
 //AccountCCDetails
-$app_list_strings['abccategory_dom'] = array(
+$app_list_strings['abccategory_dom'] = [
     '' => '',
     'A' => 'أ',
     'B' => 'ب',
     'C' => 'س',
-);
+];
 
-$app_list_strings['logicoperators_dom'] = array(
+$app_list_strings['logicoperators_dom'] = [
     'and' => 'و',
     'or' => 'أو',
-);
+];
 
-$app_list_strings['comparators_dom'] = array(
+$app_list_strings['comparators_dom'] = [
     'equal' => 'يساوي',
     'unequal' => 'لا يساوي',
     'greater' => 'أكبر',
@@ -2257,17 +2255,17 @@ $app_list_strings['comparators_dom'] = array(
     'empty' => 'فارغ',
     'regex' => 'matches regex',
     'notregex' => 'does not match regex'
-);
+];
 
-$app_list_strings['mailboxes_imap_pop3_protocol_dom'] = array(
+$app_list_strings['mailboxes_imap_pop3_protocol_dom'] = [
     'imap' => 'IMAP',
     'pop3' => 'POP3',
-);
+];
 
-$app_list_strings['mailboxes_imap_pop3_encryption_dom'] = array(
+$app_list_strings['mailboxes_imap_pop3_encryption_dom'] = [
     'ssl_enable' => 'تفعيل SSL',
     'ssl_disable' => 'تعطيل SSL'
-);
+];
 
 $app_list_strings['mailboxes_smtp_encryption_dom'] = [
     'none' => 'غير مشفر',
@@ -2275,22 +2273,22 @@ $app_list_strings['mailboxes_smtp_encryption_dom'] = [
     'tls' => 'TLS/STARTTLS',
 ];
 
-$app_strings = array_merge($app_strings, $addAppStrings);
+$app_strings = array_merge($app_strings, $addAppString);
 
 if (file_exists('modules/ServiceOrders/ServiceOrder.php')) {
-    $app_list_strings['serviceorder_status_dom'] = array(
+    $app_list_strings['serviceorder_status_dom'] = [
         'new' => 'جديد',
         'planned' => 'تم التخطيط له',
         'completed' => 'مكتمل',
         'cancelled' => 'ملغى',
         'signed' => 'تم توقيعه',
-    );
+    ];
     $app_list_strings['parent_type_display']['ServiceOrders'] = 'عقود الخدمة';
     $app_list_strings['record_type_display']['ServiceOrders'] = 'عقد الخدمة';
     $app_list_strings['record_type_display_notes']['ServiceOrders'] = 'عقود الخدمة';
 }
 if (file_exists('modules/ServiceTickets/ServiceTicket.php')) {
-    $app_list_strings['serviceticket_status_dom'] = array(
+    $app_list_strings['serviceticket_status_dom'] = [
         'New' => 'جديد',
         'In Process' => 'جار العمل عليه',
         'Assigned' => 'تم تعيينه',
@@ -2298,45 +2296,45 @@ if (file_exists('modules/ServiceTickets/ServiceTicket.php')) {
         'Pending Input' => 'في انتظار المدخل',
         'Rejected' => 'مرفوض',
         'Duplicate' => 'مكرر',
-    );
-    $app_list_strings['serviceticket_class_dom'] = array(
+    ];
+    $app_list_strings['serviceticket_class_dom'] = [
         'P1' => 'عال',
         'P2' => 'متوسط',
         'P3' => 'منخفض',
-    );
-    $app_list_strings['serviceticket_resaction_dom'] = array(
+    ];
+    $app_list_strings['serviceticket_resaction_dom'] = [
         '' => '',
         'credit' => 'إصدار مذكرة الائتمان',
         'replace' => 'إرسال بديل',
         'return' => 'إعادة البضائع'
-    );
+    ];
     $app_list_strings['parent_type_display']['ServiceTickets'] = 'تذاكر الخدمة';
     $app_list_strings['record_type_display']['ServiceTickets'] = 'تذاكر الخدمة';
     $app_list_strings['record_type_display_notes']['ServiceTickets'] = 'تذاكر الخدمة';
 
 }
 if (file_exists('modules/ServiceFeedbacks/ServiceFeedback.php')) {
-    $app_list_strings['service_satisfaction_scale_dom'] = array(
+    $app_list_strings['service_satisfaction_scale_dom'] = [
         1 => '1 - غير راض',
         2 => '2',
         3 => '3',
         4 => '4',
         5 => '5 - سعيد',
-    );
-    $app_list_strings['servicefeedback_status_dom'] = array(
+    ];
+    $app_list_strings['servicefeedback_status_dom'] = [
         'sent' => 'تم إرساله',
         'completed' => 'مكتمل',
-    );
-    $app_list_strings['servicefeedback_parent_type_display'] = array(
+    ];
+    $app_list_strings['servicefeedback_parent_type_display'] = [
         'ServiceTickets' => 'تذاكر الخدمة',
         'ServiceOrders' => 'طلبات الخدمة',
         'ServiceCalls' => 'إتصالات الخدمة',
-    );
-    $app_list_strings['record_type_display'] = array(
+    ];
+    $app_list_strings['record_type_display'] = [
         'ServiceTickets' => 'تذاكر الخدمة',
         'ServiceOrders' => 'طلبات الخدمة',
         'ServiceCalls' => 'إتصالات الخدمة',
-    );
+    ];
 }
 
 $app_list_strings['mailboxes_transport_dom'] = [
@@ -2351,11 +2349,9 @@ $app_list_strings['mailboxes_outbound_comm'] = [
     'no'         => 'غير متاح',
     'single'     => 'فقط أيميلات مفردة',
     'mass'       => 'أيميلات مفردة وكمية',
-    'single_sms' => 'الرسائل النصية الفردية فقط (SMS)',
-    'mass_sms'   => 'الرسائل النصية الفردية والكمية (SMS)',
+    'single_sms' => 'الرسائل النصية الفردية فقط (SMS]',
+    'mass_sms'   => 'الرسائل النصية الفردية والكمية (SMS]',
 ];
-
-include('include/SpiceBeanGuides/SpiceBeanGuideLanguage.php');
 
 $app_list_strings['output_template_types'] = [
     ''      => '',
@@ -2373,8 +2369,8 @@ $app_list_strings['languages'] = [
 
 $app_list_strings['spiceaclobjects_types_dom'] = [
     '0' => 'إفتراضي',
-    '1' => 'تقييد (الكل)',
-    '2' => 'استبعاد (الكل)',
+    '1' => 'تقييد (الكل]',
+    '2' => 'استبعاد (الكل]',
     '3' => 'نشاط محدود'
 ];
 
@@ -2403,17 +2399,17 @@ $app_list_strings['textmessage_delivery_status'] = [
     'transmitting' => 'Transmitting',
 ];
 
-$app_list_strings['event_status_dom'] = array(
+$app_list_strings['event_status_dom'] = [
     'planned' => 'مخطط له',
     'active' => 'نشط',
     'canceled' => 'ملغى'
-);
+];
 
-$app_list_strings['event_category_dom'] = array(
+$app_list_strings['event_category_dom'] = [
     'presentations' => 'عروض',
     'seminars' => 'ندوات',
     'conferences' => 'مؤتمرات'
-);
+];
 
 $app_list_strings['inquiry_type'] = [
     'normal' => 'عادي',
@@ -2424,9 +2420,9 @@ $app_list_strings['inquiry_type'] = [
 
 $app_list_strings['inquiry_status'] = [
     'normal_new' => 'جديد',
-    'complaint_new' => 'جديد (اعتراض)',
-    'catalog_new' => 'جديد (كتالوج)',
-    'booking_new' => 'جديد (حجز)',
+    'complaint_new' => 'جديد (اعتراض]',
+    'catalog_new' => 'جديد (كتالوج]',
+    'booking_new' => 'جديد (حجز]',
     'booking_processing' => 'قيد الانجاز',
     'booking_offered' => 'تم تقديمه',
     'converted' => 'تم تحويله',

@@ -1,15 +1,16 @@
 <?php
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 //dictionary global variable => class name als key
-$dictionary['MailboxProcessor'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['MailboxProcessor'] = [
     'table' => 'mailbox_processors',
     'comment' => 'Mailbox Processor Module',
     'audited' =>  true,
     'duplicate_merge' =>  false,
     'unified_search' =>  false,
 
-    'fields' => array(
+    'fields' => [
         'id' => [
             'name'			=> 'id',
             'type'			=> 'id',
@@ -74,15 +75,15 @@ $dictionary['MailboxProcessor'] = array(
             'source' => 'non-db',
             'default' => true
         ],
-    ),
+    ],
 
-    'relationships' => array(
+    'relationships' => [
 
-    ),
+    ],
 
-    'indices' => array(
+    'indices' => [
 
-    )
-);
+    ]
+];
 
 VardefManager::createVardef('MailboxProcessors', 'MailboxProcessor', ['default']);

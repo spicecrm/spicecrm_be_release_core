@@ -1,8 +1,7 @@
 <?php
+namespace SpiceCRM\modules\AccountVATIDs;
 
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
-
-require_once('data/SugarBean.php');
+use SpiceCRM\data\SugarBean;
 
 class AccountVATID extends SugarBean
 {

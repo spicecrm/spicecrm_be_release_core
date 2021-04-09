@@ -26,80 +26,103 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************/
-use SpiceCRM\modules\SpiceACLProfiles\SpiceACLProfilesRESTHandler;
 use SpiceCRM\includes\RESTManager;
+use SpiceCRM\modules\SpiceACLProfiles\KREST\controllers\SpiceACLProfilesController;
+
+/**
+ * get a Rest Manager Instance
+ */
 $RESTManager = RESTManager::getInstance();
-$spiceACLProfilesRESTHandler = new SpiceACLProfilesRESTHandler();
 
+/**
+ * register the Extension
+ */
 $RESTManager->registerExtension('aclmanager', '1.0');
-$RESTManager->adminAccessOnly('/spiceaclprofiles/*');
 
-$RESTManager->app->group('/spiceaclprofiles', function () use ($spiceACLProfilesRESTHandler) {
-    $this->get('/foruser/{userrid}', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-        echo json_encode($spiceACLProfilesRESTHandler->getUserProfiles($args['userrid']));
-    });
-    $this->group('/{id}', function () use ($spiceACLProfilesRESTHandler) {
-        $this->post('/activate', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-            echo json_encode($spiceACLProfilesRESTHandler->activateProfile($args['id']));
-        });
-        $this->post('/deactivate', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-            echo json_encode($spiceACLProfilesRESTHandler->deactivateProfile($args['id']));
-        });
-        $this->group('/aclobjects', function () use ($spiceACLProfilesRESTHandler) {
-            $this->get('', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-                echo json_encode($spiceACLProfilesRESTHandler->getProfileObjects($args['id']));
-            });
-            $this->post('/{objectid}', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLProfilesRESTHandler->addProfileObject($args['id'], $args['objectid']));
-            });
-            $this->delete('/{objectid}', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLProfilesRESTHandler->deleteProfileObject($args['id'], $args['objectid']));
-            });
-        });
-        $this->group('/aclusers', function () use ($spiceACLProfilesRESTHandler) {
-            $this->get('', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-                echo json_encode($spiceACLProfilesRESTHandler->getProfileUsers($args['id']));
-            });
-            $this->post('', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-                $postBody = $req->getParsedBody();
-                echo json_encode($spiceACLProfilesRESTHandler->addProfileUsers($args['id'], $postBody['userids']));
-            });
-            $this->group('/{userid}', function () use ($spiceACLProfilesRESTHandler) {
-                $this->post('', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-                    $postParams = json_decode($_POST, true);
-                    echo json_encode($spiceACLProfilesRESTHandler->addProfileUser($args['id'], $args['userid']));
-                });
-                $this->delete('', function ($req, $res, $args) use ($spiceACLProfilesRESTHandler) {
-                    $postParams = json_decode($_POST, true);
-                    echo json_encode($spiceACLProfilesRESTHandler->deleteProfileUser($args['id'], $args['userid']));
-                });
-            });
-        });
-    });
-});
 
-/*
-$app->group('/authusers', function () use ($app, $spiceACLProfilesRESTHandler) {
-    $app->get('/', function () use ($app, $spiceACLProfilesRESTHandler) {
-        $getParams = $_GET;
-        echo json_encode($spiceACLProfilesRESTHandler->getAuthUsers($getParams));
-    });
-    $app->group('/{id}', function () use ($app, $spiceACLProfilesRESTHandler) {
-        $app->group('/authprofiles', function () use ($app, $spiceACLProfilesRESTHandler) {
-            $app->get('', function ($req, $res, $args) use ($app, $spiceACLProfilesRESTHandler) {
-                echo json_encode($spiceACLProfilesRESTHandler->getAuthUserProfiles($args['id']));
-            });
-            $app->post('/{profileid}', function ($req, $res, $args) use ($app, $spiceACLProfilesRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLProfilesRESTHandler->addAuthUserProfile($args['id'], $args['profileid']));
-            });
-            $app->delete('/{profileid}', function ($req, $res, $args) use ($app, $spiceACLProfilesRESTHandler) {
-                $postParams = json_decode($_POST, true);
-                echo json_encode($spiceACLProfilesRESTHandler->deleteAuthUserProfile($args['id'], $args['profileid']));
-            });
-        });
-    });
-});
-*/
+$routes = [
+
+    [
+        'method'      => 'get',
+        'route'       => '/spiceaclprofiles/foruser/{userrid}',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclProfilesForUser',
+        'description' => 'Get SpiceACL Profiles for user',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclprofiles/{id}/activate',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclProfilesActivate',
+        'description' => 'SpiceACL Profile Activate',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclprofiles/{id}/deactivate',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclProfilesDeactivate',
+        'description' => 'SpiceACL Profile Deactivate',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/spiceaclprofiles/{id}/aclobjects',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclProfilesObjects',
+        'description' => 'SpiceACL Profile Objects',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclprofiles/{id}/aclobjects/{objectid}',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclProfilesObject',
+        'description' => 'SpiceACL Profile Object',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/spiceaclprofiles/{id}/aclobjects/{objectid}',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclProfilesObjectDelete',
+        'description' => 'SpiceACL Profile Object Delete',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'get',
+        'route'       => '/spiceaclprofiles/{id}/aclusers',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclProfilesUsers',
+        'description' => 'SpiceACL Profile Users',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclprofiles/{id}/aclusers',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclAddProfilesUsers',
+        'description' => 'SpiceACL Add Profile Users',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'post',
+        'route'       => '/spiceaclprofiles/{id}/aclusers/{userid}',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclAddProfilesUser',
+        'description' => 'SpiceACL Add Profile User',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+    [
+        'method'      => 'delete',
+        'route'       => '/spiceaclprofiles/{id}/aclusers/{userid}',
+        'class'       => SpiceACLProfilesController::class,
+        'function'    => 'spiceAclDeleteProfilesUser',
+        'description' => 'SpiceACL Delete Profile User',
+        'options'     => ['noAuth' => false, 'adminOnly' => true],
+    ],
+
+];
+
+$RESTManager->registerRoutes($routes);

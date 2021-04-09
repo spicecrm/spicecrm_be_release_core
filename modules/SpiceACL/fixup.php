@@ -1,5 +1,10 @@
 <?php
-global $db, $current_user;
+
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\authentication\AuthenticationController;
+
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
+$db = DBManagerFactory::getInstance();
 
 if(!$current_user->is_admin) die('you are not an admin');
 

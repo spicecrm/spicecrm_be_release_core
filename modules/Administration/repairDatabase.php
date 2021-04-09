@@ -1,6 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry)
-	die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -36,8 +34,15 @@ if (!defined('sugarEntry') || !sugarEntry)
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\VardefManager;
+use SpiceCRM\includes\TimeDate;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
-global $current_user, $moduleList;
+global $moduleList;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
 set_time_limit(3600);
 
 
@@ -70,16 +75,16 @@ if (is_admin($current_user) || isset ($from_sync_client) || is_admin_for_any_mod
 		}
 		elseif (isset ($_POST['raction']) && strtolower($_POST['raction']) == "execute") {
 			$sql = str_replace(
-				array(
+				[
 					"\n",
 					'&#039;',
                     '&quot;'
-				),
-				array(
+                ],
+				[
 					'',
 					"'",
                     '"'
-				),
+                ],
 				preg_replace('#(/\*.+?\*/\n*)#', '', $_POST['sql'])
 			);
 			foreach (explode(";", $sql) as $stmt) {
@@ -96,7 +101,7 @@ if (is_admin($current_user) || isset ($from_sync_client) || is_admin_for_any_mod
 
 		if (!$export && empty ($_REQUEST['repair_silent'])) {
 			if ( empty($hideModuleMenu) )
-		        echo getClassicModuleTitle($mod_strings['LBL_REPAIR_DATABASE'], array($mod_strings['LBL_REPAIR_DATABASE']), true);
+		        echo getClassicModuleTitle($mod_strings['LBL_REPAIR_DATABASE'], [$mod_strings['LBL_REPAIR_DATABASE']], true);
 			echo "<h1 id=\"rdloading\">{$mod_strings['LBL_REPAIR_DATABASE_PROCESSING']}</h1>";
 			ob_flush();
 		}
@@ -104,7 +109,7 @@ if (is_admin($current_user) || isset ($from_sync_client) || is_admin_for_any_mod
 		$sql = '';
 
 		VardefManager::clearVardef();
-		$repairedTables = array();
+		$repairedTables = [];
 
 		foreach ($moduleList as $module) {
 

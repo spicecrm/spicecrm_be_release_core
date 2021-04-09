@@ -2,6 +2,8 @@
 namespace SpiceCRM\includes\utils;
 
 use SpiceCRM\includes\ErrorHandlers\TooManyRequestsException;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 class RESTRateLimiter {
 
@@ -11,14 +13,14 @@ class RESTRateLimiter {
     private static $myRules = null; # Those rules which are to be applied to the request (maybe affected by the user and/or the http method).
 
     static function getUserId() {
-        return isset( $GLOBALS['current_user']->id ) ? $GLOBALS['current_user']->id : null;
+        return isset( AuthenticationController::getInstance()->getCurrentUser()->id ) ? AuthenticationController::getInstance()->getCurrentUser()->id : null;
     }
 
     static function determineMyRules( $userId, $httpMethod ) {
 
         # Get the rule definitions and the rules from config.php:
-        $ruleDefinitions = &$GLOBALS['sugar_config']['krest']['rateLimiting']['ruleDefinitions'];
-        $rules = &$GLOBALS['sugar_config']['krest']['rateLimiting']['rules'];
+        $ruleDefinitions = &SpiceConfig::getInstance()->config['krest']['rateLimiting']['ruleDefinitions'];
+        $rules = &SpiceConfig::getInstance()->config['krest']['rateLimiting']['rules'];
 
         $kasimir = isset( $rulesApplied[$userId] ) ? $userId : '*';
 
@@ -31,7 +33,7 @@ class RESTRateLimiter {
 
     # Load the user data from the user file.
     static function loadData( $userId ) {
-        if ( self::$fp = fopen( session_save_path().'/rali_'.$GLOBALS['sugar_config']['unique_key'].'_'.$userId, 'c+' )) {#} and flock( self::$fp, LOCK_EX )) {
+        if ( self::$fp = fopen( session_save_path().'/rali_'. SpiceConfig::getInstance()->config['unique_key'].'_'.$userId, 'c+' )) {#} and flock( self::$fp, LOCK_EX )) {
             self::$data = unserialize( fgets( self::$fp ));
         } else {
             throw new TooManyRequestsException();

@@ -33,9 +33,12 @@
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+namespace SpiceCRM\includes\SugarObjects\templates\person;
 
-
-require_once('include/SugarObjects/templates/basic/Basic.php');
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\templates\basic\Basic;
+use SpiceCRM\includes\Localization\Localization;
 
 class Person extends Basic
 {
@@ -53,7 +56,7 @@ class Person extends Basic
     public function __construct()
     {
         parent::__construct();
-        $this->emailAddress = new SugarEmailAddress();
+        $this->emailAddress = BeanFactory::getBean('EmailAddresses');
     }
 
     /**
@@ -99,7 +102,9 @@ class Person extends Basic
     public function fill_in_relationship_fields()
     {
         parent::fill_in_relationship_fields();
-        $this->emailAddress->handleLegacyRetrieve($this);
+        if($this->emailAddress) {
+            $this->emailAddress->handleLegacyRetrieve($this);
+        }
     }
 
     /**
@@ -109,6 +114,9 @@ class Person extends Basic
     public function _create_proper_name_field()
     {
         global $locale, $app_list_strings;
+        if (empty($locale)) {
+            $locale = new Localization();
+        }
 
         // Bug# 46125 - make first name, last name, salutation and title of Contacts respect field level ACLs
         $first_name = "";
@@ -190,12 +198,15 @@ class Person extends Basic
         }
 
         $ori_in_workflow = empty($this->in_workflow) ? false : true;
-        $this->emailAddress->handleLegacySave($this, $this->module_dir);
-        // bug #39188 - store emails state before workflow make any changes
-        $this->emailAddress->stash($this->id, $this->module_dir);
+        if($this->emailAddress) {
+            $this->emailAddress->handleLegacySave($this, $this->module_dir);
+            // bug #39188 - store emails state before workflow make any changes
+            $this->emailAddress->stash($this->id, $this->module_dir);
+        }
+
         parent::save($check_notify, $fts_index_bean);
         // $this->emailAddress->evaluateWorkflowChanges($this->id, $this->module_dir);
-        $override_email = array();
+        $override_email = [];
         if (!empty($this->email1_set_in_workflow)) {
             $override_email['emailAddress0'] = $this->email1_set_in_workflow;
         }
@@ -205,8 +216,8 @@ class Person extends Basic
         if (!isset($this->in_workflow)) {
             $this->in_workflow = false;
         }
-        if ($ori_in_workflow === false || !empty($override_email)) {
-            $this->emailAddress->save($this->id, $this->module_dir, $override_email, '', '', '', '', $this->in_workflow);
+        if ($this->emailAddress && ($ori_in_workflow === false || !empty($override_email))) {
+            $this->emailAddress->saveEmailAddress($this->id, $this->module_dir, $override_email, '', '', '', '', $this->in_workflow);
             // $this->emailAddress->applyWorkflowChanges($this->id, $this->module_dir);
         }
         return $this->id;
@@ -228,14 +239,14 @@ class Person extends Basic
      **/
     function getGDPRRelease()
     {
-        global $db;
+        $db = DBManagerFactory::getInstance();
 
-        $gdprReleases = array(
+        $gdprReleases = [
             'gdpr_data_agreement' => $this->gdpr_data_agreement,
             'gdpr_marketing_agreement' => $this->gdpr_marketing_agreement,
-            'related' => array(),
-            'audit' => array()
-        );
+            'related' => [],
+            'audit' => []
+        ];
 
         foreach ($this->field_defs as $field) {
             if ($field['type'] == 'link' && !empty($field['module'])) {
@@ -244,7 +255,7 @@ class Person extends Basic
                     $linkedBeans = $this->get_linked_beans($field['name'], $seed->object_name);
                     foreach($linkedBeans as $linkedBean){
                         if($linkedBean->gdpr_data_agreement || $linkedBean->gdpr_marketing_agreement){
-                            $gdprReleases['related'][] = array(
+                            $gdprReleases['related'][] = [
                                 'module' => $field['module'],
                                 'id' => $linkedBean->id,
                                 'summary_text' => $linkedBean->get_summary_text(),
@@ -256,7 +267,7 @@ class Person extends Basic
                                 'modified_by_name' => $linkedBean->modified_by_name,
                                 'gdpr_data_agreement' => $linkedBean->gdpr_data_agreement,
                                 'gdpr_marketing_agreement' => $linkedBean->gdpr_marketing_agreement
-                            );
+                            ];
                         }
                     }
                 }
@@ -312,13 +323,13 @@ class Person extends Basic
      */
     public function add_fts_metadata()
     {
-        return array(
-            'is_inactive' => array(
+        return [
+            'is_inactive' => [
                 'type' => 'keyword',
                 'search' => false,
                 'enablesort' => true
-            )
-        );
+            ]
+        ];
     }
 
     /**

@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -34,6 +33,12 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * technical reasons, the Appropriate Legal Notices must display the words
 * "Powered by SugarCRM".
 ********************************************************************************/
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\SugarObjects\VardefManager;
+use SpiceCRM\includes\authentication\AuthenticationController;
 
 /*********************************************************************************
 
@@ -86,13 +91,14 @@ class UnifiedSearchAdvanced {
 
 		require_once 'include/ListView/ListViewSmarty.php';
 
-		global $modListHeader, $beanList, $beanFiles, $current_language, $app_strings, $current_user, $mod_strings;
+		global $modListHeader, $beanList, $beanFiles, $current_language, $app_strings, $mod_strings;
+$current_user = AuthenticationController::getInstance()->getCurrentUser();
 		$home_mod_strings = return_module_language($current_language, 'Home');
 
-		$this->query_string = $GLOBALS['db']->quote(securexss(from_html(clean_string($this->query_string, 'UNIFIED_SEARCH'))));
+		$this->query_string = DBManagerFactory::getInstance()->quote(securexss(from_html(clean_string($this->query_string, 'UNIFIED_SEARCH'))));
 
 		if(!empty($_REQUEST['advanced']) && $_REQUEST['advanced'] != 'false') {
-			$modules_to_search = array();
+			$modules_to_search = [];
 			if(!empty($_REQUEST['search_modules']))
 			{
 			    foreach(explode (',', $_REQUEST['search_modules'] ) as $key)
@@ -108,7 +114,7 @@ class UnifiedSearchAdvanced {
 			$current_user->setPreference('globalSearch', $modules_to_search, 0, 'search'); // save selections to user preference
 		} else {
 			$users_modules = $current_user->getPreference('globalSearch', 'search');
-			$modules_to_search = array();
+			$modules_to_search = [];
 
 			if(!empty($users_modules)) {
 				// use user's previous selections
@@ -136,8 +142,8 @@ class UnifiedSearchAdvanced {
 
 		echo $this->getDropDownDiv($templateFile);
 
-		$module_results = array();
-		$module_counts = array();
+		$module_results = [];
+		$module_counts = [];
 		$has_results = false;
 
 		if(!empty($this->query_string)) {
@@ -163,8 +169,8 @@ class UnifiedSearchAdvanced {
                     continue;
                 }
 
-			    $unifiedSearchFields = array () ;
-                $innerJoins = array();
+			    $unifiedSearchFields = [];
+                $innerJoins = [];
                 foreach ( $unified_search_modules[ $moduleName ]['fields'] as $field=>$def )
                 {
                 	$listViewCheckField = strtoupper($field);
@@ -213,10 +219,10 @@ class UnifiedSearchAdvanced {
 				require_once $this->searchFormPath;
                 $searchForm = new $this->searchFormClass ( $seed, $moduleName ) ;
 
-                $searchForm->setup (array ( $moduleName => array() ) , $unifiedSearchFields , '' , 'saved_views' /* hack to avoid setup doing further unwanted processing */ ) ;
+                $searchForm->setup ([$moduleName => []], $unifiedSearchFields , '' , 'saved_views' /* hack to avoid setup doing further unwanted processing */ ) ;
                 $where_clauses = $searchForm->generateSearchWhere() ;
                 //add inner joins back into the where clause
-                $params = array('custom_select' => "");
+                $params = ['custom_select' => ""];
                 foreach($innerJoins as $field=>$def) {
                     if (isset ($def['db_field'])) {
                       foreach($def['db_field'] as $dbfield)
@@ -237,7 +243,7 @@ class UnifiedSearchAdvanced {
                        if in current module $where_clauses */
                     $where = '';
                 }
-                $displayColumns = array();
+                $displayColumns = [];
                 foreach($listViewDefs[$seed->module_dir] as $colName => $param)
                 {
                     if(!empty($param['default']) && $param['default'] == true)
@@ -295,7 +301,7 @@ class UnifiedSearchAdvanced {
 
 		global $beanList, $beanFiles, $dictionary;
 
-		$supported_modules = array();
+		$supported_modules = [];
 
 		foreach($beanList as $moduleName=>$beanName)
 		{
@@ -303,7 +309,7 @@ class UnifiedSearchAdvanced {
 				continue;
 
 			$beanName = BeanFactory::getObjectName($moduleName);
-			$manager = new VardefManager ( );
+			$manager = new VardefManager( );
 			$manager->loadVardef( $moduleName , $beanName ) ;
 
 			// obtain the field definitions used by generateSearchWhere (duplicate code in view.list.php)
@@ -338,7 +344,7 @@ class UnifiedSearchAdvanced {
 			//If the bean supports unified search or if it's a custom module bean and unified search is not defined
 			if(!empty($dictionary[$beanName]['unified_search']) || $isCustomModule)
 			{
-				$fields = array();
+				$fields = [];
 				foreach ( $dictionary [ $beanName ][ 'fields' ] as $field => $def )
 				{
 					// We cannot enable or disable unified_search for email in the vardefs as we don't actually have a vardef entry for 'email'
@@ -402,18 +408,18 @@ class UnifiedSearchAdvanced {
 
         $unified_search_modules_display = $this->getUnifiedSearchModulesDisplay();
         //Add the translated attribute for display label
-        $json_enabled = array();
-        $json_disabled = array();
+        $json_enabled = [];
+        $json_disabled = [];
         foreach($unified_search_modules_display as $module=>$data)
         {
             $label = isset($app_list_strings['moduleList'][$module]) ? $app_list_strings['moduleList'][$module] : $module;
             if($data['visible'] === true)
             {
-                $json_enabled[] = array("module" => $module, 'label' => $label);
+                $json_enabled[] = ["module" => $module, 'label' => $label];
             }
             else
             {
-                $json_disabled[] = array("module" => $module, 'label' => $label);
+                $json_disabled[] = ["module" => $module, 'label' => $label];
             }
         }
 
@@ -433,14 +439,14 @@ class UnifiedSearchAdvanced {
                 $label = isset($app_list_strings['moduleList'][$module]) ? $app_list_strings['moduleList'][$module] : $module;
                 if($data['default'])
                 {
-                  $json_enabled[] = array("module" => $module, 'label' => $label);
+                  $json_enabled[] = ["module" => $module, 'label' => $label];
                 } else {
-                  $json_disabled[] = array("module" => $module, 'label' => $label);
+                  $json_disabled[] = ["module" => $module, 'label' => $label];
                 }
             }
         }
 
-        return array('enabled' => $json_enabled, 'disabled' => $json_disabled);
+        return ['enabled' => $json_enabled, 'disabled' => $json_disabled];
     }
 
 
@@ -456,7 +462,7 @@ class UnifiedSearchAdvanced {
 		{
             $unified_search_modules_display = $this->getUnifiedSearchModulesDisplay();
 
-			$new_unified_search_modules_display = array();
+			$new_unified_search_modules_display = [];
 
             foreach(explode (',', $_REQUEST['enabled_modules'] ) as $module)
             {
@@ -481,7 +487,7 @@ class UnifiedSearchAdvanced {
 		$cache_search = sugar_cached('modules/unified_search_modules.php');
     	if(file_exists($cache_search))
     	{
-    		$GLOBALS['log']->info("unlink {$cache_search}");
+    		LoggerManager::getLogger()->info("unlink {$cache_search}");
     		unlink($cache_search);
     	}
 	}
@@ -530,7 +536,7 @@ class UnifiedSearchAdvanced {
 		{
             $unified_search_modules = $this->getUnifiedSearchModules();
 
-            $unified_search_modules_display = array();
+            $unified_search_modules_display = [];
 
             if(!empty($unified_search_modules))
             {
@@ -566,8 +572,8 @@ class UnifiedSearchAdvanced {
 	    {
 	    	//Log error message and throw Exception
 	    	global $app_strings;
-	    	$msg = string_format($app_strings['ERR_FILE_WRITE'], array('custom/modules/unified_search_modules_display.php'));
-	    	$GLOBALS['log']->error($msg);
+	    	$msg = string_format($app_strings['ERR_FILE_WRITE'], ['custom/modules/unified_search_modules_display.php']);
+	    	LoggerManager::getLogger()->error($msg);
 	    	throw new Exception($msg);
 	    }
 

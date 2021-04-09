@@ -34,10 +34,10 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$vardefs = array(
-    'fields' => array(
+$vardefs = [
+    'fields' => [
         'id' =>
-            array(
+            [
                 'name' => 'id',
                 'vname' => 'LBL_ID',
                 'type' => 'id',
@@ -46,9 +46,9 @@ $vardefs = array(
                 'comment' => 'Unique identifier',
                 'duplicate_merge' => 'disabled',
                 'audited' => false
-            ),
+            ],
         'name' =>
-            array(
+            [
                 'name' => 'name',
                 'vname' => 'LBL_NAME',
                 'type' => 'name',
@@ -56,15 +56,15 @@ $vardefs = array(
                 'dbType' => 'varchar',
                 'len' => 255,
                 'unified_search' => true,
-                'full_text_search' => array('boost' => 3),
+                'full_text_search' => ['boost' => 3],
                 'required' => true,
                 'importable' => 'required',
                 'duplicate_merge' => 'enabled',
                 //'duplicate_merge_dom_value' => '3',
                 'merge_filter' => 'selected',
-            ),
+            ],
         'date_entered' =>
-            array(
+            [
                 'name' => 'date_entered',
                 'vname' => 'LBL_DATE_ENTERED',
                 'type' => 'datetime',
@@ -74,9 +74,9 @@ $vardefs = array(
                 'options' => 'date_range_search_dom',
                 'duplicate_merge' => 'disabled',
                 'audited' => false
-            ),
+            ],
         'date_modified' =>
-            array(
+            [
                 'name' => 'date_modified',
                 'vname' => 'LBL_DATE_MODIFIED',
                 'type' => 'datetime',
@@ -86,9 +86,9 @@ $vardefs = array(
                 'options' => 'date_range_search_dom',
                 'duplicate_merge' => 'disabled',
                 'audited' => false
-            ),
+            ],
         'date_indexed' =>
-            array(
+            [
                 'name' => 'date_indexed',
                 'vname' => 'LBL_DATE_INDEXED',
                 'type' => 'datetime',
@@ -97,9 +97,9 @@ $vardefs = array(
                 'options' => 'date_range_search_dom',
                 'duplicate_merge' => 'disabled',
                 'audited' => false
-            ),
+            ],
         'modified_user_id' =>
-            array(
+            [
                 'name' => 'modified_user_id',
                 'rname' => 'user_name',
                 'id_name' => 'modified_user_id',
@@ -114,8 +114,8 @@ $vardefs = array(
                 'massupdate' => false,
                 'duplicate_merge' => 'disabled',
                 'audited' => false
-            ),
-        'modified_by_name' =>  array(
+            ],
+        'modified_by_name' =>  [
                 'name' => 'modified_by_name',
                 'vname' => 'LBL_MODIFIED_BY',
                 'type' => 'relate',
@@ -129,8 +129,8 @@ $vardefs = array(
                 'duplicate_merge' => 'disabled',
                 'massupdate' => false,
                 'audited' => false
-            ),
-        'created_by' =>            array(
+        ],
+        'created_by' =>            [
                 'name' => 'created_by',
                 'rname' => 'user_name',
                 'id_name' => 'modified_user_id',
@@ -144,8 +144,8 @@ $vardefs = array(
                 'massupdate' => false,
                 'duplicate_merge' => 'disabled',
                 'audited' => false
-            ),
-        'created_by_name' =>            array(
+        ],
+        'created_by_name' =>            [
                 'name' => 'created_by_name',
                 'vname' => 'LBL_CREATED_BY',
                 'type' => 'relate',
@@ -159,18 +159,18 @@ $vardefs = array(
                 'importable' => 'false',
                 'massupdate' => false,
                 'duplicate_merge' => 'disabled'
-            ),
+        ],
         'description' =>
-            array(
+            [
                 'name' => 'description',
                 'vname' => 'LBL_DESCRIPTION',
                 'type' => 'text',
                 'comment' => 'Full text of the note',
                 'rows' => 6,
                 'cols' => 80,
-            ),
+            ],
         'deleted' =>
-            array(
+            [
                 'name' => 'deleted',
                 'vname' => 'LBL_DELETED',
                 'type' => 'bool',
@@ -179,19 +179,19 @@ $vardefs = array(
                 'comment' => 'Record deletion indicator',
                 'duplicate_merge' => 'disabled',
                 'audited' => false
-            ),
+            ],
         'tags' =>
-            array(
+            [
                 'name' => 'tags',
                 'vname' => 'LBL_TAGS',
                 'type' => 'tags',
                 'dbType' => 'text',
                 'duplicate_merge' => 'disabled'
-            ),
+            ],
 
 /////////////////RELATIONSHIP LINKS////////////////////////////
         'created_by_link' =>
-            array(
+            [
                 'name' => 'created_by_link',
                 'type' => 'link',
                 'relationship' => strtolower($module) . '_created_by',
@@ -202,9 +202,9 @@ $vardefs = array(
                 'source' => 'non-db',
                 'recover' => false,
                 'duplicate_merge' => 'disabled'
-            ),
+            ],
         'modified_user_link' =>
-            array(
+            [
                 'name' => 'modified_user_link',
                 'type' => 'link',
                 'relationship' => strtolower($module) . '_modified_user',
@@ -215,20 +215,20 @@ $vardefs = array(
                 'source' => 'non-db',
                 'recover' => false,
                 'duplicate_merge' => 'disabled'
-            ),
+            ],
 
-    ),
-    'indices' => array(
-        'id' => array('name' => strtolower($module) . 'pk', 'type' => 'primary', 'fields' => array('id')),
-    ),
-    'relationships' => array(
+    ],
+    'indices' => [
+        'id' => ['name' => strtolower($module) . 'pk', 'type' => 'primary', 'fields' => ['id']],
+    ],
+    'relationships' => [
         strtolower($module) . '_modified_user' =>
-            array('lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
+            ['lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
                 'rhs_module' => $module, 'rhs_table' => strtolower($module), 'rhs_key' => 'modified_user_id',
-                'relationship_type' => 'one-to-many')
+                'relationship_type' => 'one-to-many']
     , strtolower($module) . '_created_by' =>
-            array('lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
+            ['lhs_module' => 'Users', 'lhs_table' => 'users', 'lhs_key' => 'id',
                 'rhs_module' => $module, 'rhs_table' => strtolower($module), 'rhs_key' => 'created_by',
-                'relationship_type' => 'one-to-many')
-    ),
-);
+                'relationship_type' => 'one-to-many']
+    ],
+];

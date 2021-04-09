@@ -1,14 +1,15 @@
-<?php 
- 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+<?php
 
+
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
 $dictionary['ServiceTicket'] = [
     'table' => 'servicetickets',
     'comment' => 'ServiceTickets Module',
     'audited' =>  true,
     'duplicate_merge' =>  false,
     'unified_search' =>  false,
-	'fields' => array(
+	'fields' => [
         'name' => [
             'name' => 'name',
             'vname' => 'LBL_TOPIC',
@@ -253,7 +254,7 @@ $dictionary['ServiceTicket'] = [
             'relationship' => 'servicetickets_costcenters',
             'source'       => 'non-db',
         ],
-    ),
+    ],
 	'relationships' => [
         'servicetickets_accounts' => [
             'lhs_module' => 'Accounts',

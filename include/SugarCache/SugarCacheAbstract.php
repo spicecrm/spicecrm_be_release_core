@@ -34,6 +34,9 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\includes\SugarCache;
+
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
 
 /**
  * Abstract cache class
@@ -59,7 +62,7 @@ abstract class SugarCacheAbstract
     /**
      * @var stores locally any cached items so we don't have to hit the external cache as much
      */
-    protected $_localStore = array();
+    protected $_localStore = [];
 
     /**
      * @var records the number of get requests made against the cache
@@ -94,10 +97,10 @@ abstract class SugarCacheAbstract
      */
     public function __construct()
     {
-        if ( isset($GLOBALS['sugar_config']['cache_expire_timeout']) )
-            $this->_expireTimeout = $GLOBALS['sugar_config']['cache_expire_timeout'];
-        if ( isset($GLOBALS['sugar_config']['unique_key']) )
-            $this->_keyPrefix = $GLOBALS['sugar_config']['unique_key'];
+        if ( isset(SpiceConfig::getInstance()->config['cache_expire_timeout']) )
+            $this->_expireTimeout = SpiceConfig::getInstance()->config['cache_expire_timeout'];
+        if ( isset(SpiceConfig::getInstance()->config['unique_key']) )
+            $this->_keyPrefix = SpiceConfig::getInstance()->config['unique_key'];
     }
 
     /**
@@ -213,7 +216,7 @@ abstract class SugarCacheAbstract
      */
     public function reset()
     {
-        $this->_localStore = array();
+        $this->_localStore = [];
         SugarCache::$isCacheReset = true;
     }
 
@@ -231,7 +234,7 @@ abstract class SugarCacheAbstract
      */
     public function flush()
     {
-        $this->_localStore = array();
+        $this->_localStore = [];
         $this->_resetExternal();
     }
 
@@ -242,12 +245,12 @@ abstract class SugarCacheAbstract
      */
     public function getCacheStats()
     {
-        return array(
+        return [
             'requests'     => $this->_cacheRequests,
             'externalHits' => $this->_cacheExternalHits,
             'localHits'    => $this->_cacheLocalHits,
             'misses'       => $this->_cacheMisses,
-            );
+        ];
     }
 
     /**
@@ -300,8 +303,8 @@ abstract class SugarCacheAbstract
      */
     public function useBackend()
     {
-        if ( !empty($GLOBALS['sugar_config']['external_cache_disabled'])
-                && $GLOBALS['sugar_config']['external_cache_disabled'] == true ) {
+        if ( !empty(SpiceConfig::getInstance()->config['external_cache_disabled'])
+                && SpiceConfig::getInstance()->config['external_cache_disabled'] == true ) {
             return false;
         }
 
@@ -309,8 +312,8 @@ abstract class SugarCacheAbstract
             return false;
         }
 
-        if ( isset($GLOBALS['sugar_config']['external_cache_force_backend'])
-                && ( $GLOBALS['sugar_config']['external_cache_force_backend'] != (string) $this ) ) {
+        if ( isset(SpiceConfig::getInstance()->config['external_cache_force_backend'])
+                && ( SpiceConfig::getInstance()->config['external_cache_force_backend'] != (string) $this ) ) {
             return false;
         }
 

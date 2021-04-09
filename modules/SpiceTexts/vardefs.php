@@ -1,28 +1,29 @@
 <?php
 
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
-$dictionary['SpiceText'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['SpiceText'] = [
     'table' => 'spicetexts',
     'comment' => 'SpiceTexts Module',
     'audited' =>  false,
     'duplicate_merge' =>  false,
     'unified_search' =>  false,
 
-	'fields' => array(
-        'name' => array(
+	'fields' => [
+        'name' => [
             'name' => 'name',
             'vname' => 'LBL_NAME',
             'type' => 'varchar',
             'len' => '100',
             'required' => false
-        ),
-        'description' => array (
+        ],
+        'description' => [
             'name' => 'description',
             'vname' => 'LBL_DESCRIPTION',
             'type' => 'text',
             'required' => true
-        ),
+        ],
         'parent_type' => [
             'name'     => 'parent_type',
             'vname'    => 'LBL_PARENT_TYPE',
@@ -51,19 +52,19 @@ $dictionary['SpiceText'] = array(
             'group'      => 'parent_name',
             'reportable' => false,
         ],
-        'text_id' => array (
+        'text_id' => [
             'name' => 'text_id',
             'vname' => 'LBL_TEXT',
             'type' => 'id',
             'required' => true
-        ),
-        'text_language' => array (
+        ],
+        'text_language' => [
             'name' => 'text_language',
             'vname' => 'LBL_TEXT_LANGUAGE',
             'type' => 'varchar',
             'len' => '55',
             'required' => true
-        ),
+        ],
         'products' => [
             'name'         => 'products',
             'type'         => 'link',
@@ -91,16 +92,16 @@ $dictionary['SpiceText'] = array(
             'vname' => 'LBL_Accounts',
             'default'      => true
         ]
-	),
-	'relationships' => array(
-	),
-	'indices' => array(
-        array('name' => 'idx_spicetexts_id_del', 'type' => 'index', 'fields' => array('id', 'deleted')),
-        array('name' => 'idx_spicetexts_parentid_del', 'type' => 'index', 'fields' => array('parent_id', 'deleted')),
-        array('name' => 'idx_spicetexts_parenttype_del', 'type' => 'index', 'fields' => array('parent_type', 'deleted')),
-        array('name' => 'idx_spicetexts_txid_lang_del', 'type' => 'index', 'fields' => array('text_id', 'text_language','deleted')),
-        array('name' => 'idx_spicetexts_parid_lang_del', 'type' => 'index', 'fields' => array('parent_id', 'text_language','deleted')),
-	)
-);
+    ],
+	'relationships' => [
+    ],
+	'indices' => [
+        ['name' => 'idx_spicetexts_id_del', 'type' => 'index', 'fields' => ['id', 'deleted']],
+        ['name' => 'idx_spicetexts_parentid_del', 'type' => 'index', 'fields' => ['parent_id', 'deleted']],
+        ['name' => 'idx_spicetexts_parenttype_del', 'type' => 'index', 'fields' => ['parent_type', 'deleted']],
+        ['name' => 'idx_spicetexts_txid_lang_del', 'type' => 'index', 'fields' => ['text_id', 'text_language','deleted']],
+        ['name' => 'idx_spicetexts_parid_lang_del', 'type' => 'index', 'fields' => ['parent_id', 'text_language','deleted']],
+    ]
+];
 
-VardefManager::createVardef('SpiceTexts', 'SpiceText', array('default', 'assignable'));
+VardefManager::createVardef('SpiceTexts', 'SpiceText', ['default', 'assignable']);

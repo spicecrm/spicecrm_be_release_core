@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -63,87 +62,87 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 //
 //), 'indices'=>array( array('name'=>'idx_config_cat', 'type'=>'index',  'fields'=>array('category')),)
 //                            );
-
-$dictionary['UpgradeHistory'] = array(
+global $dictionary;
+$dictionary['UpgradeHistory'] = [
     'table'  => 'upgrade_history', 'comment' => 'Tracks Sugar upgrades made over time; used by Upgrade Wizard and Module Loader',
-    'fields' => array (
-        'id' => array (
+    'fields' => [
+        'id' => [
                 'name'       => 'id',
                 'type'       => 'id',
                 'required'   => true,
                 'reportable' => false,
     		    'comment' => 'Unique identifier'
-        ),
-        'filename' => array (
+        ],
+        'filename' => [
                 'name' => 'filename',
                 'type' => 'varchar',
                 'len' => '255',
     		    'comment' => 'Cached filename containing the upgrade scripts and content'
-        ),
-        'md5sum' => array (
+        ],
+        'md5sum' => [
                 'name' => 'md5sum',
                 'type' => 'varchar',
                 'len' => '32',
     		    'comment' => 'The MD5 checksum of the upgrade file'
-        ),
-        'type' => array (
+        ],
+        'type' => [
                 'name' => 'type',
                 'type' => 'varchar',
                 'len' => '30',
     		    'comment' => 'The upgrade type (module, patch, theme, etc)'
-        ),
-        'status' => array (
+        ],
+        'status' => [
                 'name' => 'status',
                 'type' => 'varchar',
                 'len' => '50',
     		    'comment' => "The status of the upgrade (ex:  'installed')",
-        ),
-        'version' => array (
+        ],
+        'version' => [
                 'name' => 'version',
                 'type' => 'varchar',
                 'len' => '64',
     		    'comment' => 'Version as contained in manifest file'
-        ),
-		'name' => array (
+        ],
+		'name' => [
                 'name'  => 'name',
                 'type'  => 'varchar',
                 'len'   => '255',
-        ),
-		'description' => array (
+        ],
+		'description' => [
                 'name'  => 'description',
                 'type'  => 'text',
-        ),
-        'id_name' => array (
+        ],
+        'id_name' => [
                 'name' => 'id_name',
                 'type' => 'varchar',
                 'len' => '255',
     		    'comment' => 'The unique id of the module'
-        ),
-        'manifest' => array (
+        ],
+        'manifest' => [
                 'name' => 'manifest',
                 'type' => 'longtext',
     		    'comment' => 'A serialized copy of the manifest file.'
-        ),
-        'date_entered' => array (
+        ],
+        'date_entered' => [
                 'name' => 'date_entered',
                 'type' => 'datetime',
                 'required'=>true,
     		    'comment' => 'Date of upgrade or module load'
-        ),
-        'enabled' => array(
+        ],
+        'enabled' => [
                                       'name' => 'enabled',
                                       'type' => 'bool',
                                       'len'  => '1',
                                       'default'   => '1',
-        ),
-    ),
+        ],
+    ],
 
-    'indices' => array(
-        array('name'=>'upgrade_history_pk',     'type'=>'primary', 'fields'=>array('id')),
-        array('name'=>'upgrade_history_md5_uk', 'type'=>'unique',  'fields'=>array('md5sum')),
+    'indices' => [
+        ['name'=>'upgrade_history_pk',     'type'=>'primary', 'fields'=> ['id']],
+        ['name'=>'upgrade_history_md5_uk', 'type'=>'unique',  'fields'=> ['md5sum']],
 
-    ),
-);
+    ],
+];
 
 
 ?>

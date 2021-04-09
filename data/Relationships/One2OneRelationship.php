@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,9 +34,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+namespace SpiceCRM\data\Relationships;
 
-require_once("data/Relationships/SugarRelationship.php");
-require_once("data/Relationships/One2MRelationship.php");
+use SpiceCRM\data\SugarBean;
 
 /**
  * Represents 1-1 relationship
@@ -56,7 +55,7 @@ class One2OneRelationship extends M2MRelationship
      * @param  $additionalFields key=>value pairs of fields to save on the relationship
      * @return boolean true if successful
      */
-    public function add($lhs, $rhs, $additionalFields = array())
+    public function add($lhs, $rhs, $additionalFields = [])
     {
         $dataToInsert = $this->getRowToInsert($lhs, $rhs, $additionalFields);
         //If the current data matches the existing data, don't do anything

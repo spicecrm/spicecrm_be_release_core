@@ -1,5 +1,4 @@
 <?php
-if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -43,9 +42,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  * Contributor(s): ______________________________________..
  ********************************************************************************/
 
-
-
-
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\Logger\LoggerManager;
+use SpiceCRM\includes\TimeDate;
 
 
 /**
@@ -66,7 +65,7 @@ function get_subscription_lists_query($focus, $additional_fields = null) {
     $all_news_type_list =$focus->db->query($all_news_type_pl_query);
 
     //build array of all newsletter campaigns
-    $news_type_list_arr = array();
+    $news_type_list_arr = [];
     while ($row = $focus->db->fetchByAssoc($all_news_type_list)){$news_type_list_arr[] = $row;}
 
     //now get all the campaigns that the current user is assigned to
@@ -74,10 +73,10 @@ function get_subscription_lists_query($focus, $additional_fields = null) {
 
     //build array of prospect lists that this user belongs to
     $current_plp =$focus->db->query($all_plp_current );
-    $current_plp_arr = array();
+    $current_plp_arr = [];
     while ($row = $focus->db->fetchByAssoc($current_plp)){$current_plp_arr[] = $row;}
 
-    return array('current_plp_arr' => $current_plp_arr, 'news_type_list_arr' => $news_type_list_arr);
+    return ['current_plp_arr' => $current_plp_arr, 'news_type_list_arr' => $news_type_list_arr];
 }
 
 
@@ -90,23 +89,22 @@ function get_subscription_lists_query($focus, $additional_fields = null) {
             $relationship = strtolower($focus->getObjectName()).'s';
 
             //--grab all the lists for the passed in campaign id
-            $pl_qry ="select id, list_type from prospect_lists where id in (select prospect_list_id from prospect_list_campaigns ";
-            $pl_qry .= "where campaign_id = '$campaign') and deleted = 0 ";
-            $GLOBALS['log']->debug("In Campaigns Util: subscribe function, about to run query: ".$pl_qry );
+            $pl_qry ="select id, list_type from prospect_lists where id in (select prospect_list_id from prospect_list_campaigns where campaign_id = '$campaign') and deleted = 0 ";
+            LoggerManager::getLogger()->debug("In Campaigns Util: subscribe function, about to run query: ".$pl_qry );
             $pl_qry_result = $focus->db->query($pl_qry);
 
             //build the array of all prospect_lists
-            $pl_arr = array();
+            $pl_arr = [];
             while ($row = $focus->db->fetchByAssoc($pl_qry_result)){$pl_arr[] = $row;}
 
             //--grab all the prospect_lists this user belongs to
             $curr_pl_qry ="select prospect_list_id, related_id  from prospect_lists_prospects ";
             $curr_pl_qry .="where related_id = '$focus->id'  and deleted = 0 ";
-            $GLOBALS['log']->debug("In Campaigns Util: subscribe function, about to run query: ".$curr_pl_qry );
+            LoggerManager::getLogger()->debug("In Campaigns Util: subscribe function, about to run query: ".$curr_pl_qry );
             $curr_pl_qry_result = $focus->db->query($curr_pl_qry);
 
             //build the array of all prospect lists that this current user belongs to
-            $curr_pl_arr = array();
+            $curr_pl_arr = [];
             while ($row = $focus->db->fetchByAssoc($curr_pl_qry_result)){$curr_pl_arr[] = $row;}
 
             //search through prospect lists for this campaign and identifiy the "unsubscription list"
@@ -166,7 +164,7 @@ function get_subscription_lists_query($focus, $additional_fields = null) {
                     return;
                 }
                 //load subscription list and add this user
-                $GLOBALS['log']->debug("In Campaigns Util, loading relationship: ".$relationship);
+                LoggerManager::getLogger()->debug("In Campaigns Util, loading relationship: ".$relationship);
                 $subscription_list->load_relationship($relationship);
                 $subscription_list->$relationship->add($focus->id);
             }
@@ -180,22 +178,21 @@ function get_subscription_lists_query($focus, $additional_fields = null) {
     function unsubscribe($campaign, $focus) {
         $relationship = strtolower($focus->getObjectName()).'s';
         //--grab all the list for this campaign id
-        $pl_qry ="select id, list_type from prospect_lists where id in (select prospect_list_id from prospect_list_campaigns ";
-        $pl_qry .= "where campaign_id = '$campaign') and deleted = 0 ";
+        $pl_qry ="select id, list_type from prospect_lists where id in (select prospect_list_id from prospect_list_campaigns where campaign_id = '$campaign') and deleted = 0 ";
         $pl_qry_result = $focus->db->query($pl_qry);
         //build the array with list information
-        $pl_arr = array();
-        $GLOBALS['log']->debug("In Campaigns Util, about to run query: ".$pl_qry);
+        $pl_arr = [];
+        LoggerManager::getLogger()->debug("In Campaigns Util, about to run query: ".$pl_qry);
     	while ($row = $focus->db->fetchByAssoc($pl_qry_result)){$pl_arr[] = $row;}
 
         //retrieve lists that this user belongs to
         $curr_pl_qry ="select prospect_list_id, related_id  from prospect_lists_prospects ";
         $curr_pl_qry .="where related_id = '$focus->id'  and deleted = 0 ";
-        $GLOBALS['log']->debug("In Campaigns Util, unsubscribe function about to run query: ".$curr_pl_qry );
+        LoggerManager::getLogger()->debug("In Campaigns Util, unsubscribe function about to run query: ".$curr_pl_qry );
         $curr_pl_qry_result = $focus->db->query($curr_pl_qry);
 
         //build the array with current user list information
-        $curr_pl_arr = array();
+        $curr_pl_arr = [];
         while ($row = $focus->db->fetchByAssoc($curr_pl_qry_result)){$curr_pl_arr[] = $row;}
          //check to see if user is already there in prospect list
         $already_here = 'false';
@@ -246,7 +243,7 @@ function get_subscription_lists_query($focus, $additional_fields = null) {
             {//error happened while retrieving this list
                 return;
             }
-            $GLOBALS['log']->debug("In Campaigns Util, loading relationship: ".$relationship);
+            LoggerManager::getLogger()->debug("In Campaigns Util, loading relationship: ".$relationship);
             $exempt_list->load_relationship($relationship);
             $exempt_list->$relationship->add($focus->id);
         }
@@ -266,12 +263,12 @@ function get_subscription_lists_query($focus, $additional_fields = null) {
     $campaign->retrieve($campaign_id);
 
     if (empty($campaign->id)) {
-        $GLOBALS['log']->debug('set_campaign_merge: Invalid campaign id'. $campaign_id);
+        LoggerManager::getLogger()->debug('set_campaign_merge: Invalid campaign id'. $campaign_id);
     } else {
         foreach ($targets as $target_list_id) {
-            $pl_query = "select * from prospect_lists_prospects where id='".$GLOBALS['db']->quote($target_list_id)."'";
-            $result=$GLOBALS['db']->query($pl_query);
-            $row=$GLOBALS['db']->fetchByAssoc($result);
+            $pl_query = "select * from prospect_lists_prospects where id='". DBManagerFactory::getInstance()->quote($target_list_id)."'";
+            $result= DBManagerFactory::getInstance()->query($pl_query);
+            $row= DBManagerFactory::getInstance()->fetchByAssoc($result);
             if (!empty($row)) {
                 write_mail_merge_log_entry($campaign_id,$row);
             }
@@ -288,32 +285,32 @@ function get_subscription_lists_query($focus, $additional_fields = null) {
 function write_mail_merge_log_entry($campaign_id,$pl_row) {
 
     //Update the log entry if it exists.
-    $update="update campaign_log set hits=hits+1 where campaign_id='".$GLOBALS['db']->quote($campaign_id)."' and target_tracker_key='" . $GLOBALS['db']->quote($pl_row['id']) . "'";
-    $result=$GLOBALS['db']->query($update);
+    $update="update campaign_log set hits=hits+1 where campaign_id='". DBManagerFactory::getInstance()->quote($campaign_id)."' and target_tracker_key='" . DBManagerFactory::getInstance()->quote($pl_row['id']) . "'";
+    $result= DBManagerFactory::getInstance()->query($update);
 
     //get affected row count...
-    $count=$GLOBALS['db']->getAffectedRowCount();
+    $count= DBManagerFactory::getInstance()->getAffectedRowCount();
     if ($count==0) {
-        $data=array();
+        $data=[];
 
         $data['id']="'" . create_guid() . "'";
-        $data['campaign_id']="'" . $GLOBALS['db']->quote($campaign_id) . "'";
-        $data['target_tracker_key']="'" . $GLOBALS['db']->quote($pl_row['id']) . "'";
-        $data['target_id']="'" .  $GLOBALS['db']->quote($pl_row['related_id']) . "'";
-        $data['target_type']="'" .  $GLOBALS['db']->quote($pl_row['related_type']) . "'";
+        $data['campaign_id']="'" . DBManagerFactory::getInstance()->quote($campaign_id) . "'";
+        $data['target_tracker_key']="'" . DBManagerFactory::getInstance()->quote($pl_row['id']) . "'";
+        $data['target_id']="'" .  DBManagerFactory::getInstance()->quote($pl_row['related_id']) . "'";
+        $data['target_type']="'" .  DBManagerFactory::getInstance()->quote($pl_row['related_type']) . "'";
         $data['activity_type']="'targeted'";
         $data['activity_date']="'" . TimeDate::getInstance()->nowDb() . "'";
-        $data['list_id']="'" .  $GLOBALS['db']->quote($pl_row['prospect_list_id']) . "'";
+        $data['list_id']="'" .  DBManagerFactory::getInstance()->quote($pl_row['prospect_list_id']) . "'";
         $data['hits']=1;
         $data['deleted']=0;
         $insert_query="INSERT into campaign_log (" . implode(",",array_keys($data)) . ")";
         $insert_query.=" VALUES  (" . implode(",",array_values($data)) . ")";
-        $GLOBALS['db']->query($insert_query);
+        DBManagerFactory::getInstance()->query($insert_query);
     }
 }
 
     function track_campaign_prospects($focus){
-        $campaign_id = $GLOBALS['db']->quote($focus->id);
+        $campaign_id = DBManagerFactory::getInstance()->quote($focus->id);
         $delete_query="delete from campaign_log where campaign_id='".$campaign_id."' and activity_type='targeted'";
         $focus->db->query($delete_query);
 
@@ -325,7 +322,7 @@ function write_mail_merge_log_entry($campaign_id,$pl_row) {
         $insert_query.="SELECT {$guidSQL}, $current_date, plc.campaign_id,{$guidSQL},plp.prospect_list_id, plp.related_id, plp.related_type,'targeted',0 ";
         $insert_query.="FROM prospect_lists INNER JOIN prospect_lists_prospects plp ON plp.prospect_list_id = prospect_lists.id";
         $insert_query.=" INNER JOIN prospect_list_campaigns plc ON plc.prospect_list_id = prospect_lists.id";
-        $insert_query.=" WHERE plc.campaign_id='".$GLOBALS['db']->quote($focus->id)."'";
+        $insert_query.=" WHERE plc.campaign_id='". DBManagerFactory::getInstance()->quote($focus->id)."'";
         $insert_query.=" AND prospect_lists.deleted=0";
         $insert_query.=" AND plc.deleted=0";
         $insert_query.=" AND plp.deleted=0";
@@ -340,7 +337,7 @@ function write_mail_merge_log_entry($campaign_id,$pl_row) {
     function create_campaign_log_entry($campaign_id, $focus, $rel_name, $rel_bean, $target_id = ''){
         global $timedate;
 
-        $target_ids = array();
+        $target_ids = [];
         //check if this is specified for one target/contact/prospect/lead (from contact/lead detail subpanel)
         if(!empty($target_id)){
             $target_ids[] = $target_id;
@@ -389,30 +386,30 @@ function write_mail_merge_log_entry($campaign_id,$pl_row) {
         global $app_strings;
         //if source has not been specified, then search across all prospect lists
         if(empty($source)){
-            $qsProspectList = array('method' => 'query',
-                                'modules'=> array('ProspectLists'),
+            $qsProspectList = ['method' => 'query',
+                                'modules'=> ['ProspectLists'],
                                 'group' => 'and',
-                                'field_list' => array('name', 'id'),
-                                'populate_list' => array('prospect_list_name', 'prospect_list_id'),
-                                'conditions' => array( array('name'=>'name','op'=>'like_custom','end'=>'%','value'=>'') ),
+                                'field_list' => ['name', 'id'],
+                                'populate_list' => ['prospect_list_name', 'prospect_list_id'],
+                                'conditions' => [['name'=>'name','op'=>'like_custom','end'=>'%','value'=>'']],
                                 'order' => 'name',
                                 'limit' => '30',
-                                'no_match_text' => $app_strings['ERR_SQS_NO_MATCH']);
+                                'no_match_text' => $app_strings['ERR_SQS_NO_MATCH']];
         }else{
              //source has been specified use it to tell quicksearch.js which html input to use to get filter value
-            $qsProspectList = array('method' => 'query',
-                                'modules'=> array('ProspectLists'),
+            $qsProspectList = ['method' => 'query',
+                                'modules'=> ['ProspectLists'],
                                 'group' => 'and',
-                                'field_list' => array('name', 'id'),
-                                'populate_list' => array($return_field_name, $return_field_id),
-                                'conditions' => array(
-                                                    array('name'=>'name','op'=>'like_custom','end'=>'%','value'=>''),
+                                'field_list' => ['name', 'id'],
+                                'populate_list' => [$return_field_name, $return_field_id],
+                                'conditions' => [
+                                                    ['name'=>'name','op'=>'like_custom','end'=>'%','value'=>''],
                                                     //this condition has the source parameter defined, meaning the query will take the value specified below
-                                                    array('name'=>'list_type', 'op'=>'like_custom', 'end'=>'%','value'=>'', 'source' => $source)
-                                ),
+                                                    ['name'=>'list_type', 'op'=>'like_custom', 'end'=>'%','value'=>'', 'source' => $source]
+                                ],
                                 'order' => 'name',
                                 'limit' => '30',
-                                'no_match_text' => $app_strings['ERR_SQS_NO_MATCH']);
+                                'no_match_text' => $app_strings['ERR_SQS_NO_MATCH']];
 
         }
 

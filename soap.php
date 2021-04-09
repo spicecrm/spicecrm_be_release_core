@@ -1,5 +1,9 @@
 <?php
- if(!defined('sugarEntry'))define('sugarEntry', true);
+
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
+if(!defined('sugarEntry'))define('sugarEntry', true);
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -35,9 +39,13 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
+// set the autoloaders
+require('include/utils/autoloader.php');
+require_once dirname(__FILE__).'/vendor/autoload.php';
+
 
 require_once('include/entryPoint.php');
-require_once('include/utils/file_utils.php');
+
 ob_start();
 
 require_once('soap/SoapError.php');
@@ -53,12 +61,12 @@ error_reporting(E_ALL ^ E_NOTICE);
 
 global $HTTP_RAW_POST_DATA;
 
-$administrator = new Administration();
+$administrator = BeanFactory::getBean('Administration');
 $administrator->retrieveSettings();
 
 $NAMESPACE = 'http://www.sugarcrm.com/sugarcrm';
 $server = new soap_server;
-$server->configureWSDL('sugarsoap', $NAMESPACE, $sugar_config['site_url'].'/soap.php');
+$server->configureWSDL('sugarsoap', $NAMESPACE, SpiceConfig::getInstance()->config['site_url'].'/soap.php');
 
 //New API is in these files
 if(!empty($administrator->settings['portal_on'])) {

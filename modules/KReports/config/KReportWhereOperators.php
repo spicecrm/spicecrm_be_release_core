@@ -14,7 +14,7 @@
 
 global $kreporterWhereOperatorCount;
 
-$kreporterWhereOperatorCount = array(
+$kreporterWhereOperatorCount = [
     'ignore' => 0,
     'equals' => 1,
     'notequal' => 1,
@@ -81,10 +81,10 @@ $kreporterWhereOperatorCount = array(
     'lessequal' => 1,
     'autocomplete' => 1,
     'soundslike' => 1
-);
+];
 
-$kreporterWhereOperatorTypes = array(
-    'varchar' => array(
+$kreporterWhereOperatorTypes = [
+    'varchar' => [
         'equals',
         'soundslike',
         'notequal',
@@ -101,8 +101,8 @@ $kreporterWhereOperatorTypes = array(
         'isemptyornull',
         'isnull',
         'isnotempty'
-    ),
-    'varchargrouped' => array(
+    ],
+    'varchargrouped' => [
         'equals',
         'eqgrouped',
         'oneof',
@@ -123,8 +123,8 @@ $kreporterWhereOperatorTypes = array(
         'isemptyornull',
         'isnull',
         'isnotempty'
-    ),
-    'enum' => array(
+    ],
+    'enum' => [
         'equals',
         'notequal',
         'oneof',
@@ -138,16 +138,16 @@ $kreporterWhereOperatorTypes = array(
         'isemptyornull',
         'isnull',
         'isnotempty'
-    ),
-    'id' => array(
+    ],
+    'id' => [
         'equals',
         'autocomplete',
         'isempty',
         'isemptyornull',
         'isnull',
         'isnotempty'
-    ),
-    'double' => array(
+    ],
+    'double' => [
         'equals',
         'notequal',
         'greater',
@@ -159,8 +159,8 @@ $kreporterWhereOperatorTypes = array(
         'isemptyornull',
         'isnull',
         'isnotempty'
-    ),
-    'date' => array(
+    ],
+    'date' => [
         'equals',
         'notequal',
         'before',
@@ -215,16 +215,16 @@ $kreporterWhereOperatorTypes = array(
         'isemptyornull',
         'isnull',
         'isnotempty'
-    ),
-    'bool' => array(
+    ],
+    'bool' => [
         'equals',
         'notequal',
         'isemptyornull',
         'isnull'
-    )
-);
+    ]
+];
 
-$kreporterWhereOperatorAssignments = array(
+$kreporterWhereOperatorAssignments = [
     'id' => 'id',
     'varchar' => 'varchar',
     // 2013-08-26 add phone field ... BUG#495
@@ -253,7 +253,7 @@ $kreporterWhereOperatorAssignments = array(
     'datetimecombo' => 'date', 
     //2013-08-07 added fixed field
     'fixed' => 'varchar'
-);
+];
 
 if (file_exists('custom/modules/KReports/config/KReportWhereOperators.php'))
     include('custom/modules/KReports/config/KReportWhereOperators.php');

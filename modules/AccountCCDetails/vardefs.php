@@ -1,18 +1,20 @@
 <?php
 
-$dictionary['AccountCCDetail'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+global $dictionary;
+$dictionary['AccountCCDetail'] = [
     'table' => 'accountccdetails',
     'audited' => false,
-    'fields' => array(
-        'account_id' => array(
+    'fields' => [
+        'account_id' => [
             'name' => 'account_id',
             'vname' => 'LBL_ACCOUNT_ID',
             'type' => 'id',
             'reportable' => false,
             'massupdate' => false,
             'duplicate_merge' => 'disabled',
-        ),
-        'account_name' => array(
+        ],
+        'account_name' => [
             'name' => 'account_name',
             'rname' => 'name',
             'id_name' => 'account_id',
@@ -28,8 +30,8 @@ $dictionary['AccountCCDetail'] = array(
             'source' => 'non-db',
             'unified_search' => true,
             'massupdate' => false,
-        ),
-        'accounts' => array(
+        ],
+        'accounts' => [
             'name' => 'accounts',
             'vname' => 'LBL_ACCOUNTS',
             'type' => 'link',
@@ -38,19 +40,19 @@ $dictionary['AccountCCDetail'] = array(
             'source' => 'non-db',
             'duplicate_merge' => 'disabled',
             'massupdate' => false,
-        ),
-        'account_classification' => array(
+        ],
+        'account_classification' => [
             'name' => 'account_classification',
             'vname' => 'LBL_CLASSIFICATION',
             'type' => 'multienum',
             'options' => 'account_classification_dom',
-        ),
-        'companycode_id' => array(
+        ],
+        'companycode_id' => [
             'name' => 'companycode_id',
             'type' => 'id',
             'required' => false,
-        ),
-        'companycode_name' => array(
+        ],
+        'companycode_name' => [
             'name' => 'companycode_name',
             'rname' => 'name',
             'id_name' => 'companycode_id',
@@ -66,8 +68,8 @@ $dictionary['AccountCCDetail'] = array(
             'source' => 'non-db',
             'unified_search' => true,
             'massupdate' => false,
-        ),
-        'companycodes' => array(
+        ],
+        'companycodes' => [
             'name' => 'companycodes',
             'vname' => 'LBL_COMPANYCODES',
             'type' => 'link',
@@ -76,39 +78,39 @@ $dictionary['AccountCCDetail'] = array(
             'source' => 'non-db',
             'duplicate_merge' => 'disabled',
             'massupdate' => false,
-        ),
-        'abccategory' => array(
+        ],
+        'abccategory' => [
             'name' => 'abccategory',
             'type' => 'enum',
             'len' => 1,
             'options' => 'abccategory_dom',
             'vname' => 'LBL_CATEGORY',
-        ),
-        'paymentterms' => array(
+        ],
+        'paymentterms' => [
             'name' => 'paymentterms',
             'type' => 'varchar',
             'len' => 50,
             'vname' => 'LBL_PAYMENTTERMS',
-        ),
-        'incoterm1' => array(
+        ],
+        'incoterm1' => [
             'name' => 'incoterm1',
             'type' => 'varchar',
             'len' => 20,
             'vname' => 'LBL_INCOTERM1',
-        ),
-        'incoterm2' => array(
+        ],
+        'incoterm2' => [
             'name' => 'incoterm2',
             'type' => 'varchar',
             'len' => 20,
             'vname' => 'LBL_INCOTERM2',
-        ),
-    ),
-    'indices' => array(
-        array('name' => 'idx_accountccdetails_id_del', 'type' => 'index', 'fields' => array('id', 'deleted'),),
-        array('name' => 'idx_accountccdetails_companycode_id', 'type' => 'index', 'fields' => array('companycode_id'),),
-    ),
-    'relationships' => array(
-        'accounts_accountccdetails' => array(
+        ],
+    ],
+    'indices' => [
+        ['name' => 'idx_accountccdetails_id_del', 'type' => 'index', 'fields' => ['id', 'deleted'],],
+        ['name' => 'idx_accountccdetails_companycode_id', 'type' => 'index', 'fields' => ['companycode_id'],],
+    ],
+    'relationships' => [
+        'accounts_accountccdetails' => [
             'lhs_module' => 'Accounts',
             'lhs_table' => 'accounts',
             'lhs_key' => 'id',
@@ -116,8 +118,8 @@ $dictionary['AccountCCDetail'] = array(
             'rhs_table' => 'accountccdetails',
             'rhs_key' => 'account_id',
             'relationship_type' => 'one-to-many',
-        ),
-        'companycodes_accountccdetails' => array(
+        ],
+        'companycodes_accountccdetails' => [
             'lhs_module' => 'CompanyCodes',
             'lhs_table' => 'companycodes',
             'lhs_key' => 'id',
@@ -125,9 +127,9 @@ $dictionary['AccountCCDetail'] = array(
             'rhs_table' => 'accountccdetails',
             'rhs_key' => 'companycode_id',
             'relationship_type' => 'one-to-many',
-        ),
-    ),
-);
+        ],
+    ],
+];
 
 
-VardefManager::createVardef('AccountCCDetails', 'AccountCCDetail', array('default', 'assignable'));
+VardefManager::createVardef('AccountCCDetails', 'AccountCCDetail', ['default', 'assignable']);

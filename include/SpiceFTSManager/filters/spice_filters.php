@@ -1,8 +1,8 @@
 <?php
-$elasticFilters = array(
-    "spice_ngram" => array(
+$elasticFilters = [
+    "spice_ngram" => [
         "type" => "nGram",
         "min_gram" => "3",
         "max_gram" => "20"
-    )
-);
+    ]
+];

@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -36,36 +35,38 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 ********************************************************************************/
 
 
-$GLOBALS['dictionary']['UserQuota'] = array(
+use SpiceCRM\includes\SugarObjects\VardefManager;
+
+$GLOBALS['dictionary']['UserQuota'] = [
     'table' => 'userquotas',
-    'fields' => array(
-        'period' => array(
+    'fields' => [
+        'period' => [
             'name' => 'period',
             'type' => 'int'
-        ),
-        'year' => array(
+        ],
+        'year' => [
             'name' => 'year',
             'type' => 'int'
-        ),
-        'sales_quota' => array(
+        ],
+        'sales_quota' => [
             'name' => 'sales_quota',
             'type' => 'currency'
-        ),
-        'period_date' => array(
+        ],
+        'period_date' => [
             'name' => 'period_date',
             'type' => 'date'
-        ),
-        'user' => array(
+        ],
+        'user' => [
             'name' => 'user',
             'type' => 'link',
             'relationship' => 'users_userquotas',
             'source' => 'non-db',
             'vname' => 'LBL_USER',
-        )
-    ),
-    'relationships' => array(
+        ]
+    ],
+    'relationships' => [
         'users_userquotas' =>
-            array(
+            [
                 'lhs_module' => 'Users',
                 'lhs_table' => 'users',
                 'lhs_key' => 'id',
@@ -73,15 +74,15 @@ $GLOBALS['dictionary']['UserQuota'] = array(
                 'rhs_table' => 'userquotas',
                 'rhs_key' => 'assigned_user_id',
                 'relationship_type' => 'one-to-many'
-            )
-    ),
-    'indices' => array(
-        array(
+            ]
+    ],
+    'indices' => [
+        [
             'name' => 'idx_userquotasuserid',
             'type' => 'index',
-            'fields' => array('assigned_user_id')
-        )
-    )
-);
+            'fields' => ['assigned_user_id']
+        ]
+    ]
+];
 
-VardefManager::createVardef('UserQuotas', 'UserQuota', array('default', 'assignable'));
+VardefManager::createVardef('UserQuotas', 'UserQuota', ['default', 'assignable']);

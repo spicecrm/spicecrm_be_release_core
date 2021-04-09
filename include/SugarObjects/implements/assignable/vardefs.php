@@ -34,10 +34,10 @@
 * "Powered by SugarCRM".
 ********************************************************************************/
 
-$vardefs = array(
-    'fields' => array(
+$vardefs = [
+    'fields' => [
         'assigned_user_id' =>
-            array(
+            [
                 'name' => 'assigned_user_id',
                 'rname' => 'user_name',
                 'id_name' => 'assigned_user_id',
@@ -53,9 +53,9 @@ $vardefs = array(
                 'comment' => 'User ID assigned to record',
                 'duplicate_merge' => 'disabled',
                 'link' => 'assigned_user_link'
-            ),
+            ],
         'assigned_user_name' =>
-            array(
+            [
                 'name' => 'assigned_user_name',
                 'link' => 'assigned_user_link',
                 'vname' => 'LBL_ASSIGNED_TO',
@@ -67,9 +67,9 @@ $vardefs = array(
                 'id_name' => 'assigned_user_id',
                 'module' => 'Users',
                 'duplicate_merge' => 'disabled'
-            ),
+            ],
         'assigned_user_link' =>
-            array(
+            [
                 'name' => 'assigned_user_link',
                 'type' => 'link',
                 'relationship' => strtolower($module) . '_assigned_user',
@@ -83,11 +83,11 @@ $vardefs = array(
                 'table' => 'users',
                 'recover' => false,
                 'duplicate_merge' => 'disabled'
-            )
-    ),
-    'relationships' => array(
+            ]
+    ],
+    'relationships' => [
         strtolower($module) . '_assigned_user' =>
-            array(
+            [
                 'lhs_module' => 'Users',
                 'lhs_table' => 'users',
                 'lhs_key' => 'id',
@@ -95,6 +95,6 @@ $vardefs = array(
                 'rhs_table' => strtolower($module),
                 'rhs_key' => 'assigned_user_id',
                 'relationship_type' => 'one-to-many'
-            )
-    )
-);
+            ]
+    ]
+];

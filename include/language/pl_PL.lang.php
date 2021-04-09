@@ -1,5 +1,4 @@
 <?php
-if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
 * SugarCRM Community Edition is a customer relationship management program developed by
 * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
@@ -44,6 +43,6 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 //the left value is the key stored in the db and the right value is ie display value
 //to translate, only modify the right value in each key/value pair
-$app_list_strings = array(
+$app_list_strings = [
     'language_pack_name' => 'Polski',
-);
+];

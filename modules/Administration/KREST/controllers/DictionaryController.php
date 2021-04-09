@@ -1,14 +1,23 @@
 <?php
-
 namespace SpiceCRM\modules\Administration\KREST\controllers;
 
+use SpiceCRM\data\BeanFactory;
+use SpiceCRM\includes\database\DBManagerFactory;
 
 class DictionaryController
 {
 
+    /**
+     * uilds a note array
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     */
+
     function getNodes($req, $res, $args)
     {
-        return $res->write(json_encode($this->buildNodeArray($args['module'])));
+        return $res->withJson($this->buildNodeArray($args['module']));
     }
 
     /*
@@ -17,12 +26,10 @@ class DictionaryController
 
     private function buildNodeArray($module)
     {
-        global $beanFiles, $beanList;
-        require_once('include/utils.php');
 
-        $returnArray = array();
+        $returnArray = [];
 
-        $nodeModule = \BeanFactory::getBean($module);
+        $nodeModule = BeanFactory::getBean($module);
         // $nodeModule->load_relationships();
         if ($nodeModule) {
 
@@ -32,13 +39,13 @@ class DictionaryController
                 if ($field_defs['type'] == 'link') {
                     if($nodeModule->load_relationship($field_name)) {
                         //BUGFIX 2010/07/13 to display alternative module name if vname is not maintained
-                        $returnArray[] = array(
+                        $returnArray[] = [
                             'path' => 'link:' . $module . ':' . $field_name,
                             'module' => $nodeModule->$field_name->getRelatedModuleName(),
                             'bean' => $nodeModule->$field_name->focus->object_name,
                             'leaf' => false,
                             'label' => $field_defs['vname']
-                        );
+                        ];
                     }
                 }
             }
@@ -47,21 +54,21 @@ class DictionaryController
             // get all relate fields where the link is empty ... those with link we get via the link anyway properly
             if ($field_defs['type'] == 'relate') {
                 if (isset($field_defs['module']))
-                    $returnArray[] = array(
+                    $returnArray[] = [
                         'path' => 'relate:' . $module . ':' . $field_name,
                         'module' => translate($field_defs['module'], $module),
                         'bean' => $field_defs['module'],
                         'leaf' => false,
                         'label' => $field_defs['vname']
-                    );
+                    ];
                 else
-                    $returnArray[] = array(
+                    $returnArray[] = [
                         'path' => 'relate:' . $module . ':' . $field_name,
                         'module' => $field_defs['name'],
                         'bean' => $field_defs['module'],
                         'leaf' => false,
                         'label' => $field_defs['vname']
-                    );
+                    ];
             }
         }
 
@@ -79,22 +86,30 @@ class DictionaryController
         return $returnArray;
     }
 
+    /**
+     * builds a field array
+     * @param $req
+     * @param $res
+     * @param $args
+     * @return mixed
+     */
+
     function getFields($req, $res, $args)
     {
-        return $res->write(json_encode($this->buildFieldArray($args['module'])));
+        return $res->withJson($this->buildFieldArray($args['module']));
     }
 
     private function buildFieldArray($module)
     {
         global $beanFiles, $beanList;
-        $returnArray = array();
+        $returnArray = [];
         if ($module != '' && $module != 'undefined' && file_exists($beanFiles[$beanList [$module]])) {
 
-            $nodeModule = \BeanFactory::getBean($module);
+            $nodeModule = BeanFactory::getBean($module);
 
             foreach ($nodeModule->field_name_map as $field_name => $field_defs) {
                 if ($field_defs['type'] != 'link') {
-                    $returnArray[] = array(
+                    $returnArray[] = [
                         'id' => 'field:' . $field_defs['name'],
                         'name' => $field_defs['name'],
                         // in case of a kreporter field return the report_data_type so operators ar processed properly
@@ -106,7 +121,7 @@ class DictionaryController
                         'leaf' => true,
                         'options' => $field_defs['options'],
                         'label' => $field_defs['vname']
-                    );
+                    ];
                 }
             }
         }
