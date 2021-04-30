@@ -317,7 +317,7 @@ class SugarBean
      */
     public function initialize_bean(){
         global $dictionary;
-$current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         static $loaded_defs = [];
         $this->db = DBManagerFactory::getInstance();
         if (empty($this->module_name))
@@ -2205,14 +2205,14 @@ $current_user = AuthenticationController::getInstance()->getCurrentUser();
                             $ret_array['secondary_select'] = " SELECT $this->table_name.id ref_id  ";
 
 
-                                $rel_mod = BeanFactory::getBean($rel_module);
-                                if (isset($rel_mod->field_defs['assigned_user_id'])) {
-                                    $ret_array['secondary_select'] .= " , " . $params['join_table_alias'] . ".assigned_user_id {$field}_owner, '$rel_module' {$field}_mod";
-                                } else {
-                                    if (isset($rel_mod->field_defs['created_by'])) {
-                                        $ret_array['secondary_select'] .= " , " . $params['join_table_alias'] . ".created_by {$field}_owner , '$rel_module' {$field}_mod";
-                                    }
+                            $rel_mod = BeanFactory::getBean($rel_module);
+                            if (isset($rel_mod->field_defs['assigned_user_id'])) {
+                                $ret_array['secondary_select'] .= " , " . $params['join_table_alias'] . ".assigned_user_id {$field}_owner, '$rel_module' {$field}_mod";
+                            } else {
+                                if (isset($rel_mod->field_defs['created_by'])) {
+                                    $ret_array['secondary_select'] .= " , " . $params['join_table_alias'] . ".created_by {$field}_owner , '$rel_module' {$field}_mod";
                                 }
+                            }
 
                         }
 
@@ -2477,7 +2477,7 @@ $current_user = AuthenticationController::getInstance()->getCurrentUser();
      */
     function process_list_query($query, $row_offset, $limit = -1, $max_per_page = -1, $where = '')
     {
-        
+
         $db = DBManagerFactory::getInstance('listviews');
         /**
          * if the row_offset is set to 'end' go to the end of the list
@@ -3189,7 +3189,7 @@ $current_user = AuthenticationController::getInstance()->getCurrentUser();
             foreach ($bean->field_defs as $field => $value) {
                 if (isset($row[$field])) {
                     $bean->$field = $row[$field];
-                    LoggerManager::getLogger()->debug("process_full_list: $bean->object_name({$row['id']}): " . $field . " = " . $bean->$field);
+                    LoggerManager::getLogger()->debug("process_full_list: ".$bean->object_name." ".$row['id'].": " . $field . " = " . $bean->$field);
                 } else {
                     $bean->$field = '';
                 }
@@ -3795,7 +3795,7 @@ $current_user = AuthenticationController::getInstance()->getCurrentUser();
     public function checkForDuplicates()
     {
         global $beanList;
-$current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
         $module = array_search($this->object_name, $beanList);
 
 
