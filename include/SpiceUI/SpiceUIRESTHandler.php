@@ -80,7 +80,7 @@ class SpiceUIRESTHandler
     function getModules()
     {
         global $moduleList, $modInvisList;
-$current_user = AuthenticationController::getInstance()->getCurrentUser();
+        $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
         SpiceACL::getInstance()->filterModuleList($moduleList);
         SpiceACL::getInstance()->filterModuleList($modInvisList);
@@ -204,8 +204,8 @@ $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
     function setComponentSets($data)
     {
-        
-$db = DBManagerFactory::getInstance();
+
+        $db = DBManagerFactory::getInstance();
 
         $this->checkAdmin();
 
@@ -593,10 +593,10 @@ $db = DBManagerFactory::getInstance();
 
     function checkComponentModuleAlreadyExists($params){
 
-        if ($params[type] == "custom") {
-            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicustomcomponentmoduleconf WHERE component = '" . $params[component] . "' AND role_id = '" . $params[role_id] . "' AND module = '" . $params[module] . "'");
+        if ($params['type'] == "custom") {
+            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicustomcomponentmoduleconf WHERE component = '" . $params['component'] . "' AND role_id = '" . $params['role_id'] . "' AND module = '" . $params['module'] . "'");
         }else {
-            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicomponentmoduleconf WHERE component = '" . $params[component] . "' AND role_id = '" . $params[role_id] . "' AND module = '" . $params[module] . "'");
+            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicomponentmoduleconf WHERE component = '" . $params['component'] . "' AND role_id = '" . $params['role_id'] . "' AND module = '" . $params['module'] . "'");
         }
         $result = $this->db->fetchByAssoc($sysuiconfigs);
 
@@ -604,10 +604,10 @@ $db = DBManagerFactory::getInstance();
     }
 
     function checkComponentDefaultAlreadyExists($params){
-        if ($params[type] == "custom") {
-            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicustomcomponentdefaultconf WHERE component = '" . $params[component] . "' AND role_id = '" . $params[role_id] . "'");
+        if ($params['type'] == "custom") {
+            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicustomcomponentdefaultconf WHERE component = '" . $params['component'] . "' AND role_id = '" . $params['role_id'] . "'");
         }else {
-            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicomponentdefaultconf WHERE component = '" . $params[component] . "' AND role_id = '" . $params[role_id] . "'");
+            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicomponentdefaultconf WHERE component = '" . $params['component'] . "' AND role_id = '" . $params['role_id'] . "'");
         }
         $result = $this->db->fetchByAssoc($sysuiconfigs);
 
@@ -618,14 +618,14 @@ $db = DBManagerFactory::getInstance();
 
     function checkFieldSetAlreadyExists($params){
 
-        if($params[module] == 'global'){
-            $params[module] = "*";
+        if($params['module'] == 'global'){
+            $params['module'] = "*";
         }
 
-        if ($params[type] == "custom") {
-            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicustomfieldsets WHERE module = '" . $params[module] . "' AND name = '" . $params[name] . "'");
+        if ($params['type'] == "custom") {
+            $sysuiconfigs = $this->db->query("SELECT * FROM sysuicustomfieldsets WHERE module = '" . $params['module'] . "' AND name = '" . $params['name'] . "'");
         }else {
-            $sysuiconfigs = $this->db->query("SELECT * FROM sysuifieldsets WHERE module = '" . $params[module] . "' AND name = '" . $params[name] . "'");
+            $sysuiconfigs = $this->db->query("SELECT * FROM sysuifieldsets WHERE module = '" . $params['module'] . "' AND name = '" . $params['name'] . "'");
         }
         $result = $this->db->fetchByAssoc($sysuiconfigs);
         return $result;
@@ -682,20 +682,20 @@ $db = DBManagerFactory::getInstance();
         $failed = false;
 
         $sql = "INSERT IGNORE INTO sysuimodelvalidations SET
-                  id = '{$data[id]}',
-                  name = '{$data[name]}',
-                  module = '{$data[module]}',
-                  onevents = '".$this->db->quote($data[onevents])."',
+                  id = '{$data['id']}',
+                  name = '{$data['name']}',
+                  module = '{$data['module']}',
+                  onevents = '".$this->db->quote($data['onevents'])."',
                   active = ".(int)$data['active'].",
-                  logicoperator = '{$data[logicoperator]}',
+                  logicoperator = '{$data['logicoperator']}',
                   priority = ".(int)$data['priority'].",
                   deleted = ".(int)$data['deleted']."
                 ON DUPLICATE KEY UPDATE
-                  name = '{$data[name]}',
-                  module = '{$data[module]}',
-                  onevents = '".$this->db->quote($data[onevents])."',
+                  name = '{$data['name']}',
+                  module = '{$data['module']}',
+                  onevents = '".$this->db->quote($data['onevents'])."',
                   active = ".(int)$data['active'].",
-                  logicoperator = '{$data[logicoperator]}',
+                  logicoperator = '{$data['logicoperator']}',
                   priority = ".(int)$data['priority'].",
                   deleted = ".(int)$data['deleted'];
         if( !$this->db->query($sql) ){  $failed = true; $error = 'INSERT INTO sysuimodelvalidations failed!';   }
@@ -703,18 +703,18 @@ $db = DBManagerFactory::getInstance();
         if( !$failed ) {
             foreach ($data['conditions'] as $con) {
                 $sql = "INSERT IGNORE INTO sysuimodelvalidationconditions SET
-                      id = '{$con[id]}',
-                      sysuimodelvalidation_id = '{$con[sysuimodelvalidation_id]}',
-                      fieldname = '{$con[fieldname]}',
-                      comparator = '{$con[comparator]}',
-                      valuations = '".$this->db->quote($con[valuations])."',
-                      onchange = '{$con[onchange]}',
+                      id = '{$con['id']}',
+                      sysuimodelvalidation_id = '{$con['sysuimodelvalidation_id']}',
+                      fieldname = '{$con['fieldname']}',
+                      comparator = '{$con['comparator']}',
+                      valuations = '".$this->db->quote($con['valuations'])."',
+                      onchange = '{$con['onchange']}',
                       deleted = ".(int)$con['deleted']."
                     ON DUPLICATE KEY UPDATE
-                      sysuimodelvalidation_id = '{$con[sysuimodelvalidation_id]}',
-                      fieldname = '{$con[fieldname]}',
-                      comparator = '{$con[comparator]}',
-                      valuations = '".$this->db->quote($con[valuations])."',
+                      sysuimodelvalidation_id = '{$con['sysuimodelvalidation_id']}',
+                      fieldname = '{$con['fieldname']}',
+                      comparator = '{$con['comparator']}',
+                      valuations = '".$this->db->quote($con['valuations'])."',
                       onchange = '{$con[onchange]}',
                       deleted = ".(int)$con['deleted'];
                 if (!$this->db->query($sql)) {
@@ -726,18 +726,18 @@ $db = DBManagerFactory::getInstance();
             foreach ($data['actions'] as $act)
             {
                 $sql = "INSERT IGNORE INTO sysuimodelvalidationactions SET
-                      id = '{$act[id]}',
-                      sysuimodelvalidation_id = '{$act[sysuimodelvalidation_id]}',
-                      fieldname = '{$act[fieldname]}',
-                      action = '{$act[action]}',
-                      params = '".$this->db->quote($act[params])."',
+                      id = '{$act['id']}',
+                      sysuimodelvalidation_id = '{$act['sysuimodelvalidation_id']}',
+                      fieldname = '{$act['fieldname']}',
+                      action = '{$act['action']}',
+                      params = '".$this->db->quote($act['params'])."',
                       priority = ".(int)$act['priority'].",
                       deleted = ".(int)$act['deleted']."
                     ON DUPLICATE KEY UPDATE
-                      sysuimodelvalidation_id = '{$act[sysuimodelvalidation_id]}',
-                      fieldname = '{$act[fieldname]}',
-                      action = '{$act[action]}',
-                      params = '".$this->db->quote($act[params])."',
+                      sysuimodelvalidation_id = '{$act['sysuimodelvalidation_id']}',
+                      fieldname = '{$act['fieldname']}',
+                      action = '{$act['action']}',
+                      params = '".$this->db->quote($act['params'])."',
                       priority = ".(int)$act['priority'].",
                       deleted = ".(int)$act['deleted'];
                 if (!$this->db->query($sql)) {
@@ -798,7 +798,7 @@ $db = DBManagerFactory::getInstance();
         $return['conditions'] = $return['actions'] = [];
 
         $sql = "SELECT * FROM sysuimodelvalidationconditions 
-                WHERE sysuimodelvalidation_id = '{$return[id]}' AND deleted = 0";
+                WHERE sysuimodelvalidation_id = '{$return['id']}' AND deleted = 0";
         $res = $this->db->query($sql);
         while($row = $this->db->fetchByAssoc($res, false))
         {
@@ -1146,7 +1146,7 @@ $db = DBManagerFactory::getInstance();
     function getAdminNavigation()
     {
         $current_user = AuthenticationController::getInstance()->getCurrentUser();
-$db = DBManagerFactory::getInstance();
+        $db = DBManagerFactory::getInstance();
         $navElements = [];
 
         // admin only
@@ -1176,7 +1176,7 @@ $db = DBManagerFactory::getInstance();
     function getAllModules()
     {
         $current_user = AuthenticationController::getInstance()->getCurrentUser();
-$db = DBManagerFactory::getInstance();
+        $db = DBManagerFactory::getInstance();
 
         $modules = [];
         $modulestmp = []; // CR1000442
