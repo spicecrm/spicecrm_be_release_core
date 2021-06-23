@@ -42,6 +42,7 @@ use SpiceCRM\includes\SugarObjects\SpiceConfig;
 use SpiceCRM\includes\database\DBManagerFactory;
 use SpiceCRM\includes\SpiceDictionary\SpiceDictionaryHandler;
 use SpiceCRM\includes\SpiceSlim\SpiceResponseFactory;
+use SpiceCRM\includes\utils\SpiceUtils;
 use SpiceCRM\includes\authentication\AuthenticationController;
 use SpiceCRM\modules\Administration\Administration;
 use SpiceCRM\modules\SpiceACL\SpiceACL;
@@ -49,6 +50,7 @@ use SpiceCRM\modules\SpiceACL\SpiceACL;
 require_once('include/utils.php');
 require_once('sugar_version.php'); // provides $sugar_version, $sugar_db_version
 
+register_shutdown_function([SpiceUtils::class, 'spiceCleanup']);
 
 //set some basic php settings ensure they are proper if not set in the php.ini as it shoudl have been
 error_reporting(E_ERROR);
@@ -98,7 +100,7 @@ try {
         UploadStream::register();
 
         // load the modules first
-        SpiceModules::loadModules();
+        SpiceModules::getInstance()->loadModules();
 
         // load the metadata from the database
         SpiceDictionaryHandler::loadMetaDataDefinitions();
@@ -124,7 +126,7 @@ try {
         $RESTManager->app=$app;
         $app->addRoutingMiddleware();
         //no config, fire spiceinstaller
-        require "include/SpiceInstaller/REST/extensions/SpiceInstallerKRESTextension.php";
+        require "include/SpiceInstaller/REST/extensions/spiceinstaller.php";
 
         $errorHandler = function (
             \Psr\Http\Message\ServerRequestInterface $request,
