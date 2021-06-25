@@ -1,6 +1,6 @@
 <?php
 use SpiceCRM\includes\SugarObjects\VardefManager;
-
+global $dictionary;
 $dictionary['CallAttempt'] = [
     'table' => 'callattempts',
     'comment' => 'Call attempts Module',
