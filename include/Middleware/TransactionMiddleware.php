@@ -14,13 +14,17 @@ class TransactionMiddleware
     public function __invoke(Request $request, RequestHandler $handler): Response {
         $this->startTransaction();
         SpiceFTSHandler::getInstance()->startTransaction();
-        SpiceSocket::getInstance()->startTransaction();
+        if (class_exists(SpiceSocket::class)) {
+            SpiceSocket::getInstance()->startTransaction();
+        }
 
         try {
             $response = $handler->handle($request);
             $this->commitTransaction();
             $this->commitFts();
-            SpiceSocket::getInstance()->commitTransaction();
+            if (class_exists(SpiceSocket::class)) {
+                SpiceSocket::getInstance()->commitTransaction();
+            }
 
             return $response;
         } catch (DatabaseException $e) {
