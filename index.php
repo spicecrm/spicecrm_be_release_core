@@ -31,6 +31,7 @@
 // require the autoloader
 require_once 'vendor/autoload.php';
 
+use Fig\Http\Message\StatusCodeInterface;
 use Slim\Factory\AppFactory;
 use DI\Container;
 use SpiceCRM\data\BeanFactory;
@@ -146,6 +147,9 @@ try {
             } else {
                 $message = $exception->getMessage();
                 $code = $exception->getCode();
+                if (!is_integer($code) || $code < StatusCodeInterface::STATUS_CONTINUE || $code > 599) {
+                    $code = 500;
+                }
             }
 
             $response->getBody()->write($message);
