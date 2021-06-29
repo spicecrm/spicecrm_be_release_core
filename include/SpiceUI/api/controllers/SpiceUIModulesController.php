@@ -57,6 +57,15 @@ class SpiceUIModulesController
             // filter the module list
             SpiceACL::getInstance()->filterModuleList($moduleList);
 
+            // in case $moduleList or $modInvisList are no longer an array, define as such
+            // might happen when a new user has no ACL allocated
+            if(!is_array($moduleList)){
+                $moduleList = [];
+            }
+            if(!is_array($modInvisList)){
+                $modInvisList = [];
+            }
+
             $retArray = [];
 
             // select from sysmodules
