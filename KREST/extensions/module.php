@@ -796,7 +796,7 @@ $routes = [
         'class'       => ModuleController::class,
         'function'    => 'setRelatedBean',
         'description' => 'Set related bean',
-        'options'     => ['noAuth' => false, 'adminOnly' => false, 'moduleRoute' => true, 'validate' => true],
+        'options'     => ['noAuth' => false, 'adminOnly' => false, 'moduleRoute' => true, 'validate' => true, 'excludeBodyValidation' => true],
         'parameters'  => [
             'beanName'       => [
                 'in'          => 'path',
