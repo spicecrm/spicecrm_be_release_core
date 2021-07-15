@@ -625,11 +625,29 @@ $routes = [
                 'type' => ValidationMiddleware::TYPE_COMPLEX,
                 'example' => '[{}]',
             ],
+            'active' => [
+                'in' => 'body',
+                'description' => 'tells if validation rule is active or not',
+                'type' => ValidationMiddleware::TYPE_BOOL,
+                'example' => '1',
+            ],
             'conditions' => [
                 'in' => 'body',
                 'description' => 'the id of the validation rule',
                 'type' => ValidationMiddleware::TYPE_COMPLEX,
                 'example' => '[{}]',
+            ],
+            'isnewrecord' => [
+                'in' => 'body',
+                'description' => 'indicates if the validation rule is new',
+                'type' => ValidationMiddleware::TYPE_BOOL,
+                'example' => 'true',
+            ],
+            'logicoperator' => [
+                'in' => 'body',
+                'description' => 'operator and | or',
+                'type' => ValidationMiddleware::TYPE_STRING,
+                'example' => 'all',
             ],
             'module' => [
                 'in' => 'body',
@@ -637,11 +655,17 @@ $routes = [
                 'type' => ValidationMiddleware::TYPE_STRING,
                 'example' => 'Opportunities',
             ],
-            'isnewrecord' => [
+            'name' => [
                 'in' => 'body',
-                'description' => 'indicates if the validation rule is new',
-                'type' => ValidationMiddleware::TYPE_BOOL,
-                'example' => 'true',
+                'description' => 'the name of the rule',
+                'type' => ValidationMiddleware::TYPE_STRING,
+                'example' => 'Set field readonly',
+            ],
+            'onevents' => [
+                'in' => 'body',
+                'description' => 'the name of the event to apply the rule',
+                'type' => ValidationMiddleware::TYPE_STRING,
+                'example' => 'all',
             ]
         ]
     ],
