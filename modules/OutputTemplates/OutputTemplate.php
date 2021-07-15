@@ -3,6 +3,7 @@ namespace SpiceCRM\modules\OutputTemplates;
 
 use SpiceCRM\data\BeanFactory;
 use SpiceCRM\data\SugarBean;
+use SpiceCRM\includes\ErrorHandlers\Exception;
 use SpiceCRM\includes\SpiceAttachments\SpiceAttachments;
 use SpiceCRM\includes\SpiceTemplateCompiler\Compiler;
 use SpiceCRM\includes\SugarObjects\SpiceConfig;
@@ -62,22 +63,35 @@ class OutputTemplate extends SugarBean
         'margin_right',
         'margin_bottom'
     ];
+
+    /**
+     * the loaded PDF handler Class
+     *
+     * @var
+     */
     private $pdf_handler;
 
-    function get_summary_text()
-    {
-        return "$this->name";
+    /**
+     * hold potential additonal values
+     *
+     * @var array
+     */
+    private $additonalValues = [];
+
+    /**
+     * an be calleed to set an array or object with different values to be
+     *
+     * @param $additonalValues an stdclass object
+     */
+    public function setAdditonalValues($additonalValues){
+        $this->additonalValues = $additonalValues;
     }
 
-    function bean_implements($interface)
-    {
-        switch ($interface) {
-            case 'ACL':
-                return true;
-        }
-        return false;
-    }
-
+    /**
+     * List of IDs of possible parent templates (to prevent recursions).
+     * @var
+     */
+    public $idsOfParentTemplates = [];
 
     public function translateBody($bean = null, $bodyOnly = false)
     {
@@ -91,12 +105,13 @@ class OutputTemplate extends SugarBean
         if(!$bean)
             throw new Exception("No Bean found, translation aborted!");
 
-        $templateCompiler = new Compiler();
+        $templateCompiler = new Compiler('OutputTemplates');
+        $templateCompiler->idsOfParentTemplates = array_merge( $this->idsOfParentTemplates, [$this->id] );
         if ($bodyOnly) {
-            $html = $templateCompiler->compile(html_entity_decode( $this->body), $bean, $this->language );
+            $html = $templateCompiler->compile(html_entity_decode( $this->body), $bean, $this->language, $this->additonalValues);
         } else {
             $html = '<style>' . $this->getStyle() . '</style>' . $templateCompiler->compile('<body><header>'
-                    .html_entity_decode( $this->header ).'</header><footer>'.html_entity_decode( $this->footer ).'</footer><main>'.html_entity_decode( $this->body ).'</main></body>', $bean, $this->language );
+                    .html_entity_decode( $this->header ).'</header><footer>'.html_entity_decode( $this->footer ).'</footer><main>'.html_entity_decode( $this->body ).'</main></body>', $bean, $this->language, $this->additonalValues);
         }
 
         return $html;
