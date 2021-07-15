@@ -948,15 +948,7 @@ $dictionary['User'] = [
             'module' => 'Shops',
             'source' => 'non-db',
         ],
-        'shops' => [
-            'name' => 'shops',
-            'type' => 'link',
-            'vname' => 'LBL_SHOP',
-            'relationship' => 'shop_users',
-            'rname' => 'name',
-            'source' => 'non-db',
-            'module' => 'Shops'
-        ],
+
     ],
     'indices' => [
         [
@@ -1135,5 +1127,16 @@ if (is_file("modules/ServiceTickets/ServiceTicket.php")) {
 //        'default' => false
 //    );
 //}
+if (is_file("modules/Shops/Shop.php")) {
+    $dictionary['User']['fields']['shops'] = [
+        'name' => 'shops',
+        'type' => 'link',
+        'vname' => 'LBL_SHOP',
+        'relationship' => 'shop_users',
+        'rname' => 'name',
+        'source' => 'non-db',
+        'module' => 'Shops'
+    ];
+}
 
 

@@ -432,7 +432,7 @@ $db = DBManagerFactory::getInstance();
         $sysuirole_id = $args['roleid'];
         $retArray = [];
 
-        switch ($args['default']) {
+        switch ($args['action']) {
             case 'new':
                 $guid = create_guid();
                 $entry = $this->db->fetchByAssoc($this->db->query("SELECT * FROM sysuiuserroles WHERE sysuirole_id = '$sysuirole_id' AND user_id = '$user_id'"));
@@ -998,7 +998,7 @@ $db = DBManagerFactory::getInstance();
     {
         $this->checkAdmin();
         $table = 'sysselecttree_fields';
-        $sql = "DELETE FROM {$table} WHERE tree = '" . $selecttree[0][tree] . "'";
+        $sql = "DELETE FROM {$table} WHERE tree = '" . $selecttree[0]['tree'] . "'";
         $this->db->query($sql);
         $categories = $this->flattenOutSelectTree($selecttree);
         //var_dump($tree, $categories);

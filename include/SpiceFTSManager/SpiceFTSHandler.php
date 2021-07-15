@@ -1274,7 +1274,9 @@ class SpiceFTSHandler
 
                     foreach ($seed->field_name_map as $field => $fieldData) {
                         //if (!isset($hit['_source']{$field}))
-                        $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
+                        if(is_string($seed->$field)) { // might be Link2 Object! so check on it
+                            $hit['_source'][$field] = html_entity_decode($seed->$field, ENT_QUOTES);
+                        }
                     }
 
                     // get the email addresses
@@ -1665,7 +1667,7 @@ class SpiceFTSHandler
                     echo sprintf("%${numRowsLength}d", $counterIndexed + $counterDeleted + 1); // output current counter
                 }
                 if ($indexBean['deleted'] == 0) {
-                    $seed->retrieve($indexBean['id']);
+                    $seed->retrieve($indexBean['id'], false, false, false );
 
                     if ($this->elasticHandler->getMajorVersion() == '6') {
                         $bulkItems[] = json_encode([
@@ -1692,7 +1694,7 @@ class SpiceFTSHandler
                     $beanCounter++;
                     $counterIndexed++;
                 } else {
-                    $seed->retrieve($indexBean['id'], true, false);
+                    $seed->retrieve($indexBean['id'], true, false, false);
                     $bulkItems[] = json_encode([
                         'delete' => [
                             '_index' => $this->elasticHandler->indexPrefix . strtolower($bean['module']),

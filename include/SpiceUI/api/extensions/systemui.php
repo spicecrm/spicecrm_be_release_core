@@ -220,7 +220,7 @@ $routes = [
     ],
     [
         'method' => 'post',
-        'route' => '/configuration/spiceui/core/roles/{roleid}/{userid}/{default}',
+        'route' => '/configuration/spiceui/core/roles/{roleid}/{userid}/{action}',
         'oldroute' => '/spiceui/core/roles/{roleid}/{userid}/{default}',
         'class' => SystemUIController::class,
         'function' => 'SystemSetUserRole',
@@ -239,11 +239,11 @@ $routes = [
                 'type' => ValidationMiddleware::TYPE_GUID,
                 'example' => '24f0fdda-79f0-4054-acb9-c8cce36e5fdc',
             ],
-            'default' => [
+            'action' => [
                 'in' => 'path',
                 'description' => 'if this should be set as default role',
-                'type' => ValidationMiddleware::TYPE_BOOL,
-                'example' => '0 or 1',
+                'type' => ValidationMiddleware::TYPE_STRING,
+                'example' => 'default or new',
             ],
         ]
     ],
@@ -347,7 +347,7 @@ $routes = [
             'role_id' => [
                 'in' => 'query',
                 'description' => 'the id of the assigned role for the component',
-                'type' => ValidationMiddleware::TYPE_GUID,
+                'type' => ValidationMiddleware::TYPE_STRING,
                 'example' => '894562d5-d74b-4587-a10a-fabe7ec2f696',
             ],
             'type' => [
@@ -395,7 +395,6 @@ $routes = [
         'function' => 'SystemGetFieldSet',
         'description' => 'gets the fieldsets',
         'options' => ['noAuth' => false, 'adminOnly' => true, 'validate' => true],
-        'parameters' => []
     ],
     [
         'method' => 'post',
@@ -512,7 +511,14 @@ $routes = [
         'function' => 'SystemGetServiceTreeBody',
         'description' => 'gets the service category tree with a parsed body',
         'options' => ['noAuth' => false, 'adminOnly' => true, 'validate' => true],
-        'parameters' => []
+        'parameters' => [
+            ValidationMiddleware::ANONYMOUS_ARRAY => [
+                'in' => 'body',
+                'description' => 'the tree categories',
+                'type' => ValidationMiddleware::TYPE_COMPLEX,
+                'example' => '',
+            ],
+        ]
     ],
     [
         'method' => 'get',

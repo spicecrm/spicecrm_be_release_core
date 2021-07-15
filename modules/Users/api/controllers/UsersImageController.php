@@ -15,7 +15,7 @@ class UsersImageController
     {
         $current_user = AuthenticationController::getInstance()->getCurrentUser();
 
-        if (!$current_user->is_admin && $current_user->id != $args['userid'])
+        if (!$current_user->is_admin && $current_user->id != $args['id'])
             throw (new ForbiddenException("only allowed for admins or assigned user"));
 
         $userBean = BeanFactory::getBean("Users", $args['id']);

@@ -814,12 +814,17 @@ class SugarBean
                                 $toInsert[$key] = $rel_name;
                             } else if (isset($rel_def[$key])) {
                                 $toInsert[$key] = $rel_def[$key];
+                            } else if (isset($seed->field_defs[$key]['default'])) {
+                                $defaultValue = $seed->field_defs[$key]['default'];
+                                if($seed->field_defs[$key]['default'] === false) $defaultValue = 0;
+                                if($seed->field_defs[$key]['default'] === true) $defaultValue = 1;
+                                $toInsert[$key] = $defaultValue;
                             }
-                            //todo specify defaults if meta not defined.
                         }
 
 
                         $column_list = implode(",", array_keys($toInsert));
+                        // todo: consider variable type for values! integer shall be passed as such and not as a string
                         $value_list = "'" . implode("','", array_values($toInsert)) . "'";
 
                         //create the record. todo add error check.
@@ -1014,6 +1019,13 @@ class SugarBean
      */
     private function get_multiple_linked_beans($field_names)
     {
+        // check how field_names is formed. Make an array if it's not.
+        foreach ($field_names as $field_name){
+            if(!is_array($field_name)){
+                $field_names[$field_name] = [];
+            }
+        }
+
         $returnBeans = [];
         foreach ($field_names as $field_name => $field_name_params) {
             if ($this->load_relationship($field_name)) {
@@ -1074,6 +1086,13 @@ class SugarBean
      */
     function get_multiple_linked_beans_count($field_names)
     {
+        // check how field_names is formed. Make an array if it's not.
+        foreach ($field_names as $field_name){
+            if(!is_array($field_name)){
+                $field_names[$field_name] = [];
+            }
+        }
+
         $count = 0;
         foreach ($field_names as $field_name => $field_name_params) {
             if ($this->load_relationship($field_name)) {

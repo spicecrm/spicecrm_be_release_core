@@ -134,6 +134,11 @@ $routes = [
                 'required'    => false,
                 'description' => '',
             ],
+            'searchfields' => [
+                'in'          => 'query',
+                'type'        => ValidationMiddleware::TYPE_COMPLEX,
+                'description' => '',
+            ],
             'searchgeo' => [
                 'in'          => 'query',
                 'type'        => ValidationMiddleware::TYPE_STRING,
@@ -419,6 +424,12 @@ $routes = [
                 'type'        => ValidationMiddleware::TYPE_GUID,
                 'required'    => true,
                 'description' => 'GUID of the bean',
+            ],
+            'templateId'          => [
+                'in'          => 'query',
+                'type'        => ValidationMiddleware::TYPE_STRING,
+                'required'    => false,
+                'description' => 'GUID or other id type for a bean that is being duplicated',
             ],
             // bean in body
             ValidationMiddleware::ANONYMOUS_ARRAY => [
@@ -833,6 +844,18 @@ $routes = [
                 'type'        => ValidationMiddleware::TYPE_DATETIME,
                 'required'    => false,
                 'description' => 'Date modified',
+            ],
+            'date_entered'  => [
+                'in'          => 'body',
+                'type'        => ValidationMiddleware::TYPE_DATETIME,
+                'required'    => false,
+                'description' => 'Date entered',
+            ],
+            'date_indexed'  => [
+                'in'          => 'body',
+                'type'        => ValidationMiddleware::TYPE_DATETIME,
+                'required'    => false,
+                'description' => 'Date indexed',
             ],
             'name'           => [
                 'in'          => 'body',
