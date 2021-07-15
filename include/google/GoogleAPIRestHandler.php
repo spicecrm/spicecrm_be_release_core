@@ -1,19 +1,22 @@
 <?php
 namespace SpiceCRM\includes\google;
 
+use SpiceCRM\includes\database\DBManagerFactory;
+use SpiceCRM\includes\SugarObjects\SpiceConfig;
+
 class GoogleAPIRestHandler
 {
     public function search($term, $locationbias = 'ipbias')
     {
-        global $sugar_config;
 
-        $results = array(
+
+        $results = [
             'status' => 'NOK'
-        );
+        ];
 
         $ch = curl_init();
         // https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=sol4 it&inputtype=textquery&fields=photos,formatted_address,name,place_id&key=AIzaSyCmw4Z9h4lf9eUGVyjKPyr9yr1s8WeXlPM
-        $url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key={$sugar_config['googleapi']['mapskey']}&locationbias=".trim($locationbias)."&inputtype=textquery&fields=photos,formatted_address,name,place_id&input=" . urlencode($term);
+        $url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=". SpiceConfig::getInstance()->config['googleapi']['mapskey']."&locationbias=".trim($locationbias)."&inputtype=textquery&fields=photos,formatted_address,name,place_id&input=" . urlencode($term);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -34,14 +37,14 @@ class GoogleAPIRestHandler
 
     public function autocomplete($term)
     {
-        global $sugar_config;
 
-        $results = array(
+
+        $results = [
             'status' => 'NOK'
-        );
+        ];
 
         $ch = curl_init();
-        $url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" . $sugar_config['googleapi']['mapskey'] . "&types=geocode&input=" . urlencode($term);
+        $url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?key=" . SpiceConfig::getInstance()->config['googleapi']['mapskey'] . "&types=geocode&input=" . urlencode($term);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -62,14 +65,14 @@ class GoogleAPIRestHandler
 
     public function getplacedetails($placeid)
     {
-        global $sugar_config, $db;
+        $db = DBManagerFactory::getInstance();
 
-        $results = array(
+        $results = [
             'status' => 'NOK'
-        );
+        ];
 
         $ch = curl_init();
-        $url = "https://maps.googleapis.com/maps/api/place/details/json?language=en&key=" . $sugar_config['googleapi']['mapskey'] . "&placeid=" . $placeid;
+        $url = "https://maps.googleapis.com/maps/api/place/details/json?language=en&key=" . SpiceConfig::getInstance()->config['googleapi']['mapskey'] . "&placeid=" . $placeid;
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -80,7 +83,7 @@ class GoogleAPIRestHandler
 
         if ($response) {
             $responseObject = json_decode($response);
-            $addrArray = array();
+            $addrArray = [];
             foreach ($responseObject->result->address_components as $resultItem) {
                 foreach ($resultItem->types as $resultType) {
                     $addrArray[$resultType] = ['long' => $resultItem->long_name,'short' => $resultItem->short_name];
@@ -91,7 +94,7 @@ class GoogleAPIRestHandler
             $state = $db->fetchByAssoc($db->query("SELECT sc FROM syscountrystates WHERE cc='{$addrArray['country']['short']}' AND google_aa like '%{$addrArray['administrative_area_level_1']['short']}%'"));
 
             $results['status'] = 'OK';
-            $results['address'] = array(
+            $results['address'] = [
                 'street' => $addrArray['route']['long'] . ' ' . $addrArray['street_number']['long'],
                 'street_name' => $addrArray['route']['long'],
                 'street_number' => $addrArray['street_number']['long'],
@@ -101,7 +104,7 @@ class GoogleAPIRestHandler
                 'postalcode' => $addrArray['postal_code']['short'],
                 'country' => $addrArray['country']['short'],
                 'location' => $responseObject->result->geometry->location
-            );
+            ];
             $results['formatted_address'] = $responseObject->result->formatted_address;
             $results['formatted_phone_number'] = $responseObject->result->formatted_phone_number;
             $results['international_phone_number'] = $responseObject->result->international_phone_number;
