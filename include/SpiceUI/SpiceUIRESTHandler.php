@@ -730,14 +730,14 @@ $db = DBManagerFactory::getInstance();
                       sysuimodelvalidation_id = '{$act['sysuimodelvalidation_id']}',
                       fieldname = '{$act['fieldname']}',
                       action = '{$act['action']}',
-                      params = '".$this->db->quote($act['params'])."',
+                      params = '".$this->db->quote(is_array($act['params']) ? json_encode($act['params']) : $act['params'])."',
                       priority = ".(int)$act['priority'].",
                       deleted = ".(int)$act['deleted']."
                     ON DUPLICATE KEY UPDATE
                       sysuimodelvalidation_id = '{$act['sysuimodelvalidation_id']}',
                       fieldname = '{$act['fieldname']}',
                       action = '{$act['action']}',
-                      params = '".$this->db->quote($act['params'])."',
+                      params = '".$this->db->quote(is_array($act['params']) ? json_encode($act['params']) : $act['params'])."',
                       priority = ".(int)$act['priority'].",
                       deleted = ".(int)$act['deleted'];
                 if (!$this->db->query($sql)) {
